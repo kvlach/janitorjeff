@@ -111,8 +111,6 @@ func main() {
 
 	core.GlobalsInit(globals)
 
-	// TODO: Check that there are no commands with the same name
-
 	// Requires globals to be set
 	for _, cmd := range commands.Commands {
 		if cmd.Init != nil {
