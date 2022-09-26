@@ -18,9 +18,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/twitch"
 	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 
-	// TODO: Remove dependency
 	"github.com/joho/godotenv"
-
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
