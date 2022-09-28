@@ -105,10 +105,20 @@ func (db *DB) PrefixList(scope int64) ([]string, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
+	// We order by the length of the prefix in order to avoid matching the
+	// wrong prefix. For example, in DMs the empty string prefix is added. If
+	// it is placed first in the list of prefixes then it always get matched.
+	// So even if the user uses for example `!`, the command will be parsed as
+	// having the empty prefix and will fail to match (since it will try to
+	// match the whole thing, `!test` for example, instead of trimming the
+	// prefix first). This also can happen if for example there exist the `!!`
+	// and `!` prefixes. If the single `!` is first on the list and the user
+	// uses `!!` then the same problem occurs.
 	rows, err := db.DB.Query(`
 		SELECT prefix
 		FROM CommandPrefixPrefixes
-		WHERE scope = ?`, scope)
+		WHERE scope = ?
+		ORDER BY length(prefix) DESC`, scope)
 
 	if err != nil {
 		return nil, err
