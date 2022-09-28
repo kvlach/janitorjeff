@@ -98,7 +98,6 @@ type Message struct {
 	Channel *Channel
 	Client  Messenger
 	Command *Command
-	Globals *GlobalVars
 }
 
 func (m *Message) Write(msg interface{}) (*Message, error) {
