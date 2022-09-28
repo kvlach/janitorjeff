@@ -14,7 +14,7 @@ layer is responsible for providing methods for working with a specific platform
 exists in the core and for a platform to be added it must implement that
 interface.
 
-The [message](https://git.slowtyper.com/slowtyper/janitorjeff/src/branch/main/core/message.go#L93-L102)
+The [message](https://git.slowtyper.com/slowtyper/janitorjeff/src/branch/main/core/message.go#L93-L101)
 layer is responsible for creating a common struct under which all messages from
 all platforms are processed.
 
