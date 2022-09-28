@@ -21,4 +21,4 @@ all platforms are processed.
 The [command](https://git.slowtyper.com/slowtyper/janitorjeff/src/branch/main/commands)
 layer where all of the actual commands are implemented. For most use cases it
 is platform agnostic, an exception is discord because of the special
-"rendering" the messages get (embeds are returned for each command).
+"rendering" the messages get (embeds as opposed to plain text).
