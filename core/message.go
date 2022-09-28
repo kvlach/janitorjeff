@@ -47,6 +47,16 @@ type CommandStatic struct {
 	Children Commands
 }
 
+func (cmd *CommandStatic) Format(prefix string) string {
+	path := []string{}
+	for cmd.Parent != nil {
+		path = append([]string{cmd.Names[0]}, path...)
+		cmd = cmd.Parent
+	}
+	path = append([]string{cmd.Names[0]}, path...)
+	return fmt.Sprintf("%s%s", prefix, strings.Join(path, " "))
+}
+
 // type CommandRaw struct {
 // 	All  string
 // 	Name string
@@ -108,33 +118,53 @@ func (m *Message) Scope(scope_optional ...int) (int64, error) {
 	return m.Client.Scope(scope)
 }
 
-func (m *Message) CommandParse(text string) (*Message, error) {
-	log.Debug().Str("text", text).Msg("starting command parsing")
-
+// Returns the current scope's prefixes and also whether or not the scope
+// exists in the database (meaning that if it does exist in the DB, the
+// prefixes have been modified in some way by the user)
+func (m *Message) ScopePrefixes() ([]string, bool, error) {
 	scope, err := m.Scope()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	log.Debug().Int64("scope", scope).Send()
 
 	prefixes, err := Globals.DB.PrefixList(scope)
 	if err != nil {
-		return nil, err
-	}
-	log.Debug().Strs("prefixes", prefixes).Msg("scope specific prefixes")
-
-	if len(prefixes) == 0 {
-		prefixes = Globals.Prefixes()
-
-		log.Debug().
-			Strs("prefixes", prefixes).
-			Msg("no scope specific prefixes, using defaults")
+		return nil, false, err
 	}
 
-	log.Debug().Bool("dm", m.IsDM).Send()
+	log.Debug().
+		Int64("scope", scope).
+		Strs("prefixes", prefixes).
+		Msg("scope specific prefixes")
+
+	if len(prefixes) != 0 {
+		return prefixes, true, nil
+	}
+
+	prefixes = Globals.Prefixes()
+
+	log.Debug().
+		Strs("prefixes", prefixes).
+		Msg("no scope specific prefixes, using defaults")
+
 	if m.IsDM {
 		prefixes = append(prefixes, "")
-		log.Debug().Strs("prefixes", prefixes).Msg("added dm specific prefix")
+
+		log.Debug().
+			Bool("dm", m.IsDM).
+			Strs("prefixes", prefixes).
+			Msg("added dm specific prefix")
+	}
+
+	return prefixes, false, nil
+}
+
+func (m *Message) CommandParse(text string) (*Message, error) {
+	log.Debug().Str("text", text).Msg("starting command parsing")
+
+	prefixes, _, err := m.ScopePrefixes()
+	if err != nil {
+		return nil, err
 	}
 
 	args := strings.Fields(text)
