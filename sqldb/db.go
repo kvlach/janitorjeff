@@ -8,6 +8,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Prefixes:
+//
+// Some very basic prefix support has to exist in the core in order to be able
+// to find scope specific prefixes when parsing the message. Only thing that is
+// supported is creating the table and getting a list of prefixes for the
+// current scope. The rest (adding, deleting, etc.) is handled externally by a
+// command.
+
 const schema = `
 CREATE TABLE IF NOT EXISTS Scopes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT
