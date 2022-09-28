@@ -101,6 +101,14 @@ func (_ *DB) ScopeAdd(tx *sql.Tx) (int64, error) {
 	return res.LastInsertId()
 }
 
+// Returns the list of all prefixes for a specific scope.
+//
+// The idea of having the ability to have an arbitrary number of prefixes
+// originated from the fact that I wanted to not have to use a prefix when
+// DMing the bot, as it is pointless to do so in that case. So after building
+// support for more than 1 prefix it felt unecessary to limit it to just DMs,
+// as that would be an artificial limit on what the bot is already supports and
+// not really a necessity.
 func (db *DB) PrefixList(scope int64) ([]string, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
