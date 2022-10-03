@@ -53,7 +53,7 @@ func (d *DiscordMessageCreate) Scope(type_ int) (int64, error) {
 	return getScope(type_, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *DiscordMessageCreate) Write(msg interface{}) (*core.Message, error) {
+func (d *DiscordMessageCreate) Write(msg interface{}, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		text := msg.(string)
@@ -68,7 +68,11 @@ func (d *DiscordMessageCreate) Write(msg interface{}) (*core.Message, error) {
 		if embed.Color == 0 {
 			// default value of EmbedColor is 0 so even if it's not been set
 			// then everything should be ok
-			embed.Color = core.Globals.Discord.EmbedColor
+			if usrErr == nil {
+				embed.Color = core.Globals.Discord.EmbedColor
+			} else {
+				embed.Color = core.Globals.Discord.EmbedErrColor
+			}
 		}
 
 		// TODO: Consider adding an option which allows one of these 3 values

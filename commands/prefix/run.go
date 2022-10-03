@@ -1,6 +1,7 @@
 package prefix
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -11,20 +12,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	noErr = -1
-
-	errMissingArgument = iota
-	errExists
-	errNotFound
-	errOneLeft
+var (
+	errMissingArgument = errors.New("missing argument")
+	errExists          = errors.New("prefix exists already")
+	errNotFound        = errors.New("prefix not found")
+	errOneLeft         = errors.New("only one prefix left")
 )
 
-func run(m *core.Message) (interface{}, error) {
-	return m.ReplyUsage(), nil
+func run(m *core.Message) (interface{}, error, error) {
+	return m.ReplyUsage(), nil, nil
 }
 
-func runAdd(m *core.Message) (interface{}, error) {
+func runAdd(m *core.Message) (interface{}, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runAdd_Discord(m)
@@ -33,47 +32,47 @@ func runAdd(m *core.Message) (interface{}, error) {
 	}
 }
 
-func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error) {
+func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefix, usrErr, err := runAdd_Core(m)
 	if err != nil {
-		return nil, err
+		return nil, usrErr, err
 	}
 
 	prefix = discord.PlaceInBackticks(prefix)
 
 	switch usrErr {
 	case errMissingArgument:
-		return m.ReplyUsage().(*dg.MessageEmbed), nil
+		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
 	}
 
 	embed := &dg.MessageEmbed{
 		Description: runAdd_Err(usrErr, prefix),
 	}
 
-	return embed, nil
+	return embed, usrErr, nil
 }
 
-func runAdd_Text(m *core.Message) (string, error) {
+func runAdd_Text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefix, usrErr, err := runAdd_Core(m)
 	if err != nil {
-		return "", err
+		return "", usrErr, err
 	}
 
 	switch usrErr {
 	case errMissingArgument:
-		return m.ReplyUsage().(string), nil
+		return m.ReplyUsage().(string), usrErr, nil
 	}
 
-	return runAdd_Err(usrErr, prefix), nil
+	return runAdd_Err(usrErr, prefix), usrErr, nil
 }
 
-func runAdd_Err(err int, prefix string) string {
+func runAdd_Err(err error, prefix string) string {
 	switch err {
-	case noErr:
+	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case errExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
@@ -82,7 +81,7 @@ func runAdd_Err(err int, prefix string) string {
 	}
 }
 
-func runAdd_Core(m *core.Message) (string, int, error) {
+func runAdd_Core(m *core.Message) (string, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
 		return "", errMissingArgument, nil
 	}
@@ -90,13 +89,13 @@ func runAdd_Core(m *core.Message) (string, int, error) {
 
 	scope, err := m.Scope()
 	if err != nil {
-		return prefix, noErr, err
+		return prefix, nil, err
 	}
 	log.Debug().Int64("scope", scope).Send()
 
 	prefixes, scopeExists, err := m.ScopePrefixes()
 	if err != nil {
-		return prefix, noErr, err
+		return prefix, nil, err
 	}
 
 	log.Debug().
@@ -111,24 +110,24 @@ func runAdd_Core(m *core.Message) (string, int, error) {
 
 		for _, p := range prefixes {
 			if err = dbAdd(p, scope); err != nil {
-				return prefix, noErr, err
+				return prefix, nil, err
 			}
 		}
 	}
 
 	exists, err := dbExists(prefix, scope)
 	if err != nil {
-		return prefix, noErr, err
+		return prefix, nil, err
 	}
 	if exists {
 		return prefix, errExists, nil
 	}
 
 	err = dbAdd(prefix, scope)
-	return prefix, noErr, err
+	return prefix, nil, err
 }
 
-func runDelete(m *core.Message) (interface{}, error) {
+func runDelete(m *core.Message) (interface{}, error, error) {
 	// TODO: Provide a way to delete the empty string prefix in DMs
 	switch m.Type {
 	case core.Discord:
@@ -138,19 +137,19 @@ func runDelete(m *core.Message) (interface{}, error) {
 	}
 }
 
-func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error) {
+func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefix, usrErr, err := runDelete_Core(m)
 	if err != nil {
-		return nil, err
+		return nil, usrErr, err
 	}
 
 	resetCommand := ""
 
 	switch usrErr {
 	case errMissingArgument:
-		return m.ReplyUsage().(*dg.MessageEmbed), nil
+		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
@@ -162,32 +161,32 @@ func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error) {
 		Description: runDelete_Err(usrErr, m, prefix, resetCommand),
 	}
 
-	return embed, nil
+	return embed, usrErr, nil
 }
 
-func runDelete_Text(m *core.Message) (string, error) {
+func runDelete_Text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefix, usrErr, err := runDelete_Core(m)
 	if err != nil {
-		return "", err
+		return "", usrErr, err
 	}
 
 	resetCommand := ""
 
 	switch usrErr {
 	case errMissingArgument:
-		return m.ReplyUsage().(string), nil
+		return m.ReplyUsage().(string), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
 	}
 
-	return runDelete_Err(usrErr, m, prefix, resetCommand), nil
+	return runDelete_Err(usrErr, m, prefix, resetCommand), usrErr, nil
 }
 
-func runDelete_Err(err int, m *core.Message, prefix, resetCommand string) string {
+func runDelete_Err(err error, m *core.Message, prefix, resetCommand string) string {
 	switch err {
-	case noErr:
+	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
 	case errNotFound:
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
@@ -199,7 +198,7 @@ func runDelete_Err(err int, m *core.Message, prefix, resetCommand string) string
 	}
 }
 
-func runDelete_Core(m *core.Message) (string, int, error) {
+func runDelete_Core(m *core.Message) (string, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
 		return "", errMissingArgument, nil
 	}
@@ -207,7 +206,7 @@ func runDelete_Core(m *core.Message) (string, int, error) {
 
 	scope, err := m.Scope()
 	if err != nil {
-		return prefix, noErr, err
+		return prefix, nil, err
 	}
 
 	log.Debug().
@@ -217,7 +216,7 @@ func runDelete_Core(m *core.Message) (string, int, error) {
 
 	prefixes, scopeExists, err := m.ScopePrefixes()
 	if err != nil {
-		return prefix, noErr, err
+		return prefix, nil, err
 	}
 	var exists bool
 	for _, p := range prefixes {
@@ -240,15 +239,15 @@ func runDelete_Core(m *core.Message) (string, int, error) {
 	if !scopeExists {
 		for _, p := range prefixes {
 			if err = dbAdd(p, scope); err != nil {
-				return prefix, noErr, err
+				return prefix, nil, err
 			}
 		}
 	}
 
-	return prefix, noErr, dbDel(prefix, scope)
+	return prefix, nil, dbDel(prefix, scope)
 }
 
-func runList(m *core.Message) (interface{}, error) {
+func runList(m *core.Message) (interface{}, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runList_Discord(m)
@@ -257,12 +256,12 @@ func runList(m *core.Message) (interface{}, error) {
 	}
 }
 
-func runList_Discord(m *core.Message) (*dg.MessageEmbed, error) {
+func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefixes, err := runList_Core(m)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for i, p := range prefixes {
@@ -276,18 +275,18 @@ func runList_Discord(m *core.Message) (*dg.MessageEmbed, error) {
 		Description: strings.Join(prefixes, "\n"),
 	}
 
-	return embed, nil
+	return embed, nil, nil
 }
 
-func runList_Text(m *core.Message) (string, error) {
+func runList_Text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefixes, err := runList_Core(m)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return fmt.Sprintf("Prefixes: %s", strings.Join(prefixes, " ")), nil
+	return fmt.Sprintf("Prefixes: %s", strings.Join(prefixes, " ")), nil, nil
 }
 
 func runList_Core(m *core.Message) ([]string, error) {
@@ -295,7 +294,7 @@ func runList_Core(m *core.Message) ([]string, error) {
 	return prefixes, err
 }
 
-func runReset(m *core.Message) (interface{}, error) {
+func runReset(m *core.Message) (interface{}, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runReset_Discord(m)
@@ -304,12 +303,12 @@ func runReset(m *core.Message) (interface{}, error) {
 	}
 }
 
-func runReset_Discord(m *core.Message) (*dg.MessageEmbed, error) {
+func runReset_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	listCmd, err := runReset_Core(m)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	listCmd = discord.PlaceInBackticks(listCmd)
 
@@ -317,18 +316,18 @@ func runReset_Discord(m *core.Message) (*dg.MessageEmbed, error) {
 		Description: fmt.Sprintf("Prefixes have been reset.\nTo view the list of the currently available prefixes run: %s", listCmd),
 	}
 
-	return embed, nil
+	return embed, nil, nil
 }
 
-func runReset_Text(m *core.Message) (string, error) {
+func runReset_Text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	listCmd, err := runReset_Core(m)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return fmt.Sprintf("Prefixes have been reset. To view the list of the currently available prefixes run: %s", listCmd), nil
+	return fmt.Sprintf("Prefixes have been reset. To view the list of the currently available prefixes run: %s", listCmd), nil, nil
 }
 
 func runReset_Core(m *core.Message) (string, error) {

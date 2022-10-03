@@ -98,7 +98,8 @@ func main() {
 		},
 
 		Discord: &core.DiscordVars{
-			EmbedColor: 0xAD88E0,
+			EmbedColor:    0xAD88E0,
+			EmbedErrColor: 0xB14D4D,
 		},
 
 		Twitch: &core.TwitchVars{
