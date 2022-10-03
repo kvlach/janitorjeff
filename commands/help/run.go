@@ -10,9 +10,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func run(m *core.Message) (interface{}, error) {
+func run(m *core.Message) (interface{}, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), nil
+		return m.ReplyUsage(), nil, nil
 	}
 
 	switch m.Type {
@@ -23,10 +23,10 @@ func run(m *core.Message) (interface{}, error) {
 	}
 }
 
-func run_Text(m *core.Message) (string, error) {
+func run_Text(m *core.Message) (string, error, error) {
 	cmd, aliases, err := run_Core(m)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	help := fmt.Sprintf("Usage: %s.", cmd.Usage())
@@ -41,13 +41,13 @@ func run_Text(m *core.Message) (string, error) {
 
 	log.Debug().Str("help", help).Send()
 
-	return m.ReplyText(help), nil
+	return m.ReplyText(help), nil, nil
 }
 
-func run_Discord(m *core.Message) (*dg.MessageEmbed, error) {
+func run_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	cmd, aliases, err := run_Core(m)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	desc := ""
@@ -71,7 +71,7 @@ func run_Discord(m *core.Message) (*dg.MessageEmbed, error) {
 
 	log.Debug().Interface("embed", embed).Send()
 
-	return embed, nil
+	return embed, nil, nil
 }
 
 func run_Core(m *core.Message) (*core.Command, []string, error) {

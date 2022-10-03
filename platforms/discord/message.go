@@ -47,7 +47,7 @@ func (d *DiscordMessage) Scope(type_ int) (int64, error) {
 	return getScope(type_, d.message.ChannelID, d.message.GuildID)
 }
 
-func (d *DiscordMessage) Write(msg interface{}) (*core.Message, error) {
+func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		text := msg.(string)

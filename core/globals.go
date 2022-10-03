@@ -5,7 +5,8 @@ import (
 )
 
 type DiscordVars struct {
-	EmbedColor int
+	EmbedColor    int
+	EmbedErrColor int
 }
 
 type TwitchVars struct {

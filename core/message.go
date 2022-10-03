@@ -8,6 +8,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// There's 2 types of erros. One type concerns the developer (something
+// unexpected happened during execution) the other concerns the user (the user
+// did something incorrectly). The user facing error is returned in order to
+// allow special handling of error messages (for example using a different
+// embed color in discord).
+
 type Messenger interface {
 	Parse() (*Message, error)
 
@@ -19,7 +25,7 @@ type Messenger interface {
 	// returned *Message could be nil depending on the platform
 	//
 	// TODO: Handle rate limiting gracefully, give priority to mods.
-	Write(interface{}) (*Message, error)
+	Write(interface{}, error) (*Message, error)
 }
 
 type Author struct {
@@ -40,7 +46,7 @@ type CommandStatic struct {
 	Description string
 	UsageArgs   string
 	Target      int64
-	Run         func(*Message) (interface{}, error)
+	Run         func(*Message) (interface{}, error, error)
 	Init        func() error
 
 	Parent   *CommandStatic
@@ -100,8 +106,8 @@ type Message struct {
 	Command *Command
 }
 
-func (m *Message) Write(msg interface{}) (*Message, error) {
-	return m.Client.Write(msg)
+func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
+	return m.Client.Write(msg, usrErr)
 }
 
 func (m *Message) Scope(scope_optional ...int) (int64, error) {
@@ -219,7 +225,7 @@ func (m *Message) CommandParse(text string) (*Message, error) {
 func (m *Message) CommandRun() (*Message, error) {
 	cmd := m.Command.Static
 
-	resp, err := cmd.Run(m)
+	resp, usrErr, err := cmd.Run(m)
 	if err != nil {
 		return nil, fmt.Errorf("failed to run command '%v': %v", cmd, err)
 	}

@@ -60,7 +60,7 @@ func (irc *IRC) Scope(type_ int) (int64, error) {
 	return twitchChannelAddChannel(type_, irc.message.User.ID, irc.message.User.Name)
 }
 
-func (irc *IRC) Write(msg interface{}) (*core.Message, error) {
+func (irc *IRC) Write(msg interface{}, _ error) (*core.Message, error) {
 	var text string
 	switch t := msg.(type) {
 	case string:
