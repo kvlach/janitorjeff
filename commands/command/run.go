@@ -17,6 +17,7 @@ import (
 var (
 	errTriggerExists   = errors.New("trigger already exists")
 	errTriggerNotFound = errors.New("trigger was not found")
+	errBuiltinCommand  = errors.New("trigger collides with a built-in command")
 )
 
 func run(m *core.Message) (interface{}, error, error) {
@@ -68,6 +69,8 @@ func runAdd_Err(usrErr error, trigger string) string {
 		return fmt.Sprintf("Command %s has been added.", trigger)
 	case errTriggerExists:
 		return fmt.Sprintf("Command %s already exists.", trigger)
+	case errBuiltinCommand:
+		return fmt.Sprintf("Command %s already exists as a built-in command.", trigger)
 	default:
 		return "Something went wrong..."
 	}
@@ -89,6 +92,14 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 		return trigger, errTriggerExists, nil
 	}
 
+	builtin, err := isBuiltin(m, scope, trigger)
+	if err != nil {
+		return trigger, nil, err
+	}
+	if builtin == true {
+		return trigger, errBuiltinCommand, nil
+	}
+
 	response := m.RawArgs(1)
 
 	author, err := m.Scope(platforms.Author)
@@ -107,6 +118,25 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 		Msg("added custom command")
 
 	return trigger, nil, err
+}
+
+func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
+	prefixes, _, err := m.ScopePrefixes()
+	if err != nil {
+		return false, err
+	}
+
+	for _, p := range prefixes {
+		cmdName := []string{strings.TrimPrefix(trigger, p)}
+		_, _, err := core.Globals.Commands.MatchCommand(cmdName)
+		// if there is no error that means a command was matched and thus a
+		// collision exists
+		if err == nil {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func runModify(m *core.Message) (interface{}, error, error) {
