@@ -3,7 +3,9 @@ package platforms
 const (
 	Default = -1
 
-	DiscordGuild = iota
+	Author = iota
+
+	DiscordGuild
 	DiscordChannel
 	DiscordThread
 	TwitchChannel

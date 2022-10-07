@@ -7,6 +7,8 @@ import (
 const (
 	Default = platforms.Default
 
+	Author = platforms.Author
+
 	Guild   = platforms.DiscordGuild
 	Channel = platforms.DiscordChannel
 	Thread  = platforms.DiscordThread

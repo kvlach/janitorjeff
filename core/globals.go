@@ -1,6 +1,8 @@
 package core
 
 import (
+	"sync"
+
 	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 )
 
@@ -14,10 +16,30 @@ type TwitchVars struct {
 	ClientSecret string
 }
 
+type Hooks struct {
+	lock  sync.RWMutex
+	hooks []func(*Message)
+}
+
+func (h *Hooks) Register(f func(*Message)) {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
+	h.hooks = append(h.hooks, f)
+}
+
+func (h *Hooks) Get() []func(*Message) {
+	h.lock.RLock()
+	defer h.lock.RUnlock()
+
+	return h.hooks
+}
+
 type GlobalVars struct {
 	Commands  Commands
 	DB        *sqldb.DB
 	Host      string
+	Hooks     Hooks
 	Prefixes_ []string
 
 	// Platform Specific

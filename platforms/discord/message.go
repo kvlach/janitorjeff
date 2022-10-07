@@ -29,6 +29,7 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 	msg := &core.Message{
 		ID:   d.message.ID,
 		Type: core.Discord,
+		Raw:  d.message.Content,
 		// GuildID is always empty in returned message objects, this is here in
 		// case that changes in the future.
 		IsDM:    d.message.GuildID == "",
@@ -37,14 +38,22 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 		Client:  d,
 	}
 
-	return msg.CommandParse(d.message.Content)
+	return msg, nil
 }
 
 func (d *DiscordMessage) Scope(type_ int) (int64, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
-	return getScope(type_, d.message.ChannelID, d.message.GuildID)
+
+	switch type_ {
+	case Default, Guild, Channel, Thread:
+		return getScopePlace(type_, d.message.ChannelID, d.message.GuildID)
+	case Author:
+		return getScopeAuthor(d.message.Author.ID)
+	default:
+		return -1, fmt.Errorf("type '%d' not supported", type_)
+	}
 }
 
 func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, error) {

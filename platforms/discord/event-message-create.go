@@ -33,6 +33,7 @@ func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
 	msg := &core.Message{
 		ID:   d.Message.ID,
 		Type: core.Discord,
+		Raw:  d.Message.Content,
 
 		// TODO: Is this marked as true in group chats? If yes find a
 		// workaround. Perhaps check the members list.
@@ -43,14 +44,22 @@ func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
 		Client:  d,
 	}
 
-	return msg.CommandParse(d.Message.Content)
+	return msg, nil
 }
 
 func (d *DiscordMessageCreate) Scope(type_ int) (int64, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
-	return getScope(type_, d.Message.ChannelID, d.Message.GuildID)
+
+	switch type_ {
+	case Default, Guild, Channel, Thread:
+		return getScopePlace(type_, d.Message.ChannelID, d.Message.GuildID)
+	case Author:
+		return getScopeAuthor(d.Message.Author.ID)
+	default:
+		return -1, fmt.Errorf("type '%d' not supported", type_)
+	}
 }
 
 func (d *DiscordMessageCreate) Write(msg interface{}, usrErr error) (*core.Message, error) {
@@ -121,9 +130,5 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 		return
 	}
 
-	_, err = msg.CommandRun()
-	if err != nil {
-		log.Debug().Err(err).Send()
-		return
-	}
+	msg.Run()
 }

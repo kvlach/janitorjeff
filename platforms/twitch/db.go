@@ -8,7 +8,7 @@ import (
 
 func twitchChannelAddChannel(type_ int, channelID, channelName string) (int64, error) {
 	switch type_ {
-	case Default, Channel:
+	case Default, Channel, Author:
 		break
 	default:
 		return -1, fmt.Errorf("type '%d' not supproted", type_)
