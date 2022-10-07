@@ -7,5 +7,6 @@ import (
 const (
 	Default = platforms.Default
 
+	Author  = platforms.Author
 	Channel = platforms.TwitchChannel
 )

@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+
+	"github.com/rs/zerolog/log"
 )
 
-func getScope(type_ int, channelID, guildID string) (int64, error) {
+func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 	// In some cases a guild does not exist, for example in a DM, thus we are
 	// forced to use the channel scope. A guild id is also not included in the
 	// message object returned after sending a message, only the channel id is.
@@ -111,6 +113,28 @@ func getScope(type_ int, channelID, guildID string) (int64, error) {
 	return scope, tx.Commit()
 }
 
+func getScopeAuthor(id string) (int64, error) {
+	scope, err := getUserScope(id)
+	if err == nil {
+		return scope, nil
+	}
+
+	db := core.Globals.DB
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return -1, err
+	}
+	defer tx.Rollback()
+
+	scope, err = addUserScope(tx, id)
+	if err != nil {
+		return -1, err
+	}
+
+	return scope, tx.Commit()
+}
+
 func addGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	db := core.Globals.DB
 
@@ -186,4 +210,45 @@ func getGuildFromChannel(channelScope int64) (int64, error) {
 	var guildScope int64
 	err := row.Scan(&guildScope)
 	return guildScope, err
+}
+
+func addUserScope(tx *sql.Tx, userID string) (int64, error) {
+	db := core.Globals.DB
+
+	scope, err := db.ScopeAdd(tx)
+	if err != nil {
+		return -1, err
+	}
+
+	_, err = tx.Exec(`
+		INSERT INTO PlatformDiscordUsers(id, user)
+		VALUES (?, ?)`, scope, userID)
+
+	log.Debug().
+		Err(err).
+		Int64("scope", scope).
+		Str("user", userID).
+		Msg("added user scope to db")
+
+	return scope, err
+}
+
+func getUserScope(userID string) (int64, error) {
+	db := core.Globals.DB
+
+	row := db.DB.QueryRow(`
+		SELECT id
+		FROM PlatformDiscordUsers
+		WHERE user = ?`, userID)
+
+	var id int64
+	err := row.Scan(&id)
+
+	log.Debug().
+		Err(err).
+		Int64("scope", id).
+		Str("user", userID).
+		Msg("got user scope from db")
+
+	return id, err
 }

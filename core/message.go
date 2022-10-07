@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -99,11 +100,50 @@ func (cmd *Command) Usage() string {
 type Message struct {
 	ID      string
 	Type    int
+	Raw     string
 	IsDM    bool
 	Author  *Author
 	Channel *Channel
 	Client  Messenger
 	Command *Command
+}
+
+func (m *Message) Fields() []string {
+	return strings.Fields(m.Raw)
+}
+
+// Split text into fields that include all trailing whitespace. For example:
+// "example of    text" will be split into ["example ", "of    ", "text"]
+func (m *Message) FieldsSpace() []string {
+	text := strings.TrimSpace(m.Raw)
+	re := regexp.MustCompile(`\S+\s*`)
+	fields := re.FindAllString(text, -1)
+
+	log.Debug().
+		Str("text", text).
+		Strs("fields", fields).
+		Msg("split text into fields that include whitespace")
+
+	return fields
+}
+
+// Skip over first n args. Pass 0 to not skip any.
+func (m *Message) RawArgs(n int) string {
+	if 0 > n {
+		panic("unexpected n")
+	}
+
+	fields := m.FieldsSpace()
+
+	// Skip over the command + the given offset
+	s := strings.Join(fields[len(m.Command.Runtime.Name)+n:], "")
+
+	log.Debug().
+		Int("offset", n).
+		Str("raw-args", s).
+		Msg("extracted raw arguments")
+
+	return s
 }
 
 func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
@@ -164,15 +204,15 @@ func (m *Message) ScopePrefixes() ([]string, bool, error) {
 	return prefixes, false, nil
 }
 
-func (m *Message) CommandParse(text string) (*Message, error) {
-	log.Debug().Str("text", text).Msg("starting command parsing")
+func (m *Message) CommandParse() (*Message, error) {
+	log.Debug().Str("text", m.Raw).Msg("starting command parsing")
 
 	prefixes, _, err := m.ScopePrefixes()
 	if err != nil {
 		return nil, err
 	}
 
-	args := strings.Fields(text)
+	args := m.Fields()
 
 	if len(args) == 0 {
 		return nil, fmt.Errorf("Empty message")
@@ -190,7 +230,7 @@ func (m *Message) CommandParse(text string) (*Message, error) {
 
 		if i == len(prefixes)-1 {
 			log.Debug().Msg("failed to match prefix")
-			return nil, fmt.Errorf("message '%s' doesn't contain one of the expected prefixes %v", text, prefixes)
+			return nil, fmt.Errorf("message '%s' doesn't contain one of the expected prefixes %v", m.Raw, prefixes)
 		}
 	}
 
@@ -223,6 +263,11 @@ func (m *Message) CommandParse(text string) (*Message, error) {
 }
 
 func (m *Message) CommandRun() (*Message, error) {
+	m, err := m.CommandParse()
+	if err != nil {
+		return nil, err
+	}
+
 	cmd := m.Command.Static
 
 	resp, usrErr, err := cmd.Run(m)
@@ -230,7 +275,19 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, fmt.Errorf("failed to run command '%v': %v", cmd, err)
 	}
 
-	return m.Write(resp)
+	return m.Write(resp, usrErr)
+}
+
+func (m *Message) Hooks() {
+	for _, hook := range Globals.Hooks.Get() {
+		hook(m)
+	}
+}
+
+func (m *Message) Run() {
+	m.Hooks()
+	_, err := m.CommandRun()
+	log.Debug().Err(err).Send()
 }
 
 func (m *Message) ReplyText(format string, a ...interface{}) string {

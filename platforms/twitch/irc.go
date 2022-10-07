@@ -37,6 +37,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 	msg := &core.Message{
 		ID:      irc.message.ID,
 		Type:    core.Twitch,
+		Raw:     irc.message.Message,
 		IsDM:    false,
 		Author:  author,
 		Channel: channel,
@@ -53,7 +54,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 		return nil, err
 	}
 
-	return msg.CommandParse(irc.message.Message)
+	return msg, nil
 }
 
 func (irc *IRC) Scope(type_ int) (int64, error) {
@@ -106,11 +107,7 @@ func onPrivateMessage(m twitchIRC.PrivateMessage) {
 		return
 	}
 
-	_, err = msg.CommandRun()
-	if err != nil {
-		log.Debug().Err(err).Send()
-		return
-	}
+	msg.Run()
 }
 
 // func IRCInit(nick string, oauth string, channels []string) *twitchIRC.Client {
