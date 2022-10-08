@@ -66,9 +66,9 @@ func runAdd_Text(m *core.Message) (string, error, error) {
 func runAdd_Err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Command %s has been added.", trigger)
+		return fmt.Sprintf("Custom command %s has been added.", trigger)
 	case errTriggerExists:
-		return fmt.Sprintf("Command %s already exists.", trigger)
+		return fmt.Sprintf("Custom command %s already exists.", trigger)
 	case errBuiltinCommand:
 		return fmt.Sprintf("Command %s already exists as a built-in command.", trigger)
 	default:
@@ -181,9 +181,9 @@ func runModify_Text(m *core.Message) (string, error, error) {
 func runModify_Err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Command %s has been modified.", trigger)
+		return fmt.Sprintf("Custom command %s has been modified.", trigger)
 	case errTriggerNotFound:
-		return fmt.Sprintf("Command %s doesn't exist.", trigger)
+		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
 	}
@@ -262,9 +262,9 @@ func runDel_Text(m *core.Message) (string, error, error) {
 func runDel_Err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Command %s has been deleted.", trigger)
+		return fmt.Sprintf("Custom command %s has been deleted.", trigger)
 	case errTriggerNotFound:
-		return fmt.Sprintf("Command %s doesn't exist.", trigger)
+		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
 	}
