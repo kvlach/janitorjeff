@@ -331,7 +331,7 @@ func runList(m *core.Message) (interface{}, error, error) {
 }
 
 func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	triggers, err := runList_Core(m)
+	triggers, err := RunList_Core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -355,7 +355,7 @@ func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 }
 
 func runList_Text(m *core.Message) (string, error, error) {
-	triggers, err := runList_Core(m)
+	triggers, err := RunList_Core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -366,7 +366,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 	return strings.Join(triggers, ", "), nil, nil
 }
 
-func runList_Core(m *core.Message) ([]string, error) {
+func RunList_Core(m *core.Message) ([]string, error) {
 	scope, err := m.Scope()
 	if err != nil {
 		return nil, err
