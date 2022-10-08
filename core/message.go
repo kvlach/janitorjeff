@@ -222,6 +222,19 @@ func (m *Message) CommandParse() (*Message, error) {
 	var prefix string
 
 	for i, p := range prefixes {
+		// Example:
+		// !prefix add !prefix
+		// !prefixprefix ls // works
+		// !prefix ls // doesn't work
+		//
+		// This is because the rootCmdName "!prefix" in the third command gets
+		// matched as the prefix "!prefix" and not the prefix "!" with the
+		// command name "prefix". Which makes it so the actual command name is
+		// empty.
+		if p == rootCmdName {
+			continue
+		}
+
 		if strings.HasPrefix(rootCmdName, p) {
 			prefix = p
 			log.Debug().Str("prefix", p).Msg("matched prefix")
