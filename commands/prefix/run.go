@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/command"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
 
@@ -13,10 +14,11 @@ import (
 )
 
 var (
-	errMissingArgument = errors.New("missing argument")
-	errExists          = errors.New("prefix exists already")
-	errNotFound        = errors.New("prefix not found")
-	errOneLeft         = errors.New("only one prefix left")
+	errMissingArgument     = errors.New("missing argument")
+	errExists              = errors.New("prefix exists already")
+	errNotFound            = errors.New("prefix not found")
+	errOneLeft             = errors.New("only one prefix left")
+	errCustomCommandExists = errors.New("if this prefix is added then there will be a collision with a custom command")
 )
 
 func run(m *core.Message) (interface{}, error, error) {
@@ -35,12 +37,13 @@ func runAdd(m *core.Message) (interface{}, error, error) {
 func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
-	prefix, usrErr, err := runAdd_Core(m)
+	prefix, collision, usrErr, err := runAdd_Core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
 
 	prefix = discord.PlaceInBackticks(prefix)
+	collision = discord.PlaceInBackticks(collision)
 
 	switch usrErr {
 	case errMissingArgument:
@@ -48,7 +51,7 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: runAdd_Err(usrErr, prefix),
+		Description: runAdd_Err(usrErr, prefix, collision),
 	}
 
 	return embed, usrErr, nil
@@ -57,7 +60,7 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 func runAdd_Text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
-	prefix, usrErr, err := runAdd_Core(m)
+	prefix, collision, usrErr, err := runAdd_Core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
@@ -67,35 +70,37 @@ func runAdd_Text(m *core.Message) (string, error, error) {
 		return m.ReplyUsage().(string), usrErr, nil
 	}
 
-	return runAdd_Err(usrErr, prefix), usrErr, nil
+	return runAdd_Err(usrErr, prefix, collision), usrErr, nil
 }
 
-func runAdd_Err(err error, prefix string) string {
+func runAdd_Err(err error, prefix, collision string) string {
 	switch err {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case errExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
+	case errCustomCommandExists:
+		return fmt.Sprintf("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.", prefix, collision)
 	default:
 		return "Something went wrong..."
 	}
 }
 
-func runAdd_Core(m *core.Message) (string, error, error) {
+func runAdd_Core(m *core.Message) (string, string, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return "", errMissingArgument, nil
+		return "", "", errMissingArgument, nil
 	}
 	prefix := m.Command.Runtime.Args[0]
 
 	scope, err := m.Scope()
 	if err != nil {
-		return prefix, nil, err
+		return prefix, "", nil, err
 	}
 	log.Debug().Int64("scope", scope).Send()
 
 	prefixes, scopeExists, err := m.ScopePrefixes()
 	if err != nil {
-		return prefix, nil, err
+		return prefix, "", nil, err
 	}
 
 	log.Debug().
@@ -110,21 +115,54 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 
 		for _, p := range prefixes {
 			if err = dbAdd(p, scope); err != nil {
-				return prefix, nil, err
+				return prefix, "", nil, err
 			}
 		}
 	}
 
 	exists, err := dbExists(prefix, scope)
 	if err != nil {
-		return prefix, nil, err
+		return prefix, "", nil, err
 	}
 	if exists {
-		return prefix, errExists, nil
+		return prefix, "", errExists, nil
+	}
+
+	collision, err := customCommandCollision(m, prefix)
+	if err != nil {
+		return prefix, "", nil, err
+	}
+	if collision != "" {
+		return prefix, collision, errCustomCommandExists, nil
 	}
 
 	err = dbAdd(prefix, scope)
-	return prefix, nil, err
+	return prefix, "", nil, err
+}
+
+// if the prefix changes after a custom command has been added it's
+// possible that a collision maybe be created
+//
+// for example:
+// !prefix reset
+// !cmd add .prefix test // this works because . is not a valid prefix atm
+// !prefix add .
+// .prefix // both trigger
+func customCommandCollision(m *core.Message, prefix string) (string, error) {
+	triggers, err := command.RunList_Core(m)
+	if err != nil {
+		return "", err
+	}
+
+	for _, t := range triggers {
+		t = strings.TrimPrefix(t, prefix)
+		_, _, err := core.Globals.Commands.MatchCommand([]string{t})
+		if err == nil {
+			return prefix + t, nil
+		}
+	}
+
+	return "", nil
 }
 
 func runDelete(m *core.Message) (interface{}, error, error) {
