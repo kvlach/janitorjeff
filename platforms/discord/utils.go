@@ -53,7 +53,7 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func messagesTextSend(d *dg.Session, text, channel string, lenLim int, lenCnt func(string) int) (*core.Message, error) {
+func sendText(d *dg.Session, text, channel string, lenLim int, lenCnt func(string) int) (*core.Message, error) {
 	var msg *dg.Message
 	var err error
 

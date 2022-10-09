@@ -31,7 +31,7 @@ func (d *DiscordMessageCreate) Write(msg interface{}, usrErr error) (*core.Messa
 		lenLim := 2000
 		// TODO: grapheme clusters instead of plain len?
 		lenCnt := func(s string) int { return len(s) }
-		return messagesTextSend(d.Session, text, d.Message.ChannelID, lenLim, lenCnt)
+		return sendText(d.Session, text, d.Message.ChannelID, lenLim, lenCnt)
 
 	case *dg.MessageEmbed:
 		// TODO: implement message scrolling
