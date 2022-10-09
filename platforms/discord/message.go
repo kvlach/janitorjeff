@@ -27,10 +27,9 @@ func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, er
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.session, msg.(string), d.message.ChannelID)
-
 	case *dg.MessageEmbed:
-		// TODO
-		return nil, nil
+		embed := msg.(*dg.MessageEmbed)
+		return sendEmbed(d.session, d.message, embed, usrErr)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}

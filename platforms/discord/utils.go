@@ -77,6 +77,41 @@ func sendText(d *dg.Session, text, channel string) (*core.Message, error) {
 	return m.Parse()
 }
 
+func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
+	// TODO: implement message scrolling
+	if embed.Color == 0 {
+		// default value of EmbedColor is 0 so even if it's not been set
+		// then everything should be ok
+		if usrErr == nil {
+			embed.Color = core.Globals.Discord.EmbedColor
+		} else {
+			embed.Color = core.Globals.Discord.EmbedErrColor
+		}
+	}
+
+	// TODO: Consider adding an option which allows one of these 3 values
+	// - no reply + no ping, just an embed
+	// - reply + no ping (default)
+	// - reply + ping
+	// Maybe even no embed and just plain text?
+	msgSend := &dg.MessageSend{
+		Embeds: []*dg.MessageEmbed{
+			embed,
+		},
+		AllowedMentions: &dg.MessageAllowedMentions{
+			Parse: []dg.AllowedMentionType{}, // don't ping user
+		},
+		Reference: m.Reference(),
+	}
+
+	resp, err := d.ChannelMessageSendComplex(m.ChannelID, msgSend)
+	if err != nil {
+		return nil, err
+	}
+	replies[m.ID] = resp.ID
+	return (&DiscordMessage{d, resp}).Parse()
+}
+
 func PlaceInBackticks(s string) string {
 	if !strings.Contains(s, "`") {
 		return fmt.Sprintf("`%s`", s)

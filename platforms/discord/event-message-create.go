@@ -28,39 +28,9 @@ func (d *DiscordMessageCreate) Write(msg interface{}, usrErr error) (*core.Messa
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Session, msg.(string), d.Message.ChannelID)
-
 	case *dg.MessageEmbed:
-		// TODO: implement message scrolling
 		embed := msg.(*dg.MessageEmbed)
-		if embed.Color == 0 {
-			// default value of EmbedColor is 0 so even if it's not been set
-			// then everything should be ok
-			if usrErr == nil {
-				embed.Color = core.Globals.Discord.EmbedColor
-			} else {
-				embed.Color = core.Globals.Discord.EmbedErrColor
-			}
-		}
-
-		// TODO: Consider adding an option which allows one of these 3 values
-		// - no reply + no ping, just an embed
-		// - reply + no ping (default)
-		// - reply + ping
-		// Maybe even no embed and just plain text?
-		m := &dg.MessageSend{
-			Embeds: []*dg.MessageEmbed{
-				embed,
-			},
-			AllowedMentions: &dg.MessageAllowedMentions{
-				Parse: []dg.AllowedMentionType{}, // don't ping user
-			},
-			Reference: d.Message.Reference(),
-		}
-
-		// TODO: return message object
-		_, err := d.Session.ChannelMessageSendComplex(d.Message.ChannelID, m)
-		return nil, err
-
+		return sendEmbed(d.Session, d.Message.Message, embed, usrErr)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
