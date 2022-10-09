@@ -8,7 +8,38 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
+
+func parse(m *dg.Message) *core.Message {
+	log.Debug().
+		Msg("starting to parse message")
+
+	author := &core.Author{
+		ID:          m.Author.ID,
+		Name:        m.Author.Username,
+		DisplayName: getDisplayName(m.Member, m.Author),
+		Mention:     m.Author.Mention(),
+	}
+
+	channel := &core.Channel{
+		ID:   m.ChannelID,
+		Name: m.ChannelID,
+	}
+
+	msg := &core.Message{
+		ID:   m.ID,
+		Type: core.Discord,
+		Raw:  m.Content,
+		// GuildID is always empty in returned message objects, this is here in
+		// case that changes in the future.
+		IsDM:    m.GuildID == "",
+		Author:  author,
+		Channel: channel,
+	}
+
+	return msg
+}
 
 func getDisplayName(member *dg.Member, author *dg.User) string {
 	var displayName string
