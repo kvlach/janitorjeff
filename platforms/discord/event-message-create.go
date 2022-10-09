@@ -15,35 +15,8 @@ type DiscordMessageCreate struct {
 }
 
 func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
-	log.Debug().
-		Msg("starting to parse message")
-
-	author := &core.Author{
-		ID:          d.Message.Author.ID,
-		Name:        d.Message.Author.Username,
-		DisplayName: getDisplayName(d.Message.Member, d.Message.Author),
-		Mention:     d.Message.Author.Mention(),
-	}
-
-	channel := &core.Channel{
-		ID:   d.Message.ChannelID,
-		Name: d.Message.ChannelID,
-	}
-
-	msg := &core.Message{
-		ID:   d.Message.ID,
-		Type: core.Discord,
-		Raw:  d.Message.Content,
-
-		// TODO: Is this marked as true in group chats? If yes find a
-		// workaround. Perhaps check the members list.
-		IsDM: d.Message.GuildID == "",
-
-		Author:  author,
-		Channel: channel,
-		Client:  d,
-	}
-
+	msg := parse(d.Message.Message)
+	msg.Client = d
 	return msg, nil
 }
 

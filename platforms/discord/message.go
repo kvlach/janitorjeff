@@ -14,30 +14,8 @@ type DiscordMessage struct {
 }
 
 func (d *DiscordMessage) Parse() (*core.Message, error) {
-	author := &core.Author{
-		ID:          d.message.Author.ID,
-		Name:        d.message.Author.Username,
-		DisplayName: getDisplayName(d.message.Member, d.message.Author),
-		Mention:     d.message.Author.Mention(),
-	}
-
-	channel := &core.Channel{
-		ID:   d.message.ChannelID,
-		Name: d.message.ChannelID,
-	}
-
-	msg := &core.Message{
-		ID:   d.message.ID,
-		Type: core.Discord,
-		Raw:  d.message.Content,
-		// GuildID is always empty in returned message objects, this is here in
-		// case that changes in the future.
-		IsDM:    d.message.GuildID == "",
-		Author:  author,
-		Channel: channel,
-		Client:  d,
-	}
-
+	msg := parse(d.message)
+	msg.Client = d
 	return msg, nil
 }
 
