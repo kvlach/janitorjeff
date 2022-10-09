@@ -29,7 +29,7 @@ func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, er
 		text := msg.(string)
 		lenLim := 2000
 		lenCnt := func(s string) int { return len(s) }
-		return messagesTextSend(d.session, text, d.message.ChannelID, lenLim, lenCnt)
+		return sendText(d.session, text, d.message.ChannelID, lenLim, lenCnt)
 
 	case *dg.MessageEmbed:
 		// TODO
