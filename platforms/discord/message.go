@@ -42,18 +42,7 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 }
 
 func (d *DiscordMessage) Scope(type_ int) (int64, error) {
-	db := core.Globals.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	switch type_ {
-	case Default, Guild, Channel, Thread:
-		return getScopePlace(type_, d.message.ChannelID, d.message.GuildID)
-	case Author:
-		return getScopeAuthor(d.message.Author.ID)
-	default:
-		return -1, fmt.Errorf("type '%d' not supported", type_)
-	}
+	return getScope(type_, d.message.ChannelID, d.message.GuildID, d.message.Author.ID)
 }
 
 func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, error) {
