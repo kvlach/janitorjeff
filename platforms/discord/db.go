@@ -9,6 +9,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func getScope(type_ int, channelID, guildID, authorID string) (int64, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	switch type_ {
+	case Default, Guild, Channel, Thread:
+		return getScopePlace(type_, channelID, guildID)
+	case Author:
+		return getScopeAuthor(authorID)
+	default:
+		return -1, fmt.Errorf("type '%d' not supported", type_)
+	}
+}
+
 func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 	// In some cases a guild does not exist, for example in a DM, thus we are
 	// forced to use the channel scope. A guild id is also not included in the
