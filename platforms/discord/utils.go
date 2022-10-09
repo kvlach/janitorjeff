@@ -53,9 +53,13 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func sendText(d *dg.Session, text, channel string, lenLim int, lenCnt func(string) int) (*core.Message, error) {
+func sendText(d *dg.Session, text, channel string) (*core.Message, error) {
 	var msg *dg.Message
 	var err error
+
+	lenLim := 2000
+	// TODO: grapheme clusters instead of plain len?
+	lenCnt := func(s string) int { return len(s) }
 
 	if lenLim > lenCnt(text) {
 		msg, err = d.ChannelMessageSend(channel, text)
