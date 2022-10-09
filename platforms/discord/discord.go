@@ -12,12 +12,11 @@ func Init(stop chan struct{}, token string) {
 	}
 
 	d.AddHandler(messageCreate)
+	d.AddHandler(messageEdit)
 
 	// TODO: Specify only needed intents
 	d.Identify.Intents = dg.MakeIntent(dg.IntentsAll)
 
-	d.State = dg.NewState()
-	// 100 seems like a sane limit
 	d.State.MaxMessageCount = 100
 
 	log.Debug().Msg("connecting to discord")
