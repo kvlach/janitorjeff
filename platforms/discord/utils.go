@@ -79,15 +79,8 @@ func sendText(d *dg.Session, text, channel string) (*core.Message, error) {
 
 func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
 	// TODO: implement message scrolling
-	if embed.Color == 0 {
-		// default value of EmbedColor is 0 so even if it's not been set
-		// then everything should be ok
-		if usrErr == nil {
-			embed.Color = core.Globals.Discord.EmbedColor
-		} else {
-			embed.Color = core.Globals.Discord.EmbedErrColor
-		}
-	}
+
+	embed = embedColor(embed, usrErr)
 
 	// TODO: Consider adding an option which allows one of these 3 values
 	// - no reply + no ping, just an embed
@@ -108,8 +101,45 @@ func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
-	replies[m.ID] = resp.ID
+	replies.Set(m.ID, resp.ID)
 	return (&DiscordMessage{d, resp}).Parse()
+}
+
+func editEmbed(d *dg.Session, embed *dg.MessageEmbed, usrErr error, id, channel string) (*core.Message, error) {
+	embed = embedColor(embed, usrErr)
+
+	msgEdit := &dg.MessageEdit{
+		ID:      id,
+		Channel: channel,
+
+		Embeds: []*dg.MessageEmbed{
+			embed,
+		},
+		AllowedMentions: &dg.MessageAllowedMentions{
+			Parse: []dg.AllowedMentionType{}, // don't ping user
+		},
+	}
+
+	resp, err := d.ChannelMessageEditComplex(msgEdit)
+	if err != nil {
+		return nil, err
+	}
+	return (&DiscordMessage{d, resp}).Parse()
+}
+
+func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
+	if embed.Color != 0 {
+		return embed
+	}
+
+	// default value of EmbedColor is 0 so even if it's not been set
+	// then everything should be ok
+	if usrErr == nil {
+		embed.Color = core.Globals.Discord.EmbedColor
+	} else {
+		embed.Color = core.Globals.Discord.EmbedErrColor
+	}
+	return embed
 }
 
 func PlaceInBackticks(s string) string {
