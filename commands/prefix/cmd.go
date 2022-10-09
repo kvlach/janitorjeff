@@ -12,6 +12,7 @@ var Command = &core.CommandStatic{
 	UsageArgs:   "(add|del) <prefix> | list | reset",
 	Target:      0, // TODO: change this to platforms.All
 	Run:         run,
+	Init:        init_,
 
 	Children: core.Commands{
 		cmdAdd,
