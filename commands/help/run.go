@@ -57,9 +57,16 @@ func run_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	if len(aliases) > 0 {
-		cmdBase := strings.Join(cmd.Runtime.Name[:len(cmd.Runtime.Name)-1], " ")
+		var base string
+		if len(cmd.Runtime.Name) == 1 {
+			base = cmd.Runtime.Prefix
+		} else {
+			cmdBase := strings.Join(cmd.Runtime.Name[:len(cmd.Runtime.Name)-1], " ")
+			base = fmt.Sprintf("%s%s ", cmd.Runtime.Prefix, cmdBase)
+		}
+
 		for i := range aliases {
-			aliases[i] = fmt.Sprintf("- `%s%s %s`", cmd.Runtime.Prefix, cmdBase, aliases[i])
+			aliases[i] = fmt.Sprintf("- `%s%s`", base, aliases[i])
 		}
 		desc += fmt.Sprintf("\n\nAliases:\n%s", strings.Join(aliases, "\n"))
 	}
