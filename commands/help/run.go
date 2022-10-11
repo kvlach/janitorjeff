@@ -1,6 +1,7 @@
 package help
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,9 +11,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var (
+	errMissingArgs = errors.New("not enough arguments provided")
+)
+
 func run(m *core.Message) (interface{}, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), nil, nil
+		return m.ReplyUsage(), errMissingArgs, nil
 	}
 
 	switch m.Type {
