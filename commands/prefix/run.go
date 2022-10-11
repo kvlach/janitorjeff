@@ -22,7 +22,7 @@ var (
 )
 
 func run(m *core.Message) (interface{}, error, error) {
-	return m.ReplyUsage(), nil, nil
+	return m.ReplyUsage(), errMissingArgument, nil
 }
 
 func runAdd(m *core.Message) (interface{}, error, error) {
