@@ -14,6 +14,10 @@ type DiscordMessageCreate struct {
 	Message *dg.MessageCreate
 }
 
+func (d *DiscordMessageCreate) Admin() bool {
+	return isAdmin(d.Message.Author.ID)
+}
+
 func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d

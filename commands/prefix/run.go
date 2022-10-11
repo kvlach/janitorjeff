@@ -98,7 +98,10 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 	}
 	log.Debug().Int64("scope", scope).Send()
 
-	prefixes, scopeExists, err := m.ScopePrefixes()
+	// SOS: FIXME: ASAP: Actually figure this out
+	scopeExists := false
+
+	prefixes, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -114,13 +117,17 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 		log.Debug().Msg("adding default prefixes to scope prefixes")
 
 		for _, p := range prefixes {
-			if err = dbAdd(p, scope); err != nil {
+			if p.Type != core.Normal {
+				continue
+			}
+
+			if err = dbAdd(p.Prefix, scope, core.Normal); err != nil {
 				return prefix, "", nil, err
 			}
 		}
 	}
 
-	exists, err := dbExists(prefix, scope)
+	exists, err := dbExists(prefix, scope, core.Normal)
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -136,7 +143,7 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 		return prefix, collision, errCustomCommandExists, nil
 	}
 
-	err = dbAdd(prefix, scope)
+	err = dbAdd(prefix, scope, core.Normal)
 	return prefix, "", nil, err
 }
 
@@ -156,7 +163,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Globals.Commands.MatchCommand([]string{t})
+		_, _, err := core.Globals.Commands.Normal.MatchCommand([]string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -252,13 +259,20 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		Int64("scope", scope).
 		Send()
 
-	prefixes, scopeExists, err := m.ScopePrefixes()
+	// SOS: FIXME: ASAP: Actually figure this out
+	scopeExists := false
+
+	prefixes, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, nil, err
 	}
 	var exists bool
 	for _, p := range prefixes {
-		if p == prefix {
+		if p.Type != core.Normal {
+			continue
+		}
+
+		if p.Prefix == prefix {
 			exists = true
 		}
 	}
@@ -276,13 +290,17 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 	// nothing will happen. So we first add them all to the DB.
 	if !scopeExists {
 		for _, p := range prefixes {
-			if err = dbAdd(p, scope); err != nil {
+			if p.Type != core.Normal {
+				continue
+			}
+
+			if err = dbAdd(p.Prefix, scope, core.Normal); err != nil {
 				return prefix, nil, err
 			}
 		}
 	}
 
-	return prefix, nil, dbDel(prefix, scope)
+	return prefix, nil, dbDel(prefix, scope, core.Normal)
 }
 
 func runList(m *core.Message) (interface{}, error, error) {
@@ -328,8 +346,16 @@ func runList_Text(m *core.Message) (string, error, error) {
 }
 
 func runList_Core(m *core.Message) ([]string, error) {
-	prefixes, _, err := m.ScopePrefixes()
-	return prefixes, err
+	prefixes, err := m.ScopePrefixes()
+
+	normal := []string{}
+	for _, p := range prefixes {
+		if p.Type == core.Normal {
+			normal = append(normal, p.Prefix)
+		}
+	}
+
+	return normal, err
 }
 
 func runReset(m *core.Message) (interface{}, error, error) {
@@ -374,14 +400,14 @@ func runReset_Core(m *core.Message) (string, error) {
 		return "", err
 	}
 
-	err = dbReset(scope)
+	err = dbReset(scope, core.Normal)
 	if err != nil {
 		return "", err
 	}
 
 	// can't just use the prefix that was used to invoke this command because
 	// it might not be valid for this scope since a reset just happened
-	listCmd := cmdList.Format(core.Globals.Prefixes()[0])
+	listCmd := cmdList.Format(core.Globals.Prefixes.Normal[0].Prefix)
 
 	return listCmd, nil
 }

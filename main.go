@@ -60,7 +60,7 @@ func setParents(cmd *core.CommandStatic) {
 // through all the children and set the parent. This also makes declaring the
 // command objects a bit cleaner.
 func init() {
-	for _, cmd := range commands.Commands {
+	for _, cmd := range commands.Normal {
 		setParents(cmd)
 	}
 }
@@ -90,16 +90,28 @@ func main() {
 	defer log.Debug().Msg("closing db")
 
 	globals := &core.GlobalVars{
-		Commands: commands.Commands,
-		DB:       db,
-		Host:     readVar("HOST"),
-		Prefixes_: []string{
-			"!",
+		Commands: core.AllCommands{
+			Normal:   commands.Normal,
+			Advanced: commands.Advanced,
+			Admin:    commands.Admin,
 		},
-
+		DB:   db,
+		Host: readVar("HOST"),
+		Prefixes: core.Prefixes{
+			Normal: []sqldb.Prefix{
+				{Type: core.Normal, Prefix: "!"},
+			},
+			Advanced: []sqldb.Prefix{},
+			Admin: []sqldb.Prefix{
+				{Type: core.Admin, Prefix: "##"},
+			},
+		},
 		Discord: &core.DiscordVars{
 			EmbedColor:    0xAD88E0,
 			EmbedErrColor: 0xB14D4D,
+			Admins: []string{
+				"155662023743635456",
+			},
 		},
 
 		Twitch: &core.TwitchVars{
@@ -111,7 +123,7 @@ func main() {
 	core.GlobalsInit(globals)
 
 	// Requires globals to be set
-	for _, cmd := range commands.Commands {
+	for _, cmd := range commands.Normal {
 		if cmd.Init != nil {
 			if err := cmd.Init(); err != nil {
 				log.Fatal().Err(err).Msgf("failed to init command %v", cmd)

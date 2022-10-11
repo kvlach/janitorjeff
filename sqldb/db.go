@@ -22,6 +22,19 @@ import (
 // support for more than 1 prefix it felt unecessary to limit it to just DMs,
 // as that would be an artificial limit on what the bot is already supports and
 // not really a necessity.
+//
+// There are 3 main prefix types:
+//  - normal
+//  - advanced
+//  - admin
+// These are used to call normal, advanced and admin commands respectively. A
+// prefix has to be unique accross all types (in a specific scope), for example
+// the prefix `!` can't be used for both normal and advanced commands.
+
+type Prefix struct {
+	Type   int
+	Prefix string
+}
 
 const schema = `
 CREATE TABLE IF NOT EXISTS Scopes (
@@ -65,6 +78,7 @@ CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	scope INTEGER NOT NULL,
 	prefix VARCHAR(255) NOT NULL,
+	type INTEGER NOT NULL,
 	UNIQUE(scope, prefix),
 	FOREIGN KEY (scope) REFERENCES Scopes(id) ON DELETE CASCADE
 );
@@ -123,37 +137,28 @@ func (_ *DB) ScopeAdd(tx *sql.Tx) (int64, error) {
 }
 
 // Returns the list of all prefixes for a specific scope.
-func (db *DB) PrefixList(scope int64) ([]string, error) {
+func (db *DB) PrefixList(scope int64) ([]Prefix, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
-	// We order by the length of the prefix in order to avoid matching the
-	// wrong prefix. For example, in DMs the empty string prefix is added. If
-	// it is placed first in the list of prefixes then it always get matched.
-	// So even if the user uses for example `!`, the command will be parsed as
-	// having the empty prefix and will fail to match (since it will try to
-	// match the whole thing, `!test` for example, instead of trimming the
-	// prefix first). This also can happen if for example there exist the `!!`
-	// and `!` prefixes. If the single `!` is first on the list and the user
-	// uses `!!` then the same problem occurs.
 	rows, err := db.DB.Query(`
-		SELECT prefix
+		SELECT prefix, type
 		FROM CommandPrefixPrefixes
-		WHERE scope = ?
-		ORDER BY length(prefix) DESC`, scope)
+		WHERE scope = ?`, scope)
 
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var prefixes []string
+	var prefixes []Prefix
 	for rows.Next() {
 		var prefix string
-		if err := rows.Scan(&prefix); err != nil {
+		var type_ int
+		if err := rows.Scan(&prefix, &type_); err != nil {
 			return nil, err
 		}
-		prefixes = append(prefixes, prefix)
+		prefixes = append(prefixes, Prefix{Type: type_, Prefix: prefix})
 	}
 
 	return prefixes, rows.Err()
