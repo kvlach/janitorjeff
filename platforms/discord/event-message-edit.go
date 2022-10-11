@@ -73,14 +73,13 @@ func (d *DiscordMessageEdit) Write(msg interface{}, usrErr error) (*core.Message
 }
 
 func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
-	if m == nil {
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
-		fmt.Println("MESSAGE IS NIL FOR SOME REASON")
+	// For some reason this randomly gets triggered if a link has been sent
+	// and there has been no edit to the message. Perhaps it could be have
+	// something to do with the message getting automatically edited in order
+	// for the embed to added. This is difficult to test as it usually doesn't
+	// happen.
+	if m.Author == nil {
+		return
 	}
 
 	if m.Author.Bot {
