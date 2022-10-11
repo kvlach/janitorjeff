@@ -17,6 +17,7 @@ import (
 // embed color in discord).
 
 type Messenger interface {
+	// Checks if the message's author is a bot admin
 	Admin() bool
 
 	Parse() (*Message, error)
