@@ -98,12 +98,14 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 	}
 	log.Debug().Int64("scope", scope).Send()
 
-	// SOS: FIXME: ASAP: Actually figure this out
-	scopeExists := false
-
 	prefixes, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, "", nil, err
+	}
+
+	scopeExists, err := dbScopeExists(scope, core.Normal)
+	if err != nil {
+		return "", "", nil, err
 	}
 
 	log.Debug().
@@ -127,7 +129,7 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 		}
 	}
 
-	exists, err := dbExists(prefix, scope, core.Normal)
+	exists, err := dbPrefixExists(prefix, scope, core.Normal)
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -259,9 +261,6 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		Int64("scope", scope).
 		Send()
 
-	// SOS: FIXME: ASAP: Actually figure this out
-	scopeExists := false
-
 	prefixes, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, nil, err
@@ -283,6 +282,11 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 
 	if len(prefixes) == 1 {
 		return prefix, errOneLeft, nil
+	}
+
+	scopeExists, err := dbScopeExists(scope, core.Normal)
+	if err != nil {
+		return "", nil, err
 	}
 
 	// If the scope doesn't exist then the default prefixes are being used and
