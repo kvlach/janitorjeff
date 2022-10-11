@@ -6,7 +6,32 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func dbExists(prefix string, scope int64, t int) (bool, error) {
+func dbScopeExists(scope int64, t int) (bool, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	var exists bool
+
+	row := db.DB.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM CommandPrefixPrefixes
+			WHERE scope = ? and type = ?
+			LIMIT 1
+		)`, scope, t)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Int64("scope", scope).
+		Bool("exists", exists).
+		Msg("checked db to see if scope exists")
+
+	return exists, err
+}
+
+func dbPrefixExists(prefix string, scope int64, t int) (bool, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
