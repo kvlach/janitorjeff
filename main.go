@@ -16,7 +16,6 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/twitch"
-	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
@@ -82,7 +81,7 @@ func main() {
 	}
 
 	log.Debug().Msg("opening db")
-	db, err := sqldb.Open("sqlite3", "jeff.db")
+	db, err := core.Open("sqlite3", "jeff.db")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open DB")
 	}
@@ -98,11 +97,11 @@ func main() {
 		DB:   db,
 		Host: readVar("HOST"),
 		Prefixes: core.Prefixes{
-			Normal: []sqldb.Prefix{
+			Normal: []core.Prefix{
 				{Type: core.Normal, Prefix: "!"},
 			},
-			Advanced: []sqldb.Prefix{},
-			Admin: []sqldb.Prefix{
+			Advanced: []core.Prefix{},
+			Admin: []core.Prefix{
 				{Type: core.Admin, Prefix: "##"},
 			},
 		},

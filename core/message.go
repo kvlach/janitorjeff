@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
-
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
@@ -179,7 +177,7 @@ func (m *Message) Scope(scope_optional ...int) (int64, error) {
 // Returns the current scope's prefixes. If scope specific prefixes exist then
 // it will use those instead. Each category is checked separately. The special
 // empty prefix is added for DMs.
-func (m *Message) ScopePrefixes() ([]sqldb.Prefix, error) {
+func (m *Message) ScopePrefixes() ([]Prefix, error) {
 	scope, err := m.Scope()
 	if err != nil {
 		return nil, err
@@ -215,7 +213,7 @@ func (m *Message) ScopePrefixes() ([]sqldb.Prefix, error) {
 		log.Debug().Msg("no normal scope specific prefixes, using defaults")
 
 		if m.IsDM {
-			prefixes = append(prefixes, sqldb.Prefix{Type: Normal, Prefix: ""})
+			prefixes = append(prefixes, Prefix{Type: Normal, Prefix: ""})
 			log.Debug().Bool("dm", m.IsDM).Msg("added dm specific prefix")
 		}
 	}
@@ -257,7 +255,7 @@ func (m *Message) ScopePrefixes() ([]sqldb.Prefix, error) {
 	return prefixes, nil
 }
 
-func isPrefix(prefixes []sqldb.Prefix, s string) (sqldb.Prefix, bool) {
+func isPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 	for _, p := range prefixes {
 		// Example:
 		// !prefix add !prefix
@@ -278,13 +276,13 @@ func isPrefix(prefixes []sqldb.Prefix, s string) (sqldb.Prefix, bool) {
 		}
 	}
 
-	return sqldb.Prefix{}, false
+	return Prefix{}, false
 }
 
-func (m *Message) matchPrefix(rootCmdName string) (sqldb.Prefix, error) {
+func (m *Message) matchPrefix(rootCmdName string) (Prefix, error) {
 	prefixes, err := m.ScopePrefixes()
 	if err != nil {
-		return sqldb.Prefix{}, err
+		return Prefix{}, err
 	}
 
 	if prefix, ok := isPrefix(prefixes, rootCmdName); ok {
@@ -293,7 +291,7 @@ func (m *Message) matchPrefix(rootCmdName string) (sqldb.Prefix, error) {
 
 	log.Debug().Str("command", rootCmdName).Msg("failed to match prefix")
 
-	return sqldb.Prefix{}, fmt.Errorf("failed to match prefix")
+	return Prefix{}, fmt.Errorf("failed to match prefix")
 }
 
 func (m *Message) CommandParse() (*Message, error) {
