@@ -3,7 +3,10 @@ package core
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
+
+	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
@@ -16,6 +19,8 @@ import (
 // embed color in discord).
 
 type Messenger interface {
+	Admin() bool
+
 	Parse() (*Message, error)
 
 	// Creates a scope for the current channel. If one already exists then it
@@ -40,6 +45,13 @@ type Channel struct {
 	ID   string
 	Name string
 }
+
+const (
+	All = iota
+	Normal
+	Advanced
+	Admin
+)
 
 // TODO: add minimum number of required args
 type CommandStatic struct {
@@ -82,6 +94,7 @@ type CommandRuntime struct {
 }
 
 type Command struct {
+	Type    int
 	Static  *CommandStatic
 	Runtime *CommandRuntime
 }
@@ -163,65 +176,89 @@ func (m *Message) Scope(scope_optional ...int) (int64, error) {
 	return m.Client.Scope(scope)
 }
 
-// Returns the current scope's prefixes and also whether or not the scope
-// exists in the database (meaning that if it does exist in the DB, the
-// prefixes have been modified in some way by the user)
-func (m *Message) ScopePrefixes() ([]string, bool, error) {
+// Returns the current scope's prefixes. If scope specific prefixes exist then
+// it will use those instead. Each category is checked separately. The special
+// empty prefix is added for DMs.
+func (m *Message) ScopePrefixes() ([]sqldb.Prefix, error) {
 	scope, err := m.Scope()
-	if err != nil {
-		return nil, false, err
-	}
-
-	prefixes, err := Globals.DB.PrefixList(scope)
-	if err != nil {
-		return nil, false, err
-	}
-
-	log.Debug().
-		Int64("scope", scope).
-		Strs("prefixes", prefixes).
-		Msg("scope specific prefixes")
-
-	if len(prefixes) != 0 {
-		return prefixes, true, nil
-	}
-
-	prefixes = Globals.Prefixes()
-
-	log.Debug().
-		Strs("prefixes", prefixes).
-		Msg("no scope specific prefixes, using defaults")
-
-	if m.IsDM {
-		prefixes = append(prefixes, "")
-
-		log.Debug().
-			Bool("dm", m.IsDM).
-			Strs("prefixes", prefixes).
-			Msg("added dm specific prefix")
-	}
-
-	return prefixes, false, nil
-}
-
-func (m *Message) CommandParse() (*Message, error) {
-	log.Debug().Str("text", m.Raw).Msg("starting command parsing")
-
-	prefixes, _, err := m.ScopePrefixes()
 	if err != nil {
 		return nil, err
 	}
 
-	args := m.Fields()
-
-	if len(args) == 0 {
-		return nil, fmt.Errorf("Empty message")
+	prefixes, err := Globals.DB.PrefixList(scope)
+	if err != nil {
+		return nil, err
 	}
 
-	rootCmdName := args[0]
-	var prefix string
+	log.Debug().
+		Int64("scope", scope).
+		Interface("prefixes", prefixes).
+		Msg("scope specific prefixes")
 
-	for i, p := range prefixes {
+	var normalExists bool
+	var advancedExists bool
+	var adminExists bool
+
+	for _, p := range prefixes {
+		switch p.Type {
+		case Normal:
+			normalExists = true
+		case Advanced:
+			advancedExists = true
+		case Admin:
+			adminExists = true
+		}
+	}
+
+	if normalExists == false {
+		prefixes = append(prefixes, Globals.Prefixes.Normal...)
+		log.Debug().Msg("no normal scope specific prefixes, using defaults")
+
+		if m.IsDM {
+			prefixes = append(prefixes, sqldb.Prefix{Type: Normal, Prefix: ""})
+			log.Debug().Bool("dm", m.IsDM).Msg("added dm specific prefix")
+		}
+	}
+
+	if advancedExists == false {
+		prefixes = append(prefixes, Globals.Prefixes.Advanced...)
+		log.Debug().Msg("no advanced scope specific prefixes, using defaults")
+	}
+
+	if adminExists == false {
+		prefixes = append(prefixes, Globals.Prefixes.Admin...)
+		log.Debug().Msg("no admin scope specific prefixes, using defaults")
+	}
+
+	// We order by the length of the prefix in order to avoid matching the
+	// wrong prefix. For example, in DMs the empty string prefix is added. If
+	// it is placed first in the list of prefixes then it always get matched.
+	// So even if the user uses for example `!`, the command will be parsed as
+	// having the empty prefix and will fail to match (since it will try to
+	// match the whole thing, `!test` for example, instead of trimming the
+	// prefix first). This also can happen if for example there exist the `!!`
+	// and `!` prefixes. If the single `!` is first on the list and the user
+	// uses `!!` then the same problem occurs.
+	//
+	// The prefixes *must* be sorted as a whole and cannot be split into
+	// seperate categories (for example having 3 different arrays for the 3
+	// different types of prefixes) as each prefix is unique accross all
+	// categories which means that the same reasoning that was described above
+	// still applies.
+	sort.Slice(prefixes, func(i, j int) bool {
+		return len(prefixes[i].Prefix) > len(prefixes[j].Prefix)
+	})
+
+	log.Debug().
+		Int64("scope", scope).
+		Interface("prefixes", prefixes).
+		Msg("got prefixes for scope")
+
+	return prefixes, nil
+}
+
+func isPrefix(prefixes []sqldb.Prefix, s string) (sqldb.Prefix, bool) {
+	for _, p := range prefixes {
 		// Example:
 		// !prefix add !prefix
 		// !prefixprefix ls // works
@@ -231,25 +268,61 @@ func (m *Message) CommandParse() (*Message, error) {
 		// matched as the prefix "!prefix" and not the prefix "!" with the
 		// command name "prefix". Which makes it so the actual command name is
 		// empty.
-		if p == rootCmdName {
+		if p.Prefix == s {
 			continue
 		}
 
-		if strings.HasPrefix(rootCmdName, p) {
-			prefix = p
-			log.Debug().Str("prefix", p).Msg("matched prefix")
-			break
-		}
-
-		if i == len(prefixes)-1 {
-			log.Debug().Msg("failed to match prefix")
-			return nil, fmt.Errorf("message '%s' doesn't contain one of the expected prefixes %v", m.Raw, prefixes)
+		if strings.HasPrefix(s, p.Prefix) {
+			log.Debug().Interface("prefix", p).Msg("matched prefix")
+			return p, true
 		}
 	}
 
-	args[0] = strings.TrimPrefix(rootCmdName, prefix)
+	return sqldb.Prefix{}, false
+}
 
-	cmdStatic, index, err := Globals.Commands.MatchCommand(args)
+func (m *Message) matchPrefix(rootCmdName string) (sqldb.Prefix, error) {
+	prefixes, err := m.ScopePrefixes()
+	if err != nil {
+		return sqldb.Prefix{}, err
+	}
+
+	if prefix, ok := isPrefix(prefixes, rootCmdName); ok {
+		return prefix, nil
+	}
+
+	log.Debug().Str("command", rootCmdName).Msg("failed to match prefix")
+
+	return sqldb.Prefix{}, fmt.Errorf("failed to match prefix")
+}
+
+func (m *Message) CommandParse() (*Message, error) {
+	log.Debug().Str("text", m.Raw).Msg("starting command parsing")
+
+	args := m.Fields()
+
+	if len(args) == 0 {
+		return nil, fmt.Errorf("Empty message")
+	}
+
+	rootCmdName := args[0]
+	prefix, err := m.matchPrefix(rootCmdName)
+	if err != nil {
+		return nil, err
+	}
+	args[0] = strings.TrimPrefix(rootCmdName, prefix.Prefix)
+
+	var cmdList Commands
+	switch prefix.Type {
+	case Normal:
+		cmdList = Globals.Commands.Normal
+	case Advanced:
+		cmdList = Globals.Commands.Advanced
+	case Admin:
+		cmdList = Globals.Commands.Admin
+	}
+
+	cmdStatic, index, err := cmdList.MatchCommand(args)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't match command: %v", err)
 	}
@@ -264,10 +337,11 @@ func (m *Message) CommandParse() (*Message, error) {
 	cmdRuntime := &CommandRuntime{
 		Name:   cmdName,
 		Args:   args,
-		Prefix: prefix,
+		Prefix: prefix.Prefix,
 	}
 
 	m.Command = &Command{
+		Type:    prefix.Type,
 		Static:  cmdStatic,
 		Runtime: cmdRuntime,
 	}
@@ -279,6 +353,10 @@ func (m *Message) CommandRun() (*Message, error) {
 	m, err := m.CommandParse()
 	if err != nil {
 		return nil, err
+	}
+
+	if m.Command.Type == Admin && m.Client.Admin() == false {
+		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 
 	cmd := m.Command.Static

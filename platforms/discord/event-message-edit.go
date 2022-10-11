@@ -39,6 +39,10 @@ type DiscordMessageEdit struct {
 	Message *dg.MessageUpdate
 }
 
+func (d *DiscordMessageEdit) Admin() bool {
+	return isAdmin(d.Message.Author.ID)
+}
+
 func (d *DiscordMessageEdit) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d

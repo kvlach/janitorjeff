@@ -11,6 +11,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func isAdmin(id string) bool {
+	for _, admin := range core.Globals.Discord.Admins {
+		if id == admin {
+			return true
+		}
+	}
+	return false
+}
+
 func parse(m *dg.Message) *core.Message {
 	log.Debug().
 		Msg("starting to parse message")

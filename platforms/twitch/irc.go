@@ -21,6 +21,10 @@ type IRC struct {
 
 var twitchIrcClient *twitchIRC.Client
 
+func (irc *IRC) Admin() bool {
+	return false
+}
+
 func (irc *IRC) Parse() (*core.Message, error) {
 	author := &core.Author{
 		ID:          irc.message.User.ID,

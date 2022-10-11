@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func dbExists(prefix string, scope int64) (bool, error) {
+func dbExists(prefix string, scope int64, t int) (bool, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -16,9 +16,9 @@ func dbExists(prefix string, scope int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandPrefixPrefixes
-			WHERE scope = ? and prefix = ?
+			WHERE scope = ? and prefix = ? and type = ?
 			LIMIT 1
-		)`, scope, prefix)
+		)`, scope, prefix, t)
 
 	err := row.Scan(&exists)
 
@@ -32,14 +32,14 @@ func dbExists(prefix string, scope int64) (bool, error) {
 	return exists, err
 }
 
-func dbAdd(prefix string, scope int64) error {
+func dbAdd(prefix string, scope int64, t int) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		INSERT INTO CommandPrefixPrefixes(scope, prefix)
-		VALUES (?, ?)`, scope, prefix)
+		INSERT INTO CommandPrefixPrefixes(scope, prefix, type)
+		VALUES (?, ?, ?)`, scope, prefix, t)
 
 	log.Debug().
 		Err(err).
@@ -50,14 +50,14 @@ func dbAdd(prefix string, scope int64) error {
 	return err
 }
 
-func dbDel(prefix string, scope int64) error {
+func dbDel(prefix string, scope int64, t int) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE prefix = ? and scope = ?`, prefix, scope)
+		WHERE prefix = ? and scope = ? and type = ?`, prefix, scope, t)
 
 	log.Debug().
 		Err(err).
@@ -68,14 +68,14 @@ func dbDel(prefix string, scope int64) error {
 	return err
 }
 
-func dbReset(scope int64) error {
+func dbReset(scope int64, t int) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE scope = ?`, scope)
+		WHERE scope = ? and type = ?`, scope, t)
 
 	log.Debug().
 		Err(err).

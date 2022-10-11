@@ -121,14 +121,14 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 }
 
 func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
-	prefixes, _, err := m.ScopePrefixes()
+	prefixes, err := m.ScopePrefixes()
 	if err != nil {
 		return false, err
 	}
 
 	for _, p := range prefixes {
-		cmdName := []string{strings.TrimPrefix(trigger, p)}
-		_, _, err := core.Globals.Commands.MatchCommand(cmdName)
+		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
+		_, _, err := core.Globals.Commands.Normal.MatchCommand(cmdName)
 		// if there is no error that means a command was matched and thus a
 		// collision exists
 		if err == nil {

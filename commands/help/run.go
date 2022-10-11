@@ -82,7 +82,7 @@ func run_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 }
 
 func run_Core(m *core.Message) (*core.Command, []string, error) {
-	cmdStatic, index, err := core.Globals.Commands.MatchCommand(m.Command.Runtime.Args)
+	cmdStatic, index, err := core.Globals.Commands.Normal.MatchCommand(m.Command.Runtime.Args)
 	if err != nil {
 		return nil, nil, err
 	}
