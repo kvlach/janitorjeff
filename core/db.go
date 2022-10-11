@@ -1,4 +1,4 @@
-package sqldb
+package core
 
 import (
 	"database/sql"

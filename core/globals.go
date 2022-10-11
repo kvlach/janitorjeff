@@ -2,8 +2,6 @@ package core
 
 import (
 	"sync"
-
-	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 )
 
 type DiscordVars struct {
@@ -43,14 +41,14 @@ type AllCommands struct {
 }
 
 type Prefixes struct {
-	Normal   []sqldb.Prefix
-	Advanced []sqldb.Prefix
-	Admin    []sqldb.Prefix
+	Normal   []Prefix
+	Advanced []Prefix
+	Admin    []Prefix
 }
 
 type GlobalVars struct {
 	Commands AllCommands
-	DB       *sqldb.DB
+	DB       *DB
 	Host     string
 	Hooks    Hooks
 	Prefixes Prefixes
