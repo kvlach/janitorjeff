@@ -141,7 +141,7 @@ func runNormalTimezoneDeleteErr(usrErr error, m *core.Message) string {
 	case nil:
 		return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention)
 	case errUserNotFound:
-		return fmt.Sprintf("Can't delete, user %s never set their timezone.", m.Author.Mention)
+		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.Author.Mention)
 	default:
 		return fmt.Sprint(usrErr)
 	}
