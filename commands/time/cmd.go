@@ -40,14 +40,7 @@ var Normal = &core.CommandStatic{
 			Run:         runNormalTimezone,
 
 			Children: core.Commands{
-				{
-					Names: []string{
-						"set",
-					},
-					Description: "specify your own timezone",
-					UsageArgs:   "<timezone>",
-					Run:         runNormalTimezoneSet,
-				},
+				cmdNormalTimezoneSet,
 				{
 					Names: []string{
 						"del",
@@ -70,4 +63,13 @@ var Normal = &core.CommandStatic{
 			},
 		},
 	},
+}
+
+var cmdNormalTimezoneSet = &core.CommandStatic{
+	Names: []string{
+		"set",
+	},
+	Description: "specify your own timezone",
+	UsageArgs:   "<timezone>",
+	Run:         runNormalTimezoneSet,
 }
