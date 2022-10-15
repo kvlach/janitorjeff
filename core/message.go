@@ -22,9 +22,16 @@ type Messenger interface {
 
 	Parse() (*Message, error)
 
-	// Creates a scope for the current channel. If one already exists then it
-	// simply returns that.
-	Scope(int) (int64, error)
+	// Gets the target's scope. If it doesn't exist it will create it and add
+	// it to the database. The scope's type (e.g. channel, user, etc.) and an
+	// ID is passed in order to specify the scope. A default scope exists that
+	// expects no ID and correspons to the type -1, it returns the logical
+	// scope for which actions happen in; for example in discord if a command
+	// is called from a guild it will return the guild's scope instead of the
+	// channel's, as opposed to a command being called from DMs. If the type
+	// -2 is passed then the scope of the message's author is returned and the
+	// id is also expected to be empty.
+	Scope(t int, id string) (scope int64, err error)
 
 	// Writes a message to the current channel
 	// returned *Message could be nil depending on the platform
@@ -163,17 +170,12 @@ func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-func (m *Message) Scope(scope_optional ...int) (int64, error) {
-	if len(scope_optional) > 1 {
-		panic(fmt.Sprintf("unexpected scope: %v", scope_optional))
-	}
+func (m *Message) Scope() (int64, error) {
+	return m.Client.Scope(-1, "")
+}
 
-	scope := -1
-	if len(scope_optional) == 1 {
-		scope = scope_optional[0]
-	}
-
-	return m.Client.Scope(scope)
+func (m *Message) ScopeAuthor() (int64, error) {
+	return m.Client.Scope(-2, "")
 }
 
 // Returns the given scope's prefixes and also whether or not they were taken

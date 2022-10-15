@@ -6,25 +6,31 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 
+	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
 
-func getScope(type_ int, channelID, guildID, authorID string) (int64, error) {
+func getScope(t int, id string, msg *dg.Message) (int64, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	switch type_ {
-	case Default, Guild, Channel, Thread:
-		return getScopePlace(type_, channelID, guildID)
+	switch t {
+	case Default:
+		return getScopeDefault(t, msg.ChannelID, msg.GuildID)
+	case Guild, Channel, Thread:
+		// TODO
+		fallthrough
+	case User:
+		return getScopeUser(id)
 	case Author:
-		return getScopeAuthor(authorID)
+		return getScopeUser(msg.Author.ID)
 	default:
-		return -1, fmt.Errorf("type '%d' not supported", type_)
+		return -1, fmt.Errorf("type '%d' not supported", t)
 	}
 }
 
-func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
+func getScopeDefault(type_ int, channelID, guildID string) (int64, error) {
 	// In some cases a guild does not exist, for example in a DM, thus we are
 	// forced to use the channel scope. A guild id is also not included in the
 	// message object returned after sending a message, only the channel id is.
@@ -56,7 +62,7 @@ func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 	}
 
 	// if scope exists return it instead of re-adding it
-	channelScope, err := getChannelScope(channelID)
+	channelScope, err := dbGetChannelScope(channelID)
 	if err == nil {
 		if type_ == Channel {
 			return channelScope, nil
@@ -65,7 +71,7 @@ func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 		// find channel's guild scope
 		// if channel exists then guild does also, even if it's the special
 		// empty guild
-		guildScope, err := getGuildFromChannel(channelScope)
+		guildScope, err := dbGetGuildFromChannel(channelScope)
 		// A guild does exist even if it's a DM, it's the empty string guild,
 		// so this means if there's an error, it's a different kind.
 		if err != nil {
@@ -95,15 +101,15 @@ func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 	defer tx.Rollback()
 
 	// only create a new guildScope if it doesn't already exist
-	guildScope, err := getGuildScope(guildID)
+	guildScope, err := dbGetGuildScope(guildID)
 	if err != nil {
-		guildScope, err = addGuildScope(tx, guildID)
+		guildScope, err = dbAddGuildScope(tx, guildID)
 		if err != nil {
 			return -1, err
 		}
 	}
 
-	channelScope, err = addChannelScope(tx, channelID, guildScope)
+	channelScope, err = dbAddChannelScope(tx, channelID, guildScope)
 	if err != nil {
 		return -1, err
 	}
@@ -128,11 +134,13 @@ func getScopePlace(type_ int, channelID, guildID string) (int64, error) {
 	return scope, tx.Commit()
 }
 
-func getScopeAuthor(id string) (int64, error) {
-	scope, err := getUserScope(id)
+func getScopeUser(id string) (int64, error) {
+	scope, err := dbGetUserScope(id)
 	if err == nil {
 		return scope, nil
 	}
+
+	// TODO: check if id exists
 
 	db := core.Globals.DB
 
@@ -142,7 +150,7 @@ func getScopeAuthor(id string) (int64, error) {
 	}
 	defer tx.Rollback()
 
-	scope, err = addUserScope(tx, id)
+	scope, err = dbAddUserScope(tx, id)
 	if err != nil {
 		return -1, err
 	}
@@ -150,7 +158,7 @@ func getScopeAuthor(id string) (int64, error) {
 	return scope, tx.Commit()
 }
 
-func addGuildScope(tx *sql.Tx, guildID string) (int64, error) {
+func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	db := core.Globals.DB
 
 	scope, err := db.ScopeAdd(tx)
@@ -169,7 +177,7 @@ func addGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	return scope, nil
 }
 
-func addChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, error) {
+func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, error) {
 	db := core.Globals.DB
 
 	scope, err := db.ScopeAdd(tx)
@@ -188,7 +196,7 @@ func addChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, err
 	return scope, nil
 }
 
-func getGuildScope(guildID string) (int64, error) {
+func dbGetGuildScope(guildID string) (int64, error) {
 	db := core.Globals.DB
 
 	row := db.DB.QueryRow(`
@@ -201,7 +209,7 @@ func getGuildScope(guildID string) (int64, error) {
 	return id, err
 }
 
-func getChannelScope(channelID string) (int64, error) {
+func dbGetChannelScope(channelID string) (int64, error) {
 	db := core.Globals.DB
 
 	row := db.DB.QueryRow(`
@@ -214,7 +222,7 @@ func getChannelScope(channelID string) (int64, error) {
 	return id, err
 }
 
-func getGuildFromChannel(channelScope int64) (int64, error) {
+func dbGetGuildFromChannel(channelScope int64) (int64, error) {
 	db := core.Globals.DB
 
 	row := db.DB.QueryRow(`
@@ -227,7 +235,7 @@ func getGuildFromChannel(channelScope int64) (int64, error) {
 	return guildScope, err
 }
 
-func addUserScope(tx *sql.Tx, userID string) (int64, error) {
+func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
 	db := core.Globals.DB
 
 	scope, err := db.ScopeAdd(tx)
@@ -248,7 +256,7 @@ func addUserScope(tx *sql.Tx, userID string) (int64, error) {
 	return scope, err
 }
 
-func getUserScope(userID string) (int64, error) {
+func dbGetUserScope(userID string) (int64, error) {
 	db := core.Globals.DB
 
 	row := db.DB.QueryRow(`

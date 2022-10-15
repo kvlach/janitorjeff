@@ -8,5 +8,6 @@ const (
 	Default = platforms.Default
 
 	Author  = platforms.Author
+	User    = platforms.User
 	Channel = platforms.TwitchChannel
 )

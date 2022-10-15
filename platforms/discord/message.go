@@ -23,8 +23,8 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessage) Scope(type_ int) (int64, error) {
-	return getScope(type_, d.message.ChannelID, d.message.GuildID, d.message.Author.ID)
+func (d *DiscordMessage) Scope(t int, id string) (int64, error) {
+	return getScope(t, id, d.message)
 }
 
 func (d *DiscordMessage) Write(msg interface{}, usrErr error) (*core.Message, error) {
