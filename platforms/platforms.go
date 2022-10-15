@@ -2,8 +2,9 @@ package platforms
 
 const (
 	Default = -1
+	Author  = -2
 
-	Author = iota
+	User = iota
 
 	DiscordGuild
 	DiscordChannel

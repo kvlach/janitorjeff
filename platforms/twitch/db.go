@@ -4,21 +4,14 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-
-	twitchIRC "github.com/gempir/go-twitch-irc/v2"
 )
 
-func twitchChannelAddChannel(t int, id string, msg *twitchIRC.PrivateMessage) (int64, error) {
-	var channelID string
-	var channelName string
-
+func twitchChannelAddChannel(t int, id, channelID, channelName string) (int64, error) {
 	switch t {
 	case Default, Author:
-		channelID = msg.User.ID
-		channelName = msg.User.Name
+		break
 	case Channel, User:
 		channelID = id
-		channelName = "" // TODO: fix this?
 	default:
 		return -1, fmt.Errorf("type '%d' not supproted", t)
 	}
@@ -71,7 +64,7 @@ func TwitchChannelSetAccessToken(accessToken, refreshToken, channelID, channelNa
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	_, err := twitchChannelAddChannel(Channel, channelID, channelName)
+	_, err := twitchChannelAddChannel(Channel, channelID, channelID, channelName)
 	if err != nil {
 		return err
 	}
