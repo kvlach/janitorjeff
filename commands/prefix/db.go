@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func dbScopeExists(scope int64, t int) (bool, error) {
+func dbScopeExists(scope int64) (bool, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -16,9 +16,9 @@ func dbScopeExists(scope int64, t int) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandPrefixPrefixes
-			WHERE scope = ? and type = ?
+			WHERE scope = ?
 			LIMIT 1
-		)`, scope, t)
+		)`, scope)
 
 	err := row.Scan(&exists)
 
@@ -75,14 +75,14 @@ func dbAdd(prefix string, scope int64, t int) error {
 	return err
 }
 
-func dbDel(prefix string, scope int64, t int) error {
+func dbDel(prefix string, scope int64) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE prefix = ? and scope = ? and type = ?`, prefix, scope, t)
+		WHERE prefix = ? and scope = ?`, prefix, scope)
 
 	log.Debug().
 		Err(err).
@@ -93,14 +93,14 @@ func dbDel(prefix string, scope int64, t int) error {
 	return err
 }
 
-func dbReset(scope int64, t int) error {
+func dbReset(scope int64) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE scope = ? and type = ?`, scope, t)
+		WHERE scope = ?`, scope)
 
 	log.Debug().
 		Err(err).

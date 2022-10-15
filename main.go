@@ -62,6 +62,14 @@ func init() {
 	for _, cmd := range commands.Normal {
 		setParents(cmd)
 	}
+
+	for _, cmd := range commands.Advanced {
+		setParents(cmd)
+	}
+
+	for _, cmd := range commands.Admin {
+		setParents(cmd)
+	}
 }
 
 func main() {
@@ -97,12 +105,12 @@ func main() {
 		DB:   db,
 		Host: readVar("HOST"),
 		Prefixes: core.Prefixes{
-			Normal: []core.Prefix{
-				{Type: core.Normal, Prefix: "!"},
-			},
-			Advanced: []core.Prefix{},
 			Admin: []core.Prefix{
 				{Type: core.Admin, Prefix: "##"},
+			},
+			Others: []core.Prefix{
+				{Type: core.Normal, Prefix: "!"},
+				{Type: core.Advanced, Prefix: "$"},
 			},
 		},
 		Discord: &core.DiscordVars{

@@ -46,10 +46,11 @@ type Channel struct {
 }
 
 const (
-	All = iota
-	Normal
+	Normal = 1 << iota
 	Advanced
 	Admin
+
+	All = Normal | Advanced | Admin
 )
 
 // TODO: add minimum number of required args
@@ -175,18 +176,17 @@ func (m *Message) Scope(scope_optional ...int) (int64, error) {
 	return m.Client.Scope(scope)
 }
 
-// Returns the current scope's prefixes. If scope specific prefixes exist then
-// it will use those instead. Each category is checked separately. The special
-// empty prefix is added for DMs.
-func (m *Message) ScopePrefixes() ([]Prefix, error) {
-	scope, err := m.Scope()
-	if err != nil {
-		return nil, err
-	}
+// Returns the given scope's prefixes and also whether or not they were taken
+// from the database (if not then that means the default ones were used).
+func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
+	// Initially the empty prefix was added if a message came from a DM, so
+	// that normal commands could be run without using any prefix. This was
+	// dropped because it added some unecessary complexity since we couldn't
+	// always trivially know whether a scope was a DM or not.
 
 	prefixes, err := Globals.DB.PrefixList(scope)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	log.Debug().
@@ -194,54 +194,33 @@ func (m *Message) ScopePrefixes() ([]Prefix, error) {
 		Interface("prefixes", prefixes).
 		Msg("scope specific prefixes")
 
-	var normalExists bool
-	var advancedExists bool
-	var adminExists bool
-
-	for _, p := range prefixes {
-		switch p.Type {
-		case Normal:
-			normalExists = true
-		case Advanced:
-			advancedExists = true
-		case Admin:
-			adminExists = true
-		}
+	inDB := true
+	if len(prefixes) != 0 {
+		goto END
 	}
 
-	if normalExists == false {
-		prefixes = append(prefixes, Globals.Prefixes.Normal...)
-		log.Debug().Msg("no normal scope specific prefixes, using defaults")
+	inDB = false
+	prefixes = Globals.Prefixes.Others
+	log.Debug().Msg("no scope specific prefixes, using defaults")
 
-		if m.IsDM {
-			prefixes = append(prefixes, Prefix{Type: Normal, Prefix: ""})
-			log.Debug().Bool("dm", m.IsDM).Msg("added dm specific prefix")
-		}
-	}
-
-	if advancedExists == false {
-		prefixes = append(prefixes, Globals.Prefixes.Advanced...)
-		log.Debug().Msg("no advanced scope specific prefixes, using defaults")
-	}
-
-	if adminExists == false {
-		prefixes = append(prefixes, Globals.Prefixes.Admin...)
-		log.Debug().Msg("no admin scope specific prefixes, using defaults")
-	}
+END:
+	// The admin prefixes remain constant across scopes and can only be
+	// modified through the config. This means that they are never saved in the
+	// database and so we just append them to the list every time. This doesn't
+	// affect the `inDB` return value.
+	prefixes = append(prefixes, Globals.Prefixes.Admin...)
 
 	// We order by the length of the prefix in order to avoid matching the
-	// wrong prefix. For example, in DMs the empty string prefix is added. If
-	// it is placed first in the list of prefixes then it always get matched.
-	// So even if the user uses for example `!`, the command will be parsed as
-	// having the empty prefix and will fail to match (since it will try to
-	// match the whole thing, `!test` for example, instead of trimming the
-	// prefix first). This also can happen if for example there exist the `!!`
-	// and `!` prefixes. If the single `!` is first on the list and the user
-	// uses `!!` then the same problem occurs.
+	// wrong prefix. For example, if the prefixes `!` and `!!` both exist in
+	// the same scope and `!` is placed first in the list of prefixes then it
+	// will always get matched. So even if the user uses `!!`, the command will
+	// be parsed as having the `!` prefix and will fail to match (since it will
+	// try to match an invalid command, `!test` for example, instead of
+	// trimming both '!' first).
 	//
 	// The prefixes *must* be sorted as a whole and cannot be split into
-	// seperate categories (for example having 3 different arrays for the 3
-	// different types of prefixes) as each prefix is unique accross all
+	// seperate categories (for example having 3 different slices for the 3
+	// different types of prefixes) as each prefix is unique across all
 	// categories which means that the same reasoning that was described above
 	// still applies.
 	sort.Slice(prefixes, func(i, j int) bool {
@@ -251,12 +230,20 @@ func (m *Message) ScopePrefixes() ([]Prefix, error) {
 	log.Debug().
 		Int64("scope", scope).
 		Interface("prefixes", prefixes).
-		Msg("got prefixes for scope")
+		Msg("got prefixes")
 
-	return prefixes, nil
+	return prefixes, inDB, nil
 }
 
-func isPrefix(prefixes []Prefix, s string) (Prefix, bool) {
+func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
+	scope, err := m.Scope()
+	if err != nil {
+		return nil, false, err
+	}
+	return ScopePrefixes(scope)
+}
+
+func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 	for _, p := range prefixes {
 		// Example:
 		// !prefix add !prefix
@@ -281,12 +268,12 @@ func isPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 }
 
 func (m *Message) matchPrefix(rootCmdName string) (Prefix, error) {
-	prefixes, err := m.ScopePrefixes()
+	prefixes, _, err := m.ScopePrefixes()
 	if err != nil {
 		return Prefix{}, err
 	}
 
-	if prefix, ok := isPrefix(prefixes, rootCmdName); ok {
+	if prefix, ok := hasPrefix(prefixes, rootCmdName); ok {
 		return prefix, nil
 	}
 
