@@ -71,6 +71,7 @@ func runNormalTimezoneSetErr(usrErr error, m *core.Message, tz string) string {
 	case nil:
 		return fmt.Sprintf("Added %s with timezone %s", m.Author.Mention, tz)
 	case errUserExists:
+		// TODO: Suggest using '!time tz get' to view the set timezone
 		return fmt.Sprintf("User %s already set their timezone.", m.Author.Mention)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
@@ -299,60 +300,71 @@ func runNormalNow(m *core.Message) (any, error, error) {
 	case core.Discord:
 		return runNormalNowDiscord(m)
 	default:
-		// TODO
-		return nil, nil, nil
+		return runNormalNowText(m)
 	}
 }
 
 func runNormalNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	now, personal, err := runNormalNowCore(m)
+	now, usrErr, err := runNormalNowCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	var localTime string
-	if personal {
-		localTime = fmt.Sprintf("%s", now.Format(time.UnixDate))
-	} else {
-		cmd := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
-		cmd = discord.PlaceInBackticks(cmd)
-		localTime = fmt.Sprintf("\n*To set your local timezone use the %s command.*", cmd)
-	}
-
 	embed := &dg.MessageEmbed{
-		Description: localTime,
+		Description: runNormalNowErr(usrErr, m, now),
 		Footer: &dg.MessageEmbedFooter{
 			Text: fmt.Sprintf("Unix timestamp: %d", now.Unix()),
 		},
 	}
 
-	return embed, nil, nil
+	return embed, usrErr, nil
 }
 
-func runNormalNowCore(m *core.Message) (time.Time, bool, error) {
+func runNormalNowText(m *core.Message) (string, error, error) {
+	now, usrErr, err := runNormalNowCore(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return runNormalNowErr(usrErr, m, now), usrErr, nil
+}
+
+func runNormalNowErr(usrErr error, m *core.Message, now time.Time) string {
+	switch usrErr {
+	case nil:
+		return now.Format(time.RFC1123)
+	case errUserNotFound:
+		cmd := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
+		cmd = discord.PlaceInBackticks(cmd)
+		return fmt.Sprintf("To set your local timezone use the %s command.", cmd)
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func runNormalNowCore(m *core.Message) (time.Time, error, error) {
 	user, err := m.ScopeAuthor()
 	if err != nil {
-		return time.Time{}, false, err
+		return time.Time{}, nil, err
 	}
 
 	exists, err := dbUserExists(user)
 	if err != nil {
-		return time.Time{}, false, err
+		return time.Time{}, nil, err
 	}
 
 	if !exists {
-		return time.Now().UTC(), false, nil
+		return time.Now().UTC(), errUserNotFound, nil
 	}
 
 	tz, err := dbUserTimezone(user)
 	if err != nil {
-		return time.Time{}, false, err
+		return time.Time{}, nil, err
 	}
 
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		return time.Time{}, false, err
+		return time.Time{}, nil, err
 	}
 
-	return time.Now().UTC().In(loc), true, nil
+	return time.Now().UTC().In(loc), nil, nil
 }
