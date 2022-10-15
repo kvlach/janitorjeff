@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
@@ -298,28 +297,62 @@ func runNormalConvertCore(m *core.Message) (string, error, error) {
 func runNormalNow(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
-		return runNormalNowDiscord()
+		return runNormalNowDiscord(m)
 	default:
 		// TODO
 		return nil, nil, nil
 	}
 }
 
-func runNormalNowDiscord() (*dg.MessageEmbed, error, error) {
-	now := runNormalNowCore()
+func runNormalNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	now, personal, err := runNormalNowCore(m)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	var desc strings.Builder
-
-	fmt.Fprintf(&desc, "Unix timestamp: `%d`\n", now)
-	fmt.Fprintf(&desc, "Local time: <t:%d>\n", now)
+	var localTime string
+	if personal {
+		localTime = fmt.Sprintf("%s", now.Format(time.UnixDate))
+	} else {
+		cmd := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
+		cmd = discord.PlaceInBackticks(cmd)
+		localTime = fmt.Sprintf("\n*To set your local timezone use the %s command.*", cmd)
+	}
 
 	embed := &dg.MessageEmbed{
-		Description: desc.String(),
+		Description: localTime,
+		Footer: &dg.MessageEmbedFooter{
+			Text: fmt.Sprintf("Unix timestamp: %d", now.Unix()),
+		},
 	}
 
 	return embed, nil, nil
 }
 
-func runNormalNowCore() int64 {
-	return time.Now().UTC().Unix()
+func runNormalNowCore(m *core.Message) (time.Time, bool, error) {
+	user, err := m.ScopeAuthor()
+	if err != nil {
+		return time.Time{}, false, err
+	}
+
+	exists, err := dbUserExists(user)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+
+	if !exists {
+		return time.Now().UTC(), false, nil
+	}
+
+	tz, err := dbUserTimezone(user)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+
+	return time.Now().UTC().In(loc), true, nil
 }
