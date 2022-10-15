@@ -49,8 +49,8 @@ func (d *DiscordMessageEdit) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessageEdit) Scope(type_ int) (int64, error) {
-	return getScope(type_, d.Message.ChannelID, d.Message.GuildID, d.Message.Author.ID)
+func (d *DiscordMessageEdit) Scope(t int, id string) (int64, error) {
+	return getScope(t, id, d.Message.Message)
 }
 
 func (d *DiscordMessageEdit) Write(msg interface{}, usrErr error) (*core.Message, error) {

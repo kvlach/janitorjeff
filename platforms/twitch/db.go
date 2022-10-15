@@ -4,14 +4,23 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+
+	twitchIRC "github.com/gempir/go-twitch-irc/v2"
 )
 
-func twitchChannelAddChannel(type_ int, channelID, channelName string) (int64, error) {
-	switch type_ {
-	case Default, Channel, Author:
-		break
+func twitchChannelAddChannel(t int, id string, msg *twitchIRC.PrivateMessage) (int64, error) {
+	var channelID string
+	var channelName string
+
+	switch t {
+	case Default, Author:
+		channelID = msg.User.ID
+		channelName = msg.User.Name
+	case Channel, User:
+		channelID = id
+		channelName = "" // TODO: fix this?
 	default:
-		return -1, fmt.Errorf("type '%d' not supproted", type_)
+		return -1, fmt.Errorf("type '%d' not supproted", t)
 	}
 
 	// if scope exists return it instead of re-adding it
