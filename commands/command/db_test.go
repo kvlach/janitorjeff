@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/internal/testkit"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
 	"github.com/rs/zerolog"
 )
 
@@ -106,7 +105,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	testAuthor, err = msg.Scope(discord.Author)
+	testAuthor, err = msg.ScopeAuthor()
 	if err != nil {
 		log.Fatalln(err)
 	}

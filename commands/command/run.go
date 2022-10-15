@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -103,7 +102,7 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 
 	response := m.RawArgs(1)
 
-	author, err := m.Scope(platforms.Author)
+	author, err := m.ScopeAuthor()
 	if err != nil {
 		return trigger, nil, err
 	}
@@ -203,7 +202,7 @@ func runModify_Core(m *core.Message) (string, error, error) {
 
 	response := m.RawArgs(1)
 
-	author, err := m.Scope(platforms.Author)
+	author, err := m.ScopeAuthor()
 	if err != nil {
 		return trigger, nil, err
 	}
@@ -282,7 +281,7 @@ func runDel_Core(m *core.Message) (string, error, error) {
 		return trigger, errTriggerNotFound, nil
 	}
 
-	author, err := m.Scope(platforms.Author)
+	author, err := m.ScopeAuthor()
 	if err != nil {
 		return trigger, nil, err
 	}

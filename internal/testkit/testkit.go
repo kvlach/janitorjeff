@@ -9,20 +9,19 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
-	"git.slowtyper.com/slowtyper/janitorjeff/sqldb"
 
 	dg "github.com/bwmarrin/discordgo"
 )
 
 type TestDB struct {
 	name string
-	db   *sqldb.DB
+	db   *core.DB
 }
 
 func NewTestDB(name string) *TestDB {
 	name = fmt.Sprintf("%d-%s", time.Now().UnixNano(), name)
 
-	db, err := sqldb.Open("sqlite3", name)
+	db, err := core.Open("sqlite3", name)
 	if err != nil {
 		log.Fatalf("failed to open DB: %v\n", err)
 	}
