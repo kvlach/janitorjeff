@@ -71,7 +71,7 @@ func runNormalTimezoneSetErr(usrErr error, m *core.Message, tz string) string {
 	case nil:
 		return fmt.Sprintf("Added %s with timezone %s", m.Author.Mention, tz)
 	case errUserExists:
-		return fmt.Sprintf("User %s already exists.", m.Author.Mention)
+		return fmt.Sprintf("User %s already set their timezone.", m.Author.Mention)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
