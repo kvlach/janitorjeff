@@ -18,4 +18,5 @@ var Advanced = core.Commands{}
 
 var Admin = core.Commands{
 	test.Command,
+	prefix.Admin,
 }

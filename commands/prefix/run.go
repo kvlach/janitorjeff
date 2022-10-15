@@ -98,14 +98,9 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 	}
 	log.Debug().Int64("scope", scope).Send()
 
-	prefixes, err := m.ScopePrefixes()
+	prefixes, scopeExists, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, "", nil, err
-	}
-
-	scopeExists, err := dbScopeExists(scope, core.Normal)
-	if err != nil {
-		return "", "", nil, err
 	}
 
 	log.Debug().
@@ -261,7 +256,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		Int64("scope", scope).
 		Send()
 
-	prefixes, err := m.ScopePrefixes()
+	prefixes, scopeExists, err := m.ScopePrefixes()
 	if err != nil {
 		return prefix, nil, err
 	}
@@ -284,11 +279,6 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		return prefix, errOneLeft, nil
 	}
 
-	scopeExists, err := dbScopeExists(scope, core.Normal)
-	if err != nil {
-		return "", nil, err
-	}
-
 	// If the scope doesn't exist then the default prefixes are being used and
 	// they are not present in the DB. So if the user tries to delete one
 	// nothing will happen. So we first add them all to the DB.
@@ -304,7 +294,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		}
 	}
 
-	return prefix, nil, dbDel(prefix, scope, core.Normal)
+	return prefix, nil, dbDel(prefix, scope)
 }
 
 func runList(m *core.Message) (interface{}, error, error) {
@@ -350,7 +340,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 }
 
 func runList_Core(m *core.Message) ([]string, error) {
-	prefixes, err := m.ScopePrefixes()
+	prefixes, _, err := m.ScopePrefixes()
 
 	normal := []string{}
 	for _, p := range prefixes {
@@ -404,14 +394,22 @@ func runReset_Core(m *core.Message) (string, error) {
 		return "", err
 	}
 
-	err = dbReset(scope, core.Normal)
+	err = dbReset(scope)
 	if err != nil {
 		return "", err
 	}
 
+	var prefix string
+	for _, p := range core.Globals.Prefixes.Others {
+		if p.Type == core.Normal {
+			prefix = p.Prefix
+			break
+		}
+	}
+
 	// can't just use the prefix that was used to invoke this command because
 	// it might not be valid for this scope since a reset just happened
-	listCmd := cmdList.Format(core.Globals.Prefixes.Normal[0].Prefix)
+	listCmd := cmdList.Format(prefix)
 
 	return listCmd, nil
 }

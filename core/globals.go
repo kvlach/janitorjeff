@@ -41,9 +41,8 @@ type AllCommands struct {
 }
 
 type Prefixes struct {
-	Normal   []Prefix
-	Advanced []Prefix
-	Admin    []Prefix
+	Admin  []Prefix
+	Others []Prefix
 }
 
 type GlobalVars struct {
