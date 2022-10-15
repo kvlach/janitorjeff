@@ -62,7 +62,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 }
 
 func (irc *IRC) Scope(t int, id string) (int64, error) {
-	return twitchChannelAddChannel(t, id, irc.message)
+	return twitchChannelAddChannel(t, id, irc.message.User.ID, irc.message.User.Name)
 }
 
 func (irc *IRC) Write(msg interface{}, _ error) (*core.Message, error) {
