@@ -42,7 +42,7 @@ type Messenger interface {
 	// returned *Message could be nil depending on the platform
 	//
 	// TODO: Handle rate limiting gracefully, give priority to mods.
-	Write(interface{}, error) (*Message, error)
+	Write(any, error) (*Message, error)
 }
 
 type Author struct {
@@ -71,7 +71,7 @@ type CommandStatic struct {
 	Description string
 	UsageArgs   string
 	Target      int64
-	Run         func(*Message) (interface{}, error, error)
+	Run         func(*Message) (any, error, error)
 	Init        func() error
 
 	Parent   *CommandStatic
@@ -174,7 +174,7 @@ func (m *Message) RawArgs(n int) string {
 	return s
 }
 
-func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
+func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
@@ -399,7 +399,7 @@ func (m *Message) Run() {
 	log.Debug().Err(err).Send()
 }
 
-func (m *Message) ReplyText(format string, a ...interface{}) string {
+func (m *Message) ReplyText(format string, a ...any) string {
 	s := fmt.Sprintf(format, a...)
 	return fmt.Sprintf("%s -> %s", m.Author.Mention, s)
 }
@@ -415,7 +415,7 @@ func (m *Message) replyUsageDiscord() *dg.MessageEmbed {
 	}
 }
 
-func (m *Message) ReplyUsage() interface{} {
+func (m *Message) ReplyUsage() any {
 	switch m.Type {
 	case Discord:
 		return m.replyUsageDiscord()

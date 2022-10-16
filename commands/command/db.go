@@ -210,7 +210,7 @@ func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, erro
 		var response string
 		var creator, created, deleter, deleted int64
 
-		var _deleter, _deleted interface{}
+		var _deleter, _deleted any
 
 		if active == true {
 			err = rows.Scan(&response, &creator, &created, &_deleter, &_deleted)

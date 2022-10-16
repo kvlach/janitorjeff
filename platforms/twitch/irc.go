@@ -99,7 +99,7 @@ func (irc *IRC) Scope(t int, id string) (int64, error) {
 	return twitchChannelAddChannel(t, id, irc.message.User.ID, irc.message.User.Name)
 }
 
-func (irc *IRC) Write(msg interface{}, _ error) (*core.Message, error) {
+func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
 	var text string
 	switch t := msg.(type) {
 	case string:
@@ -133,7 +133,7 @@ func (irc *IRC) Write(msg interface{}, _ error) (*core.Message, error) {
 // 	return err
 // }
 
-// func (tirc *TwitchIRC) Edit(msg interface{}) (*core.Message, error) {
+// func (tirc *TwitchIRC) Edit(msg any) (*core.Message, error) {
 // 	return nil, fmt.Errorf("editing not supported for twitch irc")
 // }
 

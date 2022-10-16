@@ -21,11 +21,11 @@ var (
 	errCustomCommandExists = errors.New("if this prefix is added then there will be a collision with a custom command")
 )
 
-func run(m *core.Message) (interface{}, error, error) {
+func run(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), errMissingArgument, nil
 }
 
-func runAdd(m *core.Message) (interface{}, error, error) {
+func runAdd(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runAdd_Discord(m)
@@ -169,7 +169,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 	return "", nil
 }
 
-func runDelete(m *core.Message) (interface{}, error, error) {
+func runDelete(m *core.Message) (any, error, error) {
 	// TODO: Provide a way to delete the empty string prefix in DMs
 	switch m.Type {
 	case core.Discord:
@@ -297,7 +297,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 	return prefix, nil, dbDel(prefix, scope)
 }
 
-func runList(m *core.Message) (interface{}, error, error) {
+func runList(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runList_Discord(m)
@@ -352,7 +352,7 @@ func runList_Core(m *core.Message) ([]string, error) {
 	return normal, err
 }
 
-func runReset(m *core.Message) (interface{}, error, error) {
+func runReset(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runReset_Discord(m)
