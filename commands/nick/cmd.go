@@ -8,7 +8,6 @@ var Normal = &core.CommandStatic{
 	Names: []string{
 		"nick",
 		"nickname",
-		"name", // ?
 	},
 	Description: "Set a nickname that can be used when calling commands.",
 	UsageArgs:   "<nickname>",
