@@ -118,6 +118,9 @@ func (cmd *Command) Usage() string {
 }
 
 type Message struct {
+	scopeAuthor int64
+	scopePlace  int64
+
 	ID      string
 	Type    int
 	Raw     string
@@ -171,11 +174,33 @@ func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
 }
 
 func (m *Message) ScopePlace() (int64, error) {
-	return m.Client.Scope(-1, "")
+	// caches the scope to avoid unecessary database queries
+
+	if m.scopePlace != 0 {
+		return m.scopePlace, nil
+	}
+
+	place, err := m.Client.Scope(-1, "")
+	if err != nil {
+		return -1, err
+	}
+	m.scopePlace = place
+	return place, nil
 }
 
 func (m *Message) ScopeAuthor() (int64, error) {
-	return m.Client.Scope(-2, "")
+	// caches the scope to avoid unecessary database queries
+
+	if m.scopeAuthor != 0 {
+		return m.scopeAuthor, nil
+	}
+
+	author, err := m.Client.Scope(-2, "")
+	if err != nil {
+		return -1, err
+	}
+	m.scopeAuthor = author
+	return author, nil
 }
 
 // Returns the given scope's prefixes and also whether or not they were taken
