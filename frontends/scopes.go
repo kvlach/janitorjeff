@@ -1,4 +1,4 @@
-package platforms
+package frontends
 
 const (
 	Default = -1
