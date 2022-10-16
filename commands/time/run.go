@@ -97,7 +97,12 @@ func runNormalTimezoneSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	exists, err := dbUserExists(user)
+	place, err := m.ScopePlace()
+	if err != nil {
+		return "", nil, err
+	}
+
+	exists, err := dbUserExists(user, place)
 	if err != nil {
 		return "", nil, err
 	}
@@ -105,7 +110,7 @@ func runNormalTimezoneSetCore(m *core.Message) (string, error, error) {
 		return tz, errUserExists, nil
 	}
 
-	return tz, nil, dbUserAdd(user, tz)
+	return tz, nil, dbUserAdd(user, place, tz)
 }
 
 func runNormalTimezoneDelete(m *core.Message) (any, error, error) {
@@ -155,7 +160,12 @@ func runNormalTimezoneDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	exists, err := dbUserExists(user)
+	place, err := m.ScopePlace()
+	if err != nil {
+		return nil, err
+	}
+
+	exists, err := dbUserExists(user, place)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +173,7 @@ func runNormalTimezoneDeleteCore(m *core.Message) (error, error) {
 		return errTimezoneNotSet, nil
 	}
 
-	return nil, dbUserDelete(user)
+	return nil, dbUserDelete(user, place)
 }
 
 func runNormalTimezoneGet(m *core.Message) (any, error, error) {
@@ -216,7 +226,12 @@ func runNormalTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	exists, err := dbUserExists(user)
+	place, err := m.ScopePlace()
+	if err != nil {
+		return "", nil, err
+	}
+
+	exists, err := dbUserExists(user, place)
 	if err != nil {
 		return "", nil, err
 	}
@@ -224,7 +239,7 @@ func runNormalTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", errTimezoneNotSet, nil
 	}
 
-	tz, err := dbUserTimezone(user)
+	tz, err := dbUserTimezone(user, place)
 	if err != nil {
 		return "", nil, err
 	}
@@ -360,7 +375,12 @@ func runNormalNowCore(m *core.Message) (time.Time, error, error) {
 		return now, errUserNotFound, nil
 	}
 
-	exists, err := dbUserExists(user)
+	place, err := m.ScopePlace()
+	if err != nil {
+		return now, nil, err
+	}
+
+	exists, err := dbUserExists(user, place)
 	if err != nil {
 		return now, nil, err
 	}
@@ -369,7 +389,7 @@ func runNormalNowCore(m *core.Message) (time.Time, error, error) {
 		return now, errTimezoneNotSet, nil
 	}
 
-	tz, err := dbUserTimezone(user)
+	tz, err := dbUserTimezone(user, place)
 	if err != nil {
 		return now, nil, err
 	}
