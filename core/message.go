@@ -23,7 +23,7 @@ type Messenger interface {
 	Parse() (*Message, error)
 
 	// Returns the ID of the passed string. The returned ID must be valid.
-	// Generally used for verifying an IDs validity and extracting IDs from
+	// Generally used for verifying an ID's validity and extracting IDs from
 	// mentions.
 	ID(t int, s string) (id string, err error)
 
