@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -381,6 +382,9 @@ func (m *Message) CommandRun() (*Message, error) {
 
 	resp, usrErr, err := cmd.Run(m)
 	if err != nil {
+		// passing an empty error in order to get any error specific rendering
+		// that might be supported
+		m.Write("Something went wrong...", errors.New(""))
 		return nil, fmt.Errorf("failed to run command '%v': %v", cmd, err)
 	}
 
