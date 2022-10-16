@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -59,6 +60,39 @@ func (irc *IRC) Parse() (*core.Message, error) {
 	}
 
 	return msg, nil
+}
+
+func (irc *IRC) checkID(id string) error {
+	if _, err := strconv.ParseInt(id, 10, 64); err != nil {
+		// not even a number so no point in asking twitch if it's valid
+		return fmt.Errorf("id '%s' is not valid", id)
+	}
+
+	// try to get the id's corresponding username, if it fails then that means
+	// that the id is not valid
+	_, err := irc.Helix.GetUserName(id)
+	return err
+}
+
+func (irc *IRC) ID(t int, s string) (string, error) {
+	switch t {
+	case User, Channel:
+		// expected inputs are either a username, a mention (@username) or the
+		// id itself
+
+		if err := irc.checkID(s); err == nil {
+			return s, nil
+		}
+		s = strings.TrimPrefix(s, "@")
+
+		// try to get the corresponding id from the username, if it exists then
+		// it will fetch and return with no error, if not then it will fail
+		// and return an error
+		return irc.Helix.GetUserID(s)
+
+	default:
+		return "", fmt.Errorf("id extraction for type '%d' not supported", t)
+	}
 }
 
 func (irc *IRC) Scope(t int, id string) (int64, error) {

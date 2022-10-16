@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/platforms"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -154,4 +155,27 @@ func runNormalSetCore(m *core.Message) (string, error, error) {
 		return nick, nil, dbUserUpdate(user, place, nick)
 	}
 	return nick, nil, dbUserAdd(user, place, nick)
+}
+
+// Tries to find a user scope from the given string. First tries to find if it
+// matches a nickname in the database and if it doesn't it tries various
+// platform specific things, like for example checking if the given string is a
+// user ID.
+func ParseUser(m *core.Message, s string) (int64, error) {
+	place, err := m.ScopePlace()
+	if err != nil {
+		return -1, err
+	}
+
+	user, err := dbGetUser(s, place)
+	if err == nil {
+		return user, nil
+	}
+
+	id, err := m.Client.ID(platforms.User, s)
+	if err != nil {
+		return -1, err
+	}
+
+	return m.Client.Scope(platforms.User, id)
 }

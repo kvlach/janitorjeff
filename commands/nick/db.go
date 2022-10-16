@@ -83,6 +83,32 @@ func dbUserExists(user, place int64) (bool, error) {
 	return exists, err
 }
 
+func dbNickExists(nick string, place int64) (bool, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	var exists bool
+
+	row := db.DB.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM CommandNickNicknames
+			WHERE nick = ? and place = ?
+			LIMIT 1
+		)`, nick, place)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Str("nick", nick).
+		Int64("place", place).
+		Bool("exists", exists).
+		Msg("checked db to see if nick exists")
+
+	return exists, err
+}
+
 func dbUserDelete(user, place int64) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
@@ -123,4 +149,28 @@ func dbUserNick(user, place int64) (string, error) {
 		Msg("got nick for user")
 
 	return nick, err
+}
+
+func dbGetUser(nick string, place int64) (int64, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	var user int64
+
+	row := db.DB.QueryRow(`
+		SELECT user
+		FROM CommandNickNicknames
+		WHERE nick = ? and place = ?`, nick, place)
+
+	err := row.Scan(&user)
+
+	log.Debug().
+		Err(err).
+		Str("nick", nick).
+		Int64("place", place).
+		Int64("user", user).
+		Msg("got nick for user")
+
+	return user, err
 }
