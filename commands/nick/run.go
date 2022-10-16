@@ -71,7 +71,7 @@ func runNormalGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.Scope()
+	place, err := m.ScopePlace()
 	if err != nil {
 		return "", nil, err
 	}
@@ -140,7 +140,7 @@ func runNormalSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.Scope()
+	place, err := m.ScopePlace()
 	if err != nil {
 		return "", nil, err
 	}

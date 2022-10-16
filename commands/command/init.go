@@ -16,7 +16,7 @@ func writeCustomCommand(m *core.Message) {
 		return
 	}
 
-	scope, err := m.Scope()
+	scope, err := m.ScopePlace()
 	if err != nil {
 		return
 	}

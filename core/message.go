@@ -170,7 +170,7 @@ func (m *Message) Write(msg interface{}, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-func (m *Message) Scope() (int64, error) {
+func (m *Message) ScopePlace() (int64, error) {
 	return m.Client.Scope(-1, "")
 }
 
@@ -238,7 +238,7 @@ END:
 }
 
 func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
-	scope, err := m.Scope()
+	scope, err := m.ScopePlace()
 	if err != nil {
 		return nil, false, err
 	}
