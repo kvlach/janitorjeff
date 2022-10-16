@@ -125,8 +125,8 @@ func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Set nickname %s for user %s", nick, m.Author.Mention)
-	case errExists:
-		return fmt.Sprintf("Can't set %s as nickname for user %s, one already exists.", nick, m.Author.Mention)
+	// case errExists:
+	// 	return fmt.Sprintf("Can't set %s as nickname for user %s, one already exists.", nick, m.Author.Mention)
 	default:
 		return fmt.Sprint(usrErr)
 	}
@@ -149,9 +149,9 @@ func runNormalSetCore(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	if exists {
-		return nick, errExists, nil
-	}
 
+	if exists {
+		return nick, nil, dbUserUpdate(user, place, nick)
+	}
 	return nick, nil, dbUserAdd(user, place, nick)
 }

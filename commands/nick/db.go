@@ -36,6 +36,27 @@ func dbUserAdd(user, place int64, nick string) error {
 	return err
 }
 
+func dbUserUpdate(user, place int64, nick string) error {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	_, err := db.DB.Exec(`
+		UPDATE CommandNickNicknames
+		SET nick = ?
+		WHERE user = ? and place = ?
+	`, nick, user, place)
+
+	log.Debug().
+		Err(err).
+		Int64("user", user).
+		Int64("place", place).
+		Str("nick", nick).
+		Msg("update user nick")
+
+	return err
+}
+
 func dbUserExists(user, place int64) (bool, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
