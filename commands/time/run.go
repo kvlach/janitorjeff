@@ -322,13 +322,15 @@ func runNormalNow(m *core.Message) (any, error, error) {
 }
 
 func runNormalNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	now, usrErr, err := runNormalNowCore(m)
+	now, cmdTzSet, usrErr, err := runNormalNowCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	cmdTzSet = discord.PlaceInBackticks(cmdTzSet)
+
 	embed := &dg.MessageEmbed{
-		Description: runNormalNowErr(usrErr, m, now),
+		Description: runNormalNowErr(usrErr, m, now, cmdTzSet),
 		Footer: &dg.MessageEmbedFooter{
 			Text: fmt.Sprintf("Unix timestamp: %d", now.Unix()),
 		},
@@ -338,21 +340,20 @@ func runNormalNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 }
 
 func runNormalNowText(m *core.Message) (string, error, error) {
-	now, usrErr, err := runNormalNowCore(m)
+	now, cmdTzSet, usrErr, err := runNormalNowCore(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return runNormalNowErr(usrErr, m, now), usrErr, nil
+	cmdTzSet = fmt.Sprintf("'%s'", cmdTzSet)
+	return runNormalNowErr(usrErr, m, now, cmdTzSet), usrErr, nil
 }
 
-func runNormalNowErr(usrErr error, m *core.Message, now time.Time) string {
+func runNormalNowErr(usrErr error, m *core.Message, now time.Time, cmdTzSet string) string {
 	switch usrErr {
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
-		cmd := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
-		cmd = discord.PlaceInBackticks(cmd)
-		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention, cmd)
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention, cmdTzSet)
 	case errUserNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Runtime.Args[0])
 	default:
@@ -360,8 +361,9 @@ func runNormalNowErr(usrErr error, m *core.Message, now time.Time) string {
 	}
 }
 
-func runNormalNowCore(m *core.Message) (time.Time, error, error) {
+func runNormalNowCore(m *core.Message) (time.Time, string, error, error) {
 	now := time.Now().UTC()
+	cmdTzSet := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
 
 	var user int64
 	var err error
@@ -372,32 +374,32 @@ func runNormalNowCore(m *core.Message) (time.Time, error, error) {
 	}
 
 	if err != nil {
-		return now, errUserNotFound, nil
+		return now, cmdTzSet, errUserNotFound, nil
 	}
 
 	place, err := m.ScopePlace()
 	if err != nil {
-		return now, nil, err
+		return now, cmdTzSet, nil, err
 	}
 
 	exists, err := dbUserExists(user, place)
 	if err != nil {
-		return now, nil, err
+		return now, cmdTzSet, nil, err
 	}
 
 	if !exists {
-		return now, errTimezoneNotSet, nil
+		return now, cmdTzSet, errTimezoneNotSet, nil
 	}
 
 	tz, err := dbUserTimezone(user, place)
 	if err != nil {
-		return now, nil, err
+		return now, cmdTzSet, nil, err
 	}
 
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		return now, nil, err
+		return now, cmdTzSet, nil, err
 	}
 
-	return now.In(loc), nil, nil
+	return now.In(loc), cmdTzSet, nil, nil
 }
