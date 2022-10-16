@@ -92,7 +92,7 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 	}
 	prefix := m.Command.Runtime.Args[0]
 
-	scope, err := m.Scope()
+	scope, err := m.ScopePlace()
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -246,7 +246,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 	}
 	prefix := m.Command.Runtime.Args[0]
 
-	scope, err := m.Scope()
+	scope, err := m.ScopePlace()
 	if err != nil {
 		return prefix, nil, err
 	}
@@ -389,7 +389,7 @@ func runReset_Text(m *core.Message) (string, error, error) {
 }
 
 func runReset_Core(m *core.Message) (string, error) {
-	scope, err := m.Scope()
+	scope, err := m.ScopePlace()
 	if err != nil {
 		return "", err
 	}
