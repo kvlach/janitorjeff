@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
 
@@ -13,12 +14,13 @@ import (
 )
 
 var (
-	errMissingArgs  = errors.New("not enough arguments provided")
-	errTimestamp    = errors.New("invalid timestamp")
-	errTimezone     = errors.New("invalid timezone")
-	errUserExists   = errors.New("user already exists")
-	errUserNotFound = errors.New("user doesn't exist in the database")
-	errNotAuthor    = errors.New("only the user themselves can add their timezone")
+	errMissingArgs    = errors.New("not enough arguments provided")
+	errTimestamp      = errors.New("invalid timestamp")
+	errTimezone       = errors.New("invalid timezone")
+	errUserExists     = errors.New("user already exists")
+	errTimezoneNotSet = errors.New("user hasn't set their timezone")
+	errNotAuthor      = errors.New("only the user themselves can add their timezone")
+	errUserNotFound   = errors.New("was unable to find user")
 )
 
 func runNormal(m *core.Message) (any, error, error) {
@@ -140,7 +142,7 @@ func runNormalTimezoneDeleteErr(usrErr error, m *core.Message) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention)
-	case errUserNotFound:
+	case errTimezoneNotSet:
 		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.Author.Mention)
 	default:
 		return fmt.Sprint(usrErr)
@@ -158,7 +160,7 @@ func runNormalTimezoneDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 	if !exists {
-		return errUserNotFound, nil
+		return errTimezoneNotSet, nil
 	}
 
 	return nil, dbUserDelete(user)
@@ -201,7 +203,7 @@ func runNormalTimezoneGetErr(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("User's %s timezone is: %s", m.Author.Mention, tz)
-	case errUserNotFound:
+	case errTimezoneNotSet:
 		return fmt.Sprintf("User's %s timezone was not found.", m.Author.Mention)
 	default:
 		return fmt.Sprint(usrErr)
@@ -219,7 +221,7 @@ func runNormalTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	if !exists {
-		return "", errUserNotFound, nil
+		return "", errTimezoneNotSet, nil
 	}
 
 	tz, err := dbUserTimezone(user)
@@ -332,39 +334,50 @@ func runNormalNowErr(usrErr error, m *core.Message, now time.Time) string {
 	switch usrErr {
 	case nil:
 		return now.Format(time.RFC1123)
-	case errUserNotFound:
+	case errTimezoneNotSet:
 		cmd := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
 		cmd = discord.PlaceInBackticks(cmd)
-		return fmt.Sprintf("To set your local timezone use the %s command.", cmd)
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention, cmd)
+	case errUserNotFound:
+		return fmt.Sprintf("Was unable to find the user %s", m.Command.Runtime.Args[0])
 	default:
 		return fmt.Sprint(usrErr)
 	}
 }
 
 func runNormalNowCore(m *core.Message) (time.Time, error, error) {
-	user, err := m.ScopeAuthor()
+	now := time.Now().UTC()
+
+	var user int64
+	var err error
+	if len(m.Command.Runtime.Args) == 0 {
+		user, err = m.ScopeAuthor()
+	} else {
+		user, err = nick.ParseUser(m, m.Command.Runtime.Args[0])
+	}
+
 	if err != nil {
-		return time.Time{}, nil, err
+		return now, errUserNotFound, nil
 	}
 
 	exists, err := dbUserExists(user)
 	if err != nil {
-		return time.Time{}, nil, err
+		return now, nil, err
 	}
 
 	if !exists {
-		return time.Now().UTC(), errUserNotFound, nil
+		return now, errTimezoneNotSet, nil
 	}
 
 	tz, err := dbUserTimezone(user)
 	if err != nil {
-		return time.Time{}, nil, err
+		return now, nil, err
 	}
 
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		return time.Time{}, nil, err
+		return now, nil, err
 	}
 
-	return time.Now().UTC().In(loc), nil, nil
+	return now.In(loc), nil, nil
 }

@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
@@ -10,6 +11,41 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
+
+func getUserID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
+	// expected inputs are either the id itself or a mention which looks like
+	// this: <@id>
+
+	// trim them if they exist
+	s = strings.TrimPrefix(s, "<@")
+	s = strings.TrimSuffix(s, ">")
+
+	// not even a number, no point in asking discord if it's a valid id
+	if _, err := strconv.ParseInt(s, 10, 64); err != nil {
+		return "", err
+	}
+
+	// if the user is in a DM then the only valid user id would be that of
+	// themselves, so having no guild isn't a problem
+	if s == msg.Author.ID {
+		return s, nil
+	}
+
+	if _, err := ds.GuildMember(msg.GuildID, s); err != nil {
+		return "", err
+	}
+
+	return s, nil
+}
+
+func getID(t int, s string, ds *dg.Session, msg *dg.Message) (string, error) {
+	switch t {
+	case User:
+		return getUserID(s, ds, msg)
+	default:
+		return "", fmt.Errorf("id extraction for type '%d' not supported", t)
+	}
+}
 
 func isAdmin(id string) bool {
 	for _, admin := range core.Globals.Discord.Admins {

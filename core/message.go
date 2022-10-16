@@ -22,6 +22,11 @@ type Messenger interface {
 
 	Parse() (*Message, error)
 
+	// Returns the ID of the passed string. The returned ID must be valid.
+	// Generally used for verifying an IDs validity and extracting IDs from
+	// mentions.
+	ID(t int, s string) (id string, err error)
+
 	// Gets the target's scope. If it doesn't exist it will create it and add
 	// it to the database. The scope's type (e.g. channel, user, etc.) and an
 	// ID is passed in order to specify the scope. A default scope exists that

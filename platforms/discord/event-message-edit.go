@@ -49,6 +49,10 @@ func (d *DiscordMessageEdit) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
+func (d *DiscordMessageEdit) ID(t int, s string) (string, error) {
+	return getID(t, s, d.Session, d.Message.Message)
+}
+
 func (d *DiscordMessageEdit) Scope(t int, id string) (int64, error) {
 	return getScope(t, id, d.Message.Message)
 }
