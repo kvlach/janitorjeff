@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS CommandNickNicknames (
 	place INTEGER NOT NULL,
 	nick VARCHAR(255) NOT NULL,
 	UNIQUE(user, place),
+	UNIQUE(place, nick),
 	FOREIGN KEY (user) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
 )

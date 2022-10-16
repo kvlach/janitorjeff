@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	errNotFound = errors.New("user nick not found")
-	errExists   = errors.New("user nick has already been set")
+	errUserNotFound = errors.New("user nick not found")
+	errNickExists   = errors.New("nick is used by a different user")
 )
 
 func runNormal(m *core.Message) (any, error, error) {
@@ -59,7 +59,7 @@ func runNormalGetErr(usrErr error, m *core.Message, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("User's %s nickname is %s", m.Author.Mention, nick)
-	case errNotFound:
+	case errUserNotFound:
 		return fmt.Sprintf("User %s has not set their nickname.", m.Author.Mention)
 	default:
 		return fmt.Sprint(usrErr)
@@ -82,7 +82,7 @@ func runNormalGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	if !exists {
-		return "", errNotFound, nil
+		return "", errUserNotFound, nil
 	}
 
 	nick, err := dbUserNick(user, place)
@@ -126,8 +126,8 @@ func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Set nickname %s for user %s", nick, m.Author.Mention)
-	// case errExists:
-	// 	return fmt.Sprintf("Can't set %s as nickname for user %s, one already exists.", nick, m.Author.Mention)
+	case errNickExists:
+		return fmt.Sprintf("Nickname %s is already being used by another user.", nick)
 	default:
 		return fmt.Sprint(usrErr)
 	}
@@ -136,22 +136,30 @@ func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
 func runNormalSetCore(m *core.Message) (string, error, error) {
 	nick := m.Command.Runtime.Args[0]
 
-	user, err := m.ScopeAuthor()
-	if err != nil {
-		return "", nil, err
-	}
-
 	place, err := m.ScopePlace()
 	if err != nil {
 		return "", nil, err
 	}
 
-	exists, err := dbUserExists(user, place)
+	nickExists, err := dbNickExists(nick, place)
+	if err != nil {
+		return "", nil, err
+	}
+	if nickExists {
+		return nick, errNickExists, nil
+	}
+
+	user, err := m.ScopeAuthor()
 	if err != nil {
 		return "", nil, err
 	}
 
-	if exists {
+	userExists, err := dbUserExists(user, place)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if userExists {
 		return nick, nil, dbUserUpdate(user, place, nick)
 	}
 	return nick, nil, dbUserAdd(user, place, nick)
