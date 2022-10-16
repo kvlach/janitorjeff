@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -180,10 +180,10 @@ func ParseUser(m *core.Message, s string) (int64, error) {
 		return user, nil
 	}
 
-	id, err := m.Client.ID(platforms.User, s)
+	id, err := m.Client.ID(frontends.User, s)
 	if err != nil {
 		return -1, err
 	}
 
-	return m.Client.Scope(platforms.User, id)
+	return m.Client.Scope(frontends.User, id)
 }

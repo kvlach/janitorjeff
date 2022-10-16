@@ -14,8 +14,8 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms/twitch"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/twitch"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"

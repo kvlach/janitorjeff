@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 )
 
 var (
