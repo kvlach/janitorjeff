@@ -15,7 +15,7 @@ var (
 	errMissingArgs = errors.New("not enough arguments provided")
 )
 
-func run(m *core.Message) (interface{}, error, error) {
+func run(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
 		return m.ReplyUsage(), errMissingArgs, nil
 	}

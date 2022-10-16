@@ -20,11 +20,11 @@ var (
 	errMissingArgs     = errors.New("not enough arguments provided")
 )
 
-func run(m *core.Message) (interface{}, error, error) {
+func run(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), errMissingArgs, nil
 }
 
-func runAdd(m *core.Message) (interface{}, error, error) {
+func runAdd(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
 		return m.ReplyUsage(), errMissingArgs, nil
 	}
@@ -139,7 +139,7 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 	return false, nil
 }
 
-func runModify(m *core.Message) (interface{}, error, error) {
+func runModify(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
 		return m.ReplyUsage(), errMissingArgs, nil
 	}
@@ -220,7 +220,7 @@ func runModify_Core(m *core.Message) (string, error, error) {
 	return trigger, nil, err
 }
 
-func runDel(m *core.Message) (interface{}, error, error) {
+func runDel(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
 		return m.ReplyUsage(), errMissingArgs, nil
 	}
@@ -321,7 +321,7 @@ func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
 	return exists, scope, nil
 }
 
-func runList(m *core.Message) (interface{}, error, error) {
+func runList(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return runList_Discord(m)
@@ -386,7 +386,7 @@ func RunList_Core(m *core.Message) ([]string, error) {
 	return triggers, nil
 }
 
-func runHistory(m *core.Message) (interface{}, error, error) {
+func runHistory(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
 		return m.ReplyUsage(), errMissingArgs, nil
 	}

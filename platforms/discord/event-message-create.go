@@ -32,7 +32,7 @@ func (d *DiscordMessageCreate) Scope(t int, id string) (int64, error) {
 	return getScope(t, id, d.Message.Message)
 }
 
-func (d *DiscordMessageCreate) Write(msg interface{}, usrErr error) (*core.Message, error) {
+func (d *DiscordMessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Session, msg.(string), d.Message.ChannelID)

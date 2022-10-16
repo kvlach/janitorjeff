@@ -6,7 +6,7 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-func run(m *core.Message) (interface{}, error, error) {
+func run(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
 		return run_Discord(m)
