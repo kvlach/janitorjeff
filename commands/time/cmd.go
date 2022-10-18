@@ -16,14 +16,6 @@ var Normal = &core.CommandStatic{
 	Children: core.Commands{
 		{
 			Names: []string{
-				"now",
-			},
-			Description: "get the current time",
-			UsageArgs:   "",
-			Run:         runNormalNow,
-		},
-		{
-			Names: []string{
 				"convert",
 			},
 			Description: "convert to a timezone",
