@@ -2,9 +2,7 @@ package prefix
 
 import (
 	"errors"
-	"flag"
 	"fmt"
-	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
@@ -15,94 +13,30 @@ var (
 	errMoreThanOneType = errors.New("only one type per prefix allowed")
 )
 
-type flags struct {
-	fs        *flag.FlagSet
-	m         *core.Message
+type adminFlags struct {
+	fs *core.Flags
+
 	typeFlag  int
 	scopeFlag int64
-
-	send strings.Builder
 }
 
-func (f *flags) Write(p []byte) (int, error) {
-	return f.send.Write(p)
-}
-
-func (f *flags) defaultUsage() {
-	if f.fs.Name() == "" {
-		f.send.WriteString("Usage:\n")
-	} else {
-		fmt.Fprintf(&f.send, "Usage of %s:\n", f.fs.Name())
-	}
-	f.fs.PrintDefaults()
-
-	f.send.WriteString("```")
-
-	f.m.Write(f.send.String(), errors.New("flags error"))
-}
-
-func newFlags(m *core.Message) *flags {
-	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Runtime.Name, " "))
-	f := &flags{
-		fs: flag.NewFlagSet(name, flag.ContinueOnError),
-		m:  m,
-	}
-
-	f.send.WriteString("```\n")
-	f.fs.SetOutput(f)
-
-	f.fs.Usage = f.defaultUsage
+func (f *adminFlags) TypeFlag() *adminFlags {
+	core.TypeFlag(&f.typeFlag, core.All, f.fs)
 	return f
 }
 
-func (f *flags) TypeFlag() *flags {
-	f.typeFlag = core.All
-
-	f.fs.Func("type", "comma separated command types", func(s string) error {
-		split := strings.Split(s, ",")
-
-		if len(split) != 0 {
-			f.typeFlag = 0
-		}
-
-		for _, opt := range split {
-			switch opt {
-			case "normal":
-				f.typeFlag |= core.Normal
-			case "advanced":
-				f.typeFlag |= core.Advanced
-			case "admin":
-				f.typeFlag |= core.Admin
-			default:
-				return fmt.Errorf("invalid type '%s'", opt)
-			}
-		}
-
-		return nil
-	})
-
+func (f *adminFlags) ScopeFlag() *adminFlags {
+	core.ScopeFlag(&f.scopeFlag, f.fs)
 	return f
 }
 
-func (f *flags) ScopeFlag() *flags {
-	scope, err := f.m.ScopePlace()
-	if err != nil {
-		// todo
+func getAdminFlags(m *core.Message) (*adminFlags, []string, error) {
+	f := &adminFlags{
+		fs: core.NewFlags(m),
 	}
-	usage := "provide a scope, default value is the current scope"
-	f.fs.Int64Var(&f.scopeFlag, "scope", scope, usage)
-	return f
-}
-
-func (f *flags) Parse() (*flags, []string, error) {
-	err := f.fs.Parse(f.m.Command.Runtime.Args)
-	return f, f.fs.Args(), err
-}
-
-func getFlags(m *core.Message) (*flags, []string, error) {
-	// f, args, err := newFlags(m).TypeFlag().ScopeFlag().Parse()
-	// return f.typeFlag, args, err
-	return newFlags(m).TypeFlag().ScopeFlag().Parse()
+	f.TypeFlag().ScopeFlag()
+	args, err := f.fs.Parse()
+	return f, args, err
 }
 
 func runAdminAdd(m *core.Message) (any, error, error) {
@@ -144,11 +78,12 @@ func onlyOneBitSet(n int) bool {
 }
 
 func runAdminAddCore(m *core.Message) (string, string, error, error) {
-	fs, args, usrErr := getFlags(m)
-	t := fs.typeFlag
-	if usrErr != nil {
-		return "", "", usrErr, nil
+	fs, args, err := getAdminFlags(m)
+	if err != nil {
+		return "", "", nil, err
 	}
+
+	t := fs.typeFlag
 	if onlyOneBitSet(t) == false {
 		return "", "", errMoreThanOneType, nil
 	}
@@ -162,10 +97,6 @@ func runAdminAddCore(m *core.Message) (string, string, error, error) {
 	prefix := args[0]
 
 	scope := fs.scopeFlag
-	// scope, err := m.Scope()
-	// if err != nil {
-	// 	return prefix, "", nil, err
-	// }
 
 	collision, err := customCommandCollision(m, prefix)
 	if err != nil {
@@ -247,23 +178,13 @@ func runAdminDelCore(m *core.Message) (string, error, error) {
 		return "", errMissingArgument, nil
 	}
 
-	fs, args, usrErr := getFlags(m)
-	if usrErr != nil {
-		return "", usrErr, nil
+	fs, args, err := getAdminFlags(m)
+	if err != nil {
+		return "", nil, err
 	}
 
 	scope := fs.scopeFlag
-	// scope, err := m.Scope()
-	// if err != nil {
-	// 	return prefix, nil, err
-	// }
-
 	prefix := args[0]
-
-	// log.Debug().
-	// 	Str("prefix", prefix).
-	// 	Int64("scope", scope).
-	// 	Send()
 
 	prefixes, scopeExists, err := core.ScopePrefixes(scope)
 	if err != nil {
@@ -322,12 +243,12 @@ func runAdminList(m *core.Message) (any, error, error) {
 }
 
 func runAdminListCore(m *core.Message) ([]core.Prefix, error, error) {
-	fs, _, usrErr := getFlags(m)
-	types := fs.typeFlag
-	if usrErr != nil {
-		return nil, usrErr, nil
+	fs, _, err := getAdminFlags(m)
+	if err != nil {
+		return nil, nil, err
 	}
 
+	types := fs.typeFlag
 	scope := fs.scopeFlag
 
 	prefixes, _, err := core.ScopePrefixes(scope)
@@ -357,9 +278,9 @@ func runAdminReset(m *core.Message) (any, error, error) {
 }
 
 func runAdminResetCore(m *core.Message) (error, error) {
-	fs, _, usrErr := getFlags(m)
-	if usrErr != nil {
-		return usrErr, nil
+	fs, _, err := getAdminFlags(m)
+	if err != nil {
+		return nil, err
 	}
 	scope := fs.scopeFlag
 	return nil, dbReset(scope)
