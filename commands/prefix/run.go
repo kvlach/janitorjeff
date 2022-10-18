@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	errMissingArgument     = errors.New("missing argument")
 	errExists              = errors.New("prefix exists already")
 	errNotFound            = errors.New("prefix not found")
 	errOneLeft             = errors.New("only one prefix left")
@@ -22,7 +21,7 @@ var (
 )
 
 func run(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), errMissingArgument, nil
+	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
 func runAdd(m *core.Message) (any, error, error) {
@@ -46,7 +45,7 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	collision = discord.PlaceInBackticks(collision)
 
 	switch usrErr {
-	case errMissingArgument:
+	case core.ErrMissingArgs:
 		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
 	}
 
@@ -66,7 +65,7 @@ func runAdd_Text(m *core.Message) (string, error, error) {
 	}
 
 	switch usrErr {
-	case errMissingArgument:
+	case core.ErrMissingArgs:
 		return m.ReplyUsage().(string), usrErr, nil
 	}
 
@@ -88,7 +87,7 @@ func runAdd_Err(err error, prefix, collision string) string {
 
 func runAdd_Core(m *core.Message) (string, string, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return "", "", errMissingArgument, nil
+		return "", "", core.ErrMissingArgs, nil
 	}
 	prefix := m.Command.Runtime.Args[0]
 
@@ -190,7 +189,7 @@ func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	resetCommand := ""
 
 	switch usrErr {
-	case errMissingArgument:
+	case core.ErrMissingArgs:
 		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
@@ -217,7 +216,7 @@ func runDelete_Text(m *core.Message) (string, error, error) {
 	resetCommand := ""
 
 	switch usrErr {
-	case errMissingArgument:
+	case core.ErrMissingArgs:
 		return m.ReplyUsage().(string), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
@@ -242,7 +241,7 @@ func runDelete_Err(err error, m *core.Message, prefix, resetCommand string) stri
 
 func runDelete_Core(m *core.Message) (string, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return "", errMissingArgument, nil
+		return "", core.ErrMissingArgs, nil
 	}
 	prefix := m.Command.Runtime.Args[0]
 
