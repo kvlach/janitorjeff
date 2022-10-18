@@ -23,7 +23,7 @@ var (
 )
 
 func runNormal(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return runNormalNow(m)
 }
 
 func runNormalTimezone(m *core.Message) (any, error, error) {
