@@ -14,10 +14,7 @@ var (
 )
 
 func getAdminFlags(m *core.Message) (*flags, []string, error) {
-	f := &flags{
-		fs: core.NewFlags(m),
-	}
-	f.TypeFlag().ScopeFlag()
+	f := newFlags(m).TypeFlag().ScopeFlag()
 	args, err := f.fs.Parse()
 	return f, args, err
 }
