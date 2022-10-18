@@ -11,6 +11,13 @@ type flags struct {
 	scopeFlag int64
 }
 
+func newFlags(m *core.Message) *flags {
+	f := &flags{
+		fs: core.NewFlags(m),
+	}
+	return f
+}
+
 func (f *flags) TypeFlag() *flags {
 	core.TypeFlag(&f.typeFlag, core.All, f.fs)
 	return f
