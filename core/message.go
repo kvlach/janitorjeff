@@ -381,6 +381,9 @@ func (m *Message) CommandRun() (*Message, error) {
 	cmd := m.Command.Static
 
 	resp, usrErr, err := cmd.Run(m)
+	if err == ErrSilence {
+		return nil, err
+	}
 	if err != nil {
 		// passing an empty error in order to get any error specific rendering
 		// that might be supported
