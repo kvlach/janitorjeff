@@ -80,13 +80,19 @@ type CommandStatic struct {
 }
 
 func (cmd *CommandStatic) Format(prefix string) string {
+	var args string
+	if cmd.UsageArgs != "" {
+		args = " " + cmd.UsageArgs
+	}
+
 	path := []string{}
 	for cmd.Parent != nil {
 		path = append([]string{cmd.Names[0]}, path...)
 		cmd = cmd.Parent
 	}
 	path = append([]string{cmd.Names[0]}, path...)
-	return fmt.Sprintf("%s%s", prefix, strings.Join(path, " "))
+
+	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
 }
 
 // type CommandRaw struct {

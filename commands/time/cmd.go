@@ -9,59 +9,20 @@ var Normal = &core.CommandStatic{
 		"time",
 	},
 	Description: "time stuff and things",
-	UsageArgs:   "(now | convert | timezone)",
+	UsageArgs:   "[<user> | zone]",
 	Run:         runNormal,
 	Init:        init_,
 
 	Children: core.Commands{
-		{
-			Names: []string{
-				"convert",
-			},
-			Description: "convert to a timezone",
-			UsageArgs:   "(now|<timestamp>) <timezone>",
-			Run:         runNormalConvert,
-		},
-		{
-			Names: []string{
-				"timezone",
-				"tz",
-			},
-			Description: "Set your own personal timezone.",
-			UsageArgs:   "(set | delete | get)",
-			Run:         runNormalTimezone,
-
-			Children: core.Commands{
-				cmdNormalTimezoneSet,
-				{
-					Names: []string{
-						"del",
-						"delete",
-						"rm",
-						"remove",
-					},
-					Description: "specify your own timezone",
-					UsageArgs:   "",
-					Run:         runNormalTimezoneDelete,
-				},
-				{
-					Names: []string{
-						"get",
-					},
-					Description: "see your timezone",
-					UsageArgs:   "",
-					Run:         runNormalTimezoneGet,
-				},
-			},
-		},
+		cmdNormalTimezone,
 	},
 }
 
-var cmdNormalTimezoneSet = &core.CommandStatic{
+var cmdNormalTimezone = &core.CommandStatic{
 	Names: []string{
-		"set",
+		"zone",
 	},
-	Description: "specify your own timezone",
-	UsageArgs:   "<timezone>",
-	Run:         runNormalTimezoneSet,
+	Description: "Set or view your own timezone.",
+	UsageArgs:   "[timezone]",
+	Run:         runNormalTimezone,
 }

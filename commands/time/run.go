@@ -27,7 +27,10 @@ func runNormal(m *core.Message) (any, error, error) {
 }
 
 func runNormalTimezone(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	if len(m.Command.Runtime.Args) == 0 {
+		return runNormalTimezoneGet(m)
+	}
+	return runNormalTimezoneSet(m)
 }
 
 func runNormalTimezoneSet(m *core.Message) (any, error, error) {
@@ -362,7 +365,7 @@ func runNormalNowErr(usrErr error, m *core.Message, now time.Time, cmdTzSet stri
 
 func runNormalNowCore(m *core.Message) (time.Time, string, error, error) {
 	now := time.Now().UTC()
-	cmdTzSet := cmdNormalTimezoneSet.Format(m.Command.Runtime.Prefix)
+	cmdTzSet := cmdNormalTimezone.Format(m.Command.Runtime.Prefix)
 
 	var user int64
 	var err error
