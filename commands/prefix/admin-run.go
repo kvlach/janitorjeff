@@ -13,25 +13,8 @@ var (
 	errMoreThanOneType = errors.New("only one type per prefix allowed")
 )
 
-type adminFlags struct {
-	fs *core.Flags
-
-	typeFlag  int
-	scopeFlag int64
-}
-
-func (f *adminFlags) TypeFlag() *adminFlags {
-	core.TypeFlag(&f.typeFlag, core.All, f.fs)
-	return f
-}
-
-func (f *adminFlags) ScopeFlag() *adminFlags {
-	core.ScopeFlag(&f.scopeFlag, f.fs)
-	return f
-}
-
-func getAdminFlags(m *core.Message) (*adminFlags, []string, error) {
-	f := &adminFlags{
+func getAdminFlags(m *core.Message) (*flags, []string, error) {
+	f := &flags{
 		fs: core.NewFlags(m),
 	}
 	f.TypeFlag().ScopeFlag()
