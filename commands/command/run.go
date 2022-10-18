@@ -17,16 +17,15 @@ var (
 	errTriggerExists   = errors.New("trigger already exists")
 	errTriggerNotFound = errors.New("trigger was not found")
 	errBuiltinCommand  = errors.New("trigger collides with a built-in command")
-	errMissingArgs     = errors.New("not enough arguments provided")
 )
 
 func run(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), errMissingArgs, nil
+	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
 func runAdd(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -141,7 +140,7 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 
 func runModify(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -222,7 +221,7 @@ func runModify_Core(m *core.Message) (string, error, error) {
 
 func runDel(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -388,7 +387,7 @@ func RunList_Core(m *core.Message) ([]string, error) {
 
 func runHistory(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {

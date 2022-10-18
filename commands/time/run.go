@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	errMissingArgs    = errors.New("not enough arguments provided")
 	errTimestamp      = errors.New("invalid timestamp")
 	errTimezone       = errors.New("invalid timezone")
 	errUserExists     = errors.New("user already exists")
@@ -24,16 +23,16 @@ var (
 )
 
 func runNormal(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), errMissingArgs, nil
+	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
 func runNormalTimezone(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), errMissingArgs, nil
+	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
 func runNormalTimezoneSet(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -249,7 +248,7 @@ func runNormalTimezoneGetCore(m *core.Message) (string, error, error) {
 
 func runNormalConvert(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), errMissingArgs, nil
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
