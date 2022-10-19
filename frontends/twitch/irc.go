@@ -90,7 +90,7 @@ func (irc *IRC) getID(s string) (string, error) {
 }
 
 // Place and Person refer to the same thing on twitch
-func (irc *IRC) PersonID(s string) (string, error) {
+func (irc *IRC) PersonID(s, _ string) (string, error) {
 	return irc.getID(s)
 }
 

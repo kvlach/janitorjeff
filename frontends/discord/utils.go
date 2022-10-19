@@ -15,7 +15,7 @@ import (
 
 var errInvalidID = errors.New("given string is not a valid ID")
 
-func getPersonID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
+func getPersonID(s, guildID string, ds *dg.Session, msg *dg.Message) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
 	// this: <@id>
 
@@ -34,7 +34,7 @@ func getPersonID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
 		return s, nil
 	}
 
-	if _, err := ds.GuildMember(msg.GuildID, s); err != nil {
+	if _, err := ds.GuildMember(guildID, s); err != nil {
 		return "", err
 	}
 

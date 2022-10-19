@@ -23,8 +23,8 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessage) PersonID(s string) (string, error) {
-	return getPersonID(s, d.session, d.message)
+func (d *DiscordMessage) PersonID(s, placeID string) (string, error) {
+	return getPersonID(s, placeID, d.session, d.message)
 }
 
 func (d *DiscordMessage) PlaceID(s string) (string, error) {

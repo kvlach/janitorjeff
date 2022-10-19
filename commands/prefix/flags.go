@@ -24,6 +24,6 @@ func (f *flags) TypeFlag() *flags {
 }
 
 func (f *flags) ScopeFlag() *flags {
-	core.ScopeFlag(&f.scopeFlag, f.fs)
+	core.FlagPlace(&f.scopeFlag, f.fs)
 	return f
 }

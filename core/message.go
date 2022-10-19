@@ -27,7 +27,7 @@ type Messenger interface {
 	// Generally used for verifying an ID's validity and extracting IDs from
 	// mentions.
 	PlaceID(s string) (id string, err error)
-	PersonID(s string) (id string, err error)
+	PersonID(s, placeID string) (id string, err error)
 
 	// Gets the target's scope. If it doesn't exist it will create it and add
 	// it to the database.

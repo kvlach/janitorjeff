@@ -90,7 +90,7 @@ func getPersonScope(id string) (int64, error) {
 func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	db := core.Globals.DB
 
-	scope, err := db.ScopeAdd(tx)
+	scope, err := db.ScopeAdd(tx, guildID)
 	if err != nil {
 		return -1, err
 	}
@@ -109,7 +109,7 @@ func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, error) {
 	db := core.Globals.DB
 
-	scope, err := db.ScopeAdd(tx)
+	scope, err := db.ScopeAdd(tx, channelID)
 	if err != nil {
 		return -1, err
 	}
@@ -167,7 +167,7 @@ func dbGetGuildFromChannel(channelScope int64) (int64, error) {
 func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
 	db := core.Globals.DB
 
-	scope, err := db.ScopeAdd(tx)
+	scope, err := db.ScopeAdd(tx, userID)
 	if err != nil {
 		return -1, err
 	}

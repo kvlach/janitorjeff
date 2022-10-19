@@ -80,11 +80,20 @@ func TypeFlag(p *int, value int, f *Flags) {
 	})
 }
 
-func ScopeFlag(p *int64, f *Flags) {
-	scope, err := f.Msg.ScopeHere()
+func FlagPlace(place *int64, f *Flags) {
+	here, err := f.Msg.ScopeHere()
 	if err != nil {
 		// todo
 	}
-	usage := "provide a scope, default value is the current scope"
-	f.FlagSet.Int64Var(p, "scope", scope, usage)
+	usage := "provide a place, default value is 'here'"
+	f.FlagSet.Int64Var(place, "place", here, usage)
+}
+
+func FlagPerson(person *int64, f *Flags) {
+	author, err := f.Msg.ScopeAuthor()
+	if err != nil {
+		// todo
+	}
+	usage := "provide a person, default value is 'author'"
+	f.FlagSet.Int64Var(person, "person", author, usage)
 }
