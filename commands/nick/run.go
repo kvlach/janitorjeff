@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -72,7 +71,7 @@ func runNormalGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return "", nil, err
 	}
@@ -136,7 +135,7 @@ func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
 func runNormalSetCore(m *core.Message) (string, error, error) {
 	nick := m.Command.Runtime.Args[0]
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return "", nil, err
 	}
@@ -169,21 +168,26 @@ func runNormalSetCore(m *core.Message) (string, error, error) {
 // matches a nickname in the database and if it doesn't it tries various
 // platform specific things, like for example checking if the given string is a
 // user ID.
-func ParseUser(m *core.Message, s string) (int64, error) {
-	place, err := m.ScopePlace()
-	if err != nil {
-		return -1, err
-	}
-
+func ParseUser(m *core.Message, place int64, s string) (int64, error) {
 	user, err := dbGetUser(s, place)
 	if err == nil {
 		return user, nil
 	}
 
-	id, err := m.Client.ID(frontends.User, s)
+	id, err := m.Client.PersonID(s)
 	if err != nil {
 		return -1, err
 	}
 
-	return m.Client.Scope(frontends.User, id)
+	return m.Client.PersonScope(id)
+}
+
+// Same as ParseUser but uses the default place instead
+func ParseUserHere(m *core.Message, s string) (int64, error) {
+	place, err := m.ScopeHere()
+	if err != nil {
+		return -1, err
+	}
+
+	return ParseUser(m, place, s)
 }

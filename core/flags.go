@@ -81,7 +81,7 @@ func TypeFlag(p *int, value int, f *Flags) {
 }
 
 func ScopeFlag(p *int64, f *Flags) {
-	scope, err := f.Msg.ScopePlace()
+	scope, err := f.Msg.ScopeHere()
 	if err != nil {
 		// todo
 	}

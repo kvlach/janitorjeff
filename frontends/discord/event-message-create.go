@@ -24,18 +24,26 @@ func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessageCreate) ID(t int, s string) (string, error) {
-	return getID(t, s, d.Session, d.Message.Message)
+func (d *DiscordMessageCreate) PersonID(s string) (string, error) {
+	return getPersonID(s, d.Session, d.Message.Message)
 }
 
-func (d *DiscordMessageCreate) Scope(t int, id string) (int64, error) {
-	return getScope(t, id, d.Message.Message)
+func (d *DiscordMessageCreate) PlaceID(s string) (string, error) {
+	return getPlaceID(s, d.Session, d.Message.Message)
+}
+
+func (d *DiscordMessageCreate) PersonScope(id string) (int64, error) {
+	return getPersonScope(id)
+}
+
+func (d *DiscordMessageCreate) PlaceScope(id string) (int64, error) {
+	return getPlaceScope(id, d.Message.Message, d.Session)
 }
 
 func (d *DiscordMessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, msg.(string), d.Message.ChannelID)
+		return sendText(d.Session, msg.(string), d.Message.ChannelID, d.Message.GuildID)
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
 		return sendEmbed(d.Session, d.Message.Message, embed, usrErr)
