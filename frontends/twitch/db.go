@@ -1,19 +1,21 @@
 package twitch
 
 import (
-	"fmt"
-
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+
+	tirc "github.com/gempir/go-twitch-irc/v2"
 )
 
-func twitchChannelAddChannel(t int, id, channelID, channelName string) (int64, error) {
-	switch t {
-	case Default, Author:
-		break
-	case Channel, User:
+func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
+	var channelID, channelName string
+	if id == m.User.ID {
+		channelID = m.User.ID
+		channelName = m.User.Name
+	} else if name, err := h.GetUserName(id); err == nil {
 		channelID = id
-	default:
-		return -1, fmt.Errorf("type '%d' not supproted", t)
+		channelName = name
+	} else {
+		return -1, err
 	}
 
 	// if scope exists return it instead of re-adding it
@@ -64,12 +66,12 @@ func TwitchChannelSetAccessToken(accessToken, refreshToken, channelID, channelNa
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	_, err := twitchChannelAddChannel(Channel, channelID, channelID, channelName)
-	if err != nil {
-		return err
-	}
+	// _, err := twitchChannelAddChannel(Channel, channelID, channelID, channelName)
+	// if err != nil {
+	// 	return err
+	// }
 
-	_, err = db.DB.Exec(`
+	_, err := db.DB.Exec(`
 		UPDATE PlatformTwitchChannels
 		SET access_token = ?, refresh_token = ?
 		WHERE channel_id = ?`, accessToken, refreshToken, channelID)

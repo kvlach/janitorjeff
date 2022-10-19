@@ -99,7 +99,7 @@ func runNormalTimezoneSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return "", nil, err
 	}
@@ -162,7 +162,7 @@ func runNormalTimezoneDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func runNormalTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return "", nil, err
 	}
@@ -372,14 +372,14 @@ func runNormalNowCore(m *core.Message) (time.Time, string, error, error) {
 	if len(m.Command.Runtime.Args) == 0 {
 		user, err = m.ScopeAuthor()
 	} else {
-		user, err = nick.ParseUser(m, m.Command.Runtime.Args[0])
+		user, err = nick.ParseUserHere(m, m.Command.Runtime.Args[0])
 	}
 
 	if err != nil {
 		return now, cmdTzSet, errUserNotFound, nil
 	}
 
-	place, err := m.ScopePlace()
+	place, err := m.ScopeHere()
 	if err != nil {
 		return now, cmdTzSet, nil, err
 	}

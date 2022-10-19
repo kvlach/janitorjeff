@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,7 +13,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func getUserID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
+var errInvalidID = errors.New("given string is not a valid ID")
+
+func getPersonID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
 	// this: <@id>
 
@@ -22,7 +25,7 @@ func getUserID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
 
 	// not even a number, no point in asking discord if it's a valid id
 	if _, err := strconv.ParseInt(s, 10, 64); err != nil {
-		return "", err
+		return "", errInvalidID
 	}
 
 	// if the user is in a DM then the only valid user id would be that of
@@ -38,13 +41,31 @@ func getUserID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
 	return s, nil
 }
 
-func getID(t int, s string, ds *dg.Session, msg *dg.Message) (string, error) {
-	switch t {
-	case User:
-		return getUserID(s, ds, msg)
-	default:
-		return "", fmt.Errorf("id extraction for type '%d' not supported", t)
+func getPlaceID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
+	// expects one of the following:
+	// - guild id
+	// - channel id
+	// - channel mention (looks like: <#channel-id>)
+
+	s = strings.TrimPrefix(s, "<#")
+	s = strings.TrimSuffix(s, ">")
+
+	// if it's not a number there's no point in asking discord if it's a valid
+	// id
+	if _, err := strconv.ParseInt(s, 10, 64); err != nil {
+		return s, errInvalidID
 	}
+
+	// will usually be a guild, so first try checking that
+	if _, err := ds.Guild(s); err == nil {
+		return s, nil
+	}
+
+	if _, err := ds.Channel(s); err == nil {
+		return s, nil
+	}
+
+	return s, errInvalidID
 }
 
 func isAdmin(id string) bool {
@@ -98,7 +119,7 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func sendText(d *dg.Session, text, channel string) (*core.Message, error) {
+func sendText(d *dg.Session, text, channel, guild string) (*core.Message, error) {
 	var msg *dg.Message
 	var err error
 
@@ -118,6 +139,14 @@ func sendText(d *dg.Session, text, channel string) (*core.Message, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// the returned response leaves the guild id empty whether or not the
+	// message was sent to a guild, this makes it very difficult for the scope
+	// getter functions to know which scope to return (they check if the guild
+	// id is empty to know whether or not a message came from a DM), so we
+	// manually set the guild id here
+	msg.GuildID = guild
+
 	m := &DiscordMessage{d, msg}
 	return m.Parse()
 }
@@ -146,16 +175,24 @@ func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
+
+	// the returned response leaves the guild id empty whether or not the
+	// message was sent to a guild, this makes it very difficult for the scope
+	// getter functions to know which scope to return (they check if the guild
+	// id is empty to know whether or not a message came from a DM), so we
+	// manually set the guild id here
+	resp.GuildID = m.GuildID
+
 	replies.Set(m.ID, resp.ID)
 	return (&DiscordMessage{d, resp}).Parse()
 }
 
-func editEmbed(d *dg.Session, embed *dg.MessageEmbed, usrErr error, id, channel string) (*core.Message, error) {
+func editEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
 	embed = embedColor(embed, usrErr)
 
 	msgEdit := &dg.MessageEdit{
 		ID:      id,
-		Channel: channel,
+		Channel: m.ChannelID,
 
 		Embeds: []*dg.MessageEmbed{
 			embed,
@@ -169,6 +206,14 @@ func editEmbed(d *dg.Session, embed *dg.MessageEmbed, usrErr error, id, channel 
 	if err != nil {
 		return nil, err
 	}
+
+	// the returned response leaves the guild id empty whether or not the
+	// message was sent to a guild, this makes it very difficult for the scope
+	// getter functions to know which scope to return (they check if the guild
+	// id is empty to know whether or not a message came from a DM), so we
+	// manually set the guild id here
+	resp.GuildID = m.GuildID
+
 	return (&DiscordMessage{d, resp}).Parse()
 }
 

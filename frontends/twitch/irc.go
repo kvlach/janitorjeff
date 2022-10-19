@@ -74,29 +74,37 @@ func (irc *IRC) checkID(id string) error {
 	return err
 }
 
-func (irc *IRC) ID(t int, s string) (string, error) {
-	switch t {
-	case User, Channel:
-		// expected inputs are either a username, a mention (@username) or the
-		// id itself
+func (irc *IRC) getID(s string) (string, error) {
+	// expected inputs are either a username, a mention (@username) or the
+	// id itself
 
-		if err := irc.checkID(s); err == nil {
-			return s, nil
-		}
-		s = strings.TrimPrefix(s, "@")
-
-		// try to get the corresponding id from the username, if it exists then
-		// it will fetch and return with no error, if not then it will fail
-		// and return an error
-		return irc.Helix.GetUserID(s)
-
-	default:
-		return "", fmt.Errorf("id extraction for type '%d' not supported", t)
+	if err := irc.checkID(s); err == nil {
+		return s, nil
 	}
+	s = strings.TrimPrefix(s, "@")
+
+	// try to get the corresponding id from the username, if it exists then
+	// it will fetch and return with no error, if not then it will fail
+	// and return an error
+	return irc.Helix.GetUserID(s)
 }
 
-func (irc *IRC) Scope(t int, id string) (int64, error) {
-	return twitchChannelAddChannel(t, id, irc.message.User.ID, irc.message.User.Name)
+// Place and Person refer to the same thing on twitch
+func (irc *IRC) PersonID(s string) (string, error) {
+	return irc.getID(s)
+}
+
+// Place and Person refer to the same thing on twitch
+func (irc *IRC) PlaceID(s string) (string, error) {
+	return irc.getID(s)
+}
+
+func (irc *IRC) PersonScope(id string) (int64, error) {
+	return twitchChannelAddChannel(id, irc.message, irc.Helix)
+}
+
+func (irc *IRC) PlaceScope(id string) (int64, error) {
+	return twitchChannelAddChannel(id, irc.message, irc.Helix)
 }
 
 func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {

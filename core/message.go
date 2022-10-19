@@ -26,18 +26,13 @@ type Messenger interface {
 	// Returns the ID of the passed string. The returned ID must be valid.
 	// Generally used for verifying an ID's validity and extracting IDs from
 	// mentions.
-	ID(t int, s string) (id string, err error)
+	PlaceID(s string) (id string, err error)
+	PersonID(s string) (id string, err error)
 
 	// Gets the target's scope. If it doesn't exist it will create it and add
-	// it to the database. The scope's type (e.g. channel, user, etc.) and an
-	// ID is passed in order to specify the scope. A default scope exists that
-	// expects no ID and correspons to the type -1, it returns the logical
-	// scope for which actions happen in; for example in discord if a command
-	// is called from a guild it will return the guild's scope instead of the
-	// channel's, as opposed to a command being called from DMs. If the type
-	// -2 is passed then the scope of the message's author is returned and the
-	// id is also expected to be empty.
-	Scope(t int, id string) (scope int64, err error)
+	// it to the database.
+	PlaceScope(id string) (place int64, err error)
+	PersonScope(id string) (person int64, err error)
 
 	// Writes a message to the current channel
 	// returned *Message could be nil depending on the platform
@@ -131,7 +126,7 @@ func (cmd *Command) Usage() string {
 
 type Message struct {
 	scopeAuthor int64
-	scopePlace  int64
+	scopeHere   int64
 
 	ID      string
 	Type    int
@@ -185,19 +180,19 @@ func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-func (m *Message) ScopePlace() (int64, error) {
+func (m *Message) ScopeHere() (int64, error) {
 	// caches the scope to avoid unecessary database queries
 
-	if m.scopePlace != 0 {
-		return m.scopePlace, nil
+	if m.scopeHere != 0 {
+		return m.scopeHere, nil
 	}
 
-	place, err := m.Client.Scope(-1, "")
+	here, err := m.Client.PlaceScope(m.Channel.ID)
 	if err != nil {
 		return -1, err
 	}
-	m.scopePlace = place
-	return place, nil
+	m.scopeHere = here
+	return here, nil
 }
 
 func (m *Message) ScopeAuthor() (int64, error) {
@@ -207,7 +202,7 @@ func (m *Message) ScopeAuthor() (int64, error) {
 		return m.scopeAuthor, nil
 	}
 
-	author, err := m.Client.Scope(-2, "")
+	author, err := m.Client.PersonScope(m.Author.ID)
 	if err != nil {
 		return -1, err
 	}
@@ -275,7 +270,7 @@ END:
 }
 
 func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
-	scope, err := m.ScopePlace()
+	scope, err := m.ScopeHere()
 	if err != nil {
 		return nil, false, err
 	}

@@ -49,18 +49,26 @@ func (d *DiscordMessageEdit) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessageEdit) ID(t int, s string) (string, error) {
-	return getID(t, s, d.Session, d.Message.Message)
+func (d *DiscordMessageEdit) PersonID(s string) (string, error) {
+	return getPersonID(s, d.Session, d.Message.Message)
 }
 
-func (d *DiscordMessageEdit) Scope(t int, id string) (int64, error) {
-	return getScope(t, id, d.Message.Message)
+func (d *DiscordMessageEdit) PlaceID(s string) (string, error) {
+	return getPlaceID(s, d.Session, d.Message.Message)
+}
+
+func (d *DiscordMessageEdit) PersonScope(id string) (int64, error) {
+	return getPersonScope(id)
+}
+
+func (d *DiscordMessageEdit) PlaceScope(id string) (int64, error) {
+	return getPlaceScope(id, d.Message.Message, d.Session)
 }
 
 func (d *DiscordMessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, msg.(string), d.Message.ChannelID)
+		return sendText(d.Session, msg.(string), d.Message.ChannelID, d.Message.GuildID)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
@@ -68,7 +76,7 @@ func (d *DiscordMessageEdit) Write(msg any, usrErr error) (*core.Message, error)
 		if !ok {
 			return sendEmbed(d.Session, d.Message.Message, embed, usrErr)
 		}
-		return editEmbed(d.Session, embed, usrErr, id, d.Message.ChannelID)
+		return editEmbed(d.Session, d.Message.Message, embed, usrErr, id)
 
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)

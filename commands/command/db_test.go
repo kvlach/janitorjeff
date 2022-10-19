@@ -100,7 +100,7 @@ func TestMain(m *testing.M) {
 
 	var err error
 
-	testScope, err = msg.ScopePlace()
+	testScope, err = msg.ScopeHere()
 	if err != nil {
 		log.Fatalln(err)
 	}
