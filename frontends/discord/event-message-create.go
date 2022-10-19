@@ -24,8 +24,8 @@ func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (d *DiscordMessageCreate) PersonID(s string) (string, error) {
-	return getPersonID(s, d.Session, d.Message.Message)
+func (d *DiscordMessageCreate) PersonID(s, placeID string) (string, error) {
+	return getPersonID(s, placeID, d.Session, d.Message.Message)
 }
 
 func (d *DiscordMessageCreate) PlaceID(s string) (string, error) {

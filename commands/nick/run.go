@@ -169,12 +169,16 @@ func runNormalSetCore(m *core.Message) (string, error, error) {
 // platform specific things, like for example checking if the given string is a
 // user ID.
 func ParseUser(m *core.Message, place int64, s string) (int64, error) {
-	user, err := dbGetUser(s, place)
-	if err == nil {
+	if user, err := dbGetUser(s, place); err == nil {
 		return user, nil
 	}
 
-	id, err := m.Client.PersonID(s)
+	placeID, err := core.Globals.DB.ScopeID(place)
+	if err != nil {
+		return -1, err
+	}
+
+	id, err := m.Client.PersonID(s, placeID)
 	if err != nil {
 		return -1, err
 	}

@@ -32,7 +32,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	}
 	defer tx.Rollback()
 
-	scope, err = db.ScopeAdd(tx)
+	scope, err = db.ScopeAdd(tx, channelID)
 	if err != nil {
 		return -1, err
 	}

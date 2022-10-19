@@ -21,6 +21,7 @@ var Normal = core.Commands{
 var Advanced = core.Commands{}
 
 var Admin = core.Commands{
-	test.Command,
+	nick.Admin,
 	prefix.Admin,
+	test.Command,
 }
