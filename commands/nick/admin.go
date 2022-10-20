@@ -25,6 +25,12 @@ var Admin = &core.CommandStatic{
 			},
 			Run: adminRunSet,
 		},
+		{
+			Names: []string{
+				"rm",
+			},
+			Run: adminRunDelete,
+		},
 	},
 }
 
@@ -97,4 +103,31 @@ func adminRunSetCore(m *core.Message) (string, error, error) {
 	}
 	nick := args[0]
 	return runSet(nick, fs.person, fs.place)
+}
+
+func adminRunDelete(m *core.Message) (any, error, error) {
+	usrErr, err := adminRunDeleteCore(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return adminRunDeleteErr(usrErr), usrErr, nil
+}
+
+func adminRunDeleteErr(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "removed nick"
+	case errUserNotFound:
+		return "person doesn't have a nickname in specified place"
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func adminRunDeleteCore(m *core.Message) (error, error) {
+	fs, _, err := adminGetFlags(m)
+	if err != nil {
+		return nil, err
+	}
+	return runDelete(fs.person, fs.place)
 }
