@@ -54,6 +54,12 @@ func advancedRun(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
+//////////
+//      //
+// view //
+//      //
+//////////
+
 func advancedRunView(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
@@ -91,7 +97,7 @@ func advancedRunViewErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
-	case errUserNotFound:
+	case errPersonNotFound:
 		return "You have not set a nickname."
 	default:
 		return fmt.Sprint(usrErr)
@@ -111,6 +117,12 @@ func advancedRunViewCore(m *core.Message) (string, error, error) {
 
 	return runGet(author, place)
 }
+
+/////////
+//     //
+// set //
+//     //
+/////////
 
 func advancedRunSet(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
@@ -177,6 +189,12 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 	return nick, usrErr, err
 }
 
+////////////
+//        //
+// delete //
+//        //
+////////////
+
 func advancedRunDelete(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
@@ -211,7 +229,7 @@ func advancedRunDeleteErr(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "Deleted your nickname."
-	case errUserNotFound:
+	case errPersonNotFound:
 		return "Can't delete, you haven't set a nickname here."
 	default:
 		return fmt.Sprint(usrErr)

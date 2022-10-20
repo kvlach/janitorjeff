@@ -26,7 +26,7 @@ func normalRun(m *core.Message) (any, error, error) {
 // platform specific things, like for example checking if the given string is a
 // user ID.
 func ParseUser(m *core.Message, place int64, s string) (int64, error) {
-	if user, err := dbGetUser(s, place); err == nil {
+	if user, err := dbGetPerson(s, place); err == nil {
 		return user, nil
 	}
 
