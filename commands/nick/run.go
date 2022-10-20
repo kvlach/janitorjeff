@@ -32,3 +32,14 @@ func runSet(nick string, person, place int64) (string, error, error) {
 	}
 	return nick, nil, dbUserAdd(person, place, nick)
 }
+
+func runDelete(person, place int64) (error, error) {
+	exists, err := dbUserExists(person, place)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return errUserNotFound, nil
+	}
+	return nil, dbUserDelete(person, place)
+}
