@@ -10,43 +10,43 @@ var Admin = &core.CommandStatic{
 	Names: []string{
 		"nick",
 	},
-	Run: runAdmin,
+	Run: adminRun,
 
 	Children: core.Commands{
 		{
 			Names: []string{
 				"get",
 			},
-			Run: runAdminGet,
+			Run: adminRunGet,
 		},
 		{
 			Names: []string{
 				"set",
 			},
-			Run: runAdminSet,
+			Run: adminRunSet,
 		},
 	},
 }
 
-func getAdminFlags(m *core.Message) (*flags, []string, error) {
+func adminGetFlags(m *core.Message) (*flags, []string, error) {
 	f := newFlags(m).Place().Person()
 	args, err := f.fs.Parse()
 	return f, args, err
 }
 
-func runAdmin(m *core.Message) (any, error, error) {
+func adminRun(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
-func runAdminGet(m *core.Message) (any, error, error) {
-	nick, usrErr, err := runAdminGetCore(m)
+func adminRunGet(m *core.Message) (any, error, error) {
+	nick, usrErr, err := adminRunGetCore(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return runAdminGetErr(usrErr, nick), usrErr, nil
+	return adminRunGetErr(usrErr, nick), usrErr, nil
 }
 
-func runAdminGetErr(usrErr error, nick string) string {
+func adminRunGetErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return nick
@@ -57,26 +57,26 @@ func runAdminGetErr(usrErr error, nick string) string {
 	}
 }
 
-func runAdminGetCore(m *core.Message) (string, error, error) {
-	fs, _, err := getAdminFlags(m)
+func adminRunGetCore(m *core.Message) (string, error, error) {
+	fs, _, err := adminGetFlags(m)
 	if err != nil {
 		return "", nil, err
 	}
 	return runGet(fs.person, fs.place)
 }
 
-func runAdminSet(m *core.Message) (any, error, error) {
-	_, usrErr, err := runAdminSetCore(m)
+func adminRunSet(m *core.Message) (any, error, error) {
+	_, usrErr, err := adminRunSetCore(m)
 	if err != nil {
 		return "", nil, err
 	}
 	if usrErr == core.ErrMissingArgs {
 		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
-	return runAdminSetErr(usrErr), usrErr, nil
+	return adminRunSetErr(usrErr), usrErr, nil
 }
 
-func runAdminSetErr(usrErr error) string {
+func adminRunSetErr(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "set nickname"
@@ -87,8 +87,8 @@ func runAdminSetErr(usrErr error) string {
 	}
 }
 
-func runAdminSetCore(m *core.Message) (string, error, error) {
-	fs, args, err := getAdminFlags(m)
+func adminRunSetCore(m *core.Message) (string, error, error) {
+	fs, args, err := adminGetFlags(m)
 	if err != nil {
 		return "", nil, err
 	}
