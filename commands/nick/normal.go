@@ -9,29 +9,40 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
+var Normal = &core.CommandStatic{
+	Names: []string{
+		"nick",
+		"nickname",
+	},
+	Description: "Set a nickname that can be used when calling commands.",
+	UsageArgs:   "[nickname]",
+	Run:         normalRun,
+	Init:        init_,
+}
+
 var (
 	errUserNotFound = errors.New("user nick not found")
 	errNickExists   = errors.New("nick is used by a different user")
 )
 
-func runNormal(m *core.Message) (any, error, error) {
+func normalRun(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) == 0 {
-		return runNormalGet(m)
+		return normalRunGet(m)
 	}
-	return runNormalSet(m)
+	return normalRunSet(m)
 }
 
-func runNormalGet(m *core.Message) (any, error, error) {
+func normalRunGet(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
-		return runNormalGetDiscord(m)
+		return normalRunGetDiscord(m)
 	default:
-		return runNormalGetText(m)
+		return normalRunGetText(m)
 	}
 }
 
-func runNormalGetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	nick, usrErr, err := runNormalGetCore(m)
+func normalRunGetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	nick, usrErr, err := normalRunGetCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,22 +50,22 @@ func runNormalGetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: runNormalGetErr(usrErr, m, nick),
+		Description: normalRunGetErr(usrErr, m, nick),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runNormalGetText(m *core.Message) (string, error, error) {
-	nick, usrErr, err := runNormalGetCore(m)
+func normalRunGetText(m *core.Message) (string, error, error) {
+	nick, usrErr, err := normalRunGetCore(m)
 	if err != nil {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return runNormalGetErr(usrErr, m, nick), usrErr, nil
+	return normalRunGetErr(usrErr, m, nick), usrErr, nil
 }
 
-func runNormalGetErr(usrErr error, m *core.Message, nick string) string {
+func normalRunGetErr(usrErr error, m *core.Message, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("User's %s nickname is %s", m.Author.Mention, nick)
@@ -65,8 +76,8 @@ func runNormalGetErr(usrErr error, m *core.Message, nick string) string {
 	}
 }
 
-func runNormalGetCore(m *core.Message) (string, error, error) {
-	user, err := m.ScopeAuthor()
+func normalRunGetCore(m *core.Message) (string, error, error) {
+	author, err := m.ScopeAuthor()
 	if err != nil {
 		return "", nil, err
 	}
@@ -76,29 +87,20 @@ func runNormalGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	exists, err := dbUserExists(user, place)
-	if err != nil {
-		return "", nil, err
-	}
-	if !exists {
-		return "", errUserNotFound, nil
-	}
-
-	nick, err := dbUserNick(user, place)
-	return nick, nil, err
+	return runGet(author, place)
 }
 
-func runNormalSet(m *core.Message) (any, error, error) {
+func normalRunSet(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case core.Discord:
-		return runNormalSetDiscord(m)
+		return normalRunSetDiscord(m)
 	default:
-		return runNormalSetText(m)
+		return normalRunSetText(m)
 	}
 }
 
-func runNormalSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	nick, usrErr, err := runNormalSetCore(m)
+func normalRunSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	nick, usrErr, err := normalRunSetCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -106,22 +108,22 @@ func runNormalSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: runNormalSetErr(usrErr, m, nick),
+		Description: normalRunSetErr(usrErr, m, nick),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runNormalSetText(m *core.Message) (string, error, error) {
-	nick, usrErr, err := runNormalSetCore(m)
+func normalRunSetText(m *core.Message) (string, error, error) {
+	nick, usrErr, err := normalRunSetCore(m)
 	if err != nil {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return runNormalSetErr(usrErr, m, nick), usrErr, nil
+	return normalRunSetErr(usrErr, m, nick), usrErr, nil
 }
 
-func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
+func normalRunSetErr(usrErr error, m *core.Message, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Set nickname %s for user %s", nick, m.Author.Mention)
@@ -132,36 +134,20 @@ func runNormalSetErr(usrErr error, m *core.Message, nick string) string {
 	}
 }
 
-func runNormalSetCore(m *core.Message) (string, error, error) {
+func normalRunSetCore(m *core.Message) (string, error, error) {
 	nick := m.Command.Runtime.Args[0]
+
+	author, err := m.ScopeAuthor()
+	if err != nil {
+		return "", nil, err
+	}
 
 	place, err := m.ScopeHere()
 	if err != nil {
 		return "", nil, err
 	}
 
-	nickExists, err := dbNickExists(nick, place)
-	if err != nil {
-		return "", nil, err
-	}
-	if nickExists {
-		return nick, errNickExists, nil
-	}
-
-	user, err := m.ScopeAuthor()
-	if err != nil {
-		return "", nil, err
-	}
-
-	userExists, err := dbUserExists(user, place)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if userExists {
-		return nick, nil, dbUserUpdate(user, place, nick)
-	}
-	return nick, nil, dbUserAdd(user, place, nick)
+	return runSet(nick, author, place)
 }
 
 // Tries to find a user scope from the given string. First tries to find if it

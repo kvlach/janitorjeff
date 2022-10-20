@@ -6,6 +6,28 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
+var Admin = &core.CommandStatic{
+	Names: []string{
+		"nick",
+	},
+	Run: runAdmin,
+
+	Children: core.Commands{
+		{
+			Names: []string{
+				"get",
+			},
+			Run: runAdminGet,
+		},
+		{
+			Names: []string{
+				"set",
+			},
+			Run: runAdminSet,
+		},
+	},
+}
+
 func getAdminFlags(m *core.Message) (*flags, []string, error) {
 	f := newFlags(m).Place().Person()
 	args, err := f.fs.Parse()
@@ -75,37 +97,4 @@ func runAdminSetCore(m *core.Message) (string, error, error) {
 	}
 	nick := args[0]
 	return runSet(nick, fs.person, fs.place)
-}
-
-func runGet(person, place int64) (string, error, error) {
-	exists, err := dbUserExists(person, place)
-	if err != nil {
-		return "", nil, err
-	}
-	if !exists {
-		return "", errUserNotFound, nil
-	}
-
-	nick, err := dbUserNick(person, place)
-	return nick, nil, err
-}
-
-func runSet(nick string, person, place int64) (string, error, error) {
-	nickExists, err := dbNickExists(nick, place)
-	if err != nil {
-		return "", nil, err
-	}
-	if nickExists {
-		return nick, errNickExists, nil
-	}
-
-	personExists, err := dbUserExists(person, place)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if personExists {
-		return nick, nil, dbUserUpdate(person, place, nick)
-	}
-	return nick, nil, dbUserAdd(person, place, nick)
 }
