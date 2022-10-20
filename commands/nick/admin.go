@@ -23,13 +23,15 @@ var Admin = &core.CommandStatic{
 			Names: []string{
 				"set",
 			},
-			Run: adminRunSet,
+			UsageArgs: "<nick>",
+			Run:       adminRunSet,
 		},
 		{
 			Names: []string{
 				"rm",
 			},
-			Run: adminRunDelete,
+			UsageArgs: "<nick>",
+			Run:       adminRunDelete,
 		},
 	},
 }
