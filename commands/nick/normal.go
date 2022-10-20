@@ -50,7 +50,7 @@ func normalRunGetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: normalRunGetErr(usrErr, m, nick),
+		Description: normalRunGetErr(usrErr, nick),
 	}
 
 	return embed, usrErr, nil
@@ -62,15 +62,15 @@ func normalRunGetText(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return normalRunGetErr(usrErr, m, nick), usrErr, nil
+	return normalRunGetErr(usrErr, nick), usrErr, nil
 }
 
-func normalRunGetErr(usrErr error, m *core.Message, nick string) string {
+func normalRunGetErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("User's %s nickname is %s", m.Author.Mention, nick)
+		return fmt.Sprintf("Your nickname is: %s", nick)
 	case errUserNotFound:
-		return fmt.Sprintf("User %s has not set their nickname.", m.Author.Mention)
+		return "You have not set a nickname."
 	default:
 		return fmt.Sprint(usrErr)
 	}
@@ -108,7 +108,7 @@ func normalRunSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: normalRunSetErr(usrErr, m, nick),
+		Description: normalRunSetErr(usrErr, nick),
 	}
 
 	return embed, usrErr, nil
@@ -120,13 +120,13 @@ func normalRunSetText(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return normalRunSetErr(usrErr, m, nick), usrErr, nil
+	return normalRunSetErr(usrErr, nick), usrErr, nil
 }
 
-func normalRunSetErr(usrErr error, m *core.Message, nick string) string {
+func normalRunSetErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Set nickname %s for user %s", nick, m.Author.Mention)
+		return fmt.Sprintf("Nickname set to %s", nick)
 	case errNickExists:
 		return fmt.Sprintf("Nickname %s is already being used by another user.", nick)
 	default:
