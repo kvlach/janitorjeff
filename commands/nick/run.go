@@ -1,5 +1,14 @@
 package nick
 
+import (
+	"errors"
+)
+
+var (
+	errUserNotFound = errors.New("user nick not found")
+	errNickExists   = errors.New("nick is used by a different user")
+)
+
 func runGet(person, place int64) (string, error, error) {
 	exists, err := dbUserExists(person, place)
 	if err != nil {

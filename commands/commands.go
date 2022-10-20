@@ -18,7 +18,9 @@ var Normal = core.Commands{
 	time.Normal,
 }
 
-var Advanced = core.Commands{}
+var Advanced = core.Commands{
+	nick.Advanced,
+}
 
 var Admin = core.Commands{
 	nick.Admin,
