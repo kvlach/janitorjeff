@@ -26,3 +26,14 @@ var cmdNormalTimezone = &core.CommandStatic{
 	UsageArgs:   "[timezone]",
 	Run:         runNormalTimezone,
 }
+
+func runNormal(m *core.Message) (any, error, error) {
+	return advancedRunNow(m)
+}
+
+func runNormalTimezone(m *core.Message) (any, error, error) {
+	if len(m.Command.Runtime.Args) == 0 {
+		return advancedRunTimezoneGet(m)
+	}
+	return advancedRunTimezoneSet(m)
+}
