@@ -147,7 +147,8 @@ func normalRunSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runSet(nick, author, place)
+	usrErr, err := runSet(nick, author, place)
+	return nick, usrErr, err
 }
 
 // Tries to find a user scope from the given string. First tries to find if it
