@@ -13,24 +13,24 @@ func runGet(person, place int64) (string, error, error) {
 	return nick, nil, err
 }
 
-func runSet(nick string, person, place int64) (string, error, error) {
+func runSet(nick string, person, place int64) (error, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	if nickExists {
-		return nick, errNickExists, nil
+		return errNickExists, nil
 	}
 
 	personExists, err := dbUserExists(person, place)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
 	if personExists {
-		return nick, nil, dbUserUpdate(person, place, nick)
+		return nil, dbUserUpdate(person, place, nick)
 	}
-	return nick, nil, dbUserAdd(person, place, nick)
+	return nil, dbUserAdd(person, place, nick)
 }
 
 func runDelete(person, place int64) (error, error) {

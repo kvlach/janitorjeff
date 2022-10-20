@@ -104,7 +104,8 @@ func adminRunSetCore(m *core.Message) (string, error, error) {
 		return "", core.ErrMissingArgs, nil
 	}
 	nick := args[0]
-	return runSet(nick, fs.person, fs.place)
+	usrErr, err := runSet(nick, fs.person, fs.place)
+	return nick, usrErr, err
 }
 
 func adminRunDelete(m *core.Message) (any, error, error) {
