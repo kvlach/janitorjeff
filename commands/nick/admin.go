@@ -46,6 +46,12 @@ func adminRun(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
+/////////
+//     //
+// get //
+//     //
+/////////
+
 func adminRunGet(m *core.Message) (any, error, error) {
 	nick, usrErr, err := adminRunGetCore(m)
 	if err != nil {
@@ -58,7 +64,7 @@ func adminRunGetErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return nick
-	case errUserNotFound:
+	case errPersonNotFound:
 		return "nickname not set"
 	default:
 		return fmt.Sprint(usrErr)
@@ -72,6 +78,12 @@ func adminRunGetCore(m *core.Message) (string, error, error) {
 	}
 	return runGet(fs.person, fs.place)
 }
+
+/////////
+//     //
+// set //
+//     //
+/////////
 
 func adminRunSet(m *core.Message) (any, error, error) {
 	_, usrErr, err := adminRunSetCore(m)
@@ -108,6 +120,12 @@ func adminRunSetCore(m *core.Message) (string, error, error) {
 	return nick, usrErr, err
 }
 
+////////////
+//        //
+// delete //
+//        //
+////////////
+
 func adminRunDelete(m *core.Message) (any, error, error) {
 	usrErr, err := adminRunDeleteCore(m)
 	if err != nil {
@@ -120,7 +138,7 @@ func adminRunDeleteErr(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "removed nick"
-	case errUserNotFound:
+	case errPersonNotFound:
 		return "person doesn't have a nickname in specified place"
 	default:
 		return fmt.Sprint(usrErr)
