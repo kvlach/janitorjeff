@@ -145,7 +145,7 @@ func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
 	if len(m.Command.Runtime.Args) == 0 {
 		person, err = m.ScopeAuthor()
 	} else {
-		person, err = nick.ParseUserHere(m, m.Command.Runtime.Args[0])
+		person, err = nick.ParsePersonHere(m, m.Command.Runtime.Args[0])
 	}
 
 	if err != nil {

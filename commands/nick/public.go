@@ -4,13 +4,12 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
-// Tries to find a user scope from the given string. First tries to find if it
-// matches a nickname in the database and if it doesn't it tries various
-// platform specific things, like for example checking if the given string is a
-// user ID.
-func ParseUser(m *core.Message, place int64, s string) (int64, error) {
-	if user, err := dbGetPerson(s, place); err == nil {
-		return user, nil
+// Tries to find a person from the given string. First tries to match a nickname
+// and if it fails it tries various platform specific things (checking if the
+// string is a mention of some sort, etc.)
+func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
+	if person, err := dbGetPerson(s, place); err == nil {
+		return person, nil
 	}
 
 	placeID, err := core.Globals.DB.ScopeID(place)
@@ -26,12 +25,11 @@ func ParseUser(m *core.Message, place int64, s string) (int64, error) {
 	return m.Client.PersonScope(id)
 }
 
-// Same as ParseUser but uses the default place instead
-func ParseUserHere(m *core.Message, s string) (int64, error) {
-	place, err := m.ScopeHere()
+// Same as ParsePerson but uses the default place instead
+func ParsePersonHere(m *core.Message, s string) (int64, error) {
+	here, err := m.ScopeHere()
 	if err != nil {
 		return -1, err
 	}
-
-	return ParseUser(m, place, s)
+	return ParsePerson(m, here, s)
 }
