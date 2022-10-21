@@ -5,6 +5,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/help"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/prefix"
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/scope"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/test"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/time"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
@@ -26,5 +27,6 @@ var Advanced = core.Commands{
 var Admin = core.Commands{
 	nick.Admin,
 	prefix.Admin,
+	scope.Admin,
 	test.Command,
 }
