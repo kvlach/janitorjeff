@@ -128,8 +128,6 @@ func (db *DB) Init(schema string) error {
 }
 
 func (_ *DB) ScopeAdd(tx *sql.Tx, id string) (int64, error) {
-	// Must pass *a* value to create a new row, this will auto increment the id
-	// as expected
 	res, err := tx.Exec("INSERT INTO Scopes(original_id) VALUES (?)", id)
 	if err != nil {
 		return -1, err
