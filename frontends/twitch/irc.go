@@ -109,7 +109,7 @@ func (irc *IRC) PlaceScope(id string) (int64, error) {
 }
 
 func (irc *IRC) ReplyUsage(usage string) any {
-	return fmt.Sprintf("@%s -> Usage: %s", irc.message.User.DisplayName, usage)
+	return fmt.Sprintf("Usage: %s", usage)
 }
 
 func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
@@ -123,19 +123,22 @@ func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
 
 	text = strings.ReplaceAll(text, "\n", " ")
 
+	mention := fmt.Sprintf("@%s -> ", irc.message.User.DisplayName)
+
 	// This is how twitch's server seems to count the length, even though the
-	// chat client on twitch's website doesn't follow this
-	lenLim := 500
+	// chat client on twitch's website doesn't follow this. Subtract the
+	// mention's length since it is added to every message sent.
+	lenLim := 500 - len(mention)
 	lenCnt := utf8.RuneCountInString
 
 	if lenLim > lenCnt(text) {
-		irc.client.Say(irc.message.Channel, text)
+		irc.client.Say(irc.message.Channel, fmt.Sprintf("%s%s", mention, text))
 		return nil, nil
 	}
 
 	parts := utils.Split(text, lenCnt, lenLim)
 	for _, p := range parts {
-		irc.client.Say(irc.message.Channel, p)
+		irc.client.Say(irc.message.Channel, fmt.Sprintf("%s%s", mention, p))
 	}
 
 	return nil, nil
