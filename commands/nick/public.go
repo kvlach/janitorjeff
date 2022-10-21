@@ -4,10 +4,15 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
-// Tries to find a person from the given string. First tries to match a nickname
-// and if it fails it tries various platform specific things (checking if the
-// string is a mention of some sort, etc.)
+// Tries to find a person from the given string. If "me" is passed the author
+// is returned. Then tries to match a nickname and if it fails it tries various
+// platform specific things (checking if the string is a mention of some sort,
+// etc.)
 func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
+	if s == "me" {
+		return m.ScopeAuthor()
+	}
+
 	if person, err := dbGetPerson(s, place); err == nil {
 		return person, nil
 	}
