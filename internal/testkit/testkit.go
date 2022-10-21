@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/platforms/discord"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 )
