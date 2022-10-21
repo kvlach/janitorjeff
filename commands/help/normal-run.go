@@ -17,7 +17,7 @@ func run(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case frontends.Twitch:
+	case frontends.Discord:
 		return run_Discord(m)
 	default:
 		return run_Text(m)
