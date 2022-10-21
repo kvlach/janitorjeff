@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
 
@@ -33,6 +32,8 @@ type Messenger interface {
 	// it to the database.
 	PlaceScope(id string) (place int64, err error)
 	PersonScope(id string) (person int64, err error)
+
+	ReplyUsage(usage string) any
 
 	// Writes a message to the current channel
 	// returned *Message could be nil depending on the platform
@@ -407,27 +408,6 @@ func (m *Message) Run() {
 	log.Debug().Err(err).Send()
 }
 
-func (m *Message) ReplyText(format string, a ...any) string {
-	s := fmt.Sprintf(format, a...)
-	return fmt.Sprintf("%s -> %s", m.Author.Mention, s)
-}
-
-func (m *Message) replyUsageText() string {
-	return m.ReplyText("Usage: %s", m.Command.Usage())
-}
-
-// FIXME: This should really not be in the core
-func (m *Message) replyUsageDiscord() *dg.MessageEmbed {
-	return &dg.MessageEmbed{
-		Title: fmt.Sprintf("Usage: `%s`", m.Command.Usage()),
-	}
-}
-
 func (m *Message) ReplyUsage() any {
-	switch m.Type {
-	case Discord:
-		return m.replyUsageDiscord()
-	default:
-		return m.replyUsageText()
-	}
+	return m.Client.ReplyUsage(m.Command.Usage())
 }

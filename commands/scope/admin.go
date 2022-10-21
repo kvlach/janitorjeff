@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Admin = &core.CommandStatic{
@@ -69,9 +70,9 @@ func adminRunPerson(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return adminRunPersonParent(m)
-	case core.Twitch:
+	case frontends.Twitch:
 		return adminRunPersonNoParent(m)
 	default:
 		return "This command doesn't currently support this frontend.", nil, nil

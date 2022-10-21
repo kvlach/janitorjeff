@@ -40,6 +40,10 @@ func (d *DiscordMessageCreate) PlaceScope(id string) (int64, error) {
 	return getPlaceScope(id, d.Message.Message, d.Session)
 }
 
+func (d *DiscordMessageCreate) ReplyUsage(usage string) any {
+	return replyUsage(usage)
+}
+
 func (d *DiscordMessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -62,7 +63,7 @@ func advancedRun(m *core.Message) (any, error, error) {
 
 func advancedRunView(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunViewDiscord(m)
 	default:
 		return advancedRunViewText(m)
@@ -130,7 +131,7 @@ func advancedRunSet(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunSetDiscord(m)
 	default:
 		return advancedRunSetText(m)
@@ -197,7 +198,7 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 
 func advancedRunDelete(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunDeleteDiscord(m)
 	default:
 		return advancedRunDeleteText(m)

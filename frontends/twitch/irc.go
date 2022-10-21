@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	twitchIRC "github.com/gempir/go-twitch-irc/v2"
@@ -41,7 +42,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 
 	msg := &core.Message{
 		ID:      irc.message.ID,
-		Type:    core.Twitch,
+		Type:    frontends.Twitch,
 		Raw:     irc.message.Message,
 		IsDM:    false,
 		Author:  author,
@@ -105,6 +106,10 @@ func (irc *IRC) PersonScope(id string) (int64, error) {
 
 func (irc *IRC) PlaceScope(id string) (int64, error) {
 	return twitchChannelAddChannel(id, irc.message, irc.Helix)
+}
+
+func (irc *IRC) ReplyUsage(usage string) any {
+	return fmt.Sprintf("@%s -> Usage: %s", irc.message.User.DisplayName, usage)
 }
 
 func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {

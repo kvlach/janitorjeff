@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -29,7 +30,7 @@ func runAdd(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runAdd_Discord(m)
 	default:
 		return runAdd_Text(m)
@@ -144,7 +145,7 @@ func runModify(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runModify_Discord(m)
 	default:
 		return runModify_Text(m)
@@ -225,7 +226,7 @@ func runDel(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runDel_Discord(m)
 	default:
 		return runDel_Text(m)
@@ -322,7 +323,7 @@ func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
 
 func runList(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runList_Discord(m)
 	default:
 		return runList_Text(m)
@@ -391,7 +392,7 @@ func runHistory(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runHistory_Discord(m)
 	default:
 		return nil, nil, nil

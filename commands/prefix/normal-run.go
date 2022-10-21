@@ -7,6 +7,7 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/command"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -26,7 +27,7 @@ func run(m *core.Message) (any, error, error) {
 
 func runAdd(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runAdd_Discord(m)
 	default:
 		return runAdd_Text(m)
@@ -171,7 +172,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 func runDelete(m *core.Message) (any, error, error) {
 	// TODO: Provide a way to delete the empty string prefix in DMs
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runDelete_Discord(m)
 	default:
 		return runDelete_Text(m)
@@ -298,7 +299,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 
 func runList(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runList_Discord(m)
 	default:
 		return runList_Text(m)
@@ -353,7 +354,7 @@ func runList_Core(m *core.Message) ([]string, error) {
 
 func runReset(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return runReset_Discord(m)
 	default:
 		return runReset_Text(m)

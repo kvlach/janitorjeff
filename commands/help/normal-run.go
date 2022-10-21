@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
@@ -16,7 +17,7 @@ func run(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Twitch:
 		return run_Discord(m)
 	default:
 		return run_Text(m)
@@ -41,7 +42,7 @@ func run_Text(m *core.Message) (string, error, error) {
 
 	log.Debug().Str("help", help).Send()
 
-	return m.ReplyText(help), nil, nil
+	return help, nil, nil
 }
 
 func run_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
