@@ -7,6 +7,7 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -93,7 +94,7 @@ func advancedRun(m *core.Message) (any, error, error) {
 
 func advancedRunNow(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunNowDiscord(m)
 	default:
 		return advancedRunNowText(m)
@@ -173,7 +174,7 @@ func advancedRunConvert(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunConvertDiscord(m)
 	default:
 		return advancedRunConvertText(m)
@@ -234,7 +235,7 @@ func advancedRunTimezone(m *core.Message) (any, error, error) {
 
 func advancedRunTimezoneGet(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunTimezoneGetDiscord(m)
 	default:
 		return advancedRunTimezoneGetText(m)
@@ -302,7 +303,7 @@ func advancedRunTimezoneSet(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunTimezoneSetDiscord(m)
 	default:
 		return advancedRunTimezoneSetText(m)
@@ -368,7 +369,7 @@ func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
 
 func advancedRunTimezoneDelete(m *core.Message) (any, error, error) {
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		return advancedRunTimezoneDeleteDiscord(m)
 	default:
 		return advancedRunTimezoneDeleteText(m)

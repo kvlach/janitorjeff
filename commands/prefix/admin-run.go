@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 )
 
@@ -26,7 +27,7 @@ func runAdminAdd(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		prefix = discord.PlaceInBackticks(prefix)
 		collision = discord.PlaceInBackticks(collision)
 	default:
@@ -121,7 +122,7 @@ func runAdminDel(m *core.Message) (any, error, error) {
 	}
 
 	switch m.Type {
-	case core.Discord:
+	case frontends.Discord:
 		prefix = discord.PlaceInBackticks(prefix)
 	default:
 		prefix = fmt.Sprintf("'%s'", prefix)
@@ -142,7 +143,7 @@ func runAdminDelErr(usrErr error, m *core.Message, prefix string) any {
 	case errOneLeft:
 		resetCmd := cmdAdminReset.Format(m.Command.Runtime.Prefix)
 		switch m.Type {
-		case core.Discord:
+		case frontends.Discord:
 			resetCmd = discord.PlaceInBackticks(resetCmd)
 		default:
 			resetCmd = fmt.Sprintf("'%s'", resetCmd)

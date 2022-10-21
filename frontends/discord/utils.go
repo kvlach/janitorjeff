@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -14,6 +15,13 @@ import (
 )
 
 var errInvalidID = errors.New("given string is not a valid ID")
+
+func replyUsage(usage string) *dg.MessageEmbed {
+	embed := &dg.MessageEmbed{
+		Title: fmt.Sprintf("Usage: `%s`", usage),
+	}
+	return embed
+}
 
 func getPersonID(s, guildID string, ds *dg.Session, msg *dg.Message) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
@@ -95,7 +103,7 @@ func parse(m *dg.Message) *core.Message {
 
 	msg := &core.Message{
 		ID:   m.ID,
-		Type: core.Discord,
+		Type: frontends.Discord,
 		Raw:  m.Content,
 		// GuildID is always empty in returned message objects, this is here in
 		// case that changes in the future.
