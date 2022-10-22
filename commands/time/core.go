@@ -8,13 +8,30 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 
 	"github.com/rs/zerolog/log"
+	"github.com/tj/go-naturaldate"
 )
 
 var (
 	errTimestamp      = errors.New("invalid timestamp")
 	errTimezone       = errors.New("invalid timezone")
 	errTimezoneNotSet = errors.New("user hasn't set their timezone")
+	errInvalidTime    = errors.New("could not parse given time string")
+	errNoReminders    = errors.New("couldn't find any reminders")
 )
+
+type reminder struct {
+	id     int64
+	person int64
+	place  int64
+	when   time.Time
+	what   string
+}
+
+//////////////
+//          //
+// database //
+//          //
+//////////////
 
 // A place is specified for timezones, even though it's not necessary (someone's
 // timezone isn't going to change if they call the command from a different
@@ -144,6 +161,12 @@ func dbPersonTimezone(person, place int64) (string, error) {
 
 }
 
+/////////
+//     //
+// run //
+//     //
+/////////
+
 func runNow(person, place int64) (time.Time, error, error) {
 	now := time.Now().UTC()
 
@@ -187,6 +210,37 @@ func runConvert(target, tz string) (string, error, error) {
 	}
 
 	return t.In(loc).Format(time.UnixDate), nil, nil
+}
+
+func parseTime(when string, person, place int64) (time.Time, error, error) {
+	tz, err := dbPersonTimezone(person, place)
+	var loc *time.Location
+	if err == nil {
+		loc, err = time.LoadLocation(tz)
+	} else {
+		loc, err = time.LoadLocation("UTC")
+	}
+
+	if err != nil {
+		return time.Time{}, nil, err
+	}
+
+	now := time.Now().In(loc)
+	direction := naturaldate.WithDirection(naturaldate.Future)
+
+	t, err := naturaldate.Parse(when, now, direction)
+	if err != nil {
+		return time.Time{}, errInvalidTime, nil
+	}
+	return t, nil, nil
+}
+
+func runTimestamp(when string, person, place int64) (time.Time, error, error) {
+	t, usrErr, err := parseTime(when, person, place)
+	if usrErr != nil || err != nil {
+		return time.Time{}, usrErr, err
+	}
+	return t, nil, nil
 }
 
 func runTimezoneGet(person, place int64) (string, error, error) {
