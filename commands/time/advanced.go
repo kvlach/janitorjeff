@@ -42,6 +42,14 @@ var Advanced = &core.CommandStatic{
 		},
 		{
 			Names: []string{
+				"timestamp",
+			},
+			Description: "Get the given datetime's timestamp.",
+			UsageArgs:   "<when...>",
+			Run:         advancedRunTimestamp,
+		},
+		{
+			Names: []string{
 				"zone",
 			},
 			Description: "View, set or delete your nickname.",
@@ -215,6 +223,81 @@ func advancedRunConvertCore(m *core.Message) (string, error, error) {
 	target := m.Command.Runtime.Args[0]
 	tz := m.Command.Runtime.Args[1]
 	return runConvert(target, tz)
+}
+
+///////////////
+//           //
+// timestamp //
+//           //
+///////////////
+
+func advancedRunTimestamp(m *core.Message) (any, error, error) {
+	if len(m.Command.Runtime.Args) < 1 {
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Type {
+	case frontends.Discord:
+		return advancedRunTimestampDiscord(m)
+	default:
+		return advancedRunTimestampText(m)
+	}
+}
+
+func advancedRunTimestampDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	t, usrErr, err := advancedRunTimestampCore(m)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	embed := &dg.MessageEmbed{
+		Description: advancedRunTimestampErr(usrErr, t),
+	}
+
+	if usrErr != nil {
+		return embed, usrErr, nil
+	}
+
+	embed.Footer = &dg.MessageEmbedFooter{
+		Text: t.Format(time.RFC1123),
+	}
+
+	return embed, nil, nil
+}
+
+func advancedRunTimestampText(m *core.Message) (string, error, error) {
+	t, usrErr, err := advancedRunTimestampCore(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return advancedRunTimestampErr(usrErr, t), usrErr, nil
+}
+
+func advancedRunTimestampErr(usrErr error, t time.Time) string {
+	switch usrErr {
+	case nil:
+		return fmt.Sprint(t.Unix())
+	case errInvalidTime:
+		return "I can't understand what date that is."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
+	author, err := m.ScopeAuthor()
+	if err != nil {
+		return time.Time{}, nil, err
+	}
+
+	here, err := m.ScopeHere()
+	if err != nil {
+		return time.Time{}, nil, err
+	}
+
+	when := m.RawArgs(0)
+
+	return runTimestamp(when, author, here)
 }
 
 //////////////

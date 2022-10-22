@@ -10,9 +10,11 @@ require (
 	github.com/nicklaw5/helix v1.25.0
 	github.com/rivo/uniseg v0.4.2
 	github.com/rs/zerolog v1.28.0
+	github.com/tj/go-naturaldate v1.3.0
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
