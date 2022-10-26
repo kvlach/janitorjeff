@@ -15,11 +15,12 @@ import (
 )
 
 var (
-	errTimestamp      = errors.New("invalid timestamp")
-	errTimezone       = errors.New("invalid timezone")
-	errTimezoneNotSet = errors.New("user hasn't set their timezone")
-	errInvalidTime    = errors.New("could not parse given time string")
-	errNoReminders    = errors.New("couldn't find any reminders")
+	errTimestamp        = errors.New("invalid timestamp")
+	errTimezone         = errors.New("invalid timezone")
+	errTimezoneNotSet   = errors.New("user hasn't set their timezone")
+	errInvalidTime      = errors.New("could not parse given time string")
+	errNoReminders      = errors.New("couldn't find any reminders")
+	errReminderNotFound = errors.New("couldn't find person's reminder")
 )
 
 type reminder struct {
@@ -302,6 +303,33 @@ func dbRemindDelete(id int64) error {
 	return err
 }
 
+func dbRemindExists(id, person int64) (bool, error) {
+	db := core.Globals.DB
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var exists bool
+
+	row := db.DB.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM CommandTimeReminders
+			WHERE id = ? and person = ?
+			LIMIT 1
+		)`, id, person)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Int64("id", id).
+		Int64("person", person).
+		Bool("exists", exists).
+		Msg("checked if reminder exists")
+
+	return exists, err
+
+}
+
 /////////
 //     //
 // run //
@@ -442,6 +470,19 @@ func runRemindAdd(when, what string, person, placeExact, placeLogical int64) (ti
 	runUpcoming()
 
 	return t, id, nil, err
+}
+
+func runRemindDelete(id, person int64) (error, error) {
+	// if the person their own reminder, but from a different place then we
+	// allow that
+	exists, err := dbRemindExists(id, person)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return errReminderNotFound, nil
+	}
+	return nil, dbRemindDelete(id)
 }
 
 func runRemindList(person, place int64) ([]reminder, error, error) {
