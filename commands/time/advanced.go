@@ -26,7 +26,7 @@ var Advanced = &core.CommandStatic{
 		"time",
 	},
 	Description: "time stuff and things",
-	UsageArgs:   "(now | convert | zone)",
+	UsageArgs:   "(now | convert | timestamp | zone | remind)",
 	Run:         advancedRun,
 
 	Children: core.Commands{
