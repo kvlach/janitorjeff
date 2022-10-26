@@ -3,6 +3,7 @@ package time
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
@@ -87,6 +88,27 @@ var Advanced = &core.CommandStatic{
 				},
 			},
 		},
+		{
+			Names: []string{
+				"remind",
+			},
+			Description: "Reminder related commands",
+			UsageArgs:   "(add)",
+			Run:         advancedRunRemind,
+
+			Children: core.Commands{
+				{
+					Names: []string{
+						"add",
+						"new",
+						"create",
+					},
+					Description: "Create a reminder.",
+					UsageArgs:   "(<person> to <what> in <when> | <person> in <when> to <what>)",
+					Run:         advancedRunRemindAdd,
+				},
+			},
+		},
 	},
 }
 
@@ -161,7 +183,7 @@ func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
 		return time.Time{}, cmdTzSet, errPersonNotFound, nil
 	}
 
-	here, err := m.ScopeHere()
+	here, err := m.HereLogical()
 	if err != nil {
 		return time.Time{}, cmdTzSet, nil, err
 	}
@@ -290,7 +312,7 @@ func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
 		return time.Time{}, nil, err
 	}
 
-	here, err := m.ScopeHere()
+	here, err := m.HereLogical()
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -366,7 +388,7 @@ func advancedRunTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.ScopeHere()
+	here, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -436,7 +458,7 @@ func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.ScopeHere()
+	here, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -497,10 +519,83 @@ func advancedRunTimezoneDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	here, err := m.ScopeHere()
+	here, err := m.HereLogical()
 	if err != nil {
 		return nil, err
 	}
 
 	return runTimezoneDelete(author, here)
+}
+
+////////////
+//        //
+// remind //
+//        //
+////////////
+
+func advancedRunRemind(m *core.Message) (any, error, error) {
+	return m.ReplyUsage(), core.ErrMissingArgs, nil
+}
+
+////////////////
+//            //
+// remind add //
+//            //
+////////////////
+
+func advancedRunRemindAdd(m *core.Message) (any, error, error) {
+	if len(m.Command.Runtime.Args) < 1 {
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
+	}
+
+	t, id, usrErr, err := advancedRunRemindAddCore(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), usrErr, nil
+}
+
+func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) {
+	rxPerson := `(?P<person>[^\s]+)`
+	rxWhen := `(in|on)\s+(?P<when>.+)`
+	rxWhat := `to\s+(?P<what>.+)`
+
+	re := regexp.MustCompile(`^` + rxPerson + `\s+` + rxWhat + `\s+` + rxWhen + `$`)
+	groupNames := re.SubexpNames()
+
+	var when string
+	var what string
+	var who string
+
+	for _, match := range re.FindAllStringSubmatch(m.RawArgs(0), -1) {
+		for i, text := range match {
+			group := groupNames[i]
+
+			switch group {
+			case "when":
+				when = text
+			case "what":
+				what = text
+			case "person":
+				who = text
+			}
+		}
+	}
+
+	person, err := nick.ParsePersonHere(m, who)
+	if err != nil {
+		return time.Time{}, -1, nil, err
+	}
+
+	hereExact, err := m.HereExact()
+	if err != nil {
+		return time.Time{}, -1, nil, err
+	}
+
+	hereLogical, err := m.HereLogical()
+	if err != nil {
+		return time.Time{}, -1, nil, err
+	}
+
+	return runRemindAdd(when, what, person, hereExact, hereLogical)
 }

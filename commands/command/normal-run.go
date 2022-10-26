@@ -301,7 +301,7 @@ func runDel_Core(m *core.Message) (string, error, error) {
 func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
 	exists := false
 
-	scope, err := m.ScopeHere()
+	scope, err := m.HereLogical()
 	if err != nil {
 		return exists, scope, err
 	}
@@ -367,7 +367,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 }
 
 func RunList_Core(m *core.Message) ([]string, error) {
-	scope, err := m.ScopeHere()
+	scope, err := m.HereLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -495,7 +495,7 @@ func runHistory_Core(m *core.Message) (string, []customCommand, error) {
 	// We don't check to see if the trigger exists since this command may be
 	// used to view the history of a deleted trigger
 
-	scope, err := m.ScopeHere()
+	scope, err := m.HereLogical()
 	if err != nil {
 		return trigger, nil, err
 	}

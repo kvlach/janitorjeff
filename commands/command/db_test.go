@@ -100,7 +100,7 @@ func TestMain(m *testing.M) {
 
 	var err error
 
-	testScope, err = msg.ScopeHere()
+	testScope, err = msg.HereLogical()
 	if err != nil {
 		log.Fatalln(err)
 	}

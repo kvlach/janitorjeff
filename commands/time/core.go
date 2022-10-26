@@ -3,9 +3,11 @@ package time
 import (
 	"errors"
 	"strconv"
+	"sync"
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 
 	"github.com/rs/zerolog/log"
 	"github.com/tj/go-naturaldate"
@@ -20,11 +22,12 @@ var (
 )
 
 type reminder struct {
-	id     int64
-	person int64
-	place  int64
-	when   time.Time
-	what   string
+	// Fields are public so that they show up in the debug logs
+	ID     int64
+	Person int64
+	Place  int64
+	When   time.Time
+	What   string
 }
 
 //////////////
@@ -48,7 +51,17 @@ CREATE TABLE IF NOT EXISTS CommandTimePeople (
 	UNIQUE(person, place),
 	FOREIGN KEY (person) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE IF NOT EXISTS CommandTimeReminders (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	person INTEGER NOT NULL,
+	place INTEGER NOT NULL,
+	time INTEGER NOT NULL,
+	what VARCHAR(255) NOT NULL,
+	FOREIGN KEY (person) REFERENCES Scopes(id) ON DELETE CASCADE,
+	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
+);
 `
 
 func dbPersonAdd(person, place int64, timezone string) error {
@@ -159,6 +172,134 @@ func dbPersonTimezone(person, place int64) (string, error) {
 
 	return tz, err
 
+}
+
+func dbRemindAdd(person, place, when int64, what string) (int64, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	res, err := db.DB.Exec(`
+	INSERT INTO CommandTimeReminders(person, place, time, what)
+	VALUES (?, ?, ?, ?)`, person, place, when, what)
+
+	log.Debug().
+		Err(err).
+		Int64("person", person).
+		Int64("place", place).
+		Int64("when", when).
+		Str("what", what).
+		Msg("added reminder")
+
+	if err != nil {
+		return -1, err
+	}
+
+	return res.LastInsertId()
+}
+
+func dbRemindList(person, place int64) ([]reminder, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	rows, err := db.DB.Query(`
+		SELECT id, time
+		FROM CommandTimeReminders
+		WHERE person = ? and place = ?
+	`, person, place)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rs []reminder
+	for rows.Next() {
+		var id, timestamp int64
+		if err := rows.Scan(&id, &timestamp); err != nil {
+			return nil, err
+		}
+		r := reminder{
+			ID:   id,
+			When: time.Unix(timestamp, 0).UTC(),
+		}
+		rs = append(rs, r)
+		log.Debug().Interface("reminder", r).Msg("found reminder")
+	}
+
+	err = rows.Err()
+
+	log.Debug().
+		Err(err).
+		Int64("person", person).
+		Int64("place", place).
+		Int("#reminders", len(rs)).
+		Msg("got reminders")
+
+	return rs, err
+}
+
+func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	rows, err := db.DB.Query(`
+		SELECT id, person, place, time, what
+		FROM CommandTimeReminders
+		WHERE time - ? < 300
+	`, nowSeconds)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rs []reminder
+	for rows.Next() {
+		var id, person, place, timestamp int64
+		var what string
+		if err := rows.Scan(&id, &person, &place, &timestamp, &what); err != nil {
+			return nil, err
+		}
+		r := reminder{
+			ID:     id,
+			Person: person,
+			Place:  place,
+			When:   time.Unix(timestamp, 0).UTC(),
+			What:   what,
+		}
+		rs = append(rs, r)
+		log.Debug().Interface("reminder", r).Msg("found reminder")
+	}
+
+	err = rows.Err()
+
+	log.Debug().
+		Err(err).
+		Int64("when", nowSeconds).
+		Int("#reminders", len(rs)).
+		Msg("got upcoming reminders")
+
+	return rs, err
+}
+
+func dbRemindDelete(id int64) error {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	_, err := db.DB.Exec(`
+		DELETE FROM CommandTimeReminders
+		WHERE id = ?`, id)
+
+	log.Debug().
+		Err(err).
+		Int64("id", id).
+		Msg("deleted reminder")
+
+	return err
 }
 
 /////////
@@ -288,4 +429,111 @@ func runTimezoneDelete(person, place int64) (error, error) {
 		return errTimezoneNotSet, nil
 	}
 	return nil, dbPersonDelete(person, place)
+}
+
+func runRemindAdd(when, what string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
+	t, usrErr, err := parseTime(when, person, placeLogical)
+	if usrErr != nil || err != nil {
+		return t, -1, usrErr, err
+	}
+	id, err := dbRemindAdd(person, placeExact, t.UTC().Unix(), what)
+
+	// in case the reminder needs to happen close to immediately
+	runUpcoming()
+
+	return t, id, nil, err
+}
+
+func runRemindList(person, place int64) ([]reminder, error, error) {
+	rs, err := dbRemindList(person, place)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(rs) == 0 {
+		return nil, errNoReminders, nil
+	}
+	return rs, nil, nil
+}
+
+type upcoming struct {
+	lock sync.RWMutex
+
+	// serves as a set essentially
+	waiting map[int64]struct{}
+}
+
+var upcomingReminders = upcoming{}
+
+func (u *upcoming) add(r reminder) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+
+	if u.waiting == nil {
+		u.waiting = map[int64]struct{}{}
+	}
+
+	if _, ok := u.waiting[r.ID]; ok {
+		log.Debug().Int64("id", r.ID).Msg("reminder already in queue")
+		return
+	}
+
+	u.waiting[r.ID] = struct{}{}
+	log.Debug().Int64("id", r.ID).Msg("added reminder to queue")
+
+	go func() {
+		time.Sleep(r.When.Sub(time.Now()))
+
+		m, err := frontends.CreateContext(r.Person, r.Place)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = m.Write(r.What, nil)
+		if err != nil {
+			// TODO: retry
+			panic(err)
+		}
+
+		err = dbRemindDelete(r.ID)
+		if err != nil {
+			// TODO
+			panic(err)
+		}
+		u.del(r.ID)
+	}()
+}
+
+func (u *upcoming) del(id int64) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	delete(u.waiting, id)
+}
+
+func runUpcoming() {
+	rs, err := dbRemindUpcoming(time.Now().Unix())
+	if err != nil {
+		// TODO
+		panic(err)
+	}
+
+	for _, r := range rs {
+		upcomingReminders.add(r)
+	}
+}
+
+//////////
+//      //
+// init //
+//      //
+//////////
+
+func init_() error {
+	go func() {
+		for {
+			runUpcoming()
+			time.Sleep(2 * time.Minute)
+		}
+	}()
+
+	return core.Globals.DB.Init(dbSchema)
 }

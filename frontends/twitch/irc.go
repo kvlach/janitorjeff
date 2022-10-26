@@ -4,50 +4,79 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
-	twitchIRC "github.com/gempir/go-twitch-irc/v2"
+	tirc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/rs/zerolog/log"
 )
 
-type IRC struct {
-	client  *twitchIRC.Client
-	message *twitchIRC.PrivateMessage
+const Type = 1 << 1
+
+type Twitch struct {
+	client  *tirc.Client
+	message *tirc.PrivateMessage
 
 	Helix *Helix
 }
 
-var twitchIrcClient *twitchIRC.Client
+func CreateClient(person, place int64) (*Twitch, error) {
+	personID, personName, err := dbGetChannel(person)
+	if err != nil {
+		return nil, err
+	}
 
-func (irc *IRC) Admin() bool {
+	placeID, placeName, err := dbGetChannel(place)
+	if err != nil {
+		return nil, err
+	}
+
+	t := &Twitch{
+		client: twitchIrcClient,
+		message: &tirc.PrivateMessage{
+			RoomID:  placeID,
+			Channel: placeName,
+			User: tirc.User{
+				ID:          personID,
+				Name:        personName,
+				DisplayName: personName,
+			},
+		},
+	}
+
+	return t, nil
+}
+
+var twitchIrcClient *tirc.Client
+
+func (t *Twitch) Admin() bool {
 	return false
 }
 
-func (irc *IRC) Parse() (*core.Message, error) {
+func (t *Twitch) Parse() (*core.Message, error) {
 	author := &core.Author{
-		ID:          irc.message.User.ID,
-		Name:        irc.message.User.Name,
-		DisplayName: irc.message.User.DisplayName,
-		Mention:     fmt.Sprintf("@%s", irc.message.User.DisplayName),
+		ID:          t.message.User.ID,
+		Name:        t.message.User.Name,
+		DisplayName: t.message.User.DisplayName,
+		Mention:     fmt.Sprintf("@%s", t.message.User.DisplayName),
 	}
 
 	channel := &core.Channel{
-		ID:   irc.message.RoomID,
-		Name: irc.message.Channel,
+		ID:   t.message.RoomID,
+		Name: t.message.Channel,
 	}
 
 	msg := &core.Message{
-		ID:      irc.message.ID,
-		Type:    frontends.Twitch,
-		Raw:     irc.message.Message,
+		ID:      t.message.ID,
+		Type:    Type,
+		Raw:     t.message.Message,
 		IsDM:    false,
 		Author:  author,
 		Channel: channel,
-		Client:  irc,
+		Client:  t,
 	}
 
 	// Ignore error since accessToken might not exist
@@ -55,7 +84,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 
 	var err error
 	// TODO: If no user access token, use app access token
-	irc.Helix, err = HelixInit(core.Globals.Twitch.ClientID, accessToken)
+	t.Helix, err = HelixInit(core.Globals.Twitch.ClientID, accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +92,7 @@ func (irc *IRC) Parse() (*core.Message, error) {
 	return msg, nil
 }
 
-func (irc *IRC) checkID(id string) error {
+func (t *Twitch) checkID(id string) error {
 	if _, err := strconv.ParseInt(id, 10, 64); err != nil {
 		// not even a number so no point in asking twitch if it's valid
 		return fmt.Errorf("id '%s' is not valid", id)
@@ -71,15 +100,15 @@ func (irc *IRC) checkID(id string) error {
 
 	// try to get the id's corresponding username, if it fails then that means
 	// that the id is not valid
-	_, err := irc.Helix.GetUserName(id)
+	_, err := t.Helix.GetUserName(id)
 	return err
 }
 
-func (irc *IRC) getID(s string) (string, error) {
+func (t *Twitch) getID(s string) (string, error) {
 	// expected inputs are either a username, a mention (@username) or the
 	// id itself
 
-	if err := irc.checkID(s); err == nil {
+	if err := t.checkID(s); err == nil {
 		return s, nil
 	}
 	s = strings.TrimPrefix(s, "@")
@@ -87,32 +116,36 @@ func (irc *IRC) getID(s string) (string, error) {
 	// try to get the corresponding id from the username, if it exists then
 	// it will fetch and return with no error, if not then it will fail
 	// and return an error
-	return irc.Helix.GetUserID(s)
+	return t.Helix.GetUserID(s)
 }
 
 // Place and Person refer to the same thing on twitch
-func (irc *IRC) PersonID(s, _ string) (string, error) {
-	return irc.getID(s)
+func (t *Twitch) PersonID(s, _ string) (string, error) {
+	return t.getID(s)
 }
 
 // Place and Person refer to the same thing on twitch
-func (irc *IRC) PlaceID(s string) (string, error) {
-	return irc.getID(s)
+func (t *Twitch) PlaceID(s string) (string, error) {
+	return t.getID(s)
 }
 
-func (irc *IRC) PersonScope(id string) (int64, error) {
-	return twitchChannelAddChannel(id, irc.message, irc.Helix)
+func (t *Twitch) Person(id string) (int64, error) {
+	return twitchChannelAddChannel(id, t.message, t.Helix)
 }
 
-func (irc *IRC) PlaceScope(id string) (int64, error) {
-	return twitchChannelAddChannel(id, irc.message, irc.Helix)
+func (t *Twitch) PlaceExact(id string) (int64, error) {
+	return twitchChannelAddChannel(id, t.message, t.Helix)
 }
 
-func (irc *IRC) ReplyUsage(usage string) any {
+func (t *Twitch) PlaceLogical(id string) (int64, error) {
+	return twitchChannelAddChannel(id, t.message, t.Helix)
+}
+
+func (t *Twitch) ReplyUsage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
-func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
+func (t *Twitch) Write(msg any, _ error) (*core.Message, error) {
 	var text string
 	switch t := msg.(type) {
 	case string:
@@ -123,7 +156,7 @@ func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
 
 	text = strings.ReplaceAll(text, "\n", " ")
 
-	mention := fmt.Sprintf("@%s -> ", irc.message.User.DisplayName)
+	mention := fmt.Sprintf("@%s -> ", t.message.User.DisplayName)
 
 	// This is how twitch's server seems to count the length, even though the
 	// chat client on twitch's website doesn't follow this. Subtract the
@@ -132,13 +165,13 @@ func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
 	lenCnt := utf8.RuneCountInString
 
 	if lenLim > lenCnt(text) {
-		irc.client.Say(irc.message.Channel, fmt.Sprintf("%s%s", mention, text))
+		t.client.Say(t.message.Channel, fmt.Sprintf("%s%s", mention, text))
 		return nil, nil
 	}
 
 	parts := utils.Split(text, lenCnt, lenLim)
 	for _, p := range parts {
-		irc.client.Say(irc.message.Channel, fmt.Sprintf("%s%s", mention, p))
+		t.client.Say(t.message.Channel, fmt.Sprintf("%s%s", mention, p))
 	}
 
 	return nil, nil
@@ -153,8 +186,8 @@ func (irc *IRC) Write(msg any, _ error) (*core.Message, error) {
 // 	return nil, fmt.Errorf("editing not supported for twitch irc")
 // }
 
-func onPrivateMessage(m twitchIRC.PrivateMessage) {
-	irc := &IRC{client: twitchIrcClient, message: &m}
+func onPrivateMessage(m tirc.PrivateMessage) {
+	irc := &Twitch{client: twitchIrcClient, message: &m}
 	msg, err := irc.Parse()
 	if err != nil {
 		log.Debug().Err(err).Send()
@@ -176,8 +209,8 @@ func onPrivateMessage(m twitchIRC.PrivateMessage) {
 // 	return twitchIrcClient
 // }
 
-func IRCInit(stop chan struct{}, nick string, oauth string, channels []string) {
-	twitchIrcClient = twitchIRC.NewClient(nick, oauth)
+func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oauth string, channels []string) {
+	twitchIrcClient = tirc.NewClient(nick, oauth)
 
 	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
 
@@ -195,6 +228,7 @@ func IRCInit(stop chan struct{}, nick string, oauth string, channels []string) {
 		log.Debug().Msg("connected to twitch irc")
 	}
 
+	wgInit.Done()
 	<-stop
 
 	log.Debug().Msg("closing twitch irc")
@@ -203,4 +237,5 @@ func IRCInit(stop chan struct{}, nick string, oauth string, channels []string) {
 	} else {
 		log.Debug().Msg("closed twitch irc")
 	}
+	wgStop.Done()
 }

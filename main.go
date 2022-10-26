@@ -9,8 +9,8 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
-	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
@@ -21,6 +21,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+var myEnv map[string]string
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -72,20 +74,41 @@ func init() {
 	}
 }
 
+func readVar(name string) string {
+	v, ok := myEnv[name]
+	if !ok {
+		log.Fatal().Msgf("no $%s given", name)
+	}
+	log.Debug().Str(name, v).Msg("read env variable")
+	return v
+}
+
+func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
+	// TODO: Handle inability to connect to a specific platform more gracefully,
+	// in case something is down
+
+	wgInit := new(sync.WaitGroup)
+	wgInit.Add(2)
+	wgStop.Add(2)
+
+	// Twitch IRC
+	twitchOauth := readVar("TWITCH_OAUTH")
+	channels := strings.Split(readVar("TWITCH_CHANNELS"), ",")
+	go twitch.IRCInit(wgInit, wgStop, stop, "JanitorJeff", twitchOauth, channels)
+
+	// Discord
+	discordToken := readVar("DISCORD_TOKEN")
+	go discord.Init(wgInit, wgStop, stop, discordToken)
+
+	wgInit.Wait()
+}
+
 func main() {
 	// OTHER
-	myEnv, err := godotenv.Read("secrets.env")
+	var err error
+	myEnv, err = godotenv.Read("secrets.env")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to read enviromental variables")
-	}
-
-	readVar := func(name string) string {
-		v, ok := myEnv[name]
-		if !ok {
-			log.Fatal().Msgf("no $%s given", name)
-		}
-		log.Debug().Str(name, v).Msg("read env variable")
-		return v
 	}
 
 	log.Debug().Msg("opening db")
@@ -129,6 +152,10 @@ func main() {
 
 	core.GlobalsInit(globals)
 
+	stop := make(chan struct{})
+	wgStop := new(sync.WaitGroup)
+	connect(stop, wgStop)
+
 	// Requires globals to be set
 	for _, cmd := range commands.Normal {
 		if cmd.Init != nil {
@@ -144,26 +171,11 @@ func main() {
 
 	go http.ListenAndServe(globals.Host, nil)
 
-	stop := make(chan struct{})
-
-	// TODO: Handle inability to connect to a specific platform more gracefully,
-	// in case something is down
-
-	// Twitch IRC
-	twitchOauth := readVar("TWITCH_OAUTH")
-	channels := strings.Split(readVar("TWITCH_CHANNELS"), ",")
-	go twitch.IRCInit(stop, "JanitorJeff", twitchOauth, channels)
-
-	// Discord
-	discordToken := readVar("DISCORD_TOKEN")
-	go discord.Init(stop, discordToken)
-
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	close(stop)
 
-	// Give time for everything to close gracefully
-	time.Sleep(5 * time.Second)
+	close(stop)
+	wgStop.Wait()
 }

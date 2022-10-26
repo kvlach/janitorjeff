@@ -1,11 +1,17 @@
 package discord
 
 import (
+	"sync"
+
+	"git.slowtyper.com/slowtyper/janitorjeff/core"
+
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
 
-func Init(stop chan struct{}, token string) {
+const Type = 1 << 0
+
+func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
 	d, err := dg.New("Bot " + token)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create discord client")
@@ -24,8 +30,10 @@ func Init(stop chan struct{}, token string) {
 		log.Fatal().Err(err).Msg("failed to connect to discord")
 	} else {
 		log.Debug().Msg("connected to discord")
+		core.Globals.Discord.Client = d
 	}
 
+	wgInit.Done()
 	<-stop
 
 	log.Debug().Msg("closing discord")
@@ -34,4 +42,5 @@ func Init(stop chan struct{}, token string) {
 	} else {
 		log.Debug().Msg("closed discord")
 	}
+	wgStop.Done()
 }

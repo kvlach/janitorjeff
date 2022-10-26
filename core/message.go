@@ -30,8 +30,19 @@ type Messenger interface {
 
 	// Gets the target's scope. If it doesn't exist it will create it and add
 	// it to the database.
-	PlaceScope(id string) (place int64, err error)
-	PersonScope(id string) (person int64, err error)
+	Person(id string) (person int64, err error)
+
+	// There exist 2 types of place scopes that are used, the exact place and
+	// the logical place. The logical is the area where things are generally
+	// expected to work. For example: if a user adds a custom command in a
+	// server they would probably expect it to work in the entire server and not
+	// just in the specific channel that they added it in. If on the other hand
+	// someone adds a custom command in a discord DM message, then no guild
+	// exists and thus the channel's scope would have to be used. On the other
+	// hand `PlaceExact` returns exactly the scope of the id passed and does not
+	// account for context.
+	PlaceExact(id string) (place int64, err error)
+	PlaceLogical(id string) (place int64, err error)
 
 	ReplyUsage(usage string) any
 
@@ -127,7 +138,7 @@ func (cmd *Command) Usage() string {
 
 type Message struct {
 	scopeAuthor int64
-	scopeHere   int64
+	hereLogical int64
 
 	ID      string
 	Type    int
@@ -181,19 +192,24 @@ func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-func (m *Message) ScopeHere() (int64, error) {
-	// caches the scope to avoid unecessary database queries
+func (m *Message) HereLogical() (int64, error) {
+	// used way more often than HereExact, which is why only this one gets
+	// cached
 
-	if m.scopeHere != 0 {
-		return m.scopeHere, nil
+	if m.hereLogical != 0 {
+		return m.hereLogical, nil
 	}
 
-	here, err := m.Client.PlaceScope(m.Channel.ID)
+	here, err := m.Client.PlaceLogical(m.Channel.ID)
 	if err != nil {
 		return -1, err
 	}
-	m.scopeHere = here
+	m.hereLogical = here
 	return here, nil
+}
+
+func (m *Message) HereExact() (int64, error) {
+	return m.Client.PlaceExact(m.Channel.ID)
 }
 
 func (m *Message) ScopeAuthor() (int64, error) {
@@ -203,7 +219,7 @@ func (m *Message) ScopeAuthor() (int64, error) {
 		return m.scopeAuthor, nil
 	}
 
-	author, err := m.Client.PersonScope(m.Author.ID)
+	author, err := m.Client.Person(m.Author.ID)
 	if err != nil {
 		return -1, err
 	}
@@ -271,7 +287,7 @@ END:
 }
 
 func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
-	scope, err := m.ScopeHere()
+	scope, err := m.HereLogical()
 	if err != nil {
 		return nil, false, err
 	}
