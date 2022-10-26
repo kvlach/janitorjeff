@@ -26,7 +26,7 @@ func CreateContext(person, place int64) (*core.Message, error) {
 	case Discord:
 		client, err = discord.CreateClient(person, place)
 	case Twitch:
-		// return twitch.CreateClient(), nil
+		client, err = twitch.CreateClient(person, place)
 	default:
 		return nil, fmt.Errorf("frontend with id '%d' is not supported", frontend)
 	}
