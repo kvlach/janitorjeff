@@ -216,9 +216,6 @@ func isAdmin(id string) bool {
 }
 
 func parse(m *dg.Message) *core.Message {
-	log.Debug().
-		Msg("starting to parse message")
-
 	author := &core.Author{
 		ID:          m.Author.ID,
 		Name:        m.Author.Username,
