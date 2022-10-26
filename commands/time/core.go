@@ -21,6 +21,7 @@ var (
 	errInvalidTime      = errors.New("could not parse given time string")
 	errNoReminders      = errors.New("couldn't find any reminders")
 	errReminderNotFound = errors.New("couldn't find person's reminder")
+	errOldTime          = errors.New("given time has already passed")
 )
 
 type reminder struct {
@@ -464,6 +465,11 @@ func runRemindAdd(when, what string, person, placeExact, placeLogical int64) (ti
 	if usrErr != nil || err != nil {
 		return t, -1, usrErr, err
 	}
+
+	if t.Before(time.Now()) {
+		return t, -1, errOldTime, nil
+	}
+
 	id, err := dbRemindAdd(person, placeExact, t.UTC().Unix(), what)
 
 	// in case the reminder needs to happen close to immediately

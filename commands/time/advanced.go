@@ -577,7 +577,10 @@ func advancedRunRemindAdd(m *core.Message) (any, error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), usrErr, nil
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
+	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), nil, nil
 }
 
 func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) {
