@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
@@ -93,7 +94,7 @@ var Advanced = &core.CommandStatic{
 				"remind",
 			},
 			Description: "Reminder related commands",
-			UsageArgs:   "(add)",
+			UsageArgs:   "(add | list)",
 			Run:         advancedRunRemind,
 
 			Children: core.Commands{
@@ -106,6 +107,15 @@ var Advanced = &core.CommandStatic{
 					Description: "Create a reminder.",
 					UsageArgs:   "(<person> to <what> in <when> | <person> in <when> to <what>)",
 					Run:         advancedRunRemindAdd,
+				},
+				{
+					Names: []string{
+						"list",
+						"ls",
+					},
+					Description: "List active reminders.",
+					UsageArgs:   "",
+					Run:         advancedRunRemindList,
 				},
 			},
 		},
@@ -598,4 +608,60 @@ func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) 
 	}
 
 	return runRemindAdd(when, what, person, hereExact, hereLogical)
+}
+
+/////////////////
+//             //
+// remind list //
+//             //
+/////////////////
+
+func advancedRunRemindList(m *core.Message) (any, error, error) {
+	switch m.Type {
+	case frontends.Discord:
+		return advancedRunRemindListDiscord(m)
+	default:
+		return nil, nil, nil
+	}
+}
+
+func advancedRunRemindListDiscord(m *core.Message) (string, error, error) {
+	rs, usrErr, err := advancedRunRemindListCore(m)
+	if err != nil {
+		return "", nil, err
+	}
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
+
+	var resp strings.Builder
+
+	if len(rs) == 1 {
+		fmt.Fprintf(&resp, "%d timer open.\n", len(rs))
+	} else {
+		fmt.Fprintf(&resp, "%d timers open.\n", len(rs))
+	}
+
+	now := time.Now()
+
+	for _, r := range rs {
+		remaining := r.When.Sub(now).Round(time.Second)
+		fmt.Fprintf(&resp, "%d: %s (%s remaining)\n", r.ID, r.What, remaining)
+	}
+
+	return resp.String(), nil, nil
+}
+
+func advancedRunRemindListCore(m *core.Message) ([]reminder, error, error) {
+	author, err := m.ScopeAuthor()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	here, err := m.HereExact()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return runRemindList(author, here)
 }

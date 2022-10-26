@@ -1,6 +1,7 @@
 package time
 
 import (
+	"database/sql"
 	"errors"
 	"strconv"
 	"sync"
@@ -198,13 +199,34 @@ func dbRemindAdd(person, place, when int64, what string) (int64, error) {
 	return res.LastInsertId()
 }
 
+func scanReminders(rows *sql.Rows) ([]reminder, error) {
+	var rs []reminder
+	for rows.Next() {
+		var id, person, place, timestamp int64
+		var what string
+		if err := rows.Scan(&id, &person, &place, &timestamp, &what); err != nil {
+			return nil, err
+		}
+		r := reminder{
+			ID:     id,
+			Person: person,
+			Place:  place,
+			When:   time.Unix(timestamp, 0).UTC(),
+			What:   what,
+		}
+		rs = append(rs, r)
+		log.Debug().Interface("reminder", r).Msg("found reminder")
+	}
+	return rs, nil
+}
+
 func dbRemindList(person, place int64) ([]reminder, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	rows, err := db.DB.Query(`
-		SELECT id, time
+		SELECT id, person, place, time, what
 		FROM CommandTimeReminders
 		WHERE person = ? and place = ?
 	`, person, place)
@@ -214,18 +236,9 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 	}
 	defer rows.Close()
 
-	var rs []reminder
-	for rows.Next() {
-		var id, timestamp int64
-		if err := rows.Scan(&id, &timestamp); err != nil {
-			return nil, err
-		}
-		r := reminder{
-			ID:   id,
-			When: time.Unix(timestamp, 0).UTC(),
-		}
-		rs = append(rs, r)
-		log.Debug().Interface("reminder", r).Msg("found reminder")
+	rs, err := scanReminders(rows)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rows.Err()
@@ -256,22 +269,9 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 	}
 	defer rows.Close()
 
-	var rs []reminder
-	for rows.Next() {
-		var id, person, place, timestamp int64
-		var what string
-		if err := rows.Scan(&id, &person, &place, &timestamp, &what); err != nil {
-			return nil, err
-		}
-		r := reminder{
-			ID:     id,
-			Person: person,
-			Place:  place,
-			When:   time.Unix(timestamp, 0).UTC(),
-			What:   what,
-		}
-		rs = append(rs, r)
-		log.Debug().Interface("reminder", r).Msg("found reminder")
+	rs, err := scanReminders(rows)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rows.Err()
