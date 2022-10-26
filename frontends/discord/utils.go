@@ -1,13 +1,13 @@
 package discord
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -15,6 +15,136 @@ import (
 )
 
 var errInvalidID = errors.New("given string is not a valid ID")
+
+func getChannelGuildIDs(id string, m *dg.Message, s *dg.Session) (string, string, error) {
+	var channelID, guildID string
+
+	if id == m.ChannelID || id == m.GuildID {
+		channelID = m.ChannelID
+		guildID = m.GuildID
+	} else if channel, err := s.Channel(id); err == nil {
+		channelID = channel.ID
+		guildID = channel.GuildID
+	} else if guild, err := s.Guild(id); err == nil {
+		channelID = ""
+		guildID = guild.ID
+	} else {
+		return "", "", fmt.Errorf("id '%s' not guild or channel id", id)
+	}
+
+	return channelID, guildID, nil
+}
+
+func getGuildScope(tx *sql.Tx, id string) (int64, error) {
+	if guild, err := dbGetGuildScope(id); err == nil {
+		return guild, nil
+	}
+	return dbAddGuildScope(tx, id)
+}
+
+func getChannelScope(tx *sql.Tx, id string, guild int64) (int64, error) {
+	if channel, err := dbGetChannelScope(id); err == nil {
+		return channel, nil
+	}
+	return dbAddChannelScope(tx, id, guild)
+}
+
+func getPlaceExactScope(id string, m *dg.Message, s *dg.Session) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, m, s)
+	if err != nil {
+		return -1, err
+	}
+
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return -1, err
+	}
+	defer tx.Rollback()
+
+	guild, err := getGuildScope(tx, guildID)
+	if err != nil {
+		return -1, err
+	}
+
+	if id == guildID {
+		return guild, nil
+	}
+
+	return getChannelScope(tx, channelID, guild)
+}
+
+func getPlaceLogicalScope(id string, m *dg.Message, s *dg.Session) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, m, s)
+	if err != nil {
+		return -1, err
+	}
+
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return -1, err
+	}
+	defer tx.Rollback()
+
+	if channelScope, err := dbGetChannelScope(channelID); err == nil {
+		if guildID == "" {
+			return channelScope, nil
+		}
+
+		// Find channel's guild scope. If the channel scope exists then guild
+		// one does also, even if it's the special empty guild
+		return dbGetGuildFromChannel(channelScope)
+	}
+
+	// only create a new guildScope if it doesn't already exist
+	guildScope, err := getGuildScope(tx, guildID)
+	if err != nil {
+		return -1, err
+	}
+
+	// in case the passed id is an arbitrary guild, which means that we can't
+	// deduce a specific channel
+	if channelID == "" {
+		return guildScope, nil
+	}
+
+	if guildID != "" {
+		return guildScope, nil
+	}
+
+	return dbAddChannelScope(tx, channelID, guildScope)
+}
+
+func getPersonScope(id string) (int64, error) {
+	// doesn't check if the ID is valid, that job is handled by the PersonID
+	// function
+	scope, err := dbGetUserScope(id)
+	if err == nil {
+		return scope, nil
+	}
+
+	db := core.Globals.DB
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return -1, err
+	}
+	defer tx.Rollback()
+
+	scope, err = dbAddUserScope(tx, id)
+	if err != nil {
+		return -1, err
+	}
+
+	return scope, tx.Commit()
+}
 
 func replyUsage(usage string) *dg.MessageEmbed {
 	embed := &dg.MessageEmbed{
@@ -103,7 +233,7 @@ func parse(m *dg.Message) *core.Message {
 
 	msg := &core.Message{
 		ID:   m.ID,
-		Type: frontends.Discord,
+		Type: Type,
 		Raw:  m.Content,
 		// GuildID is always empty in returned message objects, this is here in
 		// case that changes in the future.

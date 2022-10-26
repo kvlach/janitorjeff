@@ -2,9 +2,12 @@ package core
 
 import (
 	"sync"
+
+	dg "github.com/bwmarrin/discordgo"
 )
 
 type DiscordVars struct {
+	Client        *dg.Session
 	EmbedColor    int
 	EmbedErrColor int
 	Admins        []string

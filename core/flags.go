@@ -81,7 +81,7 @@ func TypeFlag(p *int, value int, f *Flags) {
 }
 
 func FlagPlace(place *int64, f *Flags) {
-	here, err := f.Msg.ScopeHere()
+	here, err := f.Msg.HereLogical()
 	if err != nil {
 		// todo
 	}

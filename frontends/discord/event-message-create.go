@@ -32,12 +32,16 @@ func (d *DiscordMessageCreate) PlaceID(s string) (string, error) {
 	return getPlaceID(s, d.Session, d.Message.Message)
 }
 
-func (d *DiscordMessageCreate) PersonScope(id string) (int64, error) {
+func (d *DiscordMessageCreate) Person(id string) (int64, error) {
 	return getPersonScope(id)
 }
 
-func (d *DiscordMessageCreate) PlaceScope(id string) (int64, error) {
-	return getPlaceScope(id, d.Message.Message, d.Session)
+func (d *DiscordMessageCreate) PlaceExact(id string) (int64, error) {
+	return getPlaceExactScope(id, d.Message.Message, d.Session)
+}
+
+func (d *DiscordMessageCreate) PlaceLogical(id string) (int64, error) {
+	return getPlaceLogicalScope(id, d.Message.Message, d.Session)
 }
 
 func (d *DiscordMessageCreate) ReplyUsage(usage string) any {

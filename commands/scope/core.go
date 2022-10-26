@@ -9,7 +9,7 @@ func runPlace(target string, client core.Messenger) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return client.PlaceScope(id)
+	return client.PlaceLogical(id)
 }
 
 func runPerson(target, parent string, client core.Messenger) (int64, error) {
@@ -23,5 +23,5 @@ func runPerson(target, parent string, client core.Messenger) (int64, error) {
 		return -1, err
 	}
 
-	return client.PersonScope(id)
+	return client.Person(id)
 }

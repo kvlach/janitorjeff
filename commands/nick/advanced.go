@@ -111,7 +111,7 @@ func advancedRunViewCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.ScopeHere()
+	place, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -181,7 +181,7 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.ScopeHere()
+	place, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -243,7 +243,7 @@ func advancedRunDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	place, err := m.ScopeHere()
+	place, err := m.HereLogical()
 	if err != nil {
 		return nil, err
 	}

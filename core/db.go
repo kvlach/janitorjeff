@@ -39,10 +39,11 @@ type Prefix struct {
 const schema = `
 CREATE TABLE IF NOT EXISTS Scopes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	frontend INTEGER NOT NULL,
 	original_id VARCHAR(255) NOT NULL
 );
 -- Info about why this is here in discord's Scope() implementation
-INSERT OR IGNORE INTO Scopes VALUES(1,'');
+INSERT OR IGNORE INTO Scopes VALUES(1,1,'');
 
 CREATE TABLE IF NOT EXISTS PlatformDiscordGuilds (
 	id INTEGER PRIMARY KEY,
@@ -127,8 +128,11 @@ func (db *DB) Init(schema string) error {
 	return tx.Commit()
 }
 
-func (_ *DB) ScopeAdd(tx *sql.Tx, id string) (int64, error) {
-	res, err := tx.Exec("INSERT INTO Scopes(original_id) VALUES (?)", id)
+func (_ *DB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
+	res, err := tx.Exec(`
+		INSERT INTO Scopes(original_id, frontend)
+		VALUES (?, ?)`, id, frontend)
+
 	if err != nil {
 		return -1, err
 	}
@@ -142,6 +146,22 @@ func (db *DB) ScopeID(scope int64) (string, error) {
 	var id string
 	row := db.DB.QueryRow(`
 		SELECT original_id
+		FROM Scopes
+		WHERE id = ?
+	`, scope)
+
+	err := row.Scan(&id)
+
+	return id, err
+}
+
+func (db *DB) ScopeFrontend(scope int64) (int64, error) {
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var id int64
+	row := db.DB.QueryRow(`
+		SELECT frontend
 		FROM Scopes
 		WHERE id = ?
 	`, scope)

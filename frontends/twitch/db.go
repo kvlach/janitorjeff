@@ -25,6 +25,8 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	}
 
 	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
 
 	tx, err := db.DB.Begin()
 	if err != nil {
@@ -32,7 +34,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	}
 	defer tx.Rollback()
 
-	scope, err = db.ScopeAdd(tx, channelID)
+	scope, err = db.ScopeAdd(tx, channelID, Type)
 	if err != nil {
 		return -1, err
 	}
@@ -59,6 +61,21 @@ func twitchGetChannelScope(channelID string) (int64, error) {
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+func dbGetChannel(scope int64) (string, string, error) {
+	db := core.Globals.DB
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	row := db.DB.QueryRow(`
+		SELECT channel_id, channel_name
+		FROM PlatformTwitchChannels
+		WHERE id = ?`, scope)
+
+	var id, name string
+	err := row.Scan(&id, &name)
+	return id, name, err
 }
 
 func TwitchChannelSetAccessToken(accessToken, refreshToken, channelID, channelName string) error {
