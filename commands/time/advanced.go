@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +16,10 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var errPersonNotFound = errors.New("was unable to find user")
+var (
+	errPersonNotFound  = errors.New("was unable to find user")
+	errInvalidRemindID = errors.New("invalid reminder ID")
+)
 
 var Advanced = &core.CommandStatic{
 	Names: []string{
@@ -107,6 +111,17 @@ var Advanced = &core.CommandStatic{
 					Description: "Create a reminder.",
 					UsageArgs:   "(<person> to <what> in <when> | <person> in <when> to <what>)",
 					Run:         advancedRunRemindAdd,
+				},
+				{
+					Names: []string{
+						"delete",
+						"del",
+						"remove",
+						"rm",
+					},
+					Description: "Delete a reminder.",
+					UsageArgs:   "<id>",
+					Run:         advancedRunRemindDelete,
 				},
 				{
 					Names: []string{
@@ -608,6 +623,73 @@ func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) 
 	}
 
 	return runRemindAdd(when, what, person, hereExact, hereLogical)
+}
+
+///////////////////
+//               //
+// remind delete //
+//               //
+///////////////////
+
+func advancedRunRemindDelete(m *core.Message) (any, error, error) {
+	if len(m.Command.Runtime.Args) < 1 {
+		return m.ReplyUsage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Type {
+	case frontends.Discord:
+		return advancedRunRemindDeleteDiscord(m)
+	default:
+		return advancedRunRemindDeleteText(m)
+	}
+}
+
+func advancedRunRemindDeleteDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := advancedRunRemindDeleteCore(m)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	embed := &dg.MessageEmbed{
+		Description: advancedRunRemindDeleteErr(usrErr),
+	}
+
+	return embed, usrErr, nil
+}
+
+func advancedRunRemindDeleteText(m *core.Message) (string, error, error) {
+	usrErr, err := advancedRunRemindDeleteCore(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return advancedRunRemindDeleteErr(usrErr), usrErr, nil
+}
+
+func advancedRunRemindDeleteErr(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Deleted reminder."
+	case errReminderNotFound:
+		return "Reminder not found. Maybe you are not the one who created the reminder?"
+	case errInvalidRemindID:
+		return "The ID you provided is invalid, expected a number."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func advancedRunRemindDeleteCore(m *core.Message) (error, error) {
+	id, err := strconv.ParseInt(m.Command.Runtime.Args[0], 10, 64)
+	if err != nil {
+		return errInvalidRemindID, nil
+	}
+
+	author, err := m.ScopeAuthor()
+	if err != nil {
+		return nil, err
+	}
+
+	return runRemindDelete(id, author)
 }
 
 /////////////////
