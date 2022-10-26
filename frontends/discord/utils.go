@@ -11,7 +11,6 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	dg "github.com/bwmarrin/discordgo"
-	"github.com/rs/zerolog/log"
 )
 
 var errInvalidID = errors.New("given string is not a valid ID")
