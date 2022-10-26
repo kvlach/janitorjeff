@@ -107,8 +107,8 @@ func dbPersonUpdate(person, place int64, timezone string) error {
 
 func dbPersonExists(person, place int64) (bool, error) {
 	db := core.Globals.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
 
 	var exists bool
 
@@ -152,8 +152,8 @@ func dbPersonDelete(person, place int64) error {
 
 func dbPersonTimezone(person, place int64) (string, error) {
 	db := core.Globals.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
 
 	var tz string
 
@@ -222,8 +222,8 @@ func scanReminders(rows *sql.Rows) ([]reminder, error) {
 
 func dbRemindList(person, place int64) ([]reminder, error) {
 	db := core.Globals.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
 
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what
@@ -255,8 +255,8 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 
 func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 	db := core.Globals.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
 
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what
