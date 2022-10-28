@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 
@@ -72,6 +73,12 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 	}
 
 	if len(m.Content) == 0 {
+		return
+	}
+
+	// TODO: remove this when each server can configure which commands will be
+	// active
+	if m.GuildID == "348368013382254602" && !strings.HasPrefix(m.Content, "!pb") {
 		return
 	}
 
