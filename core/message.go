@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -413,8 +414,8 @@ func (m *Message) CommandRun() (*Message, error) {
 }
 
 func (m *Message) Hooks() {
-	for _, hook := range Globals.Hooks.Get() {
-		hook(m)
+	for _, h := range Globals.Hooks.Get() {
+		h.run(m)
 	}
 }
 
@@ -426,4 +427,28 @@ func (m *Message) Run() {
 
 func (m *Message) ReplyUsage() any {
 	return m.Client.ReplyUsage(m.Command.Usage())
+}
+
+// Monitor incoming messages until `check` is true or until timeout.
+func Await(timeout time.Duration, check func(*Message) bool) *Message {
+	var m *Message
+
+	timeoutchan := make(chan bool)
+
+	id := Globals.Hooks.Register(func(msg *Message) {
+		if check(msg) {
+			m = msg
+			timeoutchan <- true
+		}
+	})
+
+	select {
+	case <-timeoutchan:
+		break
+	case <-time.After(timeout):
+		break
+	}
+
+	Globals.Hooks.Delete(id)
+	return m
 }

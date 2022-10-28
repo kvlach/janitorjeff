@@ -4,6 +4,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/command"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/help"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/paintball"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/prefix"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/rps"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/scope"
@@ -16,6 +17,7 @@ var Normal = core.Commands{
 	command.Command,
 	help.Command,
 	nick.Normal,
+	paintball.Normal,
 	prefix.Command,
 	rps.Normal,
 	time.Normal,
