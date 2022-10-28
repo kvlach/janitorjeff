@@ -55,15 +55,15 @@ func normalRunDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 		// "👥 **Multiplayer [m]** - Play in group matches.\n" +
 		// "🛡 **Teams [t]** - Play in teams to win! *Coming Soon*\n" +
 		"\n" +
-		"🎲 **__Question Types__** 🎲\n" +
-		"🖼 **Poster** - Guess the movie name from the poster.\n" +
-		"🧩 **Scramble** - Unscramble the movie name.\n" +
-		"🔍 **Fake or Real** - Guess whether the movie is fake.\n" +
-		"📆 **Year** - Guess the release year of the movie.\n" +
-		"📣 **Director** - Guess the director of the movie.\n" +
-		// "🤔 **True or False** - Guess whether the statement is true or false.\n" +
-		"📖 **Plot** - Guess the movie from the plot.\n" +
-		"\n" +
+		// "🎲 **__Question Types__** 🎲\n" +
+		// "🖼 **Poster** - Guess the movie name from the poster.\n" +
+		// "🧩 **Scramble** - Unscramble the movie name.\n" +
+		// "🔍 **Fake or Real** - Guess whether the movie is fake.\n" +
+		// "📆 **Year** - Guess the release year of the movie.\n" +
+		// "📣 **Director** - Guess the director of the movie.\n" +
+		// // "🤔 **True or False** - Guess whether the statement is true or false.\n" +
+		// "📖 **Plot** - Guess the movie from the plot.\n" +
+		// "\n" +
 		"⌨ **__Commands__** ⌨\n" +
 		"🥊 `!pb play` - To play a game.\n" +
 		"❓ `!pb help` - For the help menu.\n"
