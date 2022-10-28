@@ -106,7 +106,7 @@ func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
 func main() {
 	// OTHER
 	var err error
-	myEnv, err = godotenv.Read("secrets.env")
+	myEnv, err = godotenv.Read("data/secrets.env")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to read enviromental variables")
 	}
