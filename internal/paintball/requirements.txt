@@ -1,0 +1,4 @@
+cinemagoer==2022.2.11
+greenlet==1.1.3.post0
+lxml==4.9.1
+SQLAlchemy==1.4.42
