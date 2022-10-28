@@ -78,8 +78,10 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 
 	// TODO: remove this when each server can configure which commands will be
 	// active
-	if m.GuildID == "348368013382254602" && !strings.HasPrefix(m.Content, "!pb") {
-		return
+	if m.GuildID == "348368013382254602" && strings.HasPrefix(m.Content, "!") {
+		if !strings.HasPrefix(m.Content, "!pb") {
+			return
+		}
 	}
 
 	d := &DiscordMessageCreate{s, m}
