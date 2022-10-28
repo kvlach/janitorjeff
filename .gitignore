@@ -1,4 +1,6 @@
 data/
+__pycache__/
+venv/
 config.json
 jeff.db
 secrets.env
