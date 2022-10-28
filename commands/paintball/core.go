@@ -34,7 +34,7 @@ const (
 
 	embedColor = 0xD0021A
 
-	interval = 3 * time.Second
+	interval = 5 * time.Second
 )
 
 var categories = []int{
