@@ -79,8 +79,8 @@ func (d *DiscordMessage) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.message, d.session)
 }
 
-func (d *DiscordMessage) ReplyUsage(usage string) any {
-	return replyUsage(usage)
+func (d *DiscordMessage) Usage(usage string) any {
+	return getUsage(usage)
 }
 
 func (d *DiscordMessage) Write(msg any, usrErr error) (*core.Message, error) {

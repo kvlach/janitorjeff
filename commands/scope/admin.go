@@ -36,7 +36,7 @@ var Admin = &core.CommandStatic{
 }
 
 func adminRun(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 ///////////
@@ -47,7 +47,7 @@ func adminRun(m *core.Message) (any, error, error) {
 
 func adminRunPlace(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 	place, err := adminRunPlaceCore(m)
 	return fmt.Sprint(place), nil, err
@@ -66,7 +66,7 @@ func adminRunPlaceCore(m *core.Message) (int64, error) {
 
 func adminRunPerson(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -81,7 +81,7 @@ func adminRunPerson(m *core.Message) (any, error, error) {
 
 func adminRunPersonParent(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	target := m.Command.Runtime.Args[0]
@@ -93,7 +93,7 @@ func adminRunPersonParent(m *core.Message) (any, error, error) {
 
 func adminRunPersonNoParent(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	target := m.Command.Runtime.Args[0]

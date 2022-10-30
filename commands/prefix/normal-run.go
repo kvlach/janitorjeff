@@ -22,7 +22,7 @@ var (
 )
 
 func run(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 func runAdd(m *core.Message) (any, error, error) {
@@ -47,7 +47,7 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 
 	switch usrErr {
 	case core.ErrMissingArgs:
-		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
+		return m.Usage().(*dg.MessageEmbed), usrErr, nil
 	}
 
 	embed := &dg.MessageEmbed{
@@ -67,7 +67,7 @@ func runAdd_Text(m *core.Message) (string, error, error) {
 
 	switch usrErr {
 	case core.ErrMissingArgs:
-		return m.ReplyUsage().(string), usrErr, nil
+		return m.Usage().(string), usrErr, nil
 	}
 
 	return runAdd_Err(usrErr, prefix, collision), usrErr, nil
@@ -191,7 +191,7 @@ func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 
 	switch usrErr {
 	case core.ErrMissingArgs:
-		return m.ReplyUsage().(*dg.MessageEmbed), usrErr, nil
+		return m.Usage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
@@ -218,7 +218,7 @@ func runDelete_Text(m *core.Message) (string, error, error) {
 
 	switch usrErr {
 	case core.ErrMissingArgs:
-		return m.ReplyUsage().(string), usrErr, nil
+		return m.Usage().(string), usrErr, nil
 	case errOneLeft:
 		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
 	}

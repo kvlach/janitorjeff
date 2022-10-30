@@ -25,7 +25,7 @@ var (
 
 func normalRun(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {

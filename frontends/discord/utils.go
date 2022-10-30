@@ -155,7 +155,7 @@ func getPersonScope(id string) (int64, error) {
 	return scope, tx.Commit()
 }
 
-func replyUsage(usage string) *dg.MessageEmbed {
+func getUsage(usage string) *dg.MessageEmbed {
 	embed := &dg.MessageEmbed{
 		Title: fmt.Sprintf("Usage: `%s`", usage),
 	}

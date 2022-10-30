@@ -118,7 +118,7 @@ var Advanced = &core.CommandStatic{
 }
 
 func advancedRun(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 /////////
@@ -205,7 +205,7 @@ func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
 
 func advancedRunConvert(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -260,7 +260,7 @@ func advancedRunConvertCore(m *core.Message) (string, error, error) {
 
 func advancedRunTimestamp(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -334,7 +334,7 @@ func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
 //////////////
 
 func advancedRunTimezone(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 ///////////////////
@@ -409,7 +409,7 @@ func advancedRunTimezoneShowCore(m *core.Message) (string, error, error) {
 
 func advancedRunTimezoneSet(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
@@ -539,7 +539,7 @@ func advancedRunTimezoneDeleteCore(m *core.Message) (error, error) {
 ////////////
 
 func advancedRunRemind(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 ////////////////
@@ -550,7 +550,7 @@ func advancedRunRemind(m *core.Message) (any, error, error) {
 
 func advancedRunRemindAdd(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	t, id, usrErr, err := advancedRunRemindAddCore(m)
@@ -616,7 +616,7 @@ func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) 
 
 func advancedRunRemindDelete(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
