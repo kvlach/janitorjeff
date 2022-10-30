@@ -111,12 +111,12 @@ func advancedRunViewCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
 
-	return runGet(author, place)
+	return runGet(author, here)
 }
 
 /////////
@@ -181,12 +181,12 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	place, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return "", nil, err
 	}
 
-	usrErr, err := runSet(nick, author, place)
+	usrErr, err := runSet(nick, author, here)
 	return nick, usrErr, err
 }
 
@@ -243,10 +243,10 @@ func advancedRunDeleteCore(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	place, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return nil, err
 	}
 
-	return runDelete(author, place)
+	return runDelete(author, here)
 }
