@@ -45,7 +45,7 @@ type Messenger interface {
 	PlaceExact(id string) (place int64, err error)
 	PlaceLogical(id string) (place int64, err error)
 
-	ReplyUsage(usage string) any
+	Usage(usage string) any
 
 	// Writes a message to the current channel
 	// returned *Message could be nil depending on the platform
@@ -425,8 +425,8 @@ func (m *Message) Run() {
 	log.Debug().Err(err).Send()
 }
 
-func (m *Message) ReplyUsage() any {
-	return m.Client.ReplyUsage(m.Command.Usage())
+func (m *Message) Usage() any {
+	return m.Client.Usage(m.Command.Usage())
 }
 
 // Monitor incoming messages until `check` is true or until timeout.

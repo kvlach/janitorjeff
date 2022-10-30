@@ -44,7 +44,7 @@ var Advanced = &core.CommandStatic{
 }
 
 func advancedRun(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 //////////
@@ -119,7 +119,7 @@ func advancedRunShowCore(m *core.Message) (string, error, error) {
 
 func advancedRunSet(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {

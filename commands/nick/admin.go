@@ -39,7 +39,7 @@ func adminGetFlags(m *core.Message) (*flags, []string, error) {
 }
 
 func adminRun(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 //////////
@@ -87,7 +87,7 @@ func adminRunSet(m *core.Message) (any, error, error) {
 		return "", nil, err
 	}
 	if usrErr == core.ErrMissingArgs {
-		return m.ReplyUsage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.ErrMissingArgs, nil
 	}
 	return adminRunSetErr(usrErr), usrErr, nil
 }

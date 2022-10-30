@@ -43,7 +43,7 @@ func runAdminAddErr(usrErr error, m *core.Message, prefix, collision string) any
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case core.ErrMissingArgs:
-		return m.ReplyUsage()
+		return m.Usage()
 	case errExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
 	case errCustomCommandExists:
@@ -137,7 +137,7 @@ func runAdminDelErr(usrErr error, m *core.Message, prefix string) any {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
 	case core.ErrMissingArgs:
-		return m.ReplyUsage()
+		return m.Usage()
 	case errNotFound:
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
 	case errOneLeft:
@@ -268,5 +268,5 @@ func runAdminResetCore(m *core.Message) (error, error) {
 }
 
 func runAdmin(m *core.Message) (any, error, error) {
-	return m.ReplyUsage(), core.ErrMissingArgs, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }

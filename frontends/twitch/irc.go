@@ -141,7 +141,7 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 	return twitchChannelAddChannel(id, t.message, t.Helix)
 }
 
-func (t *Twitch) ReplyUsage(usage string) any {
+func (t *Twitch) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
