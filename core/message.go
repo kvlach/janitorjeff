@@ -288,11 +288,11 @@ END:
 }
 
 func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
-	scope, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return nil, false, err
 	}
-	return ScopePrefixes(scope)
+	return ScopePrefixes(here)
 }
 
 func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
