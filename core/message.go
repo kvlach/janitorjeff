@@ -54,7 +54,7 @@ type Messenger interface {
 	Write(any, error) (*Message, error)
 }
 
-type Author struct {
+type User struct {
 	ID          string
 	Name        string
 	DisplayName string
@@ -138,14 +138,14 @@ func (cmd *Command) Usage() string {
 }
 
 type Message struct {
-	scopeAuthor int64
+	author      int64
 	hereLogical int64
 
 	ID      string
 	Type    int
 	Raw     string
 	IsDM    bool
-	Author  *Author
+	User    *User
 	Channel *Channel
 	Client  Messenger
 	Command *Command
@@ -193,6 +193,25 @@ func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
+func (m *Message) Author() (int64, error) {
+	// caches the scope to avoid unecessary database queries
+
+	if m.author != 0 {
+		return m.author, nil
+	}
+
+	author, err := m.Client.Person(m.User.ID)
+	if err != nil {
+		return -1, err
+	}
+	m.author = author
+	return author, nil
+}
+
+func (m *Message) HereExact() (int64, error) {
+	return m.Client.PlaceExact(m.Channel.ID)
+}
+
 func (m *Message) HereLogical() (int64, error) {
 	// used way more often than HereExact, which is why only this one gets
 	// cached
@@ -207,25 +226,6 @@ func (m *Message) HereLogical() (int64, error) {
 	}
 	m.hereLogical = here
 	return here, nil
-}
-
-func (m *Message) HereExact() (int64, error) {
-	return m.Client.PlaceExact(m.Channel.ID)
-}
-
-func (m *Message) ScopeAuthor() (int64, error) {
-	// caches the scope to avoid unecessary database queries
-
-	if m.scopeAuthor != 0 {
-		return m.scopeAuthor, nil
-	}
-
-	author, err := m.Client.Person(m.Author.ID)
-	if err != nil {
-		return -1, err
-	}
-	m.scopeAuthor = author
-	return author, nil
 }
 
 // Returns the given scope's prefixes and also whether or not they were taken

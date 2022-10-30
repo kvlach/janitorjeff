@@ -57,7 +57,7 @@ func (t *Twitch) Admin() bool {
 }
 
 func (t *Twitch) Parse() (*core.Message, error) {
-	author := &core.Author{
+	user := &core.User{
 		ID:          t.message.User.ID,
 		Name:        t.message.User.Name,
 		DisplayName: t.message.User.DisplayName,
@@ -74,7 +74,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		Type:    Type,
 		Raw:     t.message.Message,
 		IsDM:    false,
-		Author:  author,
+		User:    user,
 		Channel: channel,
 		Client:  t,
 	}

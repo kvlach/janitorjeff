@@ -94,8 +94,8 @@ func runPlayF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, 
 		if answer == nil {
 			name = ""
 		} else {
-			name = answer.Author.DisplayName
-			game.Point(here, answer.Author)
+			name = answer.User.DisplayName
+			game.Point(here, answer.User)
 		}
 
 		resp := generateAnswer(r, name, poster, answers, r == rounds)

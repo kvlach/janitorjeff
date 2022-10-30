@@ -10,7 +10,7 @@ import (
 // etc.)
 func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 	if s == "me" {
-		return m.ScopeAuthor()
+		return m.Author()
 	}
 
 	if person, err := dbGetPerson(s, place); err == nil {

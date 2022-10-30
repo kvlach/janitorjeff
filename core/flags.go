@@ -90,7 +90,7 @@ func FlagPlace(place *int64, f *Flags) {
 }
 
 func FlagPerson(person *int64, f *Flags) {
-	author, err := f.Msg.ScopeAuthor()
+	author, err := f.Msg.Author()
 	if err != nil {
 		// todo
 	}
