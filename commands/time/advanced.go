@@ -185,7 +185,7 @@ func advancedRunNowErr(usrErr error, m *core.Message, now time.Time, cmdTzSet st
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
-		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention, cmdTzSet)
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.User.Mention, cmdTzSet)
 	case errPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Runtime.Args[0])
 	default:
@@ -199,7 +199,7 @@ func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
 	var person int64
 	var err error
 	if len(m.Command.Runtime.Args) == 0 {
-		person, err = m.ScopeAuthor()
+		person, err = m.Author()
 	} else {
 		person, err = nick.ParsePersonHere(m, m.Command.Runtime.Args[0])
 	}
@@ -332,7 +332,7 @@ func advancedRunTimestampErr(usrErr error, t time.Time) string {
 }
 
 func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -408,7 +408,7 @@ func advancedRunTimezoneGetErr(usrErr error, tz string) string {
 }
 
 func advancedRunTimezoneGetCore(m *core.Message) (string, error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
@@ -467,7 +467,7 @@ func advancedRunTimezoneSetText(m *core.Message) (string, error, error) {
 func advancedRunTimezoneSetErr(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Added %s with timezone %s", m.Author.Mention, tz)
+		return fmt.Sprintf("Added %s with timezone %s", m.User.Mention, tz)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
@@ -478,7 +478,7 @@ func advancedRunTimezoneSetErr(usrErr error, m *core.Message, tz string) string 
 func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
 	tz := m.Command.Runtime.Args[0]
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
@@ -530,16 +530,16 @@ func advancedRunTimezoneDeleteText(m *core.Message) (string, error, error) {
 func advancedRunTimezoneDeleteErr(usrErr error, m *core.Message) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention)
+		return fmt.Sprintf("Deleted timezone for user %s", m.User.Mention)
 	case errTimezoneNotSet:
-		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.Author.Mention)
+		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.User.Mention)
 	default:
 		return fmt.Sprint(usrErr)
 	}
 }
 
 func advancedRunTimezoneDeleteCore(m *core.Message) (error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return nil, err
 	}
@@ -687,7 +687,7 @@ func advancedRunRemindDeleteCore(m *core.Message) (error, error) {
 		return errInvalidRemindID, nil
 	}
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return nil, err
 	}
@@ -738,7 +738,7 @@ func advancedRunRemindListDiscord(m *core.Message) (string, error, error) {
 }
 
 func advancedRunRemindListCore(m *core.Message) ([]reminder, error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return nil, nil, err
 	}

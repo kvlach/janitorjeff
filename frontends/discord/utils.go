@@ -225,7 +225,7 @@ func isAdmin(id string) bool {
 }
 
 func parse(m *dg.Message) *core.Message {
-	author := &core.Author{
+	user := &core.User{
 		ID:          m.Author.ID,
 		Name:        m.Author.Username,
 		DisplayName: getDisplayName(m.Member, m.Author),
@@ -244,7 +244,7 @@ func parse(m *dg.Message) *core.Message {
 		// GuildID is always empty in returned message objects, this is here in
 		// case that changes in the future.
 		IsDM:    m.GuildID == "",
-		Author:  author,
+		User:    user,
 		Channel: channel,
 	}
 

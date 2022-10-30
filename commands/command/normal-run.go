@@ -102,7 +102,7 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 
 	response := m.RawArgs(1)
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return trigger, nil, err
 	}
@@ -202,7 +202,7 @@ func runModify_Core(m *core.Message) (string, error, error) {
 
 	response := m.RawArgs(1)
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return trigger, nil, err
 	}
@@ -281,7 +281,7 @@ func runDel_Core(m *core.Message) (string, error, error) {
 		return trigger, errTriggerNotFound, nil
 	}
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return trigger, nil, err
 	}

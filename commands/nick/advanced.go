@@ -106,7 +106,7 @@ func advancedRunViewErr(usrErr error, nick string) string {
 }
 
 func advancedRunViewCore(m *core.Message) (string, error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
@@ -176,7 +176,7 @@ func advancedRunSetErr(usrErr error, nick string) string {
 func advancedRunSetCore(m *core.Message) (string, error, error) {
 	nick := m.Command.Runtime.Args[0]
 
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
@@ -238,7 +238,7 @@ func advancedRunDeleteErr(usrErr error) string {
 }
 
 func advancedRunDeleteCore(m *core.Message) (error, error) {
-	author, err := m.ScopeAuthor()
+	author, err := m.Author()
 	if err != nil {
 		return nil, err
 	}

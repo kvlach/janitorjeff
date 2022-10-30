@@ -105,7 +105,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	testAuthor, err = msg.ScopeAuthor()
+	testAuthor, err = msg.Author()
 	if err != nil {
 		log.Fatalln(err)
 	}
