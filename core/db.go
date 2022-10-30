@@ -45,28 +45,6 @@ CREATE TABLE IF NOT EXISTS Scopes (
 -- Info about why this is here in discord's Scope() implementation
 INSERT OR IGNORE INTO Scopes VALUES(1,1,'');
 
-CREATE TABLE IF NOT EXISTS PlatformDiscordGuilds (
-	id INTEGER PRIMARY KEY,
-	guild VARCHAR(255) NOT NULL UNIQUE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
--- Info about why this is here in discord's Scope() implementation
-INSERT OR IGNORE INTO PlatformDiscordGuilds VALUES(1,'');
-
-CREATE TABLE IF NOT EXISTS PlatformDiscordChannels (
-	id INTEGER PRIMARY KEY,
-	channel VARCHAR(255) NOT NULL UNIQUE,
-	guild INTEGER NOT NULL,
-	FOREIGN KEY (guild) REFERENCES PlatformDiscordGuilds(id) ON DELETE CASCADE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS PlatformDiscordUsers (
-	id INTEGER PRIMARY KEY,
-	user VARCHAR(255) NOT NULL UNIQUE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS PlatformTwitchChannels (
 	id INTEGER PRIMARY KEY,
 	channel_id VARCHAR(255) NOT NULL UNIQUE,
