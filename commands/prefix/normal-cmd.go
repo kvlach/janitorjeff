@@ -23,32 +23,21 @@ var Command = &core.CommandStatic{
 }
 
 var cmdAdd = &core.CommandStatic{
-	Names: []string{
-		"add",
-		"new",
-	},
+	Names:       core.Add,
 	Description: "Add a prefix.",
 	UsageArgs:   "<prefix>",
 	Run:         runAdd,
 }
 
 var cmdDel = &core.CommandStatic{
-	Names: []string{
-		"del",
-		"delete",
-		"rm",
-		"remove",
-	},
+	Names:       core.Delete,
 	Description: "Delete a prefix.",
 	UsageArgs:   "<prefix>",
 	Run:         runDelete,
 }
 
 var cmdList = &core.CommandStatic{
-	Names: []string{
-		"list",
-		"ls",
-	},
+	Names:       core.List,
 	Description: "List the current prefixes.",
 	UsageArgs:   "",
 	Run:         runList,

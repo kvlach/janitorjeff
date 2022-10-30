@@ -14,10 +14,8 @@ var Admin = &core.CommandStatic{
 
 	Children: core.Commands{
 		{
-			Names: []string{
-				"get",
-			},
-			Run: adminRunGet,
+			Names: core.Show,
+			Run:   adminRunShow,
 		},
 		{
 			Names: []string{
@@ -27,9 +25,7 @@ var Admin = &core.CommandStatic{
 			Run:       adminRunSet,
 		},
 		{
-			Names: []string{
-				"rm",
-			},
+			Names:     core.Delete,
 			UsageArgs: "<nick>",
 			Run:       adminRunDelete,
 		},
@@ -46,21 +42,21 @@ func adminRun(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
-/////////
-//     //
-// get //
-//     //
-/////////
+//////////
+//      //
+// show //
+//      //
+//////////
 
-func adminRunGet(m *core.Message) (any, error, error) {
-	nick, usrErr, err := adminRunGetCore(m)
+func adminRunShow(m *core.Message) (any, error, error) {
+	nick, usrErr, err := adminRunShowCore(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return adminRunGetErr(usrErr, nick), usrErr, nil
+	return adminRunShowErr(usrErr, nick), usrErr, nil
 }
 
-func adminRunGetErr(usrErr error, nick string) string {
+func adminRunShowErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return nick
@@ -71,12 +67,12 @@ func adminRunGetErr(usrErr error, nick string) string {
 	}
 }
 
-func adminRunGetCore(m *core.Message) (string, error, error) {
+func adminRunShowCore(m *core.Message) (string, error, error) {
 	fs, _, err := adminGetFlags(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return runGet(fs.person, fs.place)
+	return runShow(fs.person, fs.place)
 }
 
 /////////

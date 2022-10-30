@@ -33,7 +33,7 @@ func runNormal(m *core.Message) (any, error, error) {
 
 func runNormalTimezone(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) == 0 {
-		return advancedRunTimezoneGet(m)
+		return advancedRunTimezoneShow(m)
 	}
 	return advancedRunTimezoneSet(m)
 }

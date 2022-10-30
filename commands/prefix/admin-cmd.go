@@ -20,32 +20,21 @@ var Admin = &core.CommandStatic{
 }
 
 var cmdAdminAdd = &core.CommandStatic{
-	Names: []string{
-		"add",
-		"new",
-	},
+	Names:       core.Add,
 	Description: "add prefix",
 	UsageArgs:   "",
 	Run:         runAdminAdd,
 }
 
 var cmdAdminDel = &core.CommandStatic{
-	Names: []string{
-		"del",
-		"delete",
-		"rm",
-		"remove",
-	},
+	Names:       core.Delete,
 	Description: "add prefix",
 	UsageArgs:   "",
 	Run:         runAdminDel,
 }
 
 var cmdAdminList = &core.CommandStatic{
-	Names: []string{
-		"ls",
-		"list",
-	},
+	Names:       core.List,
 	Description: "list prefixes",
 	UsageArgs:   "",
 	Run:         runAdminList,

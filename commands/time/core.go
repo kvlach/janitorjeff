@@ -413,7 +413,7 @@ func runTimestamp(when string, person, place int64) (time.Time, error, error) {
 	return t, nil, nil
 }
 
-func runTimezoneGet(person, place int64) (string, error, error) {
+func runTimezoneShow(person, place int64) (string, error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return "", nil, err

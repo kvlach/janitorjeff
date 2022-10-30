@@ -15,19 +15,16 @@ var Advanced = &core.CommandStatic{
 		"nickname",
 	},
 	Description: "Set, view or delete your nickname.",
-	UsageArgs:   "(view|set|delete)",
+	UsageArgs:   "(show | set | delete)",
 	Run:         advancedRun,
 	Init:        init_,
 
 	Children: core.Commands{
 		{
-			Names: []string{
-				"view",
-				"get",
-			},
+			Names:       core.Show,
 			Description: "View your current nickname.",
 			UsageArgs:   "",
-			Run:         advancedRunView,
+			Run:         advancedRunShow,
 		},
 		{
 			Names: []string{
@@ -38,12 +35,7 @@ var Advanced = &core.CommandStatic{
 			Run:         advancedRunSet,
 		},
 		{
-			Names: []string{
-				"delete",
-				"del",
-				"remove",
-				"rm",
-			},
+			Names:       core.Delete,
 			Description: "Delete your nickname.",
 			UsageArgs:   "",
 			Run:         advancedRunDelete,
@@ -57,21 +49,21 @@ func advancedRun(m *core.Message) (any, error, error) {
 
 //////////
 //      //
-// view //
+// show //
 //      //
 //////////
 
-func advancedRunView(m *core.Message) (any, error, error) {
+func advancedRunShow(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case frontends.Discord:
-		return advancedRunViewDiscord(m)
+		return advancedRunShowDiscord(m)
 	default:
-		return advancedRunViewText(m)
+		return advancedRunShowText(m)
 	}
 }
 
-func advancedRunViewDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	nick, usrErr, err := advancedRunViewCore(m)
+func advancedRunShowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	nick, usrErr, err := advancedRunShowCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -79,22 +71,22 @@ func advancedRunViewDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunViewErr(usrErr, nick),
+		Description: advancedRunShowErr(usrErr, nick),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunViewText(m *core.Message) (string, error, error) {
-	nick, usrErr, err := advancedRunViewCore(m)
+func advancedRunShowText(m *core.Message) (string, error, error) {
+	nick, usrErr, err := advancedRunShowCore(m)
 	if err != nil {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return advancedRunViewErr(usrErr, nick), usrErr, nil
+	return advancedRunShowErr(usrErr, nick), usrErr, nil
 }
 
-func advancedRunViewErr(usrErr error, nick string) string {
+func advancedRunShowErr(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
@@ -105,7 +97,7 @@ func advancedRunViewErr(usrErr error, nick string) string {
 	}
 }
 
-func advancedRunViewCore(m *core.Message) (string, error, error) {
+func advancedRunShowCore(m *core.Message) (string, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
@@ -116,7 +108,7 @@ func advancedRunViewCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runGet(author, here)
+	return runShow(author, here)
 }
 
 /////////

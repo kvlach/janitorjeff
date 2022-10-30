@@ -16,7 +16,7 @@ var Normal = &core.CommandStatic{
 
 func normalRun(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) == 0 {
-		return advancedRunView(m)
+		return advancedRunShow(m)
 	}
 	return advancedRunSet(m)
 }
