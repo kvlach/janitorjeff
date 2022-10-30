@@ -195,7 +195,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 //     //
 /////////
 
-func runGet(person, place int64) (string, error, error) {
+func runShow(person, place int64) (string, error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return "", nil, err

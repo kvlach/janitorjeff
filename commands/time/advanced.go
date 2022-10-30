@@ -59,18 +59,15 @@ var Advanced = &core.CommandStatic{
 				"zone",
 			},
 			Description: "View, set or delete your nickname.",
-			UsageArgs:   "(view | set | delete)",
+			UsageArgs:   "(Show | set | delete)",
 			Run:         advancedRunTimezone,
 
 			Children: core.Commands{
 				{
-					Names: []string{
-						"view",
-						"get",
-					},
-					Description: "View the timezone that you set.",
+					Names:       core.Show,
+					Description: "Show the timezone that you set.",
 					UsageArgs:   "",
-					Run:         advancedRunTimezoneGet,
+					Run:         advancedRunTimezoneShow,
 				},
 				{
 					Names: []string{
@@ -81,12 +78,7 @@ var Advanced = &core.CommandStatic{
 					Run:         advancedRunTimezoneSet,
 				},
 				{
-					Names: []string{
-						"delete",
-						"del",
-						"remove",
-						"rm",
-					},
+					Names:       core.Delete,
 					Description: "Delete the timezone that you set.",
 					UsageArgs:   "",
 					Run:         advancedRunTimezoneDelete,
@@ -103,31 +95,19 @@ var Advanced = &core.CommandStatic{
 
 			Children: core.Commands{
 				{
-					Names: []string{
-						"add",
-						"new",
-						"create",
-					},
+					Names:       core.Add,
 					Description: "Create a reminder.",
 					UsageArgs:   "(<person> to <what> in <when> | <person> in <when> to <what>)",
 					Run:         advancedRunRemindAdd,
 				},
 				{
-					Names: []string{
-						"delete",
-						"del",
-						"remove",
-						"rm",
-					},
+					Names:       core.Delete,
 					Description: "Delete a reminder.",
 					UsageArgs:   "<id>",
 					Run:         advancedRunRemindDelete,
 				},
 				{
-					Names: []string{
-						"list",
-						"ls",
-					},
+					Names:       core.List,
 					Description: "List active reminders.",
 					UsageArgs:   "",
 					Run:         advancedRunRemindList,
@@ -357,23 +337,23 @@ func advancedRunTimezone(m *core.Message) (any, error, error) {
 	return m.ReplyUsage(), core.ErrMissingArgs, nil
 }
 
-//////////////////
-//              //
-// timezone get //
-//              //
-//////////////////
+///////////////////
+//               //
+// timezone show //
+//               //
+///////////////////
 
-func advancedRunTimezoneGet(m *core.Message) (any, error, error) {
+func advancedRunTimezoneShow(m *core.Message) (any, error, error) {
 	switch m.Type {
 	case frontends.Discord:
-		return advancedRunTimezoneGetDiscord(m)
+		return advancedRunTimezoneShowDiscord(m)
 	default:
-		return advancedRunTimezoneGetText(m)
+		return advancedRunTimezoneShowText(m)
 	}
 }
 
-func advancedRunTimezoneGetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	tz, usrErr, err := advancedRunTimezoneGetCore(m)
+func advancedRunTimezoneShowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	tz, usrErr, err := advancedRunTimezoneShowCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -381,22 +361,22 @@ func advancedRunTimezoneGetDiscord(m *core.Message) (*dg.MessageEmbed, error, er
 	tz = discord.PlaceInBackticks(tz)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunTimezoneGetErr(usrErr, tz),
+		Description: advancedRunTimezoneShowErr(usrErr, tz),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunTimezoneGetText(m *core.Message) (string, error, error) {
-	tz, usrErr, err := advancedRunTimezoneGetCore(m)
+func advancedRunTimezoneShowText(m *core.Message) (string, error, error) {
+	tz, usrErr, err := advancedRunTimezoneShowCore(m)
 	if err != nil {
 		return "", nil, err
 	}
 	tz = fmt.Sprintf("'%s'", tz)
-	return advancedRunTimezoneGetErr(usrErr, tz), usrErr, nil
+	return advancedRunTimezoneShowErr(usrErr, tz), usrErr, nil
 }
 
-func advancedRunTimezoneGetErr(usrErr error, tz string) string {
+func advancedRunTimezoneShowErr(usrErr error, tz string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your timezone is: %s", tz)
@@ -407,7 +387,7 @@ func advancedRunTimezoneGetErr(usrErr error, tz string) string {
 	}
 }
 
-func advancedRunTimezoneGetCore(m *core.Message) (string, error, error) {
+func advancedRunTimezoneShowCore(m *core.Message) (string, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
@@ -418,7 +398,7 @@ func advancedRunTimezoneGetCore(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runTimezoneGet(author, here)
+	return runTimezoneShow(author, here)
 }
 
 //////////////////

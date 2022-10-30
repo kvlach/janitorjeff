@@ -139,21 +139,21 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 	return false, nil
 }
 
-func runModify(m *core.Message) (any, error, error) {
+func runEdit(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 2 {
 		return m.ReplyUsage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Type {
 	case frontends.Discord:
-		return runModify_Discord(m)
+		return runEdit_Discord(m)
 	default:
-		return runModify_Text(m)
+		return runEdit_Text(m)
 	}
 }
 
-func runModify_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := runModify_Core(m)
+func runEdit_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	trigger, usrErr, err := runEdit_Core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -161,24 +161,24 @@ func runModify_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: runModify_Err(usrErr, trigger),
+		Description: runEdit_Err(usrErr, trigger),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runModify_Text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := runModify_Core(m)
+func runEdit_Text(m *core.Message) (string, error, error) {
+	trigger, usrErr, err := runEdit_Core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return runModify_Err(usrErr, trigger), usrErr, nil
+	return runEdit_Err(usrErr, trigger), usrErr, nil
 }
 
-func runModify_Err(usrErr error, trigger string) string {
+func runEdit_Err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
@@ -189,7 +189,7 @@ func runModify_Err(usrErr error, trigger string) string {
 	}
 }
 
-func runModify_Core(m *core.Message) (string, error, error) {
+func runEdit_Core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Runtime.Args[0]
 
 	exists, scope, err := checkTriggerExists(m, trigger)

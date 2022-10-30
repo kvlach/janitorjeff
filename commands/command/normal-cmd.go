@@ -9,8 +9,8 @@ var Command = &core.CommandStatic{
 		"cmd",
 		"command",
 	},
-	Description: "Add, delete, modify or list custom commands.",
-	UsageArgs:   "(add|modify|del|list)",
+	Description: "Add, edit, delete or list custom commands.",
+	UsageArgs:   "(add | edit | delete | list)",
 	Run:         run,
 	Init:        init_,
 
@@ -24,42 +24,28 @@ var Command = &core.CommandStatic{
 }
 
 var cmdAdd = &core.CommandStatic{
-	Names: []string{
-		"add",
-		"new",
-	},
+	Names:       core.Add,
 	Description: "Add a command.",
 	UsageArgs:   "<trigger> <text>",
 	Run:         runAdd,
 }
 
 var cmdDel = &core.CommandStatic{
-	Names: []string{
-		"del",
-		"delete",
-		"rm",
-		"remove",
-	},
+	Names:       core.Delete,
 	Description: "Delete a command.",
 	UsageArgs:   "<trigger>",
 	Run:         runDel,
 }
 
 var cmdModify = &core.CommandStatic{
-	Names: []string{
-		"modify",
-		"change",
-	},
-	Description: "Modify a command.",
+	Names:       core.Edit,
+	Description: "Edit a command.",
 	UsageArgs:   "<trigger> <text>",
-	Run:         runModify,
+	Run:         runEdit,
 }
 
 var cmdList = &core.CommandStatic{
-	Names: []string{
-		"ls",
-		"list",
-	},
+	Names:       core.List,
 	Description: "List commands.",
 	UsageArgs:   "",
 	Run:         runList,
