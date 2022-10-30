@@ -210,6 +210,10 @@ func onPrivateMessage(m tirc.PrivateMessage) {
 // }
 
 func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oauth string, channels []string) {
+	if err := dbInit(); err != nil {
+		log.Fatal().Err(err).Msg("failed to init twitch db schema")
+	}
+
 	twitchIrcClient = tirc.NewClient(nick, oauth)
 
 	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
