@@ -73,7 +73,12 @@ func getPlaceExactScope(id string, m *dg.Message, s *dg.Session) (int64, error) 
 		return guild, nil
 	}
 
-	return getChannelScope(tx, channelID, guild)
+	channel, err := getChannelScope(tx, channelID, guild)
+	if err != nil {
+		return -1, err
+	}
+
+	return channel, tx.Commit()
 }
 
 func getPlaceLogicalScope(id string, m *dg.Message, s *dg.Session) (int64, error) {
@@ -118,7 +123,12 @@ func getPlaceLogicalScope(id string, m *dg.Message, s *dg.Session) (int64, error
 		return guildScope, nil
 	}
 
-	return dbAddChannelScope(tx, channelID, guildScope)
+	channelScope, err := dbAddChannelScope(tx, channelID, guildScope)
+	if err != nil {
+		return -1, err
+	}
+
+	return channelScope, tx.Commit()
 }
 
 func getPersonScope(id string) (int64, error) {
