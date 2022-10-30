@@ -15,7 +15,7 @@ import (
 
 var Normal = core.Commands{
 	command.Command,
-	help.Command,
+	help.Normal,
 	nick.Normal,
 	paintball.Normal,
 	prefix.Command,
@@ -24,11 +24,13 @@ var Normal = core.Commands{
 }
 
 var Advanced = core.Commands{
+	help.Advanced,
 	nick.Advanced,
 	time.Advanced,
 }
 
 var Admin = core.Commands{
+	help.Admin,
 	nick.Admin,
 	prefix.Admin,
 	scope.Admin,
