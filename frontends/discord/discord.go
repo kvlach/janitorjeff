@@ -12,6 +12,10 @@ import (
 const Type = 1 << 0
 
 func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
+	if err := dbInit(); err != nil {
+		log.Fatal().Err(err).Msg("failed to init discord db schema")
+	}
+
 	d, err := dg.New("Bot " + token)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create discord client")
