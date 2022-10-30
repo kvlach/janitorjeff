@@ -6,6 +6,21 @@ import (
 	tirc "github.com/gempir/go-twitch-irc/v2"
 )
 
+const dbSchema = `
+CREATE TABLE IF NOT EXISTS PlatformTwitchChannels (
+	id INTEGER PRIMARY KEY,
+	channel_id VARCHAR(255) NOT NULL UNIQUE,
+	channel_name VARCHAR(255) NOT NULL,
+	access_token VARCHAR(255),
+	refresh_token VARCHAR(255),
+	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
+);
+`
+
+func dbInit() error {
+	return core.Globals.DB.Init(dbSchema)
+}
+
 func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
 	var channelID, channelName string
 	if id == m.User.ID {

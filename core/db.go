@@ -45,15 +45,6 @@ CREATE TABLE IF NOT EXISTS Scopes (
 -- Info about why this is here in discord's Scope() implementation
 INSERT OR IGNORE INTO Scopes VALUES(1,1,'');
 
-CREATE TABLE IF NOT EXISTS PlatformTwitchChannels (
-	id INTEGER PRIMARY KEY,
-	channel_id VARCHAR(255) NOT NULL UNIQUE,
-	channel_name VARCHAR(255) NOT NULL,
-	access_token VARCHAR(255),
-	refresh_token VARCHAR(255),
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	scope INTEGER NOT NULL,
