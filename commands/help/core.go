@@ -1,6 +1,7 @@
 package help
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -26,10 +27,14 @@ const (
 	cmdUsageArgs   = "<command...>"
 )
 
+var (
+	errCommandNotFound = errors.New("Command could not be found.")
+)
+
 func runCore(cmds core.Commands, args []string, prefix string) (*core.Command, []string, error) {
 	cmdStatic, index, err := cmds.MatchCommand(args)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errCommandNotFound
 	}
 
 	cmd := &core.Command{
@@ -103,17 +108,17 @@ func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 }
 
 func runDiscord(cmds core.Commands, m *core.Message) (*dg.MessageEmbed, error, error) {
-	cmd, aliases, err := runCore(cmds, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
-	if err != nil {
-		return nil, nil, err
+	cmd, aliases, usrErr := runCore(cmds, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
+	if usrErr != nil {
+		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}, usrErr, nil
 	}
 	return renderDiscord(cmd, aliases), nil, nil
 }
 
 func runText(cmds core.Commands, m *core.Message) (string, error, error) {
-	cmd, aliases, err := runCore(cmds, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
-	if err != nil {
-		return "", nil, err
+	cmd, aliases, usrErr := runCore(cmds, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
 	}
 	return renderText(cmd, aliases), nil, nil
 }
