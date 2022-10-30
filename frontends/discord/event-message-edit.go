@@ -26,6 +26,13 @@ func (r *replyCache) Set(key, value string) {
 	r.replies[key] = value
 }
 
+func (r *replyCache) Delete(key string) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	delete(r.replies, key)
+}
+
 func (r *replyCache) Get(key string) (string, bool) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
