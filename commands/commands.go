@@ -29,6 +29,7 @@ var Advanced = core.Commands{
 	help.Advanced,
 	nick.Advanced,
 	time.Advanced,
+	urban_dictionary.Advanced,
 }
 
 var Admin = core.Commands{

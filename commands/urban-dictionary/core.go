@@ -3,16 +3,21 @@ package urban_dictionary
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
+
+	dg "github.com/bwmarrin/discordgo"
 )
 
 const (
-	endpoint = "https://api.urbandictionary.com/v0"
-	define   = "/define?term="
+	base   = "https://api.urbandictionary.com/v0"
+	define = "/define?term="
+	random = "/random"
 )
 
 type definition struct {
@@ -33,24 +38,17 @@ type response struct {
 	List []definition `json:"list"`
 }
 
-func cleanLinks(def definition) definition {
-	re := regexp.MustCompile(`\[[ a-zA-Z0-9]+\]`)
+// term links are wrapped between `[]`, this removes the brackets
+func cleanLinks(s string) string {
+	re := regexp.MustCompile(`\[[ \-a-zA-Z]+\]`)
 
-	def.Definition = re.ReplaceAllStringFunc(def.Definition, func(m string) string {
+	return re.ReplaceAllStringFunc(s, func(m string) string {
 		return m[1 : len(m)-1]
 	})
-
-	def.Example = re.ReplaceAllStringFunc(def.Example, func(m string) string {
-		return m[1 : len(m)-1]
-	})
-
-	return def
 }
 
-func search(term string) (definition, error) {
-	term = url.QueryEscape(term)
-
-	resp, err := http.Get(endpoint + define + term)
+func read(u string) (definition, error) {
+	resp, err := http.Get(u)
 	if err != nil {
 		return definition{}, err
 	}
@@ -70,5 +68,45 @@ func search(term string) (definition, error) {
 		return definition{}, errors.New("no results found")
 	}
 
-	return cleanLinks(defs.List[0]), nil
+	def := defs.List[0]
+	def.Definition = cleanLinks(def.Definition)
+	def.Example = cleanLinks(def.Example)
+	return def, nil
+}
+
+func search(term string) (definition, error) {
+	return read(base + define + url.QueryEscape(term))
+}
+
+func rand() (definition, error) {
+	return read(base + random)
+}
+
+func renderDiscord(def definition) *dg.MessageEmbed {
+	var example []*dg.MessageEmbedField
+	if def.Example != "" {
+		example = []*dg.MessageEmbedField{
+			{
+				Name:  "Example",
+				Value: def.Example,
+			},
+		}
+	}
+
+	embed := &dg.MessageEmbed{
+		Title:       "UrbanDictionary definition for " + def.Word,
+		URL:         def.Permalink,
+		Description: def.Definition,
+		Fields:      example,
+		Footer: &dg.MessageEmbedFooter{
+			Text: fmt.Sprintf("Submitter: %s | Thumbs up: %d | Thumbs down: %d", def.Author, def.ThumbsUp, def.ThumbsDown),
+		},
+	}
+
+	return embed
+}
+
+func renderText(def definition) string {
+	def.Definition = strings.ReplaceAll(def.Definition, "\n", " ")
+	return fmt.Sprintf("%s: %s %s", def.Word, def.Definition, def.Permalink)
 }
