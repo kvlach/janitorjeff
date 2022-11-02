@@ -5,9 +5,16 @@ import (
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 )
+
+///////////////////
+//               //
+// Type: Command //
+//               //
+///////////////////
 
 var Advanced = &core.CommandStatic{
 	Names: []string{
@@ -17,7 +24,7 @@ var Advanced = &core.CommandStatic{
 	Description: "Set, view or delete your nickname.",
 	UsageArgs:   "(show | set | delete)",
 	Run:         advancedRun,
-	Init:        init_,
+	Init:        advancedInit,
 
 	Children: core.Commands{
 		{
@@ -43,15 +50,21 @@ var Advanced = &core.CommandStatic{
 	},
 }
 
+///////////////
+//           //
+// Type: Run //
+//           //
+///////////////
+
 func advancedRun(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
-//////////
-//      //
-// show //
-//      //
-//////////
+///////////////
+//           //
+// Run: show //
+//           //
+///////////////
 
 func advancedRunShow(m *core.Message) (any, error, error) {
 	switch m.Type {
@@ -111,11 +124,11 @@ func advancedRunShowCore(m *core.Message) (string, error, error) {
 	return runShow(author, here)
 }
 
-/////////
-//     //
-// set //
-//     //
-/////////
+//////////////
+//          //
+// Run: set //
+//          //
+//////////////
 
 func advancedRunSet(m *core.Message) (any, error, error) {
 	if len(m.Command.Runtime.Args) < 1 {
@@ -182,11 +195,11 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 	return nick, usrErr, err
 }
 
-////////////
-//        //
-// delete //
-//        //
-////////////
+/////////////////
+//             //
+// Run: delete //
+//             //
+/////////////////
 
 func advancedRunDelete(m *core.Message) (any, error, error) {
 	switch m.Type {
@@ -241,4 +254,50 @@ func advancedRunDeleteCore(m *core.Message) (error, error) {
 	}
 
 	return runDelete(author, here)
+}
+
+////////////////
+//            //
+// Type: Init //
+//            //
+////////////////
+
+func advancedInit() error {
+	advancedInitDiscordAppCommand()
+	return nil
+}
+
+func advancedInitDiscordAppCommand() {
+	cmd := &dg.ApplicationCommand{
+		Name:        "nick",
+		Type:        dg.ChatApplicationCommand,
+		Description: "Nickname commands.",
+		Options: []*dg.ApplicationCommandOption{
+			{
+				Name:        "show",
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: "Show your nickname.",
+			},
+			{
+				Name:        "set",
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: "Set your nickname.",
+				Options: []*dg.ApplicationCommandOption{
+					{
+						Name:        "nickname",
+						Type:        dg.ApplicationCommandOptionString,
+						Description: "give nickname",
+						Required:    true,
+					},
+				},
+			},
+			{
+				Name:        "delete",
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: "Delete your nickname.",
+			},
+		},
+	}
+
+	discord.RegisterAppCommand(cmd)
 }

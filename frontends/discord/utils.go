@@ -15,12 +15,12 @@ import (
 
 var errInvalidID = errors.New("given string is not a valid ID")
 
-func getChannelGuildIDs(id string, m *dg.Message, s *dg.Session) (string, string, error) {
+func getChannelGuildIDs(id string, hereChannelID, hereGuildID string, s *dg.Session) (string, string, error) {
 	var channelID, guildID string
 
-	if id == m.ChannelID || id == m.GuildID {
-		channelID = m.ChannelID
-		guildID = m.GuildID
+	if id == hereChannelID || id == hereGuildID {
+		channelID = hereChannelID
+		guildID = hereGuildID
 	} else if channel, err := s.Channel(id); err == nil {
 		channelID = channel.ID
 		guildID = channel.GuildID
@@ -48,8 +48,8 @@ func getChannelScope(tx *sql.Tx, id string, guild int64) (int64, error) {
 	return dbAddChannelScope(tx, id, guild)
 }
 
-func getPlaceExactScope(id string, m *dg.Message, s *dg.Session) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, m, s)
+func getPlaceExactScope(id string, hereChannelID, hereGuildID string, s *dg.Session) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID, s)
 	if err != nil {
 		return -1, err
 	}
@@ -81,8 +81,8 @@ func getPlaceExactScope(id string, m *dg.Message, s *dg.Session) (int64, error) 
 	return channel, tx.Commit()
 }
 
-func getPlaceLogicalScope(id string, m *dg.Message, s *dg.Session) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, m, s)
+func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string, s *dg.Session) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID, s)
 	if err != nil {
 		return -1, err
 	}
@@ -162,7 +162,7 @@ func getUsage(usage string) *dg.MessageEmbed {
 	return embed
 }
 
-func getPersonID(s, guildID string, ds *dg.Session, msg *dg.Message) (string, error) {
+func getPersonID(s, guildID, authorID string, ds *dg.Session) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
 	// this: <@id>
 
@@ -177,7 +177,7 @@ func getPersonID(s, guildID string, ds *dg.Session, msg *dg.Message) (string, er
 
 	// if the user is in a DM then the only valid user id would be that of
 	// themselves, so having no guild isn't a problem
-	if s == msg.Author.ID {
+	if s == authorID {
 		return s, nil
 	}
 
@@ -188,7 +188,7 @@ func getPersonID(s, guildID string, ds *dg.Session, msg *dg.Message) (string, er
 	return s, nil
 }
 
-func getPlaceID(s string, ds *dg.Session, msg *dg.Message) (string, error) {
+func getPlaceID(s string, ds *dg.Session) (string, error) {
 	// expects one of the following:
 	// - guild id
 	// - channel id

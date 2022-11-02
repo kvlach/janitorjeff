@@ -12,6 +12,7 @@ var Normal = &core.CommandStatic{
 	Description: "View or set your nickname.",
 	UsageArgs:   "[nickname]",
 	Run:         normalRun,
+	Init:        init_,
 }
 
 func normalRun(m *core.Message) (any, error, error) {
