@@ -44,14 +44,20 @@ func init() {
 	}
 }
 
-func setParents(cmd *core.CommandStatic) {
+func recurseCommands(cmd *core.CommandStatic) {
+	if cmd.Init != nil {
+		if err := cmd.Init(); err != nil {
+			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
+		}
+	}
+
 	if cmd.Children == nil {
 		return
 	}
 
 	for _, child := range cmd.Children {
 		child.Parent = cmd
-		setParents(child)
+		recurseCommands(child)
 	}
 }
 
@@ -60,17 +66,17 @@ func setParents(cmd *core.CommandStatic) {
 // parent can't reference the children). So instead we just recursively loop
 // through all the children and set the parent. This also makes declaring the
 // command objects a bit cleaner.
-func init() {
+func commandsSetUp() {
 	for _, cmd := range commands.Normal {
-		setParents(cmd)
+		recurseCommands(cmd)
 	}
 
 	for _, cmd := range commands.Advanced {
-		setParents(cmd)
+		recurseCommands(cmd)
 	}
 
 	for _, cmd := range commands.Admin {
-		setParents(cmd)
+		recurseCommands(cmd)
 	}
 }
 
@@ -157,17 +163,7 @@ func main() {
 	connect(stop, wgStop)
 
 	// Requires globals to be set
-	for _, cmd := range commands.Normal {
-		if cmd.Init != nil {
-			if err := cmd.Init(); err != nil {
-				log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
-			}
-		}
-
-		if len(cmd.Children) > 0 {
-			log.Debug().Msgf("%v", cmd.Children[0])
-		}
-	}
+	commandsSetUp()
 
 	go http.ListenAndServe(globals.Host, nil)
 

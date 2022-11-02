@@ -60,11 +60,11 @@ func (d *DiscordMessage) Parse() (*core.Message, error) {
 }
 
 func (d *DiscordMessage) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, d.session, d.message)
+	return getPersonID(s, placeID, d.message.Author.ID, d.session)
 }
 
 func (d *DiscordMessage) PlaceID(s string) (string, error) {
-	return getPlaceID(s, d.session, d.message)
+	return getPlaceID(s, d.session)
 }
 
 func (d *DiscordMessage) Person(id string) (int64, error) {
@@ -72,11 +72,11 @@ func (d *DiscordMessage) Person(id string) (int64, error) {
 }
 
 func (d *DiscordMessage) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, d.message, d.session)
+	return getPlaceExactScope(id, d.message.ChannelID, d.message.GuildID, d.session)
 }
 
 func (d *DiscordMessage) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, d.message, d.session)
+	return getPlaceLogicalScope(id, d.message.ChannelID, d.message.GuildID, d.session)
 }
 
 func (d *DiscordMessage) Usage(usage string) any {

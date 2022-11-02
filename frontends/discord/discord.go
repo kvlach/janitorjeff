@@ -24,6 +24,7 @@ func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
 	d.AddHandler(messageCreate)
 	d.AddHandler(messageEdit)
 	d.AddHandler(messageDelete)
+	d.AddHandler(interactionCreate)
 
 	// TODO: Specify only needed intents
 	d.Identify.Intents = dg.MakeIntent(dg.IntentsAll)
