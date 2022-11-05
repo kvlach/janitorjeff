@@ -83,7 +83,12 @@ func (d *DiscordMessageEdit) Usage(usage string) any {
 func (d *DiscordMessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, msg.(string), d.Message.ChannelID, d.Message.GuildID)
+		text := msg.(string)
+		id, ok := replies.Get(d.Message.ID)
+		if !ok {
+			return sendText(d.Session, d.Message.Message, text)
+		}
+		return editText(d.Session, d.Message.Message, id, text)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)

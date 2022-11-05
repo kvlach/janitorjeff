@@ -89,7 +89,14 @@ func (i *InteractionCreate) Usage(usage string) any {
 func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(i.Session, msg.(string), i.Interaction.ChannelID, i.Interaction.GuildID)
+		resp := &dg.InteractionResponse{
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: msg.(string),
+			},
+		}
+		return nil, i.Session.InteractionRespond(i.Interaction.Interaction, resp)
+
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
 		embed = embedColor(embed, usrErr)

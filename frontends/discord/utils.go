@@ -263,59 +263,28 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func sendText(d *dg.Session, text, channel, guild string) (*core.Message, error) {
-	var msg *dg.Message
-	var err error
-
-	lenLim := 2000
-	// TODO: grapheme clusters instead of plain len?
-	lenCnt := func(s string) int { return len(s) }
-
-	if lenLim > lenCnt(text) {
-		msg, err = d.ChannelMessageSend(channel, text)
-	} else {
-		parts := utils.Split(text, lenCnt, lenLim)
-		for _, p := range parts {
-			msg, err = d.ChannelMessageSend(channel, p)
-		}
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	// the returned response leaves the guild id empty whether or not the
-	// message was sent to a guild, this makes it very difficult for the scope
-	// getter functions to know which scope to return (they check if the guild
-	// id is empty to know whether or not a message came from a DM), so we
-	// manually set the guild id here
-	msg.GuildID = guild
-
-	m := &DiscordMessage{d, msg}
-	return m.Parse()
-}
-
-func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
-	// TODO: implement message scrolling
-
-	embed = embedColor(embed, usrErr)
-
+func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
 	// TODO: Consider adding an option which allows one of these 3 values
 	// - no reply + no ping, just an embed
 	// - reply + no ping (default)
 	// - reply + ping
 	// Maybe even no embed and just plain text?
-	msgSend := &dg.MessageSend{
-		Embeds: []*dg.MessageEmbed{
-			embed,
-		},
+
+	var embeds []*dg.MessageEmbed
+	if embed != nil {
+		embeds = append(embeds, embed)
+	}
+
+	reply := &dg.MessageSend{
+		Content: text,
+		Embeds:  embeds,
 		AllowedMentions: &dg.MessageAllowedMentions{
 			Parse: []dg.AllowedMentionType{}, // don't ping user
 		},
 		Reference: m.Reference(),
 	}
 
-	resp, err := d.ChannelMessageSendComplex(m.ChannelID, msgSend)
+	resp, err := s.ChannelMessageSendComplex(m.ChannelID, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -328,25 +297,61 @@ func sendEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	resp.GuildID = m.GuildID
 
 	replies.Set(m.ID, resp.ID)
-	return (&DiscordMessage{d, resp}).Parse()
+
+	return resp, nil
 }
 
-func editEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
-	embed = embedColor(embed, usrErr)
+func sendText(s *dg.Session, m *dg.Message, text string) (*core.Message, error) {
+	var resp *dg.Message
+	var err error
 
-	msgEdit := &dg.MessageEdit{
+	lenLim := 2000
+	// TODO: grapheme clusters instead of plain len?
+	lenCnt := func(s string) int { return len(s) }
+
+	if lenLim > lenCnt(text) {
+		resp, err = msgSend(s, m, text, nil)
+	} else {
+		parts := utils.Split(text, lenCnt, lenLim)
+		for _, p := range parts {
+			resp, err = msgSend(s, m, p, nil)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return (&DiscordMessage{s, resp}).Parse()
+}
+
+func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
+	// TODO: implement message scrolling
+	embed = embedColor(embed, usrErr)
+	resp, err := msgSend(s, m, "", embed)
+	if err != nil {
+		return nil, err
+	}
+	return (&DiscordMessage{s, resp}).Parse()
+}
+
+func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
+	var embeds []*dg.MessageEmbed
+	if embed != nil {
+		embeds = append(embeds, embed)
+	}
+
+	reply := &dg.MessageEdit{
 		ID:      id,
 		Channel: m.ChannelID,
 
-		Embeds: []*dg.MessageEmbed{
-			embed,
-		},
+		Content: &text,
+		Embeds:  embeds,
 		AllowedMentions: &dg.MessageAllowedMentions{
 			Parse: []dg.AllowedMentionType{}, // don't ping user
 		},
 	}
 
-	resp, err := d.ChannelMessageEditComplex(msgEdit)
+	resp, err := s.ChannelMessageEditComplex(reply)
 	if err != nil {
 		return nil, err
 	}
@@ -358,7 +363,24 @@ func editEmbed(d *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	// manually set the guild id here
 	resp.GuildID = m.GuildID
 
-	return (&DiscordMessage{d, resp}).Parse()
+	return resp, nil
+}
+
+func editText(s *dg.Session, m *dg.Message, id, text string) (*core.Message, error) {
+	resp, err := msgEdit(s, m, id, text, nil)
+	if err != nil {
+		return nil, err
+	}
+	return (&DiscordMessage{s, resp}).Parse()
+}
+
+func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
+	embed = embedColor(embed, usrErr)
+	resp, err := msgEdit(s, m, id, "", embed)
+	if err != nil {
+		return nil, err
+	}
+	return (&DiscordMessage{s, resp}).Parse()
 }
 
 func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
