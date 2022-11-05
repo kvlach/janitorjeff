@@ -52,7 +52,7 @@ func (d *DiscordMessageCreate) Usage(usage string) any {
 func (d *DiscordMessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, msg.(string), d.Message.ChannelID, d.Message.GuildID)
+		return sendText(d.Session, d.Message.Message, msg.(string))
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
 		return sendEmbed(d.Session, d.Message.Message, embed, usrErr)
