@@ -11,6 +11,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/test"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/time"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/urban-dictionary"
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/wikipedia"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
@@ -23,6 +24,7 @@ var Normal = core.Commands{
 	rps.Normal,
 	time.Normal,
 	urban_dictionary.Normal,
+	wikipedia.Normal,
 }
 
 var Advanced = core.Commands{
