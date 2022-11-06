@@ -79,9 +79,13 @@ type CommandStatic struct {
 	Names       []string
 	Description string
 	UsageArgs   string
-	Target      int64
-	Run         func(*Message) (any, error, error)
-	Init        func() error
+
+	// The frontends where this command will be available at. This *must* be set
+	// otherwise the command will never get matched.
+	Frontends int
+
+	Run  func(*Message) (any, error, error)
+	Init func() error
 
 	Parent   *CommandStatic
 	Children Commands
@@ -141,14 +145,14 @@ type Message struct {
 	author      int64
 	hereLogical int64
 
-	ID      string
-	Type    int
-	Raw     string
-	IsDM    bool
-	User    *User
-	Channel *Channel
-	Client  Messenger
-	Command *Command
+	ID       string
+	Frontend int
+	Raw      string
+	IsDM     bool
+	User     *User
+	Channel  *Channel
+	Client   Messenger
+	Command  *Command
 }
 
 func (m *Message) Fields() []string {
@@ -360,7 +364,7 @@ func (m *Message) CommandParse() (*Message, error) {
 		cmdList = Globals.Commands.Admin
 	}
 
-	cmdStatic, index, err := cmdList.MatchCommand(args)
+	cmdStatic, index, err := cmdList.MatchCommand(m.Frontend, args)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't match command: %v", err)
 	}

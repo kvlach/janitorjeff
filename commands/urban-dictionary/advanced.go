@@ -13,6 +13,7 @@ var Advanced = &core.CommandStatic{
 	},
 	Description: "Search a term or get a random one on urban dictionary.",
 	UsageArgs:   "(search | random)",
+	Frontends:   frontends.All,
 	Run:         advancedRun,
 
 	Children: core.Commands{
@@ -52,7 +53,7 @@ func advancedRunSearch(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunSearchDiscord(m)
 	default:
@@ -88,7 +89,7 @@ func advancedRunSearchCore(m *core.Message) (definition, error) {
 ////////////
 
 func advancedRunRandom(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunRandomDiscord()
 	default:

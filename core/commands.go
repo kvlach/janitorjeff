@@ -9,7 +9,7 @@ import (
 
 type Commands []*CommandStatic
 
-func (cmds *Commands) matchCommand(cmdName string) (*CommandStatic, error) {
+func (cmds *Commands) matchCommand(frontend int, cmdName string) (*CommandStatic, error) {
 	if cmdName == "" {
 		return nil, fmt.Errorf("no command provided")
 	}
@@ -17,6 +17,10 @@ func (cmds *Commands) matchCommand(cmdName string) (*CommandStatic, error) {
 	cmdName = strings.ToLower(cmdName)
 
 	for _, c := range *cmds {
+		if c.Frontends&frontend == 0 {
+			continue
+		}
+
 		for _, a := range c.Names {
 			if a == cmdName {
 				log.Debug().Str("command", cmdName).Msg("matched command")
@@ -37,18 +41,18 @@ func (cmds *Commands) matchCommand(cmdName string) (*CommandStatic, error) {
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1). This makes it easy to know which
 // aliases where used by the user when invoking a command.
-func (cmds *Commands) MatchCommand(args []string) (*CommandStatic, int, error) {
+func (cmds *Commands) MatchCommand(frontend int, args []string) (*CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0
 
-	cmd, err := cmds.matchCommand(args[index])
+	cmd, err := cmds.matchCommand(frontend, args[index])
 	if err != nil {
 		return nil, -1, err
 	}
 
 	for _, c := range args[1:] {
-		tmp, err := cmd.Children.matchCommand(c)
+		tmp, err := cmd.Children.matchCommand(frontend, c)
 		if err != nil {
 			return cmd, index, nil
 		}

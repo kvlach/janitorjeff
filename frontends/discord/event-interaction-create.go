@@ -51,13 +51,13 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 	}
 
 	m := &core.Message{
-		ID:      i.Data.ID,
-		Type:    Type,
-		Raw:     "", // TODO
-		IsDM:    i.Interaction.User != nil,
-		User:    user,
-		Channel: channel,
-		Client:  i,
+		ID:       i.Data.ID,
+		Frontend: Type,
+		Raw:      "", // TODO
+		IsDM:     i.Interaction.User != nil,
+		User:     user,
+		Channel:  channel,
+		Client:   i,
 	}
 	return m, nil
 }
@@ -147,7 +147,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 		}
 	}
 
-	cmd, index, _ := core.Globals.Commands.Advanced.MatchCommand(args)
+	cmd, index, _ := core.Globals.Commands.Advanced.MatchCommand(Type, args)
 	inter := &InteractionCreate{
 		Session:     s,
 		Interaction: i,

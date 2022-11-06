@@ -2,6 +2,7 @@ package nick
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Normal = &core.CommandStatic{
@@ -11,6 +12,7 @@ var Normal = &core.CommandStatic{
 	},
 	Description: "View or set your nickname.",
 	UsageArgs:   "[nickname]",
+	Frontends:   frontends.All,
 	Run:         normalRun,
 	Init:        init_,
 }

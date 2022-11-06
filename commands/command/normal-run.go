@@ -29,7 +29,7 @@ func runAdd(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runAdd_Discord(m)
 	default:
@@ -128,7 +128,7 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 
 	for _, p := range prefixes {
 		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
-		_, _, err := core.Globals.Commands.Normal.MatchCommand(cmdName)
+		_, _, err := core.Globals.Commands.Normal.MatchCommand(m.Frontend, cmdName)
 		// if there is no error that means a command was matched and thus a
 		// collision exists
 		if err == nil {
@@ -144,7 +144,7 @@ func runEdit(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runEdit_Discord(m)
 	default:
@@ -225,7 +225,7 @@ func runDel(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runDel_Discord(m)
 	default:
@@ -322,7 +322,7 @@ func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
 }
 
 func runList(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runList_Discord(m)
 	default:
@@ -391,7 +391,7 @@ func runHistory(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runHistory_Discord(m)
 	default:

@@ -2,6 +2,7 @@ package urban_dictionary
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Normal = &core.CommandStatic{
@@ -10,6 +11,7 @@ var Normal = &core.CommandStatic{
 	},
 	Description: "Search a term on urban dictionary.",
 	UsageArgs:   "<term...>",
+	Frontends:   frontends.All,
 	Run:         normalRun,
 }
 

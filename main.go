@@ -57,6 +57,7 @@ func recurseCommands(cmd *core.CommandStatic) {
 
 	for _, child := range cmd.Children {
 		child.Parent = cmd
+		child.Frontends = cmd.Frontends
 		recurseCommands(child)
 	}
 }

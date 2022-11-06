@@ -17,6 +17,7 @@ var Normal = &core.CommandStatic{
 	},
 	Description: "Paintball game",
 	UsageArgs:   "<rounds>",
+	Frontends:   frontends.Discord,
 	Run:         normalRun,
 }
 
@@ -35,7 +36,7 @@ var normalHelp = &dg.MessageEmbed{
 }
 
 func normalRun(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return normalRunDiscord(m)
 	default:

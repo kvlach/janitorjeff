@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Admin = &core.CommandStatic{
 	Names: []string{
 		"nick",
 	},
-	Run: adminRun,
+	Frontends: frontends.All,
+	Run:       adminRun,
 
 	Children: core.Commands{
 		{

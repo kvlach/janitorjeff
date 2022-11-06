@@ -13,6 +13,7 @@ var Admin = &core.CommandStatic{
 	},
 	Description: "Scope related commands.",
 	UsageArgs:   "(place | person)",
+	Frontends:   frontends.All,
 	Run:         adminRun,
 
 	Children: core.Commands{
@@ -69,7 +70,7 @@ func adminRunPerson(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return adminRunPersonParent(m)
 	case frontends.Twitch:

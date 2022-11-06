@@ -23,6 +23,7 @@ var Advanced = &core.CommandStatic{
 	},
 	Description: "Set, view or delete your nickname.",
 	UsageArgs:   "(show | set | delete)",
+	Frontends:   frontends.All,
 	Run:         advancedRun,
 	Init:        advancedInit,
 
@@ -67,7 +68,7 @@ func advancedRun(m *core.Message) (any, error, error) {
 ///////////////
 
 func advancedRunShow(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunShowDiscord(m)
 	default:
@@ -135,7 +136,7 @@ func advancedRunSet(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunSetDiscord(m)
 	default:
@@ -202,7 +203,7 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 /////////////////
 
 func advancedRunDelete(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunDeleteDiscord(m)
 	default:
