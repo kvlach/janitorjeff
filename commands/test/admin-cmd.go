@@ -2,6 +2,7 @@ package test
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Command = &core.CommandStatic{
@@ -10,5 +11,6 @@ var Command = &core.CommandStatic{
 		"alias",
 	},
 	Description: "Test command.",
+	Frontends:   frontends.All,
 	Run:         run,
 }

@@ -26,7 +26,7 @@ func runAdminAdd(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		prefix = discord.PlaceInBackticks(prefix)
 		collision = discord.PlaceInBackticks(collision)
@@ -121,7 +121,7 @@ func runAdminDel(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		prefix = discord.PlaceInBackticks(prefix)
 	default:
@@ -142,7 +142,7 @@ func runAdminDelErr(usrErr error, m *core.Message, prefix string) any {
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
 	case errOneLeft:
 		resetCmd := cmdAdminReset.Format(m.Command.Runtime.Prefix)
-		switch m.Type {
+		switch m.Frontend {
 		case frontends.Discord:
 			resetCmd = discord.PlaceInBackticks(resetCmd)
 		default:

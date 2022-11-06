@@ -16,6 +16,7 @@ var Normal = &core.CommandStatic{
 	},
 	Description: "Search something on wikipedia.",
 	UsageArgs:   "<query...>",
+	Frontends:   frontends.All,
 	Run:         normalRun,
 }
 
@@ -24,7 +25,7 @@ func normalRun(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return normalRunDiscord(m)
 	default:

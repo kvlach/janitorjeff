@@ -26,7 +26,7 @@ func run(m *core.Message) (any, error, error) {
 }
 
 func runAdd(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runAdd_Discord(m)
 	default:
@@ -160,7 +160,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Globals.Commands.Normal.MatchCommand([]string{t})
+		_, _, err := core.Globals.Commands.Normal.MatchCommand(m.Frontend, []string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -171,7 +171,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 func runDelete(m *core.Message) (any, error, error) {
 	// TODO: Provide a way to delete the empty string prefix in DMs
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runDelete_Discord(m)
 	default:
@@ -298,7 +298,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 }
 
 func runList(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runList_Discord(m)
 	default:
@@ -353,7 +353,7 @@ func runList_Core(m *core.Message) ([]string, error) {
 }
 
 func runReset(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return runReset_Discord(m)
 	default:

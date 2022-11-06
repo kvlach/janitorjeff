@@ -8,7 +8,7 @@ import (
 )
 
 func run(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return run_Discord(m)
 	default:

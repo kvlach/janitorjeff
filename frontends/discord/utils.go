@@ -238,9 +238,9 @@ func parse(m *dg.Message) *core.Message {
 	}
 
 	msg := &core.Message{
-		ID:   m.ID,
-		Type: Type,
-		Raw:  m.Content,
+		ID:       m.ID,
+		Frontend: Type,
+		Raw:      m.Content,
 		// GuildID is always empty in returned message objects, this is here in
 		// case that changes in the future.
 		IsDM:    m.GuildID == "",

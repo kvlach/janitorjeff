@@ -2,6 +2,7 @@ package command
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Command = &core.CommandStatic{
@@ -11,6 +12,7 @@ var Command = &core.CommandStatic{
 	},
 	Description: "Add, edit, delete or list custom commands.",
 	UsageArgs:   "(add | edit | delete | list)",
+	Frontends:   frontends.All,
 	Run:         run,
 	Init:        init_,
 

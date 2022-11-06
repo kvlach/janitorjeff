@@ -2,6 +2,7 @@ package prefix
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Admin = &core.CommandStatic{
@@ -10,6 +11,7 @@ var Admin = &core.CommandStatic{
 	},
 	Description: "",
 	UsageArgs:   "",
+	Frontends:   frontends.All,
 	Run:         runAdmin,
 	Children: core.Commands{
 		cmdAdminAdd,

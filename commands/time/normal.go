@@ -2,6 +2,7 @@ package time
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Normal = &core.CommandStatic{
@@ -10,6 +11,7 @@ var Normal = &core.CommandStatic{
 	},
 	Description: "time stuff and things",
 	UsageArgs:   "[<user> | zone]",
+	Frontends:   frontends.All,
 	Run:         runNormal,
 	Init:        init_,
 

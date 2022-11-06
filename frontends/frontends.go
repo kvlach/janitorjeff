@@ -11,6 +11,8 @@ import (
 const (
 	Discord = discord.Type
 	Twitch  = twitch.Type
+
+	All = Discord | Twitch
 )
 
 // This is used to send messages that are not direct replies, e.g. reminders

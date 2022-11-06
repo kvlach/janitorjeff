@@ -27,6 +27,7 @@ var Advanced = &core.CommandStatic{
 	},
 	Description: "time stuff and things",
 	UsageArgs:   "(now | convert | timestamp | zone | remind)",
+	Frontends:   frontends.All,
 	Run:         advancedRun,
 
 	Children: core.Commands{
@@ -128,7 +129,7 @@ func advancedRun(m *core.Message) (any, error, error) {
 /////////
 
 func advancedRunNow(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunNowDiscord(m)
 	default:
@@ -208,7 +209,7 @@ func advancedRunConvert(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunConvertDiscord(m)
 	default:
@@ -263,7 +264,7 @@ func advancedRunTimestamp(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunTimestampDiscord(m)
 	default:
@@ -344,7 +345,7 @@ func advancedRunTimezone(m *core.Message) (any, error, error) {
 ///////////////////
 
 func advancedRunTimezoneShow(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunTimezoneShowDiscord(m)
 	default:
@@ -412,7 +413,7 @@ func advancedRunTimezoneSet(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunTimezoneSetDiscord(m)
 	default:
@@ -478,7 +479,7 @@ func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
 /////////////////////
 
 func advancedRunTimezoneDelete(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunTimezoneDeleteDiscord(m)
 	default:
@@ -619,7 +620,7 @@ func advancedRunRemindDelete(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunRemindDeleteDiscord(m)
 	default:
@@ -682,7 +683,7 @@ func advancedRunRemindDeleteCore(m *core.Message) (error, error) {
 /////////////////
 
 func advancedRunRemindList(m *core.Message) (any, error, error) {
-	switch m.Type {
+	switch m.Frontend {
 	case frontends.Discord:
 		return advancedRunRemindListDiscord(m)
 	default:

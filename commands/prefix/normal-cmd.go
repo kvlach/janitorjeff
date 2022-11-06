@@ -2,6 +2,7 @@ package prefix
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Command = &core.CommandStatic{
@@ -10,7 +11,7 @@ var Command = &core.CommandStatic{
 	},
 	Description: "Add, delete, list or reset prefixes.",
 	UsageArgs:   "(add|del) <prefix> | list | reset",
-	Target:      0, // TODO: change this to platforms.All
+	Frontends:   frontends.All,
 	Run:         run,
 	Init:        init_,
 

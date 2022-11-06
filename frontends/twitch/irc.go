@@ -70,13 +70,13 @@ func (t *Twitch) Parse() (*core.Message, error) {
 	}
 
 	msg := &core.Message{
-		ID:      t.message.ID,
-		Type:    Type,
-		Raw:     t.message.Message,
-		IsDM:    false,
-		User:    user,
-		Channel: channel,
-		Client:  t,
+		ID:       t.message.ID,
+		Frontend: Type,
+		Raw:      t.message.Message,
+		IsDM:     false,
+		User:     user,
+		Channel:  channel,
+		Client:   t,
 	}
 
 	// Ignore error since accessToken might not exist
