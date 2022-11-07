@@ -31,6 +31,7 @@ type reminder struct {
 	Place  int64
 	When   time.Time
 	What   string
+	MsgID  string
 }
 
 //////////////
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS CommandTimeReminders (
 	place INTEGER NOT NULL,
 	time INTEGER NOT NULL,
 	what VARCHAR(255) NOT NULL,
+	msg_id VARCHAR(255) NOT NULL,
 	FOREIGN KEY (person) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
 );
@@ -177,14 +179,14 @@ func dbPersonTimezone(person, place int64) (string, error) {
 
 }
 
-func dbRemindAdd(person, place, when int64, what string) (int64, error) {
+func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	res, err := db.DB.Exec(`
-	INSERT INTO CommandTimeReminders(person, place, time, what)
-	VALUES (?, ?, ?, ?)`, person, place, when, what)
+	INSERT INTO CommandTimeReminders(person, place, time, what, msg_id)
+	VALUES (?, ?, ?, ?, ?)`, person, place, when, what, msgID)
 
 	log.Debug().
 		Err(err).
@@ -192,6 +194,7 @@ func dbRemindAdd(person, place, when int64, what string) (int64, error) {
 		Int64("place", place).
 		Int64("when", when).
 		Str("what", what).
+		Str("msgID", msgID).
 		Msg("added reminder")
 
 	if err != nil {
@@ -205,8 +208,8 @@ func scanReminders(rows *sql.Rows) ([]reminder, error) {
 	var rs []reminder
 	for rows.Next() {
 		var id, person, place, timestamp int64
-		var what string
-		if err := rows.Scan(&id, &person, &place, &timestamp, &what); err != nil {
+		var what, msgID string
+		if err := rows.Scan(&id, &person, &place, &timestamp, &what, &msgID); err != nil {
 			return nil, err
 		}
 		r := reminder{
@@ -215,6 +218,7 @@ func scanReminders(rows *sql.Rows) ([]reminder, error) {
 			Place:  place,
 			When:   time.Unix(timestamp, 0).UTC(),
 			What:   what,
+			MsgID:  msgID,
 		}
 		rs = append(rs, r)
 		log.Debug().Interface("reminder", r).Msg("found reminder")
@@ -228,7 +232,7 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 	defer db.Lock.RUnlock()
 
 	rows, err := db.DB.Query(`
-		SELECT id, person, place, time, what
+		SELECT id, person, place, time, what, msg_id
 		FROM CommandTimeReminders
 		WHERE person = ? and place = ?
 	`, person, place)
@@ -261,7 +265,7 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 	defer db.Lock.RUnlock()
 
 	rows, err := db.DB.Query(`
-		SELECT id, person, place, time, what
+		SELECT id, person, place, time, what, msg_id
 		FROM CommandTimeReminders
 		WHERE time - ? < 300
 	`, nowSeconds)
@@ -460,7 +464,7 @@ func runTimezoneDelete(person, place int64) (error, error) {
 	return nil, dbPersonDelete(person, place)
 }
 
-func runRemindAdd(when, what string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
+func runRemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
 	t, usrErr, err := parseTime(when, person, placeLogical)
 	if usrErr != nil || err != nil {
 		return t, -1, usrErr, err
@@ -470,7 +474,7 @@ func runRemindAdd(when, what string, person, placeExact, placeLogical int64) (ti
 		return t, -1, errOldTime, nil
 	}
 
-	id, err := dbRemindAdd(person, placeExact, t.UTC().Unix(), what)
+	id, err := dbRemindAdd(person, placeExact, t.UTC().Unix(), what, msgID)
 
 	// in case the reminder needs to happen close to immediately
 	runUpcoming()
@@ -530,7 +534,7 @@ func (u *upcoming) add(r reminder) {
 	go func() {
 		time.Sleep(r.When.Sub(time.Now()))
 
-		m, err := frontends.CreateContext(r.Person, r.Place)
+		m, err := frontends.CreateContext(r.Person, r.Place, r.MsgID)
 		if err != nil {
 			panic(err)
 		}

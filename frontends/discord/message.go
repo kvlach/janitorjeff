@@ -13,7 +13,7 @@ type Message struct {
 	Message *dg.Message
 }
 
-func CreateClient(author, channel int64) (*Message, error) {
+func CreateClient(author, channel int64, msgID string) (*Message, error) {
 	channelID, err := core.Globals.DB.ScopeID(channel)
 	if err != nil {
 		return nil, err
@@ -37,6 +37,7 @@ func CreateClient(author, channel int64) (*Message, error) {
 	d := &Message{
 		Session: core.Globals.Discord.Client,
 		Message: &dg.Message{
+			ID:        msgID,
 			ChannelID: channelID,
 			GuildID:   guildID,
 			Author: &dg.User{

@@ -606,7 +606,7 @@ func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) 
 		return time.Time{}, -1, nil, err
 	}
 
-	return runRemindAdd(when, what, person, hereExact, hereLogical)
+	return runRemindAdd(when, what, m.ID, person, hereExact, hereLogical)
 }
 
 ///////////////////
