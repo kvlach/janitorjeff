@@ -91,7 +91,7 @@ var Advanced = &core.CommandStatic{
 				"remind",
 			},
 			Description: "Reminder related commands",
-			UsageArgs:   "(add | list)",
+			UsageArgs:   "(add | delete | list)",
 			Run:         advancedRunRemind,
 
 			Children: core.Commands{
