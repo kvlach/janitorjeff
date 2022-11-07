@@ -13,6 +13,8 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/urban-dictionary"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/wikipedia"
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+
+	"github.com/rs/zerolog/log"
 )
 
 var Normal = core.Commands{
@@ -40,4 +42,68 @@ var Admin = core.Commands{
 	prefix.Admin,
 	scope.Admin,
 	test.Command,
+}
+
+var Commands = core.AllCommands{
+	Normal:   Normal,
+	Advanced: Advanced,
+	Admin:    Admin,
+}
+
+func setup(cmd *core.CommandStatic) {
+	if cmd.Children == nil {
+		return
+	}
+
+	for _, child := range cmd.Children {
+		// Setting the parents when declaring the object is not possible because
+		// that results in an inialization loop error (children reference the
+		// parent, so the parent can't reference the children). This also makes
+		// declaring the commands a bit cleaner.
+		child.Parent = cmd
+
+		// child inherits parent's Frontend
+		child.Frontends = cmd.Frontends
+
+		setup(child)
+	}
+}
+
+func init() {
+	for _, cmd := range Normal {
+		setup(cmd)
+	}
+
+	for _, cmd := range Advanced {
+		setup(cmd)
+	}
+
+	for _, cmd := range Admin {
+		setup(cmd)
+	}
+}
+
+func runInit(cmd *core.CommandStatic) {
+	if cmd.Init != nil {
+		if err := cmd.Init(); err != nil {
+			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
+		}
+	}
+}
+
+// This must be run after all of the global variables have been set (including
+// ones that frontend init functions might set) since the `Init` functions might
+// depend on them.
+func Init() {
+	for _, cmd := range Normal {
+		runInit(cmd)
+	}
+
+	for _, cmd := range Advanced {
+		runInit(cmd)
+	}
+
+	for _, cmd := range Admin {
+		runInit(cmd)
+	}
 }
