@@ -263,7 +263,7 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
+func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
 	// TODO: Consider adding an option which allows one of these 3 values
 	// - no reply + no ping, just an embed
 	// - reply + no ping (default)
@@ -281,13 +281,18 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed) 
 		ref = m.Reference()
 	}
 
+	var mentions *dg.MessageAllowedMentions
+	if !ping {
+		mentions = &dg.MessageAllowedMentions{
+			Parse: []dg.AllowedMentionType{},
+		}
+	}
+
 	reply := &dg.MessageSend{
-		Content: text,
-		Embeds:  embeds,
-		AllowedMentions: &dg.MessageAllowedMentions{
-			Parse: []dg.AllowedMentionType{}, // don't ping user
-		},
-		Reference: ref,
+		Content:         text,
+		Embeds:          embeds,
+		AllowedMentions: mentions,
+		Reference:       ref,
 	}
 
 	resp, err := s.ChannelMessageSendComplex(m.ChannelID, reply)
@@ -307,7 +312,7 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed) 
 	return resp, nil
 }
 
-func sendText(s *dg.Session, m *dg.Message, text string) (*core.Message, error) {
+func sendText(s *dg.Session, m *dg.Message, text string, ping bool) (*core.Message, error) {
 	var resp *dg.Message
 	var err error
 
@@ -316,11 +321,11 @@ func sendText(s *dg.Session, m *dg.Message, text string) (*core.Message, error) 
 	lenCnt := func(s string) int { return len(s) }
 
 	if lenLim > lenCnt(text) {
-		resp, err = msgSend(s, m, text, nil)
+		resp, err = msgSend(s, m, text, nil, ping)
 	} else {
 		parts := utils.Split(text, lenCnt, lenLim)
 		for _, p := range parts {
-			resp, err = msgSend(s, m, p, nil)
+			resp, err = msgSend(s, m, p, nil, ping)
 		}
 	}
 
@@ -330,10 +335,10 @@ func sendText(s *dg.Session, m *dg.Message, text string) (*core.Message, error) 
 	return (&Message{s, resp}).Parse()
 }
 
-func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
+func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, ping bool) (*core.Message, error) {
 	// TODO: implement message scrolling
 	embed = embedColor(embed, usrErr)
-	resp, err := msgSend(s, m, "", embed)
+	resp, err := msgSend(s, m, "", embed, ping)
 	if err != nil {
 		return nil, err
 	}

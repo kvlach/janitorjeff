@@ -86,7 +86,7 @@ func (i *InteractionCreate) Usage(usage string) any {
 	return getUsage(usage)
 }
 
-func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) {
+func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		resp := &dg.InteractionResponse{
@@ -113,6 +113,18 @@ func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) 
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
+}
+
+func (i *InteractionCreate) Send(msg any, usrErr error) (*core.Message, error) {
+	return i.send(msg, usrErr)
+}
+
+func (i *InteractionCreate) Ping(msg any, usrErr error) (*core.Message, error) {
+	return i.send(msg, usrErr)
+}
+
+func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) {
+	return i.send(msg, usrErr)
 }
 
 func RegisterAppCommand(cmd *dg.ApplicationCommand) {

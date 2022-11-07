@@ -91,15 +91,26 @@ func (d *Message) Usage(usage string) any {
 	return getUsage(usage)
 }
 
-func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
+func (d *Message) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, d.Message, msg.(string))
+		return sendText(d.Session, d.Message, msg.(string), ping)
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
-		return sendEmbed(d.Session, d.Message, embed, usrErr)
+		return sendEmbed(d.Session, d.Message, embed, usrErr, ping)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
+}
 
+func (d *Message) Send(msg any, usrErr error) (*core.Message, error) {
+	return d.send(msg, usrErr, false)
+}
+
+func (d *Message) Ping(msg any, usrErr error) (*core.Message, error) {
+	return d.send(msg, usrErr, true)
+}
+
+func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
+	return d.Send(msg, usrErr)
 }

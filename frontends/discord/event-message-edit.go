@@ -80,13 +80,13 @@ func (d *MessageEdit) Usage(usage string) any {
 	return getUsage(usage)
 }
 
-func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
+func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		text := msg.(string)
 		id, ok := replies.Get(d.Message.ID)
 		if !ok {
-			return sendText(d.Session, d.Message.Message, text)
+			return sendText(d.Session, d.Message.Message, text, ping)
 		}
 		return editText(d.Session, d.Message.Message, id, text)
 
@@ -94,14 +94,25 @@ func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 		embed := msg.(*dg.MessageEmbed)
 		id, ok := replies.Get(d.Message.ID)
 		if !ok {
-			return sendEmbed(d.Session, d.Message.Message, embed, usrErr)
+			return sendEmbed(d.Session, d.Message.Message, embed, usrErr, ping)
 		}
 		return editEmbed(d.Session, d.Message.Message, embed, usrErr, id)
 
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
+}
 
+func (d *MessageEdit) Send(msg any, usrErr error) (*core.Message, error) {
+	return d.send(msg, usrErr, false)
+}
+
+func (d *MessageEdit) Ping(msg any, usrErr error) (*core.Message, error) {
+	return d.send(msg, usrErr, true)
+}
+
+func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
+	return d.Send(msg, usrErr)
 }
 
 func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
