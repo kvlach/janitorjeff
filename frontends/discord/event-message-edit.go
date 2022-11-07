@@ -41,46 +41,46 @@ func (r *replyCache) Get(key string) (string, bool) {
 	return value, ok
 }
 
-type DiscordMessageEdit struct {
+type MessageEdit struct {
 	Session *dg.Session
 	Message *dg.MessageUpdate
 }
 
-func (d *DiscordMessageEdit) Admin() bool {
+func (d *MessageEdit) Admin() bool {
 	return isAdmin(d.Message.Author.ID)
 }
 
-func (d *DiscordMessageEdit) Parse() (*core.Message, error) {
+func (d *MessageEdit) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
 	return msg, nil
 }
 
-func (d *DiscordMessageEdit) PersonID(s, placeID string) (string, error) {
+func (d *MessageEdit) PersonID(s, placeID string) (string, error) {
 	return getPersonID(s, placeID, d.Message.Author.ID, d.Session)
 }
 
-func (d *DiscordMessageEdit) PlaceID(s string) (string, error) {
+func (d *MessageEdit) PlaceID(s string) (string, error) {
 	return getPlaceID(s, d.Session)
 }
 
-func (d *DiscordMessageEdit) Person(id string) (int64, error) {
+func (d *MessageEdit) Person(id string) (int64, error) {
 	return getPersonScope(id)
 }
 
-func (d *DiscordMessageEdit) PlaceExact(id string) (int64, error) {
+func (d *MessageEdit) PlaceExact(id string) (int64, error) {
 	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
 }
 
-func (d *DiscordMessageEdit) PlaceLogical(id string) (int64, error) {
+func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
 }
 
-func (d *DiscordMessageEdit) Usage(usage string) any {
+func (d *MessageEdit) Usage(usage string) any {
 	return getUsage(usage)
 }
 
-func (d *DiscordMessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
+func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		text := msg.(string)
@@ -122,7 +122,7 @@ func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
 		return
 	}
 
-	d := &DiscordMessageEdit{s, m}
+	d := &MessageEdit{s, m}
 	msg, err := d.Parse()
 	if err != nil {
 		return

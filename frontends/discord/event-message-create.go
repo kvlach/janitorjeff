@@ -10,46 +10,46 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type DiscordMessageCreate struct {
+type MessageCreate struct {
 	Session *dg.Session
 	Message *dg.MessageCreate
 }
 
-func (d *DiscordMessageCreate) Admin() bool {
+func (d *MessageCreate) Admin() bool {
 	return isAdmin(d.Message.Author.ID)
 }
 
-func (d *DiscordMessageCreate) Parse() (*core.Message, error) {
+func (d *MessageCreate) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
 	return msg, nil
 }
 
-func (d *DiscordMessageCreate) PersonID(s, placeID string) (string, error) {
+func (d *MessageCreate) PersonID(s, placeID string) (string, error) {
 	return getPersonID(s, placeID, d.Message.Author.ID, d.Session)
 }
 
-func (d *DiscordMessageCreate) PlaceID(s string) (string, error) {
+func (d *MessageCreate) PlaceID(s string) (string, error) {
 	return getPlaceID(s, d.Session)
 }
 
-func (d *DiscordMessageCreate) Person(id string) (int64, error) {
+func (d *MessageCreate) Person(id string) (int64, error) {
 	return getPersonScope(id)
 }
 
-func (d *DiscordMessageCreate) PlaceExact(id string) (int64, error) {
+func (d *MessageCreate) PlaceExact(id string) (int64, error) {
 	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
 }
 
-func (d *DiscordMessageCreate) PlaceLogical(id string) (int64, error) {
+func (d *MessageCreate) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
 }
 
-func (d *DiscordMessageCreate) Usage(usage string) any {
+func (d *MessageCreate) Usage(usage string) any {
 	return getUsage(usage)
 }
 
-func (d *DiscordMessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
+func (d *MessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Session, d.Message.Message, msg.(string))
@@ -84,7 +84,7 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 		}
 	}
 
-	d := &DiscordMessageCreate{s, m}
+	d := &MessageCreate{s, m}
 	msg, err := d.Parse()
 	if err != nil {
 		log.Debug().Err(err).Send()
