@@ -539,7 +539,7 @@ func (u *upcoming) add(r reminder) {
 			panic(err)
 		}
 
-		_, err = m.Write(r.What, nil)
+		_, err = m.Client.Ping(r.What, nil)
 		if err != nil {
 			// TODO: retry
 			panic(err)
