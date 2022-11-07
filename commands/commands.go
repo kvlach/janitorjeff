@@ -51,6 +51,10 @@ var Commands = core.AllCommands{
 }
 
 func setup(cmd *core.CommandStatic) {
+	if cmd.Frontends == 0 {
+		panic("frontends not set for command: " + cmd.Format(""))
+	}
+
 	if cmd.Children == nil {
 		return
 	}
