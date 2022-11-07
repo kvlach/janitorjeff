@@ -145,7 +145,7 @@ func (t *Twitch) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
-func (t *Twitch) Write(msg any, _ error) (*core.Message, error) {
+func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 	var text string
 	switch t := msg.(type) {
 	case string:
@@ -155,8 +155,6 @@ func (t *Twitch) Write(msg any, _ error) (*core.Message, error) {
 	}
 
 	text = strings.ReplaceAll(text, "\n", " ")
-
-	mention := fmt.Sprintf("@%s -> ", t.message.User.DisplayName)
 
 	// This is how twitch's server seems to count the length, even though the
 	// chat client on twitch's website doesn't follow this. Subtract the
@@ -175,6 +173,19 @@ func (t *Twitch) Write(msg any, _ error) (*core.Message, error) {
 	}
 
 	return nil, nil
+}
+
+func (t *Twitch) Send(msg any, _ error) (*core.Message, error) {
+	return t.send(msg, "")
+}
+
+func (t *Twitch) Ping(msg any, _ error) (*core.Message, error) {
+	mention := fmt.Sprintf("@%s -> ", t.message.User.DisplayName)
+	return t.send(msg, mention)
+}
+
+func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
+	return t.Ping(msg, usrErr)
 }
 
 // func (tirc *TwitchIRC) Delete() error {

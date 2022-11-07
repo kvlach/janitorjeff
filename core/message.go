@@ -47,11 +47,16 @@ type Messenger interface {
 
 	Usage(usage string) any
 
-	// Writes a message to the current channel
-	// returned *Message could be nil depending on the platform
-	//
-	// TODO: Handle rate limiting gracefully, give priority to mods.
-	Write(any, error) (*Message, error)
+	// Sends a message to the appropriate scope, `resp` could be `nil` depending
+	// on the frontend.
+	Send(msg any, usrErr error) (resp *Message, err error)
+
+	// Same as `Send` except the user is also pinged.
+	Ping(msg any, usrErr error) (resp *Message, err error)
+
+	// Either calls `Send` or `Ping` depending on the frontend. This is what
+	// should be used in most cases.
+	Write(msg any, usrErr error) (resp *Message, err error)
 }
 
 type User struct {
