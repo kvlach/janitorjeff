@@ -256,15 +256,12 @@ func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
 		Msg("scope specific prefixes")
 
 	inDB := true
-	if len(prefixes) != 0 {
-		goto END
+	if len(prefixes) == 0 {
+		inDB = false
+		prefixes = Globals.Prefixes.Others
+		log.Debug().Msg("no scope specific prefixes, using defaults")
 	}
 
-	inDB = false
-	prefixes = Globals.Prefixes.Others
-	log.Debug().Msg("no scope specific prefixes, using defaults")
-
-END:
 	// The admin prefixes remain constant across scopes and can only be
 	// modified through the config. This means that they are never saved in the
 	// database and so we just append them to the list every time. This doesn't
