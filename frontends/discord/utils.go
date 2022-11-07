@@ -275,9 +275,12 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed, 
 		embeds = append(embeds, embed)
 	}
 
-	// if there is no message id then sending a reference will return an error
 	var ref *dg.MessageReference
-	if m.ID != "" {
+	// if there is no message id then sending a reference will return an error,
+	// so instead we mention the user manually
+	if m.ID == "" {
+		text = m.Author.Mention() + " " + text
+	} else {
 		ref = m.Reference()
 	}
 
