@@ -275,13 +275,19 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed) 
 		embeds = append(embeds, embed)
 	}
 
+	// if there is no message id then sending a reference will return an error
+	var ref *dg.MessageReference
+	if m.ID != "" {
+		ref = m.Reference()
+	}
+
 	reply := &dg.MessageSend{
 		Content: text,
 		Embeds:  embeds,
 		AllowedMentions: &dg.MessageAllowedMentions{
 			Parse: []dg.AllowedMentionType{}, // don't ping user
 		},
-		Reference: m.Reference(),
+		Reference: ref,
 	}
 
 	resp, err := s.ChannelMessageSendComplex(m.ChannelID, reply)
