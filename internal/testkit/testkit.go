@@ -87,7 +87,7 @@ func (tm *TestMessage) DiscordRandom() *TestMessage {
 		},
 	}
 
-	msgTmp := discord.DiscordMessageCreate{Session: nil, Message: dgMsg}
+	msgTmp := discord.MessageCreate{Session: nil, Message: dgMsg}
 
 	msg, err := msgTmp.Parse()
 	if err != nil {

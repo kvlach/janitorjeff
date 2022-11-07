@@ -321,7 +321,7 @@ func sendText(s *dg.Session, m *dg.Message, text string) (*core.Message, error) 
 	if err != nil {
 		return nil, err
 	}
-	return (&DiscordMessage{s, resp}).Parse()
+	return (&Message{s, resp}).Parse()
 }
 
 func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error) (*core.Message, error) {
@@ -331,7 +331,7 @@ func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
-	return (&DiscordMessage{s, resp}).Parse()
+	return (&Message{s, resp}).Parse()
 }
 
 func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
@@ -371,7 +371,7 @@ func editText(s *dg.Session, m *dg.Message, id, text string) (*core.Message, err
 	if err != nil {
 		return nil, err
 	}
-	return (&DiscordMessage{s, resp}).Parse()
+	return (&Message{s, resp}).Parse()
 }
 
 func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
@@ -380,7 +380,7 @@ func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
-	return (&DiscordMessage{s, resp}).Parse()
+	return (&Message{s, resp}).Parse()
 }
 
 func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
