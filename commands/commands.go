@@ -44,7 +44,7 @@ var Admin = core.Commands{
 	test.Command,
 }
 
-var Commands = core.AllCommands{
+var All = core.AllCommands{
 	Normal:   Normal,
 	Advanced: Advanced,
 	Admin:    Admin,
