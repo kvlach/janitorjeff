@@ -17,6 +17,8 @@ import (
 // allow special handling of error messages (for example using a different
 // embed color in discord).
 
+// The frontend abstraction layer, a frontend needs to implement this in order
+// to be added.
 type Messenger interface {
 	// Checks if the message's author is a bot admin
 	Admin() bool
@@ -71,37 +73,70 @@ type Channel struct {
 	Name string
 }
 
+// The command types.
 const (
+	// A simplified command with might not give full control over something but
+	// it has a very easy to use API.
 	Normal = 1 << iota
+
+	// The full command and usually consists of many subcommands which makes it
+	// less intuitive for the average person.
 	Advanced
+
+	// Bot admin only command used to perform actions like setting an arbitrary
+	// person's options, etc.
 	Admin
 
 	All = Normal | Advanced | Admin
 )
 
-// TODO: add minimum number of required args
+// There's 2 parts to a command. The static part which includes things like the
+// description, the list of all the aliases, etc. and the runtime part which
+// includes things like the prefix used, the arguments passed, etc.
+
+// The struct used to declare commands.
 type CommandStatic struct {
-	Names       []string
+	// All the aliases a command has. The first item in the list is considered
+	// the main name and so should be the simplest and most intuitive one for
+	// the average person. For example if it's a delete subcommand the first
+	// alias should be "delete" instead of "del" or "rm".
+	Names []string
+
+	// A short description of what the command does.
 	Description string
-	UsageArgs   string
+
+	// Usage arguments. Should follow this format:
+	// - <required>
+	// - [optional]
+	// - (literal-string) or (many | literals)
+	UsageArgs string
 
 	// The frontends where this command will be available at. This *must* be set
 	// otherwise the command will never get matched.
 	Frontends int
 
-	Run  func(*Message) (any, error, error)
+	// The function that is called to run the command.
+	Run func(*Message) (any, error, error)
+
+	// This is executed during bot startup. Should be used to set things up
+	// necessary for the command, for example DB schemas.
 	Init func() error
 
-	Parent   *CommandStatic
+	// The command's sub-commands.
 	Children Commands
+
+	// A command's parent, this is automatically set during bot startup.
+	Parent *CommandStatic
 }
 
+// Formats a static command into something that can be shown to a user.
+// Generally used in help messages to point the user to a specific command in
+// order to avoid hardcoding it. Returns the command in the following format:
+//
+//	<prefix><command> [sub-command...] <usage-args>
+//
+// For example: !command delete <command>
 func (cmd *CommandStatic) Format(prefix string) string {
-	var args string
-	if cmd.UsageArgs != "" {
-		args = " " + cmd.UsageArgs
-	}
-
 	path := []string{}
 	for cmd.Parent != nil {
 		path = append([]string{cmd.Names[0]}, path...)
@@ -109,24 +144,27 @@ func (cmd *CommandStatic) Format(prefix string) string {
 	}
 	path = append([]string{cmd.Names[0]}, path...)
 
+	var args string
+	if cmd.UsageArgs != "" {
+		args = " " + cmd.UsageArgs
+	}
+
 	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
 }
 
-// type CommandRaw struct {
-// 	All  string
-// 	Name string
-// 	Args string
-// }
-
+// A command's runtime information.
 type CommandRuntime struct {
-	// includes all the sub-commands e.g. ["prefix", "add"], so that we can
+	// Includes all the sub-commands e.g. ["prefix", "add"], so that we can
 	// know which alias is being used in order to display accurate help
-	// messages
+	// messages.
 	Name []string
 
-	Args   []string
+	// The arguments passed, includes everything that's not part of the
+	// command's name.
+	Args []string
+
+	// The prefix used when the command was called.
 	Prefix string
-	// Raw    CommandRaw
 }
 
 type Command struct {
@@ -179,7 +217,8 @@ func (m *Message) FieldsSpace() []string {
 	return fields
 }
 
-// Skip over first n args. Pass 0 to not skip any.
+// Return the arguments including the whitespace between them. Skip over first
+// n args. Pass 0 to not skip any.
 func (m *Message) RawArgs(n int) string {
 	if 0 > n {
 		panic("unexpected n")
@@ -198,10 +237,12 @@ func (m *Message) RawArgs(n int) string {
 	return s
 }
 
+// Sends a message.
 func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
+// Return's the author's scope.
 func (m *Message) Author() (int64, error) {
 	// caches the scope to avoid unecessary database queries
 
@@ -217,10 +258,12 @@ func (m *Message) Author() (int64, error) {
 	return author, nil
 }
 
+// Return's the exact here's scope.
 func (m *Message) HereExact() (int64, error) {
 	return m.Client.PlaceExact(m.Channel.ID)
 }
 
+// Returns the logical here's scope.
 func (m *Message) HereLogical() (int64, error) {
 	// used way more often than HereExact, which is why only this one gets
 	// cached
@@ -293,6 +336,7 @@ func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
 	return prefixes, inDB, nil
 }
 
+// Returns the logical here's prefixes.
 func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
 	here, err := m.HereLogical()
 	if err != nil {
