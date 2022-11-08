@@ -1,5 +1,7 @@
 package core
 
+// These are common sub-commands and so we declare them here.
+
 var Add = []string{
 	"add",
 	"new",
