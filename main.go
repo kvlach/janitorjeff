@@ -90,7 +90,7 @@ func main() {
 	defer log.Debug().Msg("closing db")
 
 	globals := &core.GlobalVars{
-		Commands: commands.Commands,
+		Commands: commands.All,
 		DB:       db,
 		Host:     readVar("HOST"),
 		Prefixes: core.Prefixes{
