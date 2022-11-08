@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
-	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -71,117 +69,6 @@ type User struct {
 type Channel struct {
 	ID   string
 	Name string
-}
-
-// The command types.
-const (
-	// A simplified command with might not give full control over something but
-	// it has a very easy to use API.
-	Normal = 1 << iota
-
-	// The full command and usually consists of many subcommands which makes it
-	// less intuitive for the average person.
-	Advanced
-
-	// Bot admin only command used to perform actions like setting an arbitrary
-	// person's options, etc.
-	Admin
-
-	All = Normal | Advanced | Admin
-)
-
-// There's 2 parts to a command. The static part which includes things like the
-// description, the list of all the aliases, etc. and the runtime part which
-// includes things like the prefix used, the arguments passed, etc.
-
-// The struct used to declare commands.
-type CommandStatic struct {
-	// All the aliases a command has. The first item in the list is considered
-	// the main name and so should be the simplest and most intuitive one for
-	// the average person. For example if it's a delete subcommand the first
-	// alias should be "delete" instead of "del" or "rm".
-	Names []string
-
-	// A short description of what the command does.
-	Description string
-
-	// Usage arguments. Should follow this format:
-	// - <required>
-	// - [optional]
-	// - (literal-string) or (many | literals)
-	UsageArgs string
-
-	// The frontends where this command will be available at. This *must* be set
-	// otherwise the command will never get matched.
-	Frontends int
-
-	// The function that is called to run the command.
-	Run func(*Message) (any, error, error)
-
-	// This is executed during bot startup. Should be used to set things up
-	// necessary for the command, for example DB schemas.
-	Init func() error
-
-	// The command's sub-commands.
-	Children Commands
-
-	// A command's parent, this is automatically set during bot startup.
-	Parent *CommandStatic
-}
-
-// Formats a static command into something that can be shown to a user.
-// Generally used in help messages to point the user to a specific command in
-// order to avoid hardcoding it. Returns the command in the following format:
-//
-//	<prefix><command> [sub-command...] <usage-args>
-//
-// For example: !command delete <command>
-func (cmd *CommandStatic) Format(prefix string) string {
-	path := []string{}
-	for cmd.Parent != nil {
-		path = append([]string{cmd.Names[0]}, path...)
-		cmd = cmd.Parent
-	}
-	path = append([]string{cmd.Names[0]}, path...)
-
-	var args string
-	if cmd.UsageArgs != "" {
-		args = " " + cmd.UsageArgs
-	}
-
-	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
-}
-
-// A command's runtime information.
-type CommandRuntime struct {
-	// Includes all the sub-commands e.g. ["prefix", "add"], so that we can
-	// know which alias is being used in order to display accurate help
-	// messages.
-	Name []string
-
-	// The arguments passed, includes everything that's not part of the
-	// command's name.
-	Args []string
-
-	// The prefix used when the command was called.
-	Prefix string
-}
-
-type Command struct {
-	Type    int
-	Static  *CommandStatic
-	Runtime *CommandRuntime
-}
-
-func (cmd *Command) Usage() string {
-	cmdName := strings.Join(cmd.Runtime.Name, " ")
-	usage := fmt.Sprintf("%s%s", cmd.Runtime.Prefix, cmdName)
-
-	if cmd.Static.UsageArgs != "" {
-		usage = fmt.Sprintf("%s %s", usage, cmd.Static.UsageArgs)
-	}
-
-	return usage
 }
 
 type Message struct {
@@ -282,60 +169,6 @@ func (m *Message) HereLogical() (int64, error) {
 
 // Returns the given place's prefixes and also whether or not they were taken
 // from the database (if not then that means the default ones were used).
-func PlacePrefixes(place int64) ([]Prefix, bool, error) {
-	// Initially the empty prefix was added if a message came from a DM, so
-	// that normal commands could be run without using any prefix. This was
-	// dropped because it added some unecessary complexity since we couldn't
-	// always trivially know whether a place was a DM or not.
-
-	prefixes, err := Globals.DB.PrefixList(place)
-	if err != nil {
-		return nil, false, err
-	}
-
-	log.Debug().
-		Int64("place", place).
-		Interface("prefixes", prefixes).
-		Msg("place specific prefixes")
-
-	inDB := true
-	if len(prefixes) == 0 {
-		inDB = false
-		prefixes = Globals.Prefixes.Others
-		log.Debug().Msg("no place specific prefixes, using defaults")
-	}
-
-	// The admin prefixes remain constant across places and can only be
-	// modified through the config. This means that they are never saved in the
-	// database and so we just append them to the list every time. This doesn't
-	// affect the `inDB` return value.
-	prefixes = append(prefixes, Globals.Prefixes.Admin...)
-
-	// We order by the length of the prefix in order to avoid matching the
-	// wrong prefix. For example, if the prefixes `!` and `!!` both exist in
-	// the same place and `!` is placed first in the list of prefixes then it
-	// will always get matched. So even if the user uses `!!`, the command will
-	// be parsed as having the `!` prefix and will fail to match (since it will
-	// try to match an invalid command, `!test` for example, instead of
-	// trimming both '!' first).
-	//
-	// The prefixes *must* be sorted as a whole and cannot be split into
-	// seperate categories (for example having 3 different slices for the 3
-	// different types of prefixes) as each prefix is unique across all
-	// categories which means that the same reasoning that was described above
-	// still applies.
-	sort.Slice(prefixes, func(i, j int) bool {
-		return len(prefixes[i].Prefix) > len(prefixes[j].Prefix)
-	})
-
-	log.Debug().
-		Int64("place", place).
-		Interface("prefixes", prefixes).
-		Msg("got prefixes")
-
-	return prefixes, inDB, nil
-}
-
 // Returns the logical here's prefixes.
 func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.HereLogical()
@@ -477,28 +310,4 @@ func (m *Message) Run() {
 
 func (m *Message) Usage() any {
 	return m.Client.Usage(m.Command.Usage())
-}
-
-// Monitor incoming messages until `check` is true or until timeout.
-func Await(timeout time.Duration, check func(*Message) bool) *Message {
-	var m *Message
-
-	timeoutchan := make(chan bool)
-
-	id := Globals.Hooks.Register(func(msg *Message) {
-		if check(msg) {
-			m = msg
-			timeoutchan <- true
-		}
-	})
-
-	select {
-	case <-timeoutchan:
-		break
-	case <-time.After(timeout):
-		break
-	}
-
-	Globals.Hooks.Delete(id)
-	return m
 }
