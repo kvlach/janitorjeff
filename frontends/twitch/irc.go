@@ -73,7 +73,6 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		ID:       t.message.ID,
 		Frontend: Type,
 		Raw:      t.message.Message,
-		IsDM:     false,
 		User:     user,
 		Channel:  channel,
 		Client:   t,
