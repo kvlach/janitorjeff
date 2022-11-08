@@ -78,7 +78,6 @@ type Message struct {
 	ID       string
 	Frontend int
 	Raw      string
-	IsDM     bool
 	User     *User
 	Channel  *Channel
 	Client   Messenger

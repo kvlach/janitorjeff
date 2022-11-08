@@ -54,7 +54,6 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
-		IsDM:     i.Interaction.User != nil,
 		User:     user,
 		Channel:  channel,
 		Client:   i,
