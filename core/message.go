@@ -280,32 +280,32 @@ func (m *Message) HereLogical() (int64, error) {
 	return here, nil
 }
 
-// Returns the given scope's prefixes and also whether or not they were taken
+// Returns the given place's prefixes and also whether or not they were taken
 // from the database (if not then that means the default ones were used).
-func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
+func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	// Initially the empty prefix was added if a message came from a DM, so
 	// that normal commands could be run without using any prefix. This was
 	// dropped because it added some unecessary complexity since we couldn't
-	// always trivially know whether a scope was a DM or not.
+	// always trivially know whether a place was a DM or not.
 
-	prefixes, err := Globals.DB.PrefixList(scope)
+	prefixes, err := Globals.DB.PrefixList(place)
 	if err != nil {
 		return nil, false, err
 	}
 
 	log.Debug().
-		Int64("scope", scope).
+		Int64("place", place).
 		Interface("prefixes", prefixes).
-		Msg("scope specific prefixes")
+		Msg("place specific prefixes")
 
 	inDB := true
 	if len(prefixes) == 0 {
 		inDB = false
 		prefixes = Globals.Prefixes.Others
-		log.Debug().Msg("no scope specific prefixes, using defaults")
+		log.Debug().Msg("no place specific prefixes, using defaults")
 	}
 
-	// The admin prefixes remain constant across scopes and can only be
+	// The admin prefixes remain constant across places and can only be
 	// modified through the config. This means that they are never saved in the
 	// database and so we just append them to the list every time. This doesn't
 	// affect the `inDB` return value.
@@ -313,7 +313,7 @@ func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
 
 	// We order by the length of the prefix in order to avoid matching the
 	// wrong prefix. For example, if the prefixes `!` and `!!` both exist in
-	// the same scope and `!` is placed first in the list of prefixes then it
+	// the same place and `!` is placed first in the list of prefixes then it
 	// will always get matched. So even if the user uses `!!`, the command will
 	// be parsed as having the `!` prefix and will fail to match (since it will
 	// try to match an invalid command, `!test` for example, instead of
@@ -329,7 +329,7 @@ func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
 	})
 
 	log.Debug().
-		Int64("scope", scope).
+		Int64("place", place).
 		Interface("prefixes", prefixes).
 		Msg("got prefixes")
 
@@ -342,7 +342,7 @@ func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	if err != nil {
 		return nil, false, err
 	}
-	return ScopePrefixes(here)
+	return PlacePrefixes(here)
 }
 
 func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
