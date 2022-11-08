@@ -87,7 +87,7 @@ func runAdminAddCore(m *core.Message) (string, string, error, error) {
 		return prefix, collision, errCustomCommandExists, nil
 	}
 
-	prefixes, scopeExists, err := core.ScopePrefixes(scope)
+	prefixes, scopeExists, err := core.PlacePrefixes(scope)
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -167,7 +167,7 @@ func runAdminDelCore(m *core.Message) (string, error, error) {
 	scope := fs.scopeFlag
 	prefix := args[0]
 
-	prefixes, scopeExists, err := core.ScopePrefixes(scope)
+	prefixes, scopeExists, err := core.PlacePrefixes(scope)
 	if err != nil {
 		return prefix, nil, err
 	}
@@ -232,7 +232,7 @@ func runAdminListCore(m *core.Message) ([]core.Prefix, error, error) {
 	types := fs.typeFlag
 	scope := fs.scopeFlag
 
-	prefixes, _, err := core.ScopePrefixes(scope)
+	prefixes, _, err := core.PlacePrefixes(scope)
 	if err != nil {
 		return nil, nil, err
 	}
