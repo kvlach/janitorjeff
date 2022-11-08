@@ -98,7 +98,7 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 	}
 	log.Debug().Int64("scope", scope).Send()
 
-	prefixes, scopeExists, err := m.ScopePrefixes()
+	prefixes, scopeExists, err := m.Prefixes()
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -256,7 +256,7 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 		Int64("scope", scope).
 		Send()
 
-	prefixes, scopeExists, err := m.ScopePrefixes()
+	prefixes, scopeExists, err := m.Prefixes()
 	if err != nil {
 		return prefix, nil, err
 	}
@@ -340,7 +340,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 }
 
 func runList_Core(m *core.Message) ([]string, error) {
-	prefixes, _, err := m.ScopePrefixes()
+	prefixes, _, err := m.Prefixes()
 
 	normal := []string{}
 	for _, p := range prefixes {
