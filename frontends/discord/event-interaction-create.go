@@ -129,9 +129,7 @@ func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) 
 func RegisterAppCommand(cmd *dg.ApplicationCommand) {
 	guildID := "759669782386966528"
 
-	s := core.Globals.Discord.Client
-
-	cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildID, cmd)
+	cmd, err := Session.ApplicationCommandCreate(Session.State.User.ID, guildID, cmd)
 	if err != nil {
 		panic(err)
 	}

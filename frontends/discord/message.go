@@ -34,15 +34,13 @@ func CreateClient(author, channel int64, msgID string) (*Message, error) {
 		return nil, err
 	}
 
-	s := core.Globals.Discord.Client
-
 	// check if message id still exists (could have been deleted for example)
-	if _, err := s.ChannelMessage(channelID, msgID); err != nil {
+	if _, err := Session.ChannelMessage(channelID, msgID); err != nil {
 		msgID = ""
 	}
 
 	d := &Message{
-		Session: s,
+		Session: Session,
 		Message: &dg.Message{
 			ID:        msgID,
 			ChannelID: channelID,

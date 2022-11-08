@@ -2,21 +2,7 @@ package core
 
 import (
 	"sync"
-
-	dg "github.com/bwmarrin/discordgo"
 )
-
-type DiscordVars struct {
-	Client        *dg.Session
-	EmbedColor    int
-	EmbedErrColor int
-	Admins        []string
-}
-
-type TwitchVars struct {
-	ClientID     string
-	ClientSecret string
-}
 
 type hook struct {
 	id  int
@@ -86,10 +72,6 @@ type GlobalVars struct {
 	Host     string
 	Hooks    Hooks
 	Prefixes Prefixes
-
-	// Platform Specific
-	Discord *DiscordVars
-	Twitch  *TwitchVars
 }
 
 var Globals *GlobalVars
