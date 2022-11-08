@@ -1,4 +1,7 @@
 # JanitorJeff
+
+[![Go Reference](https://pkg.go.dev/badge/git.slowtyper.com/slowtyper/janitorjeff.svg)](https://pkg.go.dev/git.slowtyper.com/slowtyper/janitorjeff)
+
 A general purpose, cross-platform bot.
 
 *Very much under active developement, there will most likely be breaking changes.*
