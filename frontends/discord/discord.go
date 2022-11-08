@@ -3,13 +3,19 @@ package discord
 import (
 	"sync"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
-
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
 
 const Type = 1 << 0
+
+var (
+	Session *dg.Session
+	Admins  []string
+
+	EmbedColor    = 0xAD88E0
+	EmbedErrColor = 0xB14D4D
+)
 
 func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
 	if err := dbInit(); err != nil {
@@ -36,7 +42,7 @@ func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
 		log.Fatal().Err(err).Msg("failed to connect to discord")
 	} else {
 		log.Debug().Msg("connected to discord")
-		core.Globals.Discord.Client = d
+		Session = d
 	}
 
 	wgInit.Done()

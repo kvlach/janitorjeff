@@ -102,21 +102,13 @@ func main() {
 				{Type: core.Advanced, Prefix: "$"},
 			},
 		},
-		Discord: &core.DiscordVars{
-			EmbedColor:    0xAD88E0,
-			EmbedErrColor: 0xB14D4D,
-			Admins: []string{
-				"155662023743635456",
-			},
-		},
-
-		Twitch: &core.TwitchVars{
-			ClientID:     readVar("TWITCH_CLIENT_ID"),
-			ClientSecret: readVar("TWITCH_CLIENT_SECRET"),
-		},
 	}
 
 	core.GlobalsInit(globals)
+
+	discord.Admins = []string{"155662023743635456"}
+	twitch.ClientID = readVar("TWITCH_CLIENT_ID")
+	twitch.ClientSecret = readVar("TWITCH_CLIENT_SECRET")
 
 	stop := make(chan struct{})
 	wgStop := new(sync.WaitGroup)

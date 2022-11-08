@@ -16,6 +16,11 @@ import (
 
 const Type = 1 << 1
 
+var (
+	ClientID     string
+	ClientSecret string
+)
+
 type Twitch struct {
 	client  *tirc.Client
 	message *tirc.PrivateMessage
@@ -83,7 +88,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 
 	var err error
 	// TODO: If no user access token, use app access token
-	t.Helix, err = HelixInit(core.Globals.Twitch.ClientID, accessToken)
+	t.Helix, err = HelixInit(ClientID, accessToken)
 	if err != nil {
 		return nil, err
 	}

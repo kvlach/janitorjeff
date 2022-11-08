@@ -216,7 +216,7 @@ func getPlaceID(s string, ds *dg.Session) (string, error) {
 }
 
 func isAdmin(id string) bool {
-	for _, admin := range core.Globals.Discord.Admins {
+	for _, admin := range Admins {
 		if id == admin {
 			return true
 		}
@@ -402,9 +402,9 @@ func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
 	// default value of EmbedColor is 0 so even if it's not been set
 	// then everything should be ok
 	if usrErr == nil {
-		embed.Color = core.Globals.Discord.EmbedColor
+		embed.Color = EmbedColor
 	} else {
-		embed.Color = core.Globals.Discord.EmbedErrColor
+		embed.Color = EmbedErrColor
 	}
 	return embed
 }

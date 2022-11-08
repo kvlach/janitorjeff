@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -57,7 +58,7 @@ var (
 // message and since this command is discord only it's fine to use this
 func write(channel string, embed *dg.MessageEmbed) {
 	embed.Color = embedColor
-	core.Globals.Discord.Client.ChannelMessageSendEmbed(channel, embed)
+	discord.Session.ChannelMessageSendEmbed(channel, embed)
 }
 
 type score struct {
