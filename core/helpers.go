@@ -67,9 +67,9 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 
 	timeoutchan := make(chan bool)
 
-	id := Globals.Hooks.Register(func(msg *Message) {
-		if check(msg) {
-			m = msg
+	id := Globals.Hooks.Register(func(candidate *Message) {
+		if check(candidate) {
+			m = candidate
 			timeoutchan <- true
 		}
 	})
