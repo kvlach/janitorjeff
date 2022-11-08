@@ -337,7 +337,7 @@ func ScopePrefixes(scope int64) ([]Prefix, bool, error) {
 }
 
 // Returns the logical here's prefixes.
-func (m *Message) ScopePrefixes() ([]Prefix, bool, error) {
+func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.HereLogical()
 	if err != nil {
 		return nil, false, err
@@ -370,7 +370,7 @@ func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 }
 
 func (m *Message) matchPrefix(rootCmdName string) (Prefix, error) {
-	prefixes, _, err := m.ScopePrefixes()
+	prefixes, _, err := m.Prefixes()
 	if err != nil {
 		return Prefix{}, err
 	}

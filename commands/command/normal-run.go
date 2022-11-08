@@ -121,7 +121,7 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 }
 
 func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
-	prefixes, _, err := m.ScopePrefixes()
+	prefixes, _, err := m.Prefixes()
 	if err != nil {
 		return false, err
 	}
