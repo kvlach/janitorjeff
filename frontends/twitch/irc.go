@@ -84,11 +84,11 @@ func (t *Twitch) Parse() (*core.Message, error) {
 	}
 
 	// Ignore error since accessToken might not exist
-	accessToken, _ := twitchChannelGetAccessToken(channel.ID)
+	accessToken, _ := GetUserAccessToken(channel.ID)
 
 	var err error
 	// TODO: If no user access token, use app access token
-	t.Helix, err = HelixInit(ClientID, accessToken)
+	t.Helix, err = HelixInit(accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -102,9 +102,9 @@ func (t *Twitch) checkID(id string) error {
 		return fmt.Errorf("id '%s' is not valid", id)
 	}
 
-	// try to get the id's corresponding username, if it fails then that means
-	// that the id is not valid
-	_, err := t.Helix.GetUserName(id)
+	// try to get the id's corresponding user, if it fails then that means that
+	// the id is not valid
+	_, err := t.Helix.GetUser(id)
 	return err
 }
 

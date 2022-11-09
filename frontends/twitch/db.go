@@ -26,9 +26,9 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	if id == m.User.ID {
 		channelID = m.User.ID
 		channelName = m.User.Name
-	} else if name, err := h.GetUserName(id); err == nil {
+	} else if u, err := h.GetUser(id); err == nil {
 		channelID = id
-		channelName = name
+		channelName = u.Login
 	} else {
 		return -1, err
 	}
@@ -93,7 +93,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 	return id, name, err
 }
 
-func TwitchChannelSetAccessToken(accessToken, refreshToken, channelID, channelName string) error {
+func SetUserAccessToken(accessToken, refreshToken, channelID string) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -111,7 +111,20 @@ func TwitchChannelSetAccessToken(accessToken, refreshToken, channelID, channelNa
 	return err
 }
 
-func twitchChannelGetAccessToken(channelID string) (string, error) {
+func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	_, err := db.DB.Exec(`
+		UPDATE PlatformTwitchChannels
+		SET access_token = ?, refresh_token = ?
+		WHERE access_token = ?`, accessToken, refreshToken, oldAcessToken)
+
+	return err
+}
+
+func GetUserAccessToken(channelID string) (string, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -121,4 +134,19 @@ func twitchChannelGetAccessToken(channelID string) (string, error) {
 	var accessToken string
 	err := row.Scan(&accessToken)
 	return accessToken, err
+}
+
+func dbGetetUserRefreshToken(accessToken string) (string, error) {
+	db := core.Globals.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	row := db.DB.QueryRow(`
+		SELECT refresh_token
+		FROM PlatformTwitchChannels
+		WHERE access_token = ?`, accessToken)
+
+	var refreshToken string
+	err := row.Scan(&refreshToken)
+	return refreshToken, err
 }

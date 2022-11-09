@@ -2,6 +2,7 @@ package commands
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/command"
+	"git.slowtyper.com/slowtyper/janitorjeff/commands/connect"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/help"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/nick"
 	"git.slowtyper.com/slowtyper/janitorjeff/commands/paintball"
@@ -19,6 +20,7 @@ import (
 
 var Normal = core.Commands{
 	command.Command,
+	connect.Normal,
 	help.Normal,
 	nick.Normal,
 	paintball.Normal,
