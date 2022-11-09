@@ -20,6 +20,8 @@ const (
 	random = "/random"
 )
 
+var errNoResults = errors.New("No results found.")
+
 type definition struct {
 	Definition  string    `json:"definition"`
 	Permalink   string    `json:"permalink"`
@@ -47,42 +49,46 @@ func cleanLinks(s string) string {
 	})
 }
 
-func read(u string) (definition, error) {
+func read(u string) (definition, error, error) {
 	resp, err := http.Get(u)
 	if err != nil {
-		return definition{}, err
+		return definition{}, nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return definition{}, err
+		return definition{}, nil, err
 	}
 
 	var defs response
 	err = json.Unmarshal(body, &defs)
 	if err != nil {
-		return definition{}, err
+		return definition{}, nil, err
 	}
 
 	if len(defs.List) == 0 {
-		return definition{}, errors.New("no results found")
+		return definition{}, errNoResults, nil
 	}
 
 	def := defs.List[0]
 	def.Definition = cleanLinks(def.Definition)
 	def.Example = cleanLinks(def.Example)
-	return def, nil
+	return def, nil, nil
 }
 
-func search(term string) (definition, error) {
+func search(term string) (definition, error, error) {
 	return read(base + define + url.QueryEscape(term))
 }
 
-func rand() (definition, error) {
+func rand() (definition, error, error) {
 	return read(base + random)
 }
 
-func renderDiscord(def definition) *dg.MessageEmbed {
+func renderDiscord(def definition, usrErr error) *dg.MessageEmbed {
+	if usrErr != nil {
+		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}
+	}
+
 	var example []*dg.MessageEmbedField
 	if def.Example != "" {
 		example = []*dg.MessageEmbedField{
@@ -106,7 +112,11 @@ func renderDiscord(def definition) *dg.MessageEmbed {
 	return embed
 }
 
-func renderText(def definition) string {
+func renderText(def definition, usrErr error) string {
+	if usrErr != nil {
+		return fmt.Sprint(usrErr)
+	}
+
 	def.Definition = strings.ReplaceAll(def.Definition, "\n", " ")
 	return fmt.Sprintf("%s: %s %s", def.Word, def.Definition, def.Permalink)
 }
