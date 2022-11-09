@@ -62,22 +62,22 @@ func advancedRunSearch(m *core.Message) (any, error, error) {
 }
 
 func advancedRunSearchDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	def, err := advancedRunSearchCore(m)
+	def, usrErr, err := advancedRunSearchCore(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return renderDiscord(def), nil, nil
+	return renderDiscord(def, usrErr), usrErr, nil
 }
 
 func advancedRunSearchText(m *core.Message) (string, error, error) {
-	def, err := advancedRunSearchCore(m)
+	def, usrErr, err := advancedRunSearchCore(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return renderText(def), nil, nil
+	return renderText(def, usrErr), usrErr, nil
 }
 
-func advancedRunSearchCore(m *core.Message) (definition, error) {
+func advancedRunSearchCore(m *core.Message) (definition, error, error) {
 	term := m.RawArgs(0)
 	return search(term)
 }
@@ -98,21 +98,21 @@ func advancedRunRandom(m *core.Message) (any, error, error) {
 }
 
 func advancedRunRandomDiscord() (*dg.MessageEmbed, error, error) {
-	def, err := advancedRunRandomCore()
+	def, usrErr, err := advancedRunRandomCore()
 	if err != nil {
 		return nil, nil, err
 	}
-	return renderDiscord(def), nil, nil
+	return renderDiscord(def, usrErr), usrErr, nil
 }
 
 func advancedRunRandomText() (string, error, error) {
-	def, err := advancedRunRandomCore()
+	def, usrErr, err := advancedRunRandomCore()
 	if err != nil {
 		return "", nil, err
 	}
-	return renderText(def), nil, nil
+	return renderText(def, usrErr), usrErr, nil
 }
 
-func advancedRunRandomCore() (definition, error) {
+func advancedRunRandomCore() (definition, error, error) {
 	return rand()
 }
