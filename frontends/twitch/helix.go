@@ -1,19 +1,61 @@
 package twitch
 
 import (
+	"errors"
 	"fmt"
-	"time"
 
 	"github.com/nicklaw5/helix"
+	"github.com/rs/zerolog/log"
 )
 
-type Helix struct {
-	*helix.Client
+var (
+	ErrExpiredRefreshToken = errors.New("The user will need to reconnect the bot to twitch.")
+	ErrRetry               = errors.New("Refresh the access token and try again.")
+	ErrNoResults           = errors.New("Couldn't find what you were looking for.")
+)
+
+func RefreshUserAccessToken(accessToken string) (string, error) {
+	client, err := helix.NewClient(&helix.Options{
+		ClientID:     ClientID,
+		ClientSecret: ClientSecret,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	refreshToken, err := dbGetetUserRefreshToken(accessToken)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.RefreshUserAccessToken(refreshToken)
+	log.Debug().
+		Err(err).
+		Str("old", accessToken).
+		Msg("refreshed user access token")
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode == 401 {
+		return "", ErrExpiredRefreshToken
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("%d, %s: %s", resp.StatusCode, resp.Error, resp.ErrorMessage)
+	}
+
+	err = dbUpdateUserTokens(accessToken, resp.Data.AccessToken, resp.Data.RefreshToken)
+	return resp.Data.AccessToken, err
 }
 
-func HelixInit(clientID, token string) (*Helix, error) {
+type Helix struct {
+	c *helix.Client
+}
+
+func HelixInit(token string) (*Helix, error) {
 	h, err := helix.NewClient(&helix.Options{
-		ClientID:        clientID,
+		ClientID:        ClientID,
 		UserAccessToken: token,
 	})
 
@@ -25,144 +67,223 @@ func checkErrors(err error, resp helix.ResponseCommon, length int) error {
 		return fmt.Errorf("helix error: %v", err)
 	}
 
+	if resp.StatusCode == 401 {
+		return ErrRetry
+	}
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("%d, %s: %s", resp.StatusCode, resp.Error, resp.ErrorMessage)
 	}
 
 	if length == 0 {
-		return fmt.Errorf("no results")
+		return ErrNoResults
 	}
 
 	return nil
 }
 
-func (h *Helix) GetFollower(channel_id, user_id string) (helix.UserFollow, error) {
-	resp, err := h.GetUsersFollows(&helix.UsersFollowsParams{
-		FromID: user_id,
-		ToID:   channel_id,
+func (h *Helix) refreshUserAccessToken() error {
+	token, err := RefreshUserAccessToken(h.c.GetUserAccessToken())
+	if err != nil {
+		return err
+	}
+	h.c.SetUserAccessToken(token)
+	return nil
+}
+
+func (h *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, error) {
+	resp, err := h.c.GetUsersFollows(&helix.UsersFollowsParams{
+		FromID: userID,
+		ToID:   broadcasterID,
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Follows)); err != nil {
-		return helix.UserFollow{}, fmt.Errorf("failed to get follow date in channel '%s' for user '%s': %v", channel_id, user_id, err)
-	}
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Follows))
 
-	return resp.Data.Follows[0], nil
+	switch err {
+	case nil:
+		return resp.Data.Follows[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.UserFollow{}, err
+		}
+		return h.GetFollower(broadcasterID, userID)
+
+	default:
+		return helix.UserFollow{}, err
+	}
 }
 
-func (h *Helix) GetStream(channel_id string) (helix.Stream, error) {
-	resp, err := h.GetStreams(&helix.StreamsParams{
-		UserIDs: []string{channel_id},
+func (h *Helix) GetStream(broadcasterID string) (helix.Stream, error) {
+	resp, err := h.c.GetStreams(&helix.StreamsParams{
+		UserIDs: []string{broadcasterID},
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Streams)); err != nil {
-		return helix.Stream{}, fmt.Errorf("failed to get stream info for channel '%s': %v", channel_id, err)
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Streams))
+
+	switch err {
+	case nil:
+		return resp.Data.Streams[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.Stream{}, err
+		}
+		return h.GetStream(broadcasterID)
+
+	default:
+		return helix.Stream{}, err
 	}
-
-	return resp.Data.Streams[0], nil
 }
 
-func (h *Helix) GetStreamStartedDate(channel_id string) (time.Time, error) {
-	s, err := h.GetStream(channel_id)
-	return s.StartedAt, err
-}
-
-func (h *Helix) GetUser(user_id string) (helix.User, error) {
-	resp, err := h.GetUsers(&helix.UsersParams{
-		IDs: []string{user_id},
+func (h *Helix) GetUser(userID string) (helix.User, error) {
+	resp, err := h.c.GetUsers(&helix.UsersParams{
+		IDs: []string{userID},
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Users)); err != nil {
-		return helix.User{}, fmt.Errorf("failed to get user info for id '%s': %v", user_id, err)
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Users))
+
+	switch err {
+	case nil:
+		return resp.Data.Users[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.User{}, err
+		}
+		return h.GetUser(userID)
+
+	default:
+		return helix.User{}, err
 	}
-
-	return resp.Data.Users[0], nil
-}
-
-func (h *Helix) GetUserName(user_id string) (string, error) {
-	u, err := h.GetUser(user_id)
-	return u.Login, err
-}
-
-func (h *Helix) GetUserDisplayName(user_id string) (string, error) {
-	u, err := h.GetUser(user_id)
-	return u.DisplayName, err
 }
 
 func (h *Helix) GetUserID(username string) (string, error) {
-	resp, err := h.GetUsers(&helix.UsersParams{
+	resp, err := h.c.GetUsers(&helix.UsersParams{
 		Logins: []string{username},
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Users)); err != nil {
-		return "", fmt.Errorf("failed to get id for username '%s': %v", username, err)
-	}
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Users))
 
-	return resp.Data.Users[0].ID, nil
+	switch err {
+	case nil:
+		return resp.Data.Users[0].ID, nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return "", err
+		}
+		return h.GetUserID(username)
+
+	default:
+		return "", err
+	}
 }
 
-func (h *Helix) GetClip(clip_id string) (helix.Clip, error) {
-	resp, err := h.GetClips(&helix.ClipsParams{
-		IDs: []string{clip_id},
+func (h *Helix) GetClip(clipID string) (helix.Clip, error) {
+	resp, err := h.c.GetClips(&helix.ClipsParams{
+		IDs: []string{clipID},
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Clips)); err != nil {
-		return helix.Clip{}, fmt.Errorf("failed to get clip with id '%s': %v", clip_id, err)
-	}
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Clips))
 
-	return resp.Data.Clips[0], nil
+	switch err {
+	case nil:
+		return resp.Data.Clips[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.Clip{}, err
+		}
+		return h.GetClip(clipID)
+
+	default:
+		return helix.Clip{}, err
+	}
 }
 
-func (h *Helix) GetBannedUser(channel_id, user_id string) (helix.Ban, error) {
-	resp, err := h.GetBannedUsers(&helix.BannedUsersParams{
-		BroadcasterID: channel_id,
-		UserID:        user_id,
+func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
+	resp, err := h.c.GetBannedUsers(&helix.BannedUsersParams{
+		BroadcasterID: broadcasterID,
+		UserID:        userID,
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Bans)); err != nil {
-		return helix.Ban{}, fmt.Errorf("failed to get banned user '%s' in channel '%s': %v", user_id, channel_id, err)
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Bans))
+
+	switch err {
+	case nil:
+		return resp.Data.Bans[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.Ban{}, err
+		}
+		return h.GetBannedUser(broadcasterID, userID)
+
+	default:
+		return helix.Ban{}, err
 	}
 
-	return resp.Data.Bans[0], nil
 }
 
-func (h *Helix) IsUserBanned(channel_id, user_id string) (bool, error) {
-	resp, err := h.GetBannedUsers(&helix.BannedUsersParams{
-		BroadcasterID: channel_id,
-		UserID:        user_id,
+// func (h *Helix) IsUserBanned(broadcasterID, userID string) (bool, error) {
+// 	resp, err := h.c.GetBannedUsers(&helix.BannedUsersParams{
+// 		BroadcasterID: broadcasterID,
+// 		UserID:        userID,
+// 	})
+
+// 	if err := checkErrors(err, resp.ResponseCommon, 1); err != nil {
+// 		return false, fmt.Errorf("failed to get banned user '%s' in channel '%s': %v", userID, broadcasterID, err)
+// 	}
+
+// 	if len(resp.Data.Bans) > 1 {
+// 		return true, nil
+// 	}
+// 	return false, nil
+// }
+
+func (h *Helix) SearchGame(gameName string) (helix.Game, error) {
+	resp, err := h.c.GetGames(&helix.GamesParams{
+		Names: []string{gameName},
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, 1); err != nil {
-		return false, fmt.Errorf("failed to get banned user '%s' in channel '%s': %v", user_id, channel_id, err)
-	}
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Games))
 
-	if len(resp.Data.Bans) > 1 {
-		return true, nil
+	switch err {
+	case nil:
+		return resp.Data.Games[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.Game{}, err
+		}
+		return h.SearchGame(gameName)
+
+	default:
+		return helix.Game{}, err
 	}
-	return false, nil
 }
 
-func (h *Helix) SearchGame(game_name string) (helix.Game, error) {
-	resp, err := h.GetGames(&helix.GamesParams{
-		Names: []string{game_name},
+func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, error) {
+	resp, err := h.c.GetChannelInformation(&helix.GetChannelInformationParams{
+		BroadcasterID: broadcasterID,
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Games)); err != nil {
-		return helix.Game{}, fmt.Errorf("failed to search game '%s': %v", game_name, err)
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Channels))
+
+	switch err {
+	case nil:
+		return resp.Data.Channels[0], nil
+
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return helix.ChannelInformation{}, err
+		}
+		return h.GetChannelInfo(broadcasterID)
+
+	default:
+		return helix.ChannelInformation{}, err
 	}
-
-	return resp.Data.Games[0], nil
-}
-
-func (h *Helix) GetChannelInfo(channel_id string) (helix.ChannelInformation, error) {
-	resp, err := h.GetChannelInformation(&helix.GetChannelInformationParams{
-		BroadcasterID: channel_id,
-	})
-
-	if err := checkErrors(err, resp.ResponseCommon, len(resp.Data.Channels)); err != nil {
-		return helix.ChannelInformation{}, fmt.Errorf("failed to get inforamtion for channel '%s': %v", channel_id, err)
-	}
-
-	return resp.Data.Channels[0], nil
 }
 
 func (h *Helix) GetGameName(channel_id string) (string, error) {
@@ -175,45 +296,51 @@ func (h *Helix) GetTitle(channel_id string) (string, error) {
 	return ch.Title, err
 }
 
-func (h *Helix) EditChannelInfo(channel_id, title, game_id string) error {
+func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) error {
 	// both the title and the game need to be set at the same time
-	resp, err := h.EditChannelInformation(&helix.EditChannelInformationParams{
-		BroadcasterID: channel_id,
+	resp, err := h.c.EditChannelInformation(&helix.EditChannelInformationParams{
+		BroadcasterID: broadcasterID,
 		Title:         title,
-		GameID:        game_id,
+		GameID:        gameID,
 	})
 
-	if err := checkErrors(err, resp.ResponseCommon, 1); err != nil {
-		return fmt.Errorf("failed to update inforamtion for channel '%s' to title '%s' and game '%s'", channel_id, title, game_id)
-	}
+	err = checkErrors(err, resp.ResponseCommon, 1)
 
-	return nil
+	switch err {
+	case ErrRetry:
+		if err := h.refreshUserAccessToken(); err != nil {
+			return err
+		}
+		return h.EditChannelInfo(broadcasterID, title, gameID)
+
+	default:
+		return err
+	}
 }
 
-func (h *Helix) SetTitle(channel_id, title string) error {
-	ch, err := h.GetChannelInfo(channel_id)
+func (h *Helix) SetTitle(channelID, title string) error {
+	ch, err := h.GetChannelInfo(channelID)
 	if err != nil {
 		return err
 	}
-
-	return h.EditChannelInfo(channel_id, title, ch.GameID)
+	return h.EditChannelInfo(channelID, title, ch.GameID)
 }
 
-func (h *Helix) SetGame(channel_id, game_name string) (string, error) {
-	title, err := h.GetTitle(channel_id)
+func (h *Helix) SetGame(channelID, gameName string) (string, error) {
+	title, err := h.GetTitle(channelID)
 	if err != nil {
 		return "", err
 	}
 
 	// Clears the game
-	if game_name == "-" {
-		return "nothing", h.EditChannelInfo(channel_id, title, "0")
+	if gameName == "-" {
+		return "nothing", h.EditChannelInfo(channelID, title, "0")
 	}
 
-	g, err := h.SearchGame(game_name)
+	g, err := h.SearchGame(gameName)
 	if err != nil {
 		return "", err
 	}
 
-	return g.Name, h.EditChannelInfo(channel_id, title, g.ID)
+	return g.Name, h.EditChannelInfo(channelID, title, g.ID)
 }
