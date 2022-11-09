@@ -1,11 +1,9 @@
 package twitch
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"net/http"
-	"sync"
+	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 
@@ -13,58 +11,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type states struct {
-	lock   sync.RWMutex
-	tokens []string
-}
-
-func (s *states) Add(token string) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.tokens = append(s.tokens, token)
-}
-
-func (s *states) In(token string) bool {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	for _, t := range s.tokens {
-		if t == token {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *states) Delete(token string) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	for i, t := range s.tokens {
-		if t == token {
-			// delete the token by replacing it with the last one since the
-			// order doesn't matter
-			s.tokens[i] = s.tokens[len(s.tokens)-1]
-			s.tokens = s.tokens[:len(s.tokens)-1]
-		}
-	}
-}
-
-var States = &states{}
+var states = &core.States{}
 
 func GetState() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
+	state, err := states.Generate()
 	if err != nil {
 		return "", err
 	}
-	state := base64.URLEncoding.EncodeToString(b)
 
-	// you never know
-	if States.In(state) {
-		return GetState()
-	}
+	states.Add(state)
+	go func() {
+		time.Sleep(1 * time.Minute)
+		states.Delete(state)
+	}()
+
 	return state, nil
 }
 
@@ -80,12 +40,19 @@ func init() {
 	http.HandleFunc(callback, func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 
-		states, ok := q["state"]
-		if !ok || len(states) == 0 {
+		statesQuery, ok := q["state"]
+		if !ok || len(statesQuery) == 0 {
 			fail(w, r)
 			return
 		}
-		state := states[0]
+		state := statesQuery[0]
+
+		if !states.In(state) {
+			log.Debug().Str("state", state).Msg("got unexpected state")
+			fail(w, r)
+			return
+		}
+		states.Delete(state)
 
 		codes, ok := q["code"]
 		if !ok || len(codes) == 0 {
@@ -99,7 +66,6 @@ func init() {
 			ClientSecret: ClientSecret,
 			RedirectURI:  "http://" + core.Globals.Host + callback,
 		})
-
 		if err != nil {
 			log.Debug().Err(err).Send()
 			fail(w, r)
@@ -129,14 +95,6 @@ func init() {
 		}
 
 		userID := res.Data.UserID
-
-		if !States.In(state) {
-			log.Debug().Str("state", state).Msg("got unexpected state")
-			fail(w, r)
-			return
-		}
-
-		States.Delete(state)
 
 		err = SetUserAccessToken(accessToken, refreshToken, userID)
 		if err != nil {

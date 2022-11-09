@@ -2,7 +2,6 @@ package connect
 
 import (
 	"fmt"
-	"time"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
@@ -69,7 +68,6 @@ func runTwitchCore(m *core.Message) (string, error) {
 		ClientID:    clientID,
 		RedirectURI: redirectURI,
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -84,12 +82,6 @@ func runTwitchCore(m *core.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	twitch.States.Add(state)
-	go func() {
-		time.Sleep(1 * time.Minute)
-		twitch.States.Delete(state)
-	}()
 
 	authURL := c.GetAuthorizationURL(&helix.AuthorizationURLParams{
 		ResponseType: "code",
