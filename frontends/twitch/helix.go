@@ -223,7 +223,6 @@ func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
 	default:
 		return helix.Ban{}, err
 	}
-
 }
 
 // func (h *Helix) IsUserBanned(broadcasterID, userID string) (bool, error) {
