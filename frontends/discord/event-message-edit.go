@@ -2,44 +2,14 @@ package discord
 
 import (
 	"fmt"
-	"sync"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 
+	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var replies = replyCache{}
-
-type replyCache struct {
-	lock    sync.RWMutex
-	replies map[string]string
-}
-
-func (r *replyCache) Set(key, value string) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
-	if r.replies == nil {
-		r.replies = map[string]string{}
-	}
-	r.replies[key] = value
-}
-
-func (r *replyCache) Delete(key string) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
-	delete(r.replies, key)
-}
-
-func (r *replyCache) Get(key string) (string, bool) {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-
-	value, ok := r.replies[key]
-	return value, ok
-}
+var replies = gosafe.Map[string, string]{}
 
 type MessageEdit struct {
 	Session *dg.Session
