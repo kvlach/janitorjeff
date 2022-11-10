@@ -28,16 +28,22 @@ func normalRun(m *core.Message) (any, error, error) {
 }
 
 func normalRunTwitch(m *core.Message) (string, error, error) {
-	helix := m.Client.(*twitch.Twitch).Helix
+	h, err := m.Client.(*twitch.Twitch).Helix()
+	if err != nil {
+		return "", nil, err
+	}
 
 	if len(m.Command.Runtime.Args) == 0 {
-		t, err := helix.GetTitle(m.Channel.ID)
+		t, err := h.GetTitle(m.Channel.ID)
 		return t, nil, err
 	}
 
 	title := m.RawArgs(0)
 
-	err := helix.SetTitle(m.Channel.ID, title)
+	usrErr, err := h.SetTitle(m.Channel.ID, title)
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
 	if err != nil {
 		return "", nil, err
 	}

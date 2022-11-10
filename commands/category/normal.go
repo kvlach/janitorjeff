@@ -29,20 +29,27 @@ func normalRun(m *core.Message) (any, error, error) {
 }
 
 func normalRunTwitch(m *core.Message) (string, error, error) {
-	helix := m.Client.(*twitch.Twitch).Helix
+	h, err := m.Client.(*twitch.Twitch).Helix()
+	if err != nil {
+		return "", nil, err
+	}
 
 	if len(m.Command.Runtime.Args) == 0 {
-		g, err := helix.GetGameName(m.Channel.ID)
+		g, err := h.GetGameName(m.Channel.ID)
 		return g, nil, err
 	}
 
-	g, err := helix.SetGame(m.Channel.ID, m.RawArgs(0))
+	g, usrErr, err := h.SetGame(m.Channel.ID, m.RawArgs(0))
+
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
 
 	switch err {
 	case nil:
 		return fmt.Sprintf("Category set to: %s", g), nil, nil
 	case twitch.ErrNoResults:
-		return "Couldn't find the game, did you type the name correctly?", nil, nil
+		return "Couldn't find the category, did you type the name correctly?", nil, nil
 	default:
 		return "", nil, err
 	}
