@@ -11,6 +11,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	tirc "github.com/gempir/go-twitch-irc/v2"
+	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,8 +25,6 @@ var (
 type Twitch struct {
 	client  *tirc.Client
 	message *tirc.PrivateMessage
-
-	Helix *Helix
 }
 
 func CreateClient(person, place int64) (*Twitch, error) {
@@ -83,16 +82,6 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		Client:   t,
 	}
 
-	// Ignore error since accessToken might not exist
-	accessToken, _ := GetUserAccessToken(channel.ID)
-
-	var err error
-	// TODO: If no user access token, use app access token
-	t.Helix, err = HelixInit(accessToken)
-	if err != nil {
-		return nil, err
-	}
-
 	return msg, nil
 }
 
@@ -102,9 +91,15 @@ func (t *Twitch) checkID(id string) error {
 		return fmt.Errorf("id '%s' is not valid", id)
 	}
 
+	h, err := t.Helix()
+	if err != nil {
+		return err
+	}
+
 	// try to get the id's corresponding user, if it fails then that means that
 	// the id is not valid
-	_, err := t.Helix.GetUser(id)
+	_, err = h.GetUser(id)
+
 	return err
 }
 
@@ -117,10 +112,15 @@ func (t *Twitch) getID(s string) (string, error) {
 	}
 	s = strings.TrimPrefix(s, "@")
 
+	h, err := t.Helix()
+	if err != nil {
+		return "", err
+	}
+
 	// try to get the corresponding id from the username, if it exists then
 	// it will fetch and return with no error, if not then it will fail
 	// and return an error
-	return t.Helix.GetUserID(s)
+	return h.GetUserID(s)
 }
 
 // Place and Person refer to the same thing on twitch
@@ -134,15 +134,27 @@ func (t *Twitch) PlaceID(s string) (string, error) {
 }
 
 func (t *Twitch) Person(id string) (int64, error) {
-	return twitchChannelAddChannel(id, t.message, t.Helix)
+	h, err := t.Helix()
+	if err != nil {
+		return -1, err
+	}
+	return twitchChannelAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) PlaceExact(id string) (int64, error) {
-	return twitchChannelAddChannel(id, t.message, t.Helix)
+	h, err := t.Helix()
+	if err != nil {
+		return -1, err
+	}
+	return twitchChannelAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) PlaceLogical(id string) (int64, error) {
-	return twitchChannelAddChannel(id, t.message, t.Helix)
+	h, err := t.Helix()
+	if err != nil {
+		return -1, err
+	}
+	return twitchChannelAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) Usage(usage string) any {
@@ -190,6 +202,24 @@ func (t *Twitch) Ping(msg any, _ error) (*core.Message, error) {
 
 func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
 	return t.Ping(msg, usrErr)
+}
+
+func (t *Twitch) Helix() (*Helix, error) {
+	h, err := helix.NewClient(&helix.Options{
+		ClientID: ClientID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userAccessToken, err := GetUserAccessToken(t.message.RoomID)
+	if err == nil {
+		h.SetUserAccessToken(userAccessToken)
+	} else {
+		h.SetAppAccessToken(appAccessToken.Get())
+	}
+
+	return &Helix{h}, nil
 }
 
 // func (tirc *TwitchIRC) Delete() error {
@@ -245,6 +275,10 @@ func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oa
 		log.Fatal().Err(err).Msg("failed to connect to twitch irc")
 	} else {
 		log.Debug().Msg("connected to twitch irc")
+	}
+
+	if err := generateAppAccessToken(); err != nil {
+		panic(err)
 	}
 
 	wgInit.Done()

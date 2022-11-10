@@ -3,6 +3,7 @@ module git.slowtyper.com/slowtyper/janitorjeff
 go 1.18
 
 require (
+	git.slowtyper.com/slowtyper/gosafe v0.1.0
 	github.com/bwmarrin/discordgo v0.26.1
 	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/joho/godotenv v1.4.0

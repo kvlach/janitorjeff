@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"git.slowtyper.com/slowtyper/gosafe"
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )
@@ -12,9 +13,30 @@ var (
 	ErrExpiredRefreshToken = errors.New("The user will need to reconnect the bot to twitch.")
 	ErrRetry               = errors.New("Refresh the access token and try again.")
 	ErrNoResults           = errors.New("Couldn't find what you were looking for.")
+	ErrUserTokenRequired   = errors.New("This channel's broadcaster must connect their twitch account to the bot.")
 )
 
-func RefreshUserAccessToken(accessToken string) (string, error) {
+var appAccessToken = gosafe.Value[string]{}
+
+func generateAppAccessToken() error {
+	client, err := helix.NewClient(&helix.Options{
+		ClientID:     ClientID,
+		ClientSecret: ClientSecret,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.RequestAppAccessToken([]string{"user:read:email"})
+	if err != nil {
+		return err
+	}
+
+	appAccessToken.Set(resp.Data.AccessToken)
+	return nil
+}
+
+func refreshUserAccessToken(accessToken string) (string, error) {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     ClientID,
 		ClientSecret: ClientSecret,
@@ -53,14 +75,14 @@ type Helix struct {
 	c *helix.Client
 }
 
-func HelixInit(token string) (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
-		ClientID:        ClientID,
-		UserAccessToken: token,
-	})
+// func HelixInit(token string) (*Helix, error) {
+// 	h, err := helix.NewClient(&helix.Options{
+// 		ClientID:        ClientID,
+// 		UserAccessToken: token,
+// 	})
 
-	return &Helix{h}, err
-}
+// 	return &Helix{h}, err
+// }
 
 func checkErrors(err error, resp helix.ResponseCommon, length int) error {
 	if err != nil {
@@ -82,13 +104,30 @@ func checkErrors(err error, resp helix.ResponseCommon, length int) error {
 	return nil
 }
 
+func (h *Helix) newAppAccessToken() error {
+	// can't refresh an app access token, just get a new one
+	err := generateAppAccessToken()
+	if err != nil {
+		return err
+	}
+	h.c.SetAppAccessToken(appAccessToken.Get())
+	return nil
+}
+
 func (h *Helix) refreshUserAccessToken() error {
-	token, err := RefreshUserAccessToken(h.c.GetUserAccessToken())
+	token, err := refreshUserAccessToken(h.c.GetUserAccessToken())
 	if err != nil {
 		return err
 	}
 	h.c.SetUserAccessToken(token)
 	return nil
+}
+
+func (h *Helix) refreshToken() error {
+	if h.c.GetUserAccessToken() != "" {
+		return h.refreshUserAccessToken()
+	}
+	return h.newAppAccessToken()
 }
 
 func (h *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, error) {
@@ -104,7 +143,7 @@ func (h *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, err
 		return resp.Data.Follows[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.UserFollow{}, err
 		}
 		return h.GetFollower(broadcasterID, userID)
@@ -126,7 +165,7 @@ func (h *Helix) GetStream(broadcasterID string) (helix.Stream, error) {
 		return resp.Data.Streams[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.Stream{}, err
 		}
 		return h.GetStream(broadcasterID)
@@ -148,7 +187,7 @@ func (h *Helix) GetUser(userID string) (helix.User, error) {
 		return resp.Data.Users[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.User{}, err
 		}
 		return h.GetUser(userID)
@@ -170,7 +209,7 @@ func (h *Helix) GetUserID(username string) (string, error) {
 		return resp.Data.Users[0].ID, nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return "", err
 		}
 		return h.GetUserID(username)
@@ -192,7 +231,7 @@ func (h *Helix) GetClip(clipID string) (helix.Clip, error) {
 		return resp.Data.Clips[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.Clip{}, err
 		}
 		return h.GetClip(clipID)
@@ -215,7 +254,7 @@ func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
 		return resp.Data.Bans[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.Ban{}, err
 		}
 		return h.GetBannedUser(broadcasterID, userID)
@@ -253,7 +292,7 @@ func (h *Helix) SearchGame(gameName string) (helix.Game, error) {
 		return resp.Data.Games[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.Game{}, err
 		}
 		return h.SearchGame(gameName)
@@ -275,7 +314,7 @@ func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, 
 		return resp.Data.Channels[0], nil
 
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
+		if err := h.refreshToken(); err != nil {
 			return helix.ChannelInformation{}, err
 		}
 		return h.GetChannelInfo(broadcasterID)
@@ -295,7 +334,11 @@ func (h *Helix) GetTitle(channel_id string) (string, error) {
 	return ch.Title, err
 }
 
-func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) error {
+func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) (error, error) {
+	if h.c.GetUserAccessToken() == "" {
+		return ErrUserTokenRequired, nil
+	}
+
 	// both the title and the game need to be set at the same time
 	resp, err := h.c.EditChannelInformation(&helix.EditChannelInformationParams{
 		BroadcasterID: broadcasterID,
@@ -307,39 +350,40 @@ func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) error {
 
 	switch err {
 	case ErrRetry:
-		if err := h.refreshUserAccessToken(); err != nil {
-			return err
+		if err := h.refreshToken(); err != nil {
+			return nil, err
 		}
 		return h.EditChannelInfo(broadcasterID, title, gameID)
 
 	default:
-		return err
+		return nil, err
 	}
 }
 
-func (h *Helix) SetTitle(channelID, title string) error {
+func (h *Helix) SetTitle(channelID, title string) (error, error) {
 	ch, err := h.GetChannelInfo(channelID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return h.EditChannelInfo(channelID, title, ch.GameID)
 }
 
-func (h *Helix) SetGame(channelID, gameName string) (string, error) {
+func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
 	title, err := h.GetTitle(channelID)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// Clears the game
 	if gameName == "-" {
-		return "nothing", h.EditChannelInfo(channelID, title, "0")
+		usrErr, err := h.EditChannelInfo(channelID, title, "0")
+		return "nothing", usrErr, err
 	}
 
 	g, err := h.SearchGame(gameName)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-
-	return g.Name, h.EditChannelInfo(channelID, title, g.ID)
+	usrErr, err := h.EditChannelInfo(channelID, title, g.ID)
+	return g.Name, usrErr, err
 }
