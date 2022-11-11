@@ -7,11 +7,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type Type int
+
 // The command types.
 const (
 	// A simplified command with might not give full control over something but
 	// it has a very easy to use API.
-	Normal = 1 << iota
+	Normal Type = 1 << iota
 
 	// The full command and usually consists of many subcommands which makes it
 	// less intuitive for the average person.
@@ -28,39 +30,42 @@ const (
 // description, the list of all the aliases, etc. and the runtime part which
 // includes things like the prefix used, the arguments passed, etc.
 
-// The struct used to declare commands.
-type CommandStatic struct {
+// A command needs to implement this interface.
+type Commander interface {
+	// The command's type.
+	Type() Type
+
+	// The frontends where this command will be available at. This *must* be set
+	// otherwise the command will never get matched.
+	Frontends() int
+
 	// All the aliases a command has. The first item in the list is considered
 	// the main name and so should be the simplest and most intuitive one for
 	// the average person. For example if it's a delete subcommand the first
 	// alias should be "delete" instead of "del" or "rm".
-	Names []string
+	Names() []string
 
 	// A short description of what the command does.
-	Description string
+	Description() string
 
 	// Usage arguments. Should follow this format:
 	// - <required>
 	// - [optional]
 	// - (literal-string) or (many | literals)
-	UsageArgs string
+	UsageArgs() string
 
-	// The frontends where this command will be available at. This *must* be set
-	// otherwise the command will never get matched.
-	Frontends int
+	// A command's parent, this is automatically set during bot startup.
+	Parent() Commander
 
-	// The function that is called to run the command.
-	Run func(*Message) (any, error, error)
+	// The command's sub-commands.
+	Children() Commanders
 
 	// This is executed during bot startup. Should be used to set things up
 	// necessary for the command, for example DB schemas.
-	Init func() error
+	Init() error
 
-	// The command's sub-commands.
-	Children Commands
-
-	// A command's parent, this is automatically set during bot startup.
-	Parent *CommandStatic
+	// The function that is called to run the command.
+	Run(m *Message) (resp any, usrErr error, err error)
 }
 
 // Formats a static command into something that can be shown to a user.
@@ -70,18 +75,18 @@ type CommandStatic struct {
 //	<prefix><command> [sub-command...] <usage-args>
 //
 // For example: !command delete <command>
-func (cmd *CommandStatic) Format(prefix string) string {
-	path := []string{}
-	for cmd.Parent != nil {
-		path = append([]string{cmd.Names[0]}, path...)
-		cmd = cmd.Parent
-	}
-	path = append([]string{cmd.Names[0]}, path...)
-
+func Format(cmd Commander, prefix string) string {
 	var args string
-	if cmd.UsageArgs != "" {
-		args = " " + cmd.UsageArgs
+	if cmd.UsageArgs() != "" {
+		args = " " + cmd.UsageArgs()
 	}
+
+	path := []string{}
+	for cmd.Parent() != nil {
+		path = append([]string{cmd.Names()[0]}, path...)
+		cmd = cmd.Parent()
+	}
+	path = append([]string{cmd.Names()[0]}, path...)
 
 	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
 }
@@ -102,45 +107,41 @@ type CommandRuntime struct {
 }
 
 type Command struct {
-	Type    int
-	Static  *CommandStatic
-	Runtime *CommandRuntime
+	Commander
+	CommandRuntime
 }
 
 func (cmd *Command) Usage() string {
-	cmdName := strings.Join(cmd.Runtime.Name, " ")
-	usage := fmt.Sprintf("%s%s", cmd.Runtime.Prefix, cmdName)
-
-	if cmd.Static.UsageArgs != "" {
-		usage = fmt.Sprintf("%s %s", usage, cmd.Static.UsageArgs)
+	usage := cmd.Prefix + strings.Join(cmd.Name, " ")
+	if cmd.UsageArgs() != "" {
+		usage += " " + cmd.UsageArgs()
 	}
-
 	return usage
 }
 
-type Commands []*CommandStatic
+type Commanders []Commander
 
-func (cmds *Commands) matchCommand(frontend int, cmdName string) (*CommandStatic, error) {
-	if cmdName == "" {
-		return nil, fmt.Errorf("no command provided")
-	}
+func (cmds Commanders) match(frontend int, t Type, name string) (Commander, error) {
+	name = strings.ToLower(name)
 
-	cmdName = strings.ToLower(cmdName)
-
-	for _, c := range *cmds {
-		if c.Frontends&frontend == 0 {
+	for _, c := range cmds {
+		if c.Frontends()&frontend == 0 {
 			continue
 		}
 
-		for _, a := range c.Names {
-			if a == cmdName {
-				log.Debug().Str("command", cmdName).Msg("matched command")
+		if c.Type() != t {
+			continue
+		}
+
+		for _, n := range c.Names() {
+			if name == n {
+				log.Debug().Str("command", name).Msg("matched command")
 				return c, nil
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("command '%s' not found", cmdName)
+	return nil, fmt.Errorf("command '%s' not found", name)
 }
 
 // Given a list of arguments match the appropriate command. The arguments don't
@@ -152,18 +153,18 @@ func (cmds *Commands) matchCommand(frontend int, cmdName string) (*CommandStatic
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1). This makes it easy to know which
 // aliases where used by the user when invoking a command.
-func (cmds *Commands) MatchCommand(frontend int, args []string) (*CommandStatic, int, error) {
+func (cmds *Commanders) Match(t Type, frontend int, args []string) (Commander, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0
 
-	cmd, err := cmds.matchCommand(frontend, args[index])
+	cmd, err := cmds.match(frontend, t, args[0])
 	if err != nil {
 		return nil, -1, err
 	}
 
-	for _, c := range args[1:] {
-		tmp, err := cmd.Children.matchCommand(frontend, c)
+	for _, name := range args[1:] {
+		tmp, err := cmd.Children().match(frontend, t, name)
 		if err != nil {
 			return cmd, index, nil
 		}

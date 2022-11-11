@@ -10,28 +10,47 @@ import (
 	"github.com/nicklaw5/helix"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"connect",
-	},
-	Description: "Connect one of your accounts to the bot.",
-	UsageArgs:   "(twitch)",
-	Frontends:   frontends.All,
-	Run:         normalRun,
+var Normal = normal{}
 
-	Children: core.Commands{
-		{
-			Names: []string{
-				"twitch",
-			},
-			Description: "Connect your twitch account to the bot.",
-			UsageArgs:   "",
-			Run:         normalRunTwitch,
-		},
-	},
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func normalRun(m *core.Message) (any, error, error) {
+func (normal) Frontends() int {
+	return frontends.All
+}
+
+func (normal) Names() []string {
+	return []string{
+		"connect",
+	}
+}
+
+func (normal) Description() string {
+	return "Connect one of your accounts to the bot."
+}
+
+func (normal) UsageArgs() string {
+	return "(twitch)"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return core.Commanders{
+		NormalTwitch,
+	}
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -41,26 +60,64 @@ func normalRun(m *core.Message) (any, error, error) {
 //        //
 ////////////
 
-func normalRunTwitch(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return normalRunTwitchDiscord(m)
-	default:
-		return normalRunTwitchText(m)
+var NormalTwitch = normalTwitch{}
+
+type normalTwitch struct{}
+
+func (c normalTwitch) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalTwitch) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalTwitch) Names() []string {
+	return []string{
+		"twitch",
 	}
 }
 
-func normalRunTwitchDiscord(m *core.Message) (string, error, error) {
-	url, err := runTwitchCore(m)
+func (normalTwitch) Description() string {
+	return "Connect your twitch account to the bot."
+}
+
+func (normalTwitch) UsageArgs() string {
+	return ""
+}
+
+func (normalTwitch) Parent() core.Commander {
+	return Normal
+}
+
+func (normalTwitch) Children() core.Commanders {
+	return nil
+}
+
+func (normalTwitch) Init() error {
+	return nil
+}
+
+func (c normalTwitch) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c normalTwitch) discord(m *core.Message) (string, error, error) {
+	url, err := c.core(m)
 	return fmt.Sprintf("<%s>", url), nil, err
 }
 
-func normalRunTwitchText(m *core.Message) (string, error, error) {
-	url, err := runTwitchCore(m)
+func (c normalTwitch) text(m *core.Message) (string, error, error) {
+	url, err := c.core(m)
 	return url, nil, err
 }
 
-func runTwitchCore(m *core.Message) (string, error) {
+func (normalTwitch) core(m *core.Message) (string, error) {
 	clientID := twitch.ClientID
 	redirectURI := fmt.Sprintf("http://%s/twitch/callback", core.Globals.Host)
 

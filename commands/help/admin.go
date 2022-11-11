@@ -5,14 +5,42 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
-var Admin = &core.CommandStatic{
-	Names:       cmdAliases,
-	Description: cmdDescription,
-	UsageArgs:   cmdUsageArgs,
-	Frontends:   frontends.All,
-	Run:         adminRun,
+var Admin = admin{}
+
+type admin struct{}
+
+func (admin) Type() core.Type {
+	return core.Admin
 }
 
-func adminRun(m *core.Message) (any, error, error) {
-	return run(core.Globals.Commands.Admin, m)
+func (admin) Frontends() int {
+	return frontends.All
+}
+
+func (admin) Names() []string {
+	return cmdNames
+}
+
+func (admin) Description() string {
+	return "Shows a help message for the specified admin command."
+}
+
+func (admin) UsageArgs() string {
+	return cmdUsageArgs
+}
+
+func (admin) Parent() core.Commander {
+	return nil
+}
+
+func (admin) Children() core.Commanders {
+	return nil
+}
+
+func (admin) Init() error {
+	return nil
+}
+
+func (admin) Run(m *core.Message) (any, error, error) {
+	return run(core.Admin, m)
 }

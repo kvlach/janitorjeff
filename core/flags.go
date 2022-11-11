@@ -13,7 +13,7 @@ type Flags struct {
 }
 
 func NewFlags(m *Message) *Flags {
-	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Runtime.Name, " "))
+	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Name, " "))
 	f := &Flags{
 		FlagSet: flag.NewFlagSet(name, flag.ContinueOnError),
 		Msg:     m,
@@ -43,14 +43,14 @@ func (f *Flags) Usage() {
 }
 
 func (f *Flags) Parse() ([]string, error) {
-	err := f.FlagSet.Parse(f.Msg.Command.Runtime.Args)
+	err := f.FlagSet.Parse(f.Msg.Command.Args)
 	if err != nil {
 		err = ErrSilence
 	}
 	return f.FlagSet.Args(), err
 }
 
-func TypeFlag(p *int, value int, f *Flags) {
+func TypeFlag(p *Type, value Type, f *Flags) {
 	*p = value
 
 	f.FlagSet.Func("type", "comma separated command types", func(s string) error {

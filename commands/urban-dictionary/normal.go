@@ -2,19 +2,44 @@ package urban_dictionary
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"ud",
-	},
-	Description: "Search a term on urban dictionary.",
-	UsageArgs:   "<term...>",
-	Frontends:   frontends.All,
-	Run:         normalRun,
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func normalRun(m *core.Message) (any, error, error) {
-	return advancedRunSearch(m)
+func (normal) Frontends() int {
+	return AdvancedSearch.Frontends()
+}
+
+func (normal) Names() []string {
+	return Advanced.Names()
+}
+
+func (normal) Description() string {
+	return "Search a term on urban dictionary."
+}
+
+func (normal) UsageArgs() string {
+	return "<term...>"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
+	return AdvancedSearch.Run(m)
 }

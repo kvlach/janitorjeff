@@ -18,37 +18,35 @@ import (
 // a normal prefix it will match normal commands). This means that almost all
 // of its functionality is implemented in the core, including the rendering.
 
-var cmdAliases = []string{
+var cmdNames = []string{
 	"help",
 }
 
 const (
-	cmdDescription = "Shows the help message of the specified command."
+	cmdDescription = "Shows a help message for the specified %s command."
 	cmdUsageArgs   = "<command...>"
 )
 
-var (
-	errCommandNotFound = errors.New("Command could not be found.")
-)
+var errCommandNotFound = errors.New("Command could not be found.")
 
-func runCore(cmds core.Commands, frontend int, args []string, prefix string) (*core.Command, []string, error) {
-	cmdStatic, index, err := cmds.MatchCommand(frontend, args)
+func runCore(t core.Type, frontend int, args []string, prefix string) (*core.Command, []string, error) {
+	cmdStatic, index, err := core.Globals.Commands.Match(t, frontend, args)
 	if err != nil {
 		return nil, nil, errCommandNotFound
 	}
 
 	cmd := &core.Command{
-		Static: cmdStatic,
-		Runtime: &core.CommandRuntime{
+		Commander: cmdStatic,
+		CommandRuntime: core.CommandRuntime{
 			Name:   args[:index+1],
 			Prefix: prefix,
 		},
 	}
 
-	cmdName := cmd.Runtime.Name[len(cmd.Runtime.Name)-1]
-	aliases := make([]string, 0, len(cmdStatic.Names)-1)
+	cmdName := cmd.Name[len(cmd.Name)-1]
+	aliases := make([]string, 0, len(cmdStatic.Names())-1)
 
-	for _, name := range cmdStatic.Names {
+	for _, name := range cmdStatic.Names() {
 		if name != cmdName {
 			aliases = append(aliases, name)
 		}
@@ -66,8 +64,8 @@ func renderText(cmd *core.Command, aliases []string) string {
 	var help strings.Builder
 	fmt.Fprintf(&help, "Usage: %s.", cmd.Usage())
 
-	if cmd.Static.Description != "" {
-		help.WriteString(" " + cmd.Static.Description)
+	if cmd.Description() != "" {
+		help.WriteString(" " + cmd.Description())
 	}
 
 	if len(aliases) > 0 {
@@ -80,17 +78,17 @@ func renderText(cmd *core.Command, aliases []string) string {
 func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 	var desc strings.Builder
 
-	if cmd.Static.Description != "" {
-		fmt.Fprintf(&desc, "*%s*", cmd.Static.Description)
+	if cmd.Description() != "" {
+		fmt.Fprintf(&desc, "*%s*", cmd.Description())
 	}
 
 	if len(aliases) > 0 {
 		var base string
-		if len(cmd.Runtime.Name) == 1 {
-			base = cmd.Runtime.Prefix
+		if len(cmd.Name) == 1 {
+			base = cmd.Prefix
 		} else {
-			cmdBase := strings.Join(cmd.Runtime.Name[:len(cmd.Runtime.Name)-1], " ")
-			base = fmt.Sprintf("%s%s ", cmd.Runtime.Prefix, cmdBase)
+			cmdBase := strings.Join(cmd.Name[:len(cmd.Name)-1], " ")
+			base = fmt.Sprintf("%s%s ", cmd.Prefix, cmdBase)
 		}
 
 		for i := range aliases {
@@ -107,31 +105,31 @@ func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 	return embed
 }
 
-func runDiscord(cmds core.Commands, m *core.Message) (*dg.MessageEmbed, error, error) {
-	cmd, aliases, usrErr := runCore(cmds, m.Frontend, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
+func runDiscord(t core.Type, m *core.Message) (*dg.MessageEmbed, error, error) {
+	cmd, aliases, usrErr := runCore(t, m.Frontend, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}, usrErr, nil
 	}
 	return renderDiscord(cmd, aliases), nil, nil
 }
 
-func runText(cmds core.Commands, m *core.Message) (string, error, error) {
-	cmd, aliases, usrErr := runCore(cmds, m.Frontend, m.Command.Runtime.Args, m.Command.Runtime.Prefix)
+func runText(t core.Type, m *core.Message) (string, error, error) {
+	cmd, aliases, usrErr := runCore(t, m.Frontend, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return fmt.Sprint(usrErr), usrErr, nil
 	}
 	return renderText(cmd, aliases), nil, nil
 }
 
-func run(cmds core.Commands, m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func run(t core.Type, m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return runDiscord(cmds, m)
+		return runDiscord(t, m)
 	default:
-		return runText(cmds, m)
+		return runText(t, m)
 	}
 }

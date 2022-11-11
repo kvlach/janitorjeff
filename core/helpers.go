@@ -7,6 +7,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func OnlyOneBitSet(n int) bool {
+	// https://stackoverflow.com/a/28303898
+	return n&(n-1) == 0
+}
+
 func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	// Initially the empty prefix was added if a message came from a DM, so
 	// that normal commands could be run without using any prefix. This was

@@ -2,40 +2,97 @@ package time
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"time",
-	},
-	Description: "time stuff and things",
-	UsageArgs:   "[<user> | zone]",
-	Frontends:   frontends.All,
-	Run:         runNormal,
-	Init:        init_,
+var Normal = normal{}
 
-	Children: core.Commands{
-		cmdNormalTimezone,
-	},
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-var cmdNormalTimezone = &core.CommandStatic{
-	Names: []string{
-		"zone",
-	},
-	Description: "Set or view your own timezone.",
-	UsageArgs:   "[timezone]",
-	Run:         runNormalTimezone,
+func (normal) Frontends() int {
+	return Advanced.Frontends()
 }
 
-func runNormal(m *core.Message) (any, error, error) {
-	return advancedRunNow(m)
+func (normal) Names() []string {
+	return Advanced.Names()
 }
 
-func runNormalTimezone(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) == 0 {
-		return advancedRunTimezoneShow(m)
+func (normal) Description() string {
+	return "Time stuff and things."
+}
+
+func (normal) UsageArgs() string {
+	return "[<user> | (zone)]"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return core.Commanders{
+		NormalZone,
 	}
-	return advancedRunTimezoneSet(m)
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
+	return AdvancedNow.Run(m)
+}
+
+//////////
+//      //
+// zone //
+//      //
+//////////
+
+var NormalZone = normalZone{}
+
+type normalZone struct{}
+
+func (c normalZone) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalZone) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalZone) Names() []string {
+	return []string{
+		"zone",
+	}
+}
+
+func (normalZone) Description() string {
+	return "Set or view your own timezone."
+}
+
+func (normalZone) UsageArgs() string {
+	return "[timezone]"
+}
+
+func (normalZone) Parent() core.Commander {
+	return Normal
+}
+
+func (normalZone) Children() core.Commanders {
+	return nil
+}
+
+func (normalZone) Init() error {
+	return nil
+}
+
+func (normalZone) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) == 0 {
+		return AdvancedTimezoneShow.Run(m)
+	}
+	return AdvancedTimezoneSet.Run(m)
 }

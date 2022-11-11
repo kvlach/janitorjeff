@@ -5,21 +5,48 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"nick",
-		"nickname",
-	},
-	Description: "View or set your nickname.",
-	UsageArgs:   "[nickname]",
-	Frontends:   frontends.All,
-	Run:         normalRun,
-	Init:        init_,
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func normalRun(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) == 0 {
-		return advancedRunShow(m)
+func (normal) Frontends() int {
+	return frontends.All
+}
+
+func (normal) Names() []string {
+	return []string{
+		"nick",
+		"nickname",
 	}
-	return advancedRunSet(m)
+}
+
+func (normal) Description() string {
+	return "View or set your nickname."
+}
+
+func (normal) UsageArgs() string {
+	return "[nickname]"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) == 0 {
+		return AdvancedShow.Run(m)
+	}
+	return AdvancedSet.Run(m)
 }

@@ -7,40 +7,56 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
-var Admin = &core.CommandStatic{
-	Names: []string{
-		"nick",
-	},
-	Frontends: frontends.All,
-	Run:       adminRun,
-
-	Children: core.Commands{
-		{
-			Names: core.Show,
-			Run:   adminRunShow,
-		},
-		{
-			Names: []string{
-				"set",
-			},
-			UsageArgs: "<nick>",
-			Run:       adminRunSet,
-		},
-		{
-			Names:     core.Delete,
-			UsageArgs: "<nick>",
-			Run:       adminRunDelete,
-		},
-	},
-}
-
 func adminGetFlags(m *core.Message) (*flags, []string, error) {
 	f := newFlags(m).Place().Person()
 	args, err := f.fs.Parse()
 	return f, args, err
 }
 
-func adminRun(m *core.Message) (any, error, error) {
+var Admin = admin{}
+
+type admin struct{}
+
+func (admin) Type() core.Type {
+	return core.Admin
+}
+
+func (admin) Frontends() int {
+	return frontends.All
+}
+
+func (admin) Names() []string {
+	return []string{
+		"nick",
+		"nickname",
+	}
+}
+
+func (admin) Description() string {
+	return ""
+}
+
+func (admin) UsageArgs() string {
+	return ""
+}
+
+func (admin) Parent() core.Commander {
+	return nil
+}
+
+func (admin) Children() core.Commanders {
+	return core.Commanders{
+		AdminShow,
+		AdminSet,
+		AdminDelete,
+	}
+}
+
+func (admin) Init() error {
+	return nil
+}
+
+func (admin) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -50,15 +66,51 @@ func adminRun(m *core.Message) (any, error, error) {
 //      //
 //////////
 
-func adminRunShow(m *core.Message) (any, error, error) {
-	nick, usrErr, err := adminRunShowCore(m)
+var AdminShow = adminShow{}
+
+type adminShow struct{}
+
+func (c adminShow) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c adminShow) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (adminShow) Names() []string {
+	return core.Show
+}
+
+func (adminShow) Description() string {
+	return ""
+}
+
+func (adminShow) UsageArgs() string {
+	return ""
+}
+
+func (adminShow) Parent() core.Commander {
+	return Admin
+}
+
+func (adminShow) Children() core.Commanders {
+	return nil
+}
+
+func (adminShow) Init() error {
+	return nil
+}
+
+func (c adminShow) Run(m *core.Message) (any, error, error) {
+	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return adminRunShowErr(usrErr, nick), usrErr, nil
+	return c.err(usrErr, nick), usrErr, nil
 }
 
-func adminRunShowErr(usrErr error, nick string) string {
+func (adminShow) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return nick
@@ -69,7 +121,7 @@ func adminRunShowErr(usrErr error, nick string) string {
 	}
 }
 
-func adminRunShowCore(m *core.Message) (string, error, error) {
+func (adminShow) core(m *core.Message) (string, error, error) {
 	fs, _, err := adminGetFlags(m)
 	if err != nil {
 		return "", nil, err
@@ -83,18 +135,56 @@ func adminRunShowCore(m *core.Message) (string, error, error) {
 //     //
 /////////
 
-func adminRunSet(m *core.Message) (any, error, error) {
-	_, usrErr, err := adminRunSetCore(m)
+var AdminSet = adminSet{}
+
+type adminSet struct{}
+
+func (c adminSet) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c adminSet) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (adminSet) Names() []string {
+	return []string{
+		"set",
+	}
+}
+
+func (adminSet) Description() string {
+	return ""
+}
+
+func (adminSet) UsageArgs() string {
+	return "<nick>"
+}
+
+func (adminSet) Parent() core.Commander {
+	return Admin
+}
+
+func (adminSet) Children() core.Commanders {
+	return nil
+}
+
+func (adminSet) Init() error {
+	return nil
+}
+
+func (c adminSet) Run(m *core.Message) (any, error, error) {
+	_, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	if usrErr == core.ErrMissingArgs {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
-	return adminRunSetErr(usrErr), usrErr, nil
+	return c.err(usrErr), usrErr, nil
 }
 
-func adminRunSetErr(usrErr error) string {
+func (adminSet) err(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "set nickname"
@@ -105,7 +195,7 @@ func adminRunSetErr(usrErr error) string {
 	}
 }
 
-func adminRunSetCore(m *core.Message) (string, error, error) {
+func (adminSet) core(m *core.Message) (string, error, error) {
 	fs, args, err := adminGetFlags(m)
 	if err != nil {
 		return "", nil, err
@@ -124,15 +214,51 @@ func adminRunSetCore(m *core.Message) (string, error, error) {
 //        //
 ////////////
 
-func adminRunDelete(m *core.Message) (any, error, error) {
-	usrErr, err := adminRunDeleteCore(m)
+var AdminDelete = adminDelete{}
+
+type adminDelete struct{}
+
+func (c adminDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c adminDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (adminDelete) Names() []string {
+	return core.Delete
+}
+
+func (adminDelete) Description() string {
+	return ""
+}
+
+func (adminDelete) UsageArgs() string {
+	return "<nick>"
+}
+
+func (adminDelete) Parent() core.Commander {
+	return Admin
+}
+
+func (adminDelete) Children() core.Commanders {
+	return nil
+}
+
+func (adminDelete) Init() error {
+	return nil
+}
+
+func (c adminDelete) Run(m *core.Message) (any, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return adminRunDeleteErr(usrErr), usrErr, nil
+	return c.err(usrErr), usrErr, nil
 }
 
-func adminRunDeleteErr(usrErr error) string {
+func (adminDelete) err(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "removed nick"
@@ -143,7 +269,7 @@ func adminRunDeleteErr(usrErr error) string {
 	}
 }
 
-func adminRunDeleteCore(m *core.Message) (error, error) {
+func (adminDelete) core(m *core.Message) (error, error) {
 	fs, _, err := adminGetFlags(m)
 	if err != nil {
 		return nil, err

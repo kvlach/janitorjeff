@@ -32,7 +32,7 @@ import (
 // the prefix `!` can't be used for both normal and advanced commands.
 
 type Prefix struct {
-	Type   int
+	Type   Type
 	Prefix string
 }
 
@@ -101,7 +101,6 @@ func (_ *DB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
 	res, err := tx.Exec(`
 		INSERT INTO Scopes(original_id, frontend)
 		VALUES (?, ?)`, id, frontend)
-
 	if err != nil {
 		return -1, err
 	}
@@ -149,7 +148,6 @@ func (db *DB) PrefixList(scope int64) ([]Prefix, error) {
 		SELECT prefix, type
 		FROM CommandPrefixPrefixes
 		WHERE scope = ?`, scope)
-
 	if err != nil {
 		return nil, err
 	}
@@ -158,11 +156,11 @@ func (db *DB) PrefixList(scope int64) ([]Prefix, error) {
 	var prefixes []Prefix
 	for rows.Next() {
 		var prefix string
-		var type_ int
-		if err := rows.Scan(&prefix, &type_); err != nil {
+		var t Type
+		if err := rows.Scan(&prefix, &t); err != nil {
 			return nil, err
 		}
-		prefixes = append(prefixes, Prefix{Type: type_, Prefix: prefix})
+		prefixes = append(prefixes, Prefix{Type: t, Prefix: prefix})
 	}
 
 	return prefixes, rows.Err()

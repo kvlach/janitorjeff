@@ -7,7 +7,7 @@ import (
 type flags struct {
 	fs *core.Flags
 
-	typeFlag  int
+	typeFlag  core.Type
 	scopeFlag int64
 }
 

@@ -21,23 +21,122 @@ var (
 	errCustomCommandExists = errors.New("if this prefix is added then there will be a collision with a custom command")
 )
 
-func run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func runAdd(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return runAdd_Discord(m)
-	default:
-		return runAdd_Text(m)
+func (normal) Frontends() int {
+	return frontends.All
+}
+
+func (normal) Names() []string {
+	return []string{
+		"prefix",
 	}
 }
 
-func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (normal) Description() string {
+	return "Add, delete, list or reset prefixes."
+}
+
+func (normal) UsageArgs() string {
+	return "(add|del) <prefix> | list | reset"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return core.Commanders{
+		NormalAdd,
+		NormalDelete,
+		NormalList,
+		NormalReset,
+	}
+}
+
+func (c normal) Init() error {
+	core.Globals.Hooks.Register(c.emergencyReset)
+	return nil
+}
+
+func (normal) emergencyReset(m *core.Message) {
+	if m.Raw != "!!!PleaseResetThePrefixesBackToTheDefaultsThanks!!!" {
+		return
+	}
+
+	resp, usrErr, err := NormalReset.Run(m)
+	if err != nil {
+		return
+	}
+
+	m.Write(resp, usrErr)
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+/////////
+//     //
+// add //
+//     //
+/////////
+
+var NormalAdd = normalAdd{}
+
+type normalAdd struct{}
+
+func (c normalAdd) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalAdd) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalAdd) Names() []string {
+	return core.Add
+}
+
+func (normalAdd) Description() string {
+	return "Add a prefix."
+}
+
+func (normalAdd) UsageArgs() string {
+	return "<prefix>"
+}
+
+func (normalAdd) Parent() core.Commander {
+	return Normal
+}
+
+func (normalAdd) Children() core.Commanders {
+	return nil
+}
+
+func (normalAdd) Init() error {
+	return nil
+}
+
+func (c normalAdd) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c normalAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
-	prefix, collision, usrErr, err := runAdd_Core(m)
+	prefix, collision, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -51,16 +150,16 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: runAdd_Err(usrErr, prefix, collision),
+		Description: c.err(usrErr, prefix, collision),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runAdd_Text(m *core.Message) (string, error, error) {
+func (c normalAdd) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
-	prefix, collision, usrErr, err := runAdd_Core(m)
+	prefix, collision, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
@@ -70,10 +169,10 @@ func runAdd_Text(m *core.Message) (string, error, error) {
 		return m.Usage().(string), usrErr, nil
 	}
 
-	return runAdd_Err(usrErr, prefix, collision), usrErr, nil
+	return c.err(usrErr, prefix, collision), usrErr, nil
 }
 
-func runAdd_Err(err error, prefix, collision string) string {
+func (c normalAdd) err(err error, prefix, collision string) string {
 	switch err {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
@@ -86,11 +185,11 @@ func runAdd_Err(err error, prefix, collision string) string {
 	}
 }
 
-func runAdd_Core(m *core.Message) (string, string, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func (c normalAdd) core(m *core.Message) (string, string, error, error) {
+	if len(m.Command.Args) < 1 {
 		return "", "", core.ErrMissingArgs, nil
 	}
-	prefix := m.Command.Runtime.Args[0]
+	prefix := m.Command.Args[0]
 
 	scope, err := m.HereLogical()
 	if err != nil {
@@ -153,14 +252,14 @@ func runAdd_Core(m *core.Message) (string, string, error, error) {
 // !prefix add .
 // .prefix // both trigger
 func customCommandCollision(m *core.Message, prefix string) (string, error) {
-	triggers, err := command.RunList_Core(m)
+	triggers, err := command.NormalList.Core(m)
 	if err != nil {
 		return "", err
 	}
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Globals.Commands.Normal.MatchCommand(m.Frontend, []string{t})
+		_, _, err := core.Globals.Commands.Match(core.Normal, m.Frontend, []string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -169,20 +268,61 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 	return "", nil
 }
 
-func runDelete(m *core.Message) (any, error, error) {
-	// TODO: Provide a way to delete the empty string prefix in DMs
+////////////
+//        //
+// delete //
+//        //
+////////////
+
+var NormalDelete = normalDelete{}
+
+type normalDelete struct{}
+
+func (c normalDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalDelete) Names() []string {
+	return core.Delete
+}
+
+func (normalDelete) Description() string {
+	return "Delete a prefix."
+}
+
+func (normalDelete) UsageArgs() string {
+	return "<prefix>"
+}
+
+func (normalDelete) Parent() core.Commander {
+	return Normal
+}
+
+func (normalDelete) Children() core.Commanders {
+	return nil
+}
+
+func (normalDelete) Init() error {
+	return nil
+}
+
+func (c normalDelete) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return runDelete_Discord(m)
+		return c.discord(m)
 	default:
-		return runDelete_Text(m)
+		return c.text(m)
 	}
 }
 
-func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normalDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
-	prefix, usrErr, err := runDelete_Core(m)
+	prefix, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -193,23 +333,23 @@ func runDelete_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	case core.ErrMissingArgs:
 		return m.Usage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
-		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
+		resetCommand = core.Format(NormalReset, m.Command.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
 	}
 
 	prefix = discord.PlaceInBackticks(prefix)
 
 	embed := &dg.MessageEmbed{
-		Description: runDelete_Err(usrErr, m, prefix, resetCommand),
+		Description: c.err(usrErr, m, prefix, resetCommand),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runDelete_Text(m *core.Message) (string, error, error) {
+func (c normalDelete) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
-	prefix, usrErr, err := runDelete_Core(m)
+	prefix, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
@@ -220,13 +360,13 @@ func runDelete_Text(m *core.Message) (string, error, error) {
 	case core.ErrMissingArgs:
 		return m.Usage().(string), usrErr, nil
 	case errOneLeft:
-		resetCommand = cmdReset.Format(m.Command.Runtime.Prefix)
+		resetCommand = core.Format(NormalReset, m.Command.Prefix)
 	}
 
-	return runDelete_Err(usrErr, m, prefix, resetCommand), usrErr, nil
+	return c.err(usrErr, m, prefix, resetCommand), usrErr, nil
 }
 
-func runDelete_Err(err error, m *core.Message, prefix, resetCommand string) string {
+func (normalDelete) err(err error, m *core.Message, prefix, resetCommand string) string {
 	switch err {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
@@ -240,11 +380,11 @@ func runDelete_Err(err error, m *core.Message, prefix, resetCommand string) stri
 	}
 }
 
-func runDelete_Core(m *core.Message) (string, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func (normalDelete) core(m *core.Message) (string, error, error) {
+	if len(m.Command.Args) < 1 {
 		return "", core.ErrMissingArgs, nil
 	}
-	prefix := m.Command.Runtime.Args[0]
+	prefix := m.Command.Args[0]
 
 	scope, err := m.HereLogical()
 	if err != nil {
@@ -297,19 +437,61 @@ func runDelete_Core(m *core.Message) (string, error, error) {
 	return prefix, nil, dbDel(prefix, scope)
 }
 
-func runList(m *core.Message) (any, error, error) {
+//////////
+//      //
+// list //
+//      //
+//////////
+
+var NormalList = normalList{}
+
+type normalList struct{}
+
+func (c normalList) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalList) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalList) Names() []string {
+	return core.List
+}
+
+func (normalList) Description() string {
+	return "List the current prefixes."
+}
+
+func (normalList) UsageArgs() string {
+	return ""
+}
+
+func (normalList) Parent() core.Commander {
+	return Normal
+}
+
+func (normalList) Children() core.Commanders {
+	return nil
+}
+
+func (normalList) Init() error {
+	return nil
+}
+
+func (c normalList) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return runList_Discord(m)
+		return c.discord(m)
 	default:
-		return runList_Text(m)
+		return c.text(m)
 	}
 }
 
-func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normalList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
-	prefixes, err := runList_Core(m)
+	prefixes, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -328,10 +510,10 @@ func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func runList_Text(m *core.Message) (string, error, error) {
+func (c normalList) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
-	prefixes, err := runList_Core(m)
+	prefixes, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -339,7 +521,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("Prefixes: %s", strings.Join(prefixes, " ")), nil, nil
 }
 
-func runList_Core(m *core.Message) ([]string, error) {
+func (normalList) core(m *core.Message) ([]string, error) {
 	prefixes, _, err := m.Prefixes()
 
 	normal := []string{}
@@ -352,19 +534,63 @@ func runList_Core(m *core.Message) ([]string, error) {
 	return normal, err
 }
 
-func runReset(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return runReset_Discord(m)
-	default:
-		return runReset_Text(m)
+///////////
+//       //
+// reset //
+//       //
+///////////
+
+var NormalReset = normalReset{}
+
+type normalReset struct{}
+
+func (c normalReset) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalReset) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalReset) Names() []string {
+	return []string{
+		"reset",
 	}
 }
 
-func runReset_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (normalReset) Description() string {
+	return "Reset prefixes to bot defaults."
+}
+
+func (normalReset) UsageArgs() string {
+	return ""
+}
+
+func (normalReset) Parent() core.Commander {
+	return Normal
+}
+
+func (normalReset) Children() core.Commanders {
+	return nil
+}
+
+func (normalReset) Init() error {
+	return nil
+}
+
+func (c normalReset) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c normalReset) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
-	listCmd, err := runReset_Core(m)
+	listCmd, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -377,10 +603,10 @@ func runReset_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func runReset_Text(m *core.Message) (string, error, error) {
+func (c normalReset) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
-	listCmd, err := runReset_Core(m)
+	listCmd, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -388,7 +614,7 @@ func runReset_Text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("Prefixes have been reset. To view the list of the currently available prefixes run: %s", listCmd), nil, nil
 }
 
-func runReset_Core(m *core.Message) (string, error) {
+func (c normalReset) core(m *core.Message) (string, error) {
 	scope, err := m.HereLogical()
 	if err != nil {
 		return "", err
@@ -409,7 +635,7 @@ func runReset_Core(m *core.Message) (string, error) {
 
 	// can't just use the prefix that was used to invoke this command because
 	// it might not be valid for this scope since a reset just happened
-	listCmd := cmdList.Format(prefix)
+	listCmd := core.Format(NormalList, prefix)
 
 	return listCmd, nil
 }

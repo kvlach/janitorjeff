@@ -31,7 +31,7 @@ func dbScopeExists(scope int64) (bool, error) {
 	return exists, err
 }
 
-func dbPrefixExists(prefix string, scope int64, t int) (bool, error) {
+func dbPrefixExists(prefix string, scope int64, t core.Type) (bool, error) {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -57,7 +57,7 @@ func dbPrefixExists(prefix string, scope int64, t int) (bool, error) {
 	return exists, err
 }
 
-func dbAdd(prefix string, scope int64, t int) error {
+func dbAdd(prefix string, scope int64, t core.Type) error {
 	db := core.Globals.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()

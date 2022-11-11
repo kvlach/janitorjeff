@@ -8,32 +8,60 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/twitch"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"title",
-	},
-	Description: "Change or see the current title.",
-	UsageArgs:   "[title]",
-	Frontends:   frontends.Twitch,
-	Run:         normalRun,
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func normalRun(m *core.Message) (any, error, error) {
+func (normal) Frontends() int {
+	return frontends.Twitch
+}
+
+func (normal) Names() []string {
+	return []string{
+		"title",
+	}
+}
+
+func (normal) Description() string {
+	return "Change or see the current title."
+}
+
+func (normal) UsageArgs() string {
+	return "[title]"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (c normal) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Twitch:
-		return normalRunTwitch(m)
+		return c.twitch(m)
 	default:
 		panic("this should never happen")
 	}
 }
 
-func normalRunTwitch(m *core.Message) (string, error, error) {
+func (normal) twitch(m *core.Message) (string, error, error) {
 	h, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err
 	}
 
-	if len(m.Command.Runtime.Args) == 0 {
+	if len(m.Command.Args) == 0 {
 		t, err := h.GetTitle(m.Channel.ID)
 		return t, nil, err
 	}
