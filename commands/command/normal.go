@@ -14,31 +14,162 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
+	exists := false
+
+	scope, err := m.HereLogical()
+	if err != nil {
+		return exists, scope, err
+	}
+
+	triggers, err := dbList(scope)
+	if err != nil {
+		return exists, scope, err
+	}
+
+	for _, t := range triggers {
+		if t == trigger {
+			exists = true
+			break
+		}
+	}
+
+	return exists, scope, nil
+}
+
 var (
 	errTriggerExists   = errors.New("trigger already exists")
 	errTriggerNotFound = errors.New("trigger was not found")
 	errBuiltinCommand  = errors.New("trigger collides with a built-in command")
 )
 
-func run(m *core.Message) (any, error, error) {
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
+}
+
+func (normal) Frontends() int {
+	return frontends.All
+}
+
+func (normal) Names() []string {
+	return []string{
+		"command",
+		"cmd",
+	}
+}
+
+func (normal) Description() string {
+	return "Add, edit, delete or list custom commands."
+}
+
+func (normal) UsageArgs() string {
+	return "(add | edit | delete | list)"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return core.Commanders{
+		NormalAdd,
+		NormalEdit,
+		NormalDelete,
+		NormalList,
+		NormalHistory,
+	}
+}
+
+func (c normal) Init() error {
+	core.Globals.Hooks.Register(c.writeCustomCommand)
+	return core.Globals.DB.Init(dbShema)
+}
+
+func (normal) writeCustomCommand(m *core.Message) {
+	fields := m.Fields()
+
+	if len(fields) > 1 {
+		return
+	}
+
+	scope, err := m.HereLogical()
+	if err != nil {
+		return
+	}
+
+	resp, err := dbGetResponse(scope, fields[0])
+	if err != nil {
+		return
+	}
+
+	m.Write(resp, nil)
+}
+
+func (normal) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
-func runAdd(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 2 {
+/////////
+//     //
+// add //
+//     //
+/////////
+
+var NormalAdd = normalAdd{}
+
+type normalAdd struct{}
+
+func (c normalAdd) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalAdd) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalAdd) Names() []string {
+	return core.Add
+}
+
+func (normalAdd) Description() string {
+	return "Add a command."
+}
+
+func (normalAdd) UsageArgs() string {
+	return "<trigger> <text>"
+}
+
+func (normalAdd) Parent() core.Commander {
+	return Normal
+}
+
+func (normalAdd) Children() core.Commanders {
+	return nil
+}
+
+func (normalAdd) Init() error {
+	return nil
+}
+
+func (c normalAdd) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return runAdd_Discord(m)
+		return c.discord(m)
 	default:
-		return runAdd_Text(m)
+		return c.text(m)
 	}
 }
 
-func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := runAdd_Core(m)
+func (c normalAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -46,24 +177,24 @@ func runAdd_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: runAdd_Err(usrErr, trigger),
+		Description: c.err(usrErr, trigger),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runAdd_Text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := runAdd_Core(m)
+func (c normalAdd) text(m *core.Message) (string, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return runAdd_Err(usrErr, trigger), usrErr, nil
+	return c.err(usrErr, trigger), usrErr, nil
 }
 
-func runAdd_Err(usrErr error, trigger string) string {
+func (normalAdd) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been added.", trigger)
@@ -76,8 +207,8 @@ func runAdd_Err(usrErr error, trigger string) string {
 	}
 }
 
-func runAdd_Core(m *core.Message) (string, error, error) {
-	trigger := m.Command.Runtime.Args[0]
+func (c normalAdd) core(m *core.Message) (string, error, error) {
+	trigger := m.Command.Args[0]
 
 	exists, scope, err := checkTriggerExists(m, trigger)
 	if err != nil {
@@ -92,7 +223,7 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 		return trigger, errTriggerExists, nil
 	}
 
-	builtin, err := isBuiltin(m, scope, trigger)
+	builtin, err := c.isBuiltin(m, scope, trigger)
 	if err != nil {
 		return trigger, nil, err
 	}
@@ -120,7 +251,7 @@ func runAdd_Core(m *core.Message) (string, error, error) {
 	return trigger, nil, err
 }
 
-func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
+func (normalAdd) isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 	prefixes, _, err := m.Prefixes()
 	if err != nil {
 		return false, err
@@ -128,7 +259,7 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 
 	for _, p := range prefixes {
 		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
-		_, _, err := core.Globals.Commands.Normal.MatchCommand(m.Frontend, cmdName)
+		_, _, err := core.Globals.Commands.Match(core.Normal, m.Frontend, cmdName)
 		// if there is no error that means a command was matched and thus a
 		// collision exists
 		if err == nil {
@@ -139,21 +270,63 @@ func isBuiltin(m *core.Message, scope int64, trigger string) (bool, error) {
 	return false, nil
 }
 
-func runEdit(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 2 {
+//////////
+//      //
+// edit //
+//      //
+//////////
+
+var NormalEdit = normalEdit{}
+
+type normalEdit struct{}
+
+func (c normalEdit) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalEdit) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalEdit) Names() []string {
+	return core.Edit
+}
+
+func (normalEdit) Description() string {
+	return "Edit a command."
+}
+
+func (normalEdit) UsageArgs() string {
+	return "<trigger> <text>"
+}
+
+func (normalEdit) Parent() core.Commander {
+	return Normal
+}
+
+func (normalEdit) Children() core.Commanders {
+	return nil
+}
+
+func (normalEdit) Init() error {
+	return nil
+}
+
+func (c normalEdit) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return runEdit_Discord(m)
+		return c.discord(m)
 	default:
-		return runEdit_Text(m)
+		return c.text(m)
 	}
 }
 
-func runEdit_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := runEdit_Core(m)
+func (c normalEdit) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -161,24 +334,24 @@ func runEdit_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: runEdit_Err(usrErr, trigger),
+		Description: c.err(usrErr, trigger),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runEdit_Text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := runEdit_Core(m)
+func (c normalEdit) text(m *core.Message) (string, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return runEdit_Err(usrErr, trigger), usrErr, nil
+	return c.err(usrErr, trigger), usrErr, nil
 }
 
-func runEdit_Err(usrErr error, trigger string) string {
+func (normalEdit) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
@@ -189,8 +362,8 @@ func runEdit_Err(usrErr error, trigger string) string {
 	}
 }
 
-func runEdit_Core(m *core.Message) (string, error, error) {
-	trigger := m.Command.Runtime.Args[0]
+func (normalEdit) core(m *core.Message) (string, error, error) {
+	trigger := m.Command.Args[0]
 
 	exists, scope, err := checkTriggerExists(m, trigger)
 	if err != nil {
@@ -220,21 +393,63 @@ func runEdit_Core(m *core.Message) (string, error, error) {
 	return trigger, nil, err
 }
 
-func runDel(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+////////////
+//        //
+// delete //
+//        //
+////////////
+
+var NormalDelete = normalDelete{}
+
+type normalDelete struct{}
+
+func (c normalDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalDelete) Names() []string {
+	return core.Delete
+}
+
+func (normalDelete) Description() string {
+	return "Delete a command."
+}
+
+func (normalDelete) UsageArgs() string {
+	return "<trigger>"
+}
+
+func (normalDelete) Parent() core.Commander {
+	return Normal
+}
+
+func (normalDelete) Children() core.Commanders {
+	return nil
+}
+
+func (normalDelete) Init() error {
+	return nil
+}
+
+func (c normalDelete) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return runDel_Discord(m)
+		return c.discord(m)
 	default:
-		return runDel_Text(m)
+		return c.text(m)
 	}
 }
 
-func runDel_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := runDel_Core(m)
+func (c normalDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
 	}
@@ -242,24 +457,24 @@ func runDel_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: runDel_Err(usrErr, trigger),
+		Description: c.err(usrErr, trigger),
 	}
 
 	return embed, usrErr, nil
 }
 
-func runDel_Text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := runDel_Core(m)
+func (c normalDelete) text(m *core.Message) (string, error, error) {
+	trigger, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return runDel_Err(usrErr, trigger), usrErr, nil
+	return c.err(usrErr, trigger), usrErr, nil
 }
 
-func runDel_Err(usrErr error, trigger string) string {
+func (normalDelete) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been deleted.", trigger)
@@ -270,8 +485,8 @@ func runDel_Err(usrErr error, trigger string) string {
 	}
 }
 
-func runDel_Core(m *core.Message) (string, error, error) {
-	trigger := m.Command.Runtime.Args[0]
+func (normalDelete) core(m *core.Message) (string, error, error) {
+	trigger := m.Command.Args[0]
 
 	exists, scope, err := checkTriggerExists(m, trigger)
 	if err != nil {
@@ -298,40 +513,59 @@ func runDel_Core(m *core.Message) (string, error, error) {
 	return trigger, nil, err
 }
 
-func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
-	exists := false
+//////////
+//      //
+// list //
+//      //
+//////////
 
-	scope, err := m.HereLogical()
-	if err != nil {
-		return exists, scope, err
-	}
+var NormalList = normalList{}
 
-	triggers, err := dbList(scope)
-	if err != nil {
-		return exists, scope, err
-	}
+type normalList struct{}
 
-	for _, t := range triggers {
-		if t == trigger {
-			exists = true
-			break
-		}
-	}
-
-	return exists, scope, nil
+func (c normalList) Type() core.Type {
+	return c.Parent().Type()
 }
 
-func runList(m *core.Message) (any, error, error) {
+func (c normalList) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalList) Names() []string {
+	return core.List
+}
+
+func (normalList) Description() string {
+	return "List commands."
+}
+
+func (normalList) UsageArgs() string {
+	return ""
+}
+
+func (normalList) Parent() core.Commander {
+	return Normal
+}
+
+func (normalList) Children() core.Commanders {
+	return nil
+}
+
+func (normalList) Init() error {
+	return nil
+}
+
+func (c normalList) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return runList_Discord(m)
+		return c.discord(m)
 	default:
-		return runList_Text(m)
+		return c.text(m)
 	}
 }
 
-func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	triggers, err := RunList_Core(m)
+func (c normalList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	triggers, err := c.Core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -354,8 +588,8 @@ func runList_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func runList_Text(m *core.Message) (string, error, error) {
-	triggers, err := RunList_Core(m)
+func (c normalList) text(m *core.Message) (string, error, error) {
+	triggers, err := c.Core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -366,7 +600,7 @@ func runList_Text(m *core.Message) (string, error, error) {
 	return strings.Join(triggers, ", "), nil, nil
 }
 
-func RunList_Core(m *core.Message) ([]string, error) {
+func (c normalList) Core(m *core.Message) ([]string, error) {
 	scope, err := m.HereLogical()
 	if err != nil {
 		return nil, err
@@ -386,14 +620,58 @@ func RunList_Core(m *core.Message) ([]string, error) {
 	return triggers, nil
 }
 
-func runHistory(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+/////////////
+//         //
+// history //
+//         //
+/////////////
+
+var NormalHistory = normalHistory{}
+
+type normalHistory struct{}
+
+func (c normalHistory) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c normalHistory) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (normalHistory) Names() []string {
+	return []string{
+		"history",
+	}
+}
+
+func (normalHistory) Description() string {
+	return "View a command's entire history of changes."
+}
+
+func (normalHistory) UsageArgs() string {
+	return "<trigger>"
+}
+
+func (normalHistory) Parent() core.Commander {
+	return Normal
+}
+
+func (normalHistory) Children() core.Commanders {
+	return nil
+}
+
+func (normalHistory) Init() error {
+	return nil
+}
+
+func (c normalHistory) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return runHistory_Discord(m)
+		return c.discord(m)
 	default:
 		return nil, nil, nil
 	}
@@ -419,8 +697,8 @@ func formatDelete(timestamp int64) string {
 	return fmt.Sprintf("deleted %s by @", when)
 }
 
-func runHistory_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, history, err := runHistory_Core(m)
+func (c normalHistory) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	trigger, history, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -489,8 +767,8 @@ func runHistory_Discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func runHistory_Core(m *core.Message) (string, []customCommand, error) {
-	trigger := m.Command.Runtime.Args[0]
+func (normalHistory) core(m *core.Message) (string, []customCommand, error) {
+	trigger := m.Command.Args[0]
 
 	// We don't check to see if the trigger exists since this command may be
 	// used to view the history of a deleted trigger

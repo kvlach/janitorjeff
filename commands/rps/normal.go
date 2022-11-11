@@ -10,37 +10,63 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"rps",
-	},
-	Description: "Rock paper scissors.",
-	UsageArgs:   "(r[ock] | p[aper] | s[cissors])",
-	Frontends:   frontends.All,
-	Run:         normalRun,
+var errUnexpectedArgument = errors.New("got an unexpected argument")
+
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-var (
-	errUnexpectedArgument = errors.New("got an unexpected argument")
-)
+func (normal) Frontends() int {
+	return frontends.All
+}
 
-func normalRun(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func (normal) Names() []string {
+	return []string{
+		"rps",
+	}
+}
+
+func (normal) Description() string {
+	return "Rock paper scissors."
+}
+
+func (normal) UsageArgs() string {
+	return "(r[ock] | p[aper] | s[cissors])"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (c normal) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return normalRunDiscord(m)
+		return c.discord(m)
 	default:
-		return normalRunText(m)
+		return c.text(m)
 	}
 }
 
-func normalRunDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	result, computer, usrErr := normalRunCore(m)
+func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	result, computer, usrErr := c.core(m)
 	if usrErr != nil {
-		return &dg.MessageEmbed{Description: normalRunErr(usrErr)}, usrErr, nil
+		return &dg.MessageEmbed{Description: c.err(usrErr)}, usrErr, nil
 	}
 
 	var title string
@@ -71,10 +97,10 @@ func normalRunDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func normalRunText(m *core.Message) (string, error, error) {
-	result, computer, usrErr := normalRunCore(m)
+func (c normal) text(m *core.Message) (string, error, error) {
+	result, computer, usrErr := c.core(m)
 	if usrErr != nil {
-		return normalRunErr(usrErr), usrErr, nil
+		return c.err(usrErr), usrErr, nil
 	}
 
 	var title string
@@ -100,7 +126,7 @@ func normalRunText(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s %s", title, desc), nil, nil
 }
 
-func normalRunErr(usrErr error) string {
+func (normal) err(usrErr error) string {
 	switch usrErr {
 	case errUnexpectedArgument:
 		return "Please choose on of the following: rock, paper or scissors."
@@ -109,9 +135,9 @@ func normalRunErr(usrErr error) string {
 	}
 }
 
-func normalRunCore(m *core.Message) (int, int, error) {
+func (normal) core(m *core.Message) (int, int, error) {
 	var player int
-	switch m.Command.Runtime.Args[0] {
+	switch m.Command.Args[0] {
 	case "r", "rock", "🪨":
 		player = rock
 	case "p", "paper", "🧻", "📰", "🗞 ":

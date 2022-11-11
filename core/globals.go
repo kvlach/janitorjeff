@@ -55,19 +55,13 @@ func (hs *Hooks) Get() []hook {
 	return hs.hooks
 }
 
-type AllCommands struct {
-	Normal   Commands
-	Advanced Commands
-	Admin    Commands
-}
-
 type Prefixes struct {
 	Admin  []Prefix
 	Others []Prefix
 }
 
 type GlobalVars struct {
-	Commands AllCommands
+	Commands *Commanders
 	DB       *DB
 	Host     string
 	Hooks    Hooks

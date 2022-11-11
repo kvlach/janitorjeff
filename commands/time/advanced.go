@@ -21,104 +21,58 @@ var (
 	errInvalidRemindID = errors.New("invalid reminder ID")
 )
 
-var Advanced = &core.CommandStatic{
-	Names: []string{
-		"time",
-	},
-	Description: "time stuff and things",
-	UsageArgs:   "(now | convert | timestamp | zone | remind)",
-	Frontends:   frontends.All,
-	Run:         advancedRun,
+var Advanced = advanced{}
 
-	Children: core.Commands{
-		{
-			Names: []string{
-				"now",
-			},
-			Description: "View yours or someone else's time.",
-			UsageArgs:   "[person]",
-			Run:         advancedRunNow,
-		},
-		{
-			Names: []string{
-				"convert",
-			},
-			Description: "Convert a timestamp to the specified timezone.",
-			UsageArgs:   "<timestamp> <timezone>",
-			Run:         advancedRunConvert,
-		},
-		{
-			Names: []string{
-				"timestamp",
-			},
-			Description: "Get the given datetime's timestamp.",
-			UsageArgs:   "<when...>",
-			Run:         advancedRunTimestamp,
-		},
-		{
-			Names: []string{
-				"zone",
-			},
-			Description: "View, set or delete your nickname.",
-			UsageArgs:   "(Show | set | delete)",
-			Run:         advancedRunTimezone,
+type advanced struct{}
 
-			Children: core.Commands{
-				{
-					Names:       core.Show,
-					Description: "Show the timezone that you set.",
-					UsageArgs:   "",
-					Run:         advancedRunTimezoneShow,
-				},
-				{
-					Names: []string{
-						"set",
-					},
-					Description: "Set your timezone.",
-					UsageArgs:   "<timezone>",
-					Run:         advancedRunTimezoneSet,
-				},
-				{
-					Names:       core.Delete,
-					Description: "Delete the timezone that you set.",
-					UsageArgs:   "",
-					Run:         advancedRunTimezoneDelete,
-				},
-			},
-		},
-		{
-			Names: []string{
-				"remind",
-			},
-			Description: "Reminder related commands",
-			UsageArgs:   "(add | delete | list)",
-			Run:         advancedRunRemind,
-
-			Children: core.Commands{
-				{
-					Names:       core.Add,
-					Description: "Create a reminder.",
-					UsageArgs:   "(<person> to <what> in <when> | <person> in <when> to <what>)",
-					Run:         advancedRunRemindAdd,
-				},
-				{
-					Names:       core.Delete,
-					Description: "Delete a reminder.",
-					UsageArgs:   "<id>",
-					Run:         advancedRunRemindDelete,
-				},
-				{
-					Names:       core.List,
-					Description: "List active reminders.",
-					UsageArgs:   "",
-					Run:         advancedRunRemindList,
-				},
-			},
-		},
-	},
+func (advanced) Type() core.Type {
+	return core.Advanced
 }
 
-func advancedRun(m *core.Message) (any, error, error) {
+func (advanced) Frontends() int {
+	return frontends.All
+}
+
+func (advanced) Names() []string {
+	return []string{
+		"time",
+	}
+}
+
+func (advanced) Description() string {
+	return "Time stuff and things."
+}
+
+func (advanced) UsageArgs() string {
+	return "(now | convert | timestamp | timezone | remind)"
+}
+
+func (advanced) Parent() core.Commander {
+	return nil
+}
+
+func (advanced) Children() core.Commanders {
+	return core.Commanders{
+		AdvancedNow,
+		AdvancedConvert,
+		AdvancedTimestamp,
+		AdvancedTimezone,
+		AdvancedRemind,
+	}
+}
+
+func (advanced) Init() error {
+	go func() {
+		for {
+			runUpcoming()
+			time.Sleep(2 * time.Minute)
+		}
+	}()
+
+	return core.Globals.DB.Init(dbSchema)
+}
+
+func (advanced) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -128,17 +82,55 @@ func advancedRun(m *core.Message) (any, error, error) {
 //     //
 /////////
 
-func advancedRunNow(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return advancedRunNowDiscord(m)
-	default:
-		return advancedRunNowText(m)
+var AdvancedNow = advancedNow{}
+
+type advancedNow struct{}
+
+func (c advancedNow) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedNow) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedNow) Names() []string {
+	return []string{
+		"now",
 	}
 }
 
-func advancedRunNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	now, cmdTzSet, usrErr, err := advancedRunNowCore(m)
+func (advancedNow) Description() string {
+	return "View yours or someone else's time."
+}
+
+func (advancedNow) UsageArgs() string {
+	return "[person]"
+}
+
+func (advancedNow) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedNow) Children() core.Commanders {
+	return nil
+}
+
+func (advancedNow) Init() error {
+	return nil
+}
+
+func (c advancedNow) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	now, cmdTzSet, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -146,43 +138,43 @@ func advancedRunNowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	cmdTzSet = discord.PlaceInBackticks(cmdTzSet)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunNowErr(usrErr, m, now, cmdTzSet),
+		Description: c.err(usrErr, m, now, cmdTzSet),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunNowText(m *core.Message) (string, error, error) {
-	now, cmdTzSet, usrErr, err := advancedRunNowCore(m)
+func (c advancedNow) text(m *core.Message) (string, error, error) {
+	now, cmdTzSet, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	cmdTzSet = fmt.Sprintf("'%s'", cmdTzSet)
-	return advancedRunNowErr(usrErr, m, now, cmdTzSet), usrErr, nil
+	return c.err(usrErr, m, now, cmdTzSet), usrErr, nil
 }
 
-func advancedRunNowErr(usrErr error, m *core.Message, now time.Time, cmdTzSet string) string {
+func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet string) string {
 	switch usrErr {
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
 		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.User.Mention, cmdTzSet)
 	case errPersonNotFound:
-		return fmt.Sprintf("Was unable to find the user %s", m.Command.Runtime.Args[0])
+		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
 		return fmt.Sprint(usrErr)
 	}
 }
 
-func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
-	cmdTzSet := cmdNormalTimezone.Format(m.Command.Runtime.Prefix)
+func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
+	cmdTzSet := core.Format(AdvancedTimezoneSet, m.Command.Prefix)
 
 	var person int64
 	var err error
-	if len(m.Command.Runtime.Args) == 0 {
+	if len(m.Command.Args) == 0 {
 		person, err = m.Author()
 	} else {
-		person, err = nick.ParsePersonHere(m, m.Command.Runtime.Args[0])
+		person, err = nick.ParsePersonHere(m, m.Command.Args[0])
 	}
 
 	if err != nil {
@@ -204,41 +196,79 @@ func advancedRunNowCore(m *core.Message) (time.Time, string, error, error) {
 //         //
 /////////////
 
-func advancedRunConvert(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 2 {
+var AdvancedConvert = advancedConvert{}
+
+type advancedConvert struct{}
+
+func (c advancedConvert) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedConvert) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedConvert) Names() []string {
+	return []string{
+		"convert",
+	}
+}
+
+func (advancedConvert) Description() string {
+	return "Convert a timestamp to the specified timezone."
+}
+
+func (advancedConvert) UsageArgs() string {
+	return "<timestamp> <timezone>"
+}
+
+func (advancedConvert) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedConvert) Children() core.Commanders {
+	return nil
+}
+
+func (advancedConvert) Init() error {
+	return nil
+}
+
+func (c advancedConvert) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunConvertDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunConvertText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunConvertDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	t, usrErr, err := advancedRunConvertCore(m)
+func (c advancedConvert) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	t, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunConvertErr(usrErr, t),
+		Description: c.err(usrErr, t),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunConvertText(m *core.Message) (string, error, error) {
-	t, usrErr, err := advancedRunConvertCore(m)
+func (c advancedConvert) text(m *core.Message) (string, error, error) {
+	t, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return advancedRunConvertErr(usrErr, t), usrErr, nil
+	return c.err(usrErr, t), usrErr, nil
 }
 
-func advancedRunConvertErr(usrErr error, t string) string {
+func (advancedConvert) err(usrErr error, t string) string {
 	switch usrErr {
 	case nil:
 		return t
@@ -247,9 +277,9 @@ func advancedRunConvertErr(usrErr error, t string) string {
 	}
 }
 
-func advancedRunConvertCore(m *core.Message) (string, error, error) {
-	target := m.Command.Runtime.Args[0]
-	tz := m.Command.Runtime.Args[1]
+func (advancedConvert) core(m *core.Message) (string, error, error) {
+	target := m.Command.Args[0]
+	tz := m.Command.Args[1]
 	return runConvert(target, tz)
 }
 
@@ -259,27 +289,65 @@ func advancedRunConvertCore(m *core.Message) (string, error, error) {
 //           //
 ///////////////
 
-func advancedRunTimestamp(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+var AdvancedTimestamp = advancedTimestamp{}
+
+type advancedTimestamp struct{}
+
+func (c advancedTimestamp) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedTimestamp) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedTimestamp) Names() []string {
+	return []string{
+		"timestamp",
+	}
+}
+
+func (advancedTimestamp) Description() string {
+	return "Get the given datetime's timestamp."
+}
+
+func (advancedTimestamp) UsageArgs() string {
+	return "<when...>"
+}
+
+func (advancedTimestamp) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedTimestamp) Children() core.Commanders {
+	return nil
+}
+
+func (advancedTimestamp) Init() error {
+	return nil
+}
+
+func (c advancedTimestamp) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunTimestampDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunTimestampText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunTimestampDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	t, usrErr, err := advancedRunTimestampCore(m)
+func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	t, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunTimestampErr(usrErr, t),
+		Description: c.err(usrErr, t),
 	}
 
 	if usrErr != nil {
@@ -293,15 +361,15 @@ func advancedRunTimestampDiscord(m *core.Message) (*dg.MessageEmbed, error, erro
 	return embed, nil, nil
 }
 
-func advancedRunTimestampText(m *core.Message) (string, error, error) {
-	t, usrErr, err := advancedRunTimestampCore(m)
+func (c advancedTimestamp) text(m *core.Message) (string, error, error) {
+	t, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return advancedRunTimestampErr(usrErr, t), usrErr, nil
+	return c.err(usrErr, t), usrErr, nil
 }
 
-func advancedRunTimestampErr(usrErr error, t time.Time) string {
+func (advancedTimestamp) err(usrErr error, t time.Time) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprint(t.Unix())
@@ -312,7 +380,7 @@ func advancedRunTimestampErr(usrErr error, t time.Time) string {
 	}
 }
 
-func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
+func (advancedTimestamp) core(m *core.Message) (time.Time, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return time.Time{}, nil, err
@@ -334,7 +402,50 @@ func advancedRunTimestampCore(m *core.Message) (time.Time, error, error) {
 //          //
 //////////////
 
-func advancedRunTimezone(m *core.Message) (any, error, error) {
+var AdvancedTimezone = advancedTimezone{}
+
+type advancedTimezone struct{}
+
+func (c advancedTimezone) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedTimezone) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedTimezone) Names() []string {
+	return []string{
+		"timezone",
+		"zone",
+	}
+}
+
+func (advancedTimezone) Description() string {
+	return "Show, set or delete your timezone."
+}
+
+func (advancedTimezone) UsageArgs() string {
+	return "(show | set | delete)"
+}
+
+func (advancedTimezone) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedTimezone) Children() core.Commanders {
+	return core.Commanders{
+		AdvancedTimezoneShow,
+		AdvancedTimezoneSet,
+		AdvancedTimezoneDelete,
+	}
+}
+
+func (advancedTimezone) Init() error {
+	return nil
+}
+
+func (advancedTimezone) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -344,17 +455,53 @@ func advancedRunTimezone(m *core.Message) (any, error, error) {
 //               //
 ///////////////////
 
-func advancedRunTimezoneShow(m *core.Message) (any, error, error) {
+var AdvancedTimezoneShow = advancedTimezoneShow{}
+
+type advancedTimezoneShow struct{}
+
+func (c advancedTimezoneShow) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedTimezoneShow) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedTimezoneShow) Names() []string {
+	return core.Show
+}
+
+func (advancedTimezoneShow) Description() string {
+	return "Show the timezone that you set."
+}
+
+func (advancedTimezoneShow) UsageArgs() string {
+	return ""
+}
+
+func (advancedTimezoneShow) Parent() core.Commander {
+	return AdvancedTimezone
+}
+
+func (advancedTimezoneShow) Children() core.Commanders {
+	return nil
+}
+
+func (advancedTimezoneShow) Init() error {
+	return nil
+}
+
+func (c advancedTimezoneShow) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunTimezoneShowDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunTimezoneShowText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunTimezoneShowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	tz, usrErr, err := advancedRunTimezoneShowCore(m)
+func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	tz, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -362,22 +509,22 @@ func advancedRunTimezoneShowDiscord(m *core.Message) (*dg.MessageEmbed, error, e
 	tz = discord.PlaceInBackticks(tz)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunTimezoneShowErr(usrErr, tz),
+		Description: c.err(usrErr, tz),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunTimezoneShowText(m *core.Message) (string, error, error) {
-	tz, usrErr, err := advancedRunTimezoneShowCore(m)
+func (c advancedTimezoneShow) text(m *core.Message) (string, error, error) {
+	tz, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	tz = fmt.Sprintf("'%s'", tz)
-	return advancedRunTimezoneShowErr(usrErr, tz), usrErr, nil
+	return c.err(usrErr, tz), usrErr, nil
 }
 
-func advancedRunTimezoneShowErr(usrErr error, tz string) string {
+func (advancedTimezoneShow) err(usrErr error, tz string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your timezone is: %s", tz)
@@ -388,7 +535,7 @@ func advancedRunTimezoneShowErr(usrErr error, tz string) string {
 	}
 }
 
-func advancedRunTimezoneShowCore(m *core.Message) (string, error, error) {
+func (advancedTimezoneShow) core(m *core.Message) (string, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
@@ -408,21 +555,59 @@ func advancedRunTimezoneShowCore(m *core.Message) (string, error, error) {
 //              //
 //////////////////
 
-func advancedRunTimezoneSet(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+var AdvancedTimezoneSet = advancedTimezoneSet{}
+
+type advancedTimezoneSet struct{}
+
+func (c advancedTimezoneSet) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedTimezoneSet) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedTimezoneSet) Names() []string {
+	return []string{
+		"set",
+	}
+}
+
+func (advancedTimezoneSet) Description() string {
+	return "Set your timezone."
+}
+
+func (advancedTimezoneSet) UsageArgs() string {
+	return "<timezone>"
+}
+
+func (advancedTimezoneSet) Parent() core.Commander {
+	return AdvancedTimezone
+}
+
+func (advancedTimezoneSet) Children() core.Commanders {
+	return nil
+}
+
+func (advancedTimezoneSet) Init() error {
+	return nil
+}
+
+func (c advancedTimezoneSet) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunTimezoneSetDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunTimezoneSetText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunTimezoneSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	tz, usrErr, err := advancedRunTimezoneSetCore(m)
+func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	tz, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -430,22 +615,22 @@ func advancedRunTimezoneSetDiscord(m *core.Message) (*dg.MessageEmbed, error, er
 	tz = discord.PlaceInBackticks(tz)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunTimezoneSetErr(usrErr, m, tz),
+		Description: c.err(usrErr, m, tz),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunTimezoneSetText(m *core.Message) (string, error, error) {
-	tz, usrErr, err := advancedRunTimezoneSetCore(m)
+func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
+	tz, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	tz = fmt.Sprintf("'%s'", tz)
-	return advancedRunTimezoneSetErr(usrErr, m, tz), usrErr, nil
+	return c.err(usrErr, m, tz), usrErr, nil
 }
 
-func advancedRunTimezoneSetErr(usrErr error, m *core.Message, tz string) string {
+func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Added %s with timezone %s", m.User.Mention, tz)
@@ -456,8 +641,8 @@ func advancedRunTimezoneSetErr(usrErr error, m *core.Message, tz string) string 
 	}
 }
 
-func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
-	tz := m.Command.Runtime.Args[0]
+func (advancedTimezoneSet) core(m *core.Message) (string, error, error) {
+	tz := m.Command.Args[0]
 
 	author, err := m.Author()
 	if err != nil {
@@ -478,37 +663,73 @@ func advancedRunTimezoneSetCore(m *core.Message) (string, error, error) {
 //                 //
 /////////////////////
 
-func advancedRunTimezoneDelete(m *core.Message) (any, error, error) {
+var AdvancedTimezoneDelete = advancedTimezoneDelete{}
+
+type advancedTimezoneDelete struct{}
+
+func (c advancedTimezoneDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedTimezoneDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedTimezoneDelete) Names() []string {
+	return core.Delete
+}
+
+func (advancedTimezoneDelete) Description() string {
+	return "Delete the timezone that you set."
+}
+
+func (advancedTimezoneDelete) UsageArgs() string {
+	return ""
+}
+
+func (advancedTimezoneDelete) Parent() core.Commander {
+	return AdvancedTimezone
+}
+
+func (advancedTimezoneDelete) Children() core.Commanders {
+	return nil
+}
+
+func (advancedTimezoneDelete) Init() error {
+	return nil
+}
+
+func (c advancedTimezoneDelete) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunTimezoneDeleteDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunTimezoneDeleteText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunTimezoneDeleteDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := advancedRunTimezoneDeleteCore(m)
+func (c advancedTimezoneDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunTimezoneDeleteErr(usrErr, m),
+		Description: c.err(usrErr, m),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunTimezoneDeleteText(m *core.Message) (string, error, error) {
-	usrErr, err := advancedRunTimezoneDeleteCore(m)
+func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return advancedRunTimezoneDeleteErr(usrErr, m), usrErr, nil
+	return c.err(usrErr, m), usrErr, nil
 }
 
-func advancedRunTimezoneDeleteErr(usrErr error, m *core.Message) string {
+func (advancedTimezoneDelete) err(usrErr error, m *core.Message) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Deleted timezone for user %s", m.User.Mention)
@@ -519,7 +740,7 @@ func advancedRunTimezoneDeleteErr(usrErr error, m *core.Message) string {
 	}
 }
 
-func advancedRunTimezoneDeleteCore(m *core.Message) (error, error) {
+func (advancedTimezoneDelete) core(m *core.Message) (error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return nil, err
@@ -539,7 +760,49 @@ func advancedRunTimezoneDeleteCore(m *core.Message) (error, error) {
 //        //
 ////////////
 
-func advancedRunRemind(m *core.Message) (any, error, error) {
+var AdvancedRemind = advancedRemind{}
+
+type advancedRemind struct{}
+
+func (c advancedRemind) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedRemind) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedRemind) Names() []string {
+	return []string{
+		"remind",
+	}
+}
+
+func (advancedRemind) Description() string {
+	return "Reminder related commands."
+}
+
+func (advancedRemind) UsageArgs() string {
+	return "(add | delete | list)"
+}
+
+func (advancedRemind) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedRemind) Children() core.Commanders {
+	return core.Commanders{
+		AdvancedRemindAdd,
+		AdvancedRemindDelete,
+		AdvancedRemindList,
+	}
+}
+
+func (advancedRemind) Init() error {
+	return nil
+}
+
+func (advancedRemind) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -549,12 +812,48 @@ func advancedRunRemind(m *core.Message) (any, error, error) {
 //            //
 ////////////////
 
-func advancedRunRemindAdd(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+var AdvancedRemindAdd = advancedRemindAdd{}
+
+type advancedRemindAdd struct{}
+
+func (c advancedRemindAdd) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedRemindAdd) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedRemindAdd) Names() []string {
+	return core.Add
+}
+
+func (advancedRemindAdd) Description() string {
+	return "Create a reminder."
+}
+
+func (advancedRemindAdd) UsageArgs() string {
+	return "(<person> to <what> in <when> | <person> in <when> to <what>)"
+}
+
+func (advancedRemindAdd) Parent() core.Commander {
+	return AdvancedRemind
+}
+
+func (advancedRemindAdd) Children() core.Commanders {
+	return nil
+}
+
+func (advancedRemindAdd) Init() error {
+	return nil
+}
+
+func (c advancedRemindAdd) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	t, id, usrErr, err := advancedRunRemindAddCore(m)
+	t, id, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -564,7 +863,7 @@ func advancedRunRemindAdd(m *core.Message) (any, error, error) {
 	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), nil, nil
 }
 
-func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) {
+func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) {
 	rxPerson := `(?P<person>[^\s]+)`
 	rxWhen := `(in|on)\s+(?P<when>.+)`
 	rxWhat := `to\s+(?P<what>.+)`
@@ -615,41 +914,77 @@ func advancedRunRemindAddCore(m *core.Message) (time.Time, int64, error, error) 
 //               //
 ///////////////////
 
-func advancedRunRemindDelete(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+var AdvancedRemindDelete = advancedRemindDelete{}
+
+type advancedRemindDelete struct{}
+
+func (c advancedRemindDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedRemindDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedRemindDelete) Names() []string {
+	return core.Delete
+}
+
+func (advancedRemindDelete) Description() string {
+	return "Delete a reminder."
+}
+
+func (advancedRemindDelete) UsageArgs() string {
+	return "<id>"
+}
+
+func (advancedRemindDelete) Parent() core.Commander {
+	return AdvancedRemind
+}
+
+func (advancedRemindDelete) Children() core.Commanders {
+	return nil
+}
+
+func (advancedRemindDelete) Init() error {
+	return nil
+}
+
+func (c advancedRemindDelete) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunRemindDeleteDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunRemindDeleteText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunRemindDeleteDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := advancedRunRemindDeleteCore(m)
+func (c advancedRemindDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunRemindDeleteErr(usrErr),
+		Description: c.err(usrErr),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunRemindDeleteText(m *core.Message) (string, error, error) {
-	usrErr, err := advancedRunRemindDeleteCore(m)
+func (c advancedRemindDelete) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return advancedRunRemindDeleteErr(usrErr), usrErr, nil
+	return c.err(usrErr), usrErr, nil
 }
 
-func advancedRunRemindDeleteErr(usrErr error) string {
+func (advancedRemindDelete) err(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "Deleted reminder."
@@ -662,8 +997,8 @@ func advancedRunRemindDeleteErr(usrErr error) string {
 	}
 }
 
-func advancedRunRemindDeleteCore(m *core.Message) (error, error) {
-	id, err := strconv.ParseInt(m.Command.Runtime.Args[0], 10, 64)
+func (advancedRemindDelete) core(m *core.Message) (error, error) {
+	id, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
 	if err != nil {
 		return errInvalidRemindID, nil
 	}
@@ -682,17 +1017,53 @@ func advancedRunRemindDeleteCore(m *core.Message) (error, error) {
 //             //
 /////////////////
 
-func advancedRunRemindList(m *core.Message) (any, error, error) {
+var AdvancedRemindList = advancedRemindList{}
+
+type advancedRemindList struct{}
+
+func (c advancedRemindList) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedRemindList) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedRemindList) Names() []string {
+	return core.List
+}
+
+func (advancedRemindList) Description() string {
+	return "List active reminders."
+}
+
+func (advancedRemindList) UsageArgs() string {
+	return ""
+}
+
+func (advancedRemindList) Parent() core.Commander {
+	return AdvancedRemind
+}
+
+func (advancedRemindList) Children() core.Commanders {
+	return nil
+}
+
+func (advancedRemindList) Init() error {
+	return nil
+}
+
+func (c advancedRemindList) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunRemindListDiscord(m)
+		return c.discord(m)
 	default:
 		return nil, nil, nil
 	}
 }
 
-func advancedRunRemindListDiscord(m *core.Message) (string, error, error) {
-	rs, usrErr, err := advancedRunRemindListCore(m)
+func (c advancedRemindList) discord(m *core.Message) (string, error, error) {
+	rs, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -718,7 +1089,7 @@ func advancedRunRemindListDiscord(m *core.Message) (string, error, error) {
 	return resp.String(), nil, nil
 }
 
-func advancedRunRemindListCore(m *core.Message) ([]reminder, error, error) {
+func (advancedRemindList) core(m *core.Message) ([]reminder, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return nil, nil, err

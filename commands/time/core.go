@@ -133,7 +133,6 @@ func dbPersonExists(person, place int64) (bool, error) {
 		Msg("checked db to see if person exists")
 
 	return exists, err
-
 }
 
 func dbPersonDelete(person, place int64) error {
@@ -176,7 +175,6 @@ func dbPersonTimezone(person, place int64) (string, error) {
 		Msg("got timezone from db")
 
 	return tz, err
-
 }
 
 func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
@@ -236,7 +234,6 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 		FROM CommandTimeReminders
 		WHERE person = ? and place = ?
 	`, person, place)
-
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +266,6 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 		FROM CommandTimeReminders
 		WHERE time - ? < 300
 	`, nowSeconds)
-
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +328,6 @@ func dbRemindExists(id, person int64) (bool, error) {
 		Msg("checked if reminder exists")
 
 	return exists, err
-
 }
 
 /////////
@@ -570,21 +565,4 @@ func runUpcoming() {
 	for _, r := range rs {
 		upcomingReminders.add(r)
 	}
-}
-
-//////////
-//      //
-// init //
-//      //
-//////////
-
-func init_() error {
-	go func() {
-		for {
-			runUpcoming()
-			time.Sleep(2 * time.Minute)
-		}
-	}()
-
-	return core.Globals.DB.Init(dbSchema)
 }

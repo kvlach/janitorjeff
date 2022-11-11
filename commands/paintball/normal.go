@@ -11,14 +11,42 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
+}
+
+func (normal) Frontends() int {
+	return frontends.Discord
+}
+
+func (normal) Names() []string {
+	return []string{
 		"pb",
-	},
-	Description: "Paintball game",
-	UsageArgs:   "<rounds>",
-	Frontends:   frontends.Discord,
-	Run:         normalRun,
+	}
+}
+
+func (normal) Description() string {
+	return "Paintball game."
+}
+
+func (normal) UsageArgs() string {
+	return "<rounds>"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
 }
 
 var normalHelp = &dg.MessageEmbed{
@@ -35,24 +63,24 @@ var normalHelp = &dg.MessageEmbed{
 	Color: embedColor,
 }
 
-func normalRun(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return normalRunDiscord(m)
+		return c.discord(m)
 	default:
 		return nil, nil, fmt.Errorf("Discord only")
 	}
 }
 
-func normalRunDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	if len(m.Command.Args) < 1 {
 		return normalHelp, core.ErrMissingArgs, nil
 	}
-	return normalRunPlay(m)
+	return c.play(m)
 }
 
-func normalRunPlay(m *core.Message) (*dg.MessageEmbed, error, error) {
-	rounds, err := strconv.Atoi(m.Command.Runtime.Args[0])
+func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
+	rounds, err := strconv.Atoi(m.Command.Args[0])
 	if err != nil {
 		return normalHelp, nil, nil
 	}
@@ -74,10 +102,10 @@ func normalRunPlay(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	game.Playing(here, true)
-	return runPlayF(m.Channel.ID, here, rounds)
+	return c.playF(m.Channel.ID, here, rounds)
 }
 
-func runPlayF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, error) {
+func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, error) {
 	write(channel, &dg.MessageEmbed{
 		Title:       "🔥 **Free-For-All** 🔥",
 		Description: "Game starting in a few seconds!",

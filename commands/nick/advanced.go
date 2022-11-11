@@ -10,74 +10,142 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-///////////////////
-//               //
-// Type: Command //
-//               //
-///////////////////
+var Advanced = advanced{}
 
-var Advanced = &core.CommandStatic{
-	Names: []string{
+type advanced struct{}
+
+func (advanced) Type() core.Type {
+	return core.Advanced
+}
+
+func (advanced) Frontends() int {
+	return frontends.All
+}
+
+func (advanced) Names() []string {
+	return []string{
 		"nick",
 		"nickname",
-	},
-	Description: "Set, view or delete your nickname.",
-	UsageArgs:   "(show | set | delete)",
-	Frontends:   frontends.All,
-	Run:         advancedRun,
-	Init:        advancedInit,
-
-	Children: core.Commands{
-		{
-			Names:       core.Show,
-			Description: "View your current nickname.",
-			UsageArgs:   "",
-			Run:         advancedRunShow,
-		},
-		{
-			Names: []string{
-				"set",
-			},
-			Description: "Set your nickname.",
-			UsageArgs:   "<nickname>",
-			Run:         advancedRunSet,
-		},
-		{
-			Names:       core.Delete,
-			Description: "Delete your nickname.",
-			UsageArgs:   "",
-			Run:         advancedRunDelete,
-		},
-	},
-}
-
-///////////////
-//           //
-// Type: Run //
-//           //
-///////////////
-
-func advancedRun(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
-}
-
-///////////////
-//           //
-// Run: show //
-//           //
-///////////////
-
-func advancedRunShow(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return advancedRunShowDiscord(m)
-	default:
-		return advancedRunShowText(m)
 	}
 }
 
-func advancedRunShowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	nick, usrErr, err := advancedRunShowCore(m)
+func (advanced) Description() string {
+	return "Set, view or delete your nickname."
+}
+
+func (advanced) UsageArgs() string {
+	return "(show | set | delete)"
+}
+
+func (advanced) Parent() core.Commander {
+	return nil
+}
+
+func (advanced) Children() core.Commanders {
+	return core.Commanders{
+		AdvancedShow,
+		AdvancedSet,
+		AdvancedDelete,
+	}
+}
+
+func (c advanced) Init() error {
+	c.discordAppCommand()
+	return core.Globals.DB.Init(dbSchema)
+}
+
+func (advanced) discordAppCommand() {
+	cmd := &dg.ApplicationCommand{
+		Name:        Advanced.Names()[0],
+		Type:        dg.ChatApplicationCommand,
+		Description: Advanced.Description(),
+		Options: []*dg.ApplicationCommandOption{
+			{
+				Name:        AdvancedShow.Names()[0],
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: AdvancedShow.Description(),
+			},
+			{
+				Name:        AdvancedSet.Names()[0],
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: AdvancedSet.Description(),
+				Options: []*dg.ApplicationCommandOption{
+					{
+						Name:        "nickname",
+						Type:        dg.ApplicationCommandOptionString,
+						Description: "give nickname",
+						Required:    true,
+					},
+				},
+			},
+			{
+				Name:        AdvancedDelete.Names()[0],
+				Type:        dg.ApplicationCommandOptionSubCommand,
+				Description: AdvancedDelete.Description(),
+			},
+		},
+	}
+
+	discord.RegisterAppCommand(cmd)
+}
+
+func (advanced) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+//////////
+//      //
+// show //
+//      //
+//////////
+
+var AdvancedShow = advancedShow{}
+
+type advancedShow struct{}
+
+func (c advancedShow) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedShow) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedShow) Names() []string {
+	return core.Show
+}
+
+func (advancedShow) Description() string {
+	return "View your current nickname."
+}
+
+func (advancedShow) UsageArgs() string {
+	return ""
+}
+
+func (advancedShow) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedShow) Children() core.Commanders {
+	return nil
+}
+
+func (advancedShow) Init() error {
+	return nil
+}
+
+func (c advancedShow) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,22 +153,22 @@ func advancedRunShowDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunShowErr(usrErr, nick),
+		Description: c.err(usrErr, nick),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunShowText(m *core.Message) (string, error, error) {
-	nick, usrErr, err := advancedRunShowCore(m)
+func (c advancedShow) text(m *core.Message) (string, error, error) {
+	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return advancedRunShowErr(usrErr, nick), usrErr, nil
+	return c.err(usrErr, nick), usrErr, nil
 }
 
-func advancedRunShowErr(usrErr error, nick string) string {
+func (advancedShow) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
@@ -111,7 +179,7 @@ func advancedRunShowErr(usrErr error, nick string) string {
 	}
 }
 
-func advancedRunShowCore(m *core.Message) (string, error, error) {
+func (advancedShow) core(m *core.Message) (string, error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
@@ -125,27 +193,65 @@ func advancedRunShowCore(m *core.Message) (string, error, error) {
 	return runShow(author, here)
 }
 
-//////////////
-//          //
-// Run: set //
-//          //
-//////////////
+/////////
+//     //
+// set //
+//     //
+/////////
 
-func advancedRunSet(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+var AdvancedSet = advancedSet{}
+
+type advancedSet struct{}
+
+func (c advancedSet) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedSet) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedSet) Names() []string {
+	return []string{
+		"set",
+	}
+}
+
+func (advancedSet) Description() string {
+	return "Set your nickname."
+}
+
+func (advancedSet) UsageArgs() string {
+	return "<nickname>"
+}
+
+func (advancedSet) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedSet) Children() core.Commanders {
+	return nil
+}
+
+func (advancedSet) Init() error {
+	return nil
+}
+
+func (c advancedSet) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunSetDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunSetText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	nick, usrErr, err := advancedRunSetCore(m)
+func (c advancedSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -153,22 +259,22 @@ func advancedRunSetDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick = fmt.Sprintf("**%s**", nick)
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunSetErr(usrErr, nick),
+		Description: c.err(usrErr, nick),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunSetText(m *core.Message) (string, error, error) {
-	nick, usrErr, err := advancedRunSetCore(m)
+func (c advancedSet) text(m *core.Message) (string, error, error) {
+	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	nick = fmt.Sprintf("'%s'", nick)
-	return advancedRunSetErr(usrErr, nick), usrErr, nil
+	return c.err(usrErr, nick), usrErr, nil
 }
 
-func advancedRunSetErr(usrErr error, nick string) string {
+func (c advancedSet) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Nickname set to %s", nick)
@@ -179,8 +285,8 @@ func advancedRunSetErr(usrErr error, nick string) string {
 	}
 }
 
-func advancedRunSetCore(m *core.Message) (string, error, error) {
-	nick := m.Command.Runtime.Args[0]
+func (c advancedSet) core(m *core.Message) (string, error, error) {
+	nick := m.Command.Args[0]
 
 	author, err := m.Author()
 	if err != nil {
@@ -196,43 +302,79 @@ func advancedRunSetCore(m *core.Message) (string, error, error) {
 	return nick, usrErr, err
 }
 
-/////////////////
-//             //
-// Run: delete //
-//             //
-/////////////////
+////////////
+//        //
+// delete //
+//        //
+////////////
 
-func advancedRunDelete(m *core.Message) (any, error, error) {
+var AdvancedDelete = advancedDelete{}
+
+type advancedDelete struct{}
+
+func (c advancedDelete) Type() core.Type {
+	return c.Parent().Type()
+}
+
+func (c advancedDelete) Frontends() int {
+	return c.Parent().Frontends()
+}
+
+func (advancedDelete) Names() []string {
+	return core.Delete
+}
+
+func (advancedDelete) Description() string {
+	return "Delete your nickname."
+}
+
+func (advancedDelete) UsageArgs() string {
+	return ""
+}
+
+func (advancedDelete) Parent() core.Commander {
+	return Advanced
+}
+
+func (advancedDelete) Children() core.Commanders {
+	return nil
+}
+
+func (advancedDelete) Init() error {
+	return nil
+}
+
+func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
-		return advancedRunDeleteDiscord(m)
+		return c.discord(m)
 	default:
-		return advancedRunDeleteText(m)
+		return c.text(m)
 	}
 }
 
-func advancedRunDeleteDiscord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := advancedRunDeleteCore(m)
+func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: advancedRunDeleteErr(usrErr),
+		Description: c.err(usrErr),
 	}
 
 	return embed, usrErr, nil
 }
 
-func advancedRunDeleteText(m *core.Message) (string, error, error) {
-	usrErr, err := advancedRunDeleteCore(m)
+func (c advancedDelete) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return advancedRunDeleteErr(usrErr), usrErr, nil
+	return c.err(usrErr), usrErr, nil
 }
 
-func advancedRunDeleteErr(usrErr error) string {
+func (advancedDelete) err(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "Deleted your nickname."
@@ -243,7 +385,7 @@ func advancedRunDeleteErr(usrErr error) string {
 	}
 }
 
-func advancedRunDeleteCore(m *core.Message) (error, error) {
+func (advancedDelete) core(m *core.Message) (error, error) {
 	author, err := m.Author()
 	if err != nil {
 		return nil, err
@@ -255,50 +397,4 @@ func advancedRunDeleteCore(m *core.Message) (error, error) {
 	}
 
 	return runDelete(author, here)
-}
-
-////////////////
-//            //
-// Type: Init //
-//            //
-////////////////
-
-func advancedInit() error {
-	advancedInitDiscordAppCommand()
-	return nil
-}
-
-func advancedInitDiscordAppCommand() {
-	cmd := &dg.ApplicationCommand{
-		Name:        "nick",
-		Type:        dg.ChatApplicationCommand,
-		Description: "Nickname commands.",
-		Options: []*dg.ApplicationCommandOption{
-			{
-				Name:        "show",
-				Type:        dg.ApplicationCommandOptionSubCommand,
-				Description: "Show your nickname.",
-			},
-			{
-				Name:        "set",
-				Type:        dg.ApplicationCommandOptionSubCommand,
-				Description: "Set your nickname.",
-				Options: []*dg.ApplicationCommandOption{
-					{
-						Name:        "nickname",
-						Type:        dg.ApplicationCommandOptionString,
-						Description: "give nickname",
-						Required:    true,
-					},
-				},
-			},
-			{
-				Name:        "delete",
-				Type:        dg.ApplicationCommandOptionSubCommand,
-				Description: "Delete your nickname.",
-			},
-		},
-	}
-
-	discord.RegisterAppCommand(cmd)
 }

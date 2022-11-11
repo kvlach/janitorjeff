@@ -20,100 +20,50 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Normal = core.Commands{
+var Commands = core.Commanders{
 	category.Normal,
-	command.Command,
+
+	command.Normal,
+
 	connect.Normal,
+
 	help.Normal,
-	nick.Normal,
-	paintball.Normal,
-	prefix.Command,
-	rps.Normal,
-	time.Normal,
-	title.Normal,
-	urban_dictionary.Normal,
-	wikipedia.Normal,
-}
-
-var Advanced = core.Commands{
 	help.Advanced,
-	nick.Advanced,
-	time.Advanced,
-	urban_dictionary.Advanced,
-}
-
-var Admin = core.Commands{
 	help.Admin,
+
+	nick.Normal,
+	nick.Advanced,
 	nick.Admin,
+
+	paintball.Normal,
+
+	prefix.Normal,
 	prefix.Admin,
+
+	rps.Normal,
+
 	scope.Admin,
-	test.Command,
-}
 
-var All = core.AllCommands{
-	Normal:   Normal,
-	Advanced: Advanced,
-	Admin:    Admin,
-}
+	test.Admin,
 
-func setup(cmd *core.CommandStatic) {
-	if cmd.Frontends == 0 {
-		panic("frontends not set for command: " + cmd.Format(""))
-	}
+	time.Normal,
+	time.Advanced,
 
-	if cmd.Children == nil {
-		return
-	}
+	title.Normal,
 
-	for _, child := range cmd.Children {
-		// Setting the parents when declaring the object is not possible because
-		// that results in an inialization loop error (children reference the
-		// parent, so the parent can't reference the children). This also makes
-		// declaring the commands a bit cleaner.
-		child.Parent = cmd
+	urban_dictionary.Normal,
+	urban_dictionary.Advanced,
 
-		// child inherits parent's Frontend
-		child.Frontends = cmd.Frontends
-
-		setup(child)
-	}
-}
-
-func init() {
-	for _, cmd := range Normal {
-		setup(cmd)
-	}
-
-	for _, cmd := range Advanced {
-		setup(cmd)
-	}
-
-	for _, cmd := range Admin {
-		setup(cmd)
-	}
-}
-
-func runInit(cmd *core.CommandStatic) {
-	if cmd.Init != nil {
-		if err := cmd.Init(); err != nil {
-			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
-		}
-	}
+	wikipedia.Normal,
 }
 
 // This must be run after all of the global variables have been set (including
 // ones that frontend init functions might set) since the `Init` functions might
 // depend on them.
 func Init() {
-	for _, cmd := range Normal {
-		runInit(cmd)
-	}
-
-	for _, cmd := range Advanced {
-		runInit(cmd)
-	}
-
-	for _, cmd := range Admin {
-		runInit(cmd)
+	for _, cmd := range Commands {
+		if err := cmd.Init(); err != nil {
+			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
+		}
 	}
 }

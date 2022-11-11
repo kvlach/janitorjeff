@@ -113,7 +113,7 @@ func (m *Message) RawArgs(n int) string {
 	fields := m.FieldsSpace()
 
 	// Skip over the command + the given offset
-	s := strings.Join(fields[len(m.Command.Runtime.Name)+n:], "")
+	s := strings.Join(fields[len(m.Command.Name)+n:], "")
 
 	log.Debug().
 		Int("offset", n).
@@ -232,17 +232,7 @@ func (m *Message) CommandParse() (*Message, error) {
 	}
 	args[0] = strings.TrimPrefix(rootCmdName, prefix.Prefix)
 
-	var cmdList Commands
-	switch prefix.Type {
-	case Normal:
-		cmdList = Globals.Commands.Normal
-	case Advanced:
-		cmdList = Globals.Commands.Advanced
-	case Admin:
-		cmdList = Globals.Commands.Admin
-	}
-
-	cmdStatic, index, err := cmdList.MatchCommand(m.Frontend, args)
+	cmdStatic, index, err := Globals.Commands.Match(prefix.Type, m.Frontend, args)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't match command: %v", err)
 	}
@@ -254,16 +244,15 @@ func (m *Message) CommandParse() (*Message, error) {
 		Strs("args", args).
 		Send()
 
-	cmdRuntime := &CommandRuntime{
+	cmdRuntime := CommandRuntime{
 		Name:   cmdName,
 		Args:   args,
 		Prefix: prefix.Prefix,
 	}
 
 	m.Command = &Command{
-		Type:    prefix.Type,
-		Static:  cmdStatic,
-		Runtime: cmdRuntime,
+		cmdStatic,
+		cmdRuntime,
 	}
 
 	return m, nil
@@ -275,13 +264,11 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 
-	if m.Command.Type == Admin && m.Client.Admin() == false {
+	if m.Command.Type() == Admin && m.Client.Admin() == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 
-	cmd := m.Command.Static
-
-	resp, usrErr, err := cmd.Run(m)
+	resp, usrErr, err := m.Command.Run(m)
 	if err == ErrSilence {
 		return nil, err
 	}
@@ -289,7 +276,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		// passing an empty error in order to get any error specific rendering
 		// that might be supported
 		m.Write("Something went wrong...", errors.New(""))
-		return nil, fmt.Errorf("failed to run command '%v': %v", cmd, err)
+		return nil, fmt.Errorf("failed to run command '%v': %v", m.Command.Name, err)
 	}
 
 	return m.Write(resp, usrErr)

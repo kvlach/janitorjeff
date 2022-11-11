@@ -9,32 +9,60 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var Normal = &core.CommandStatic{
-	Names: []string{
-		"wikipedia",
-		"wiki",
-	},
-	Description: "Search something on wikipedia.",
-	UsageArgs:   "<query...>",
-	Frontends:   frontends.All,
-	Run:         normalRun,
+var Normal = normal{}
+
+type normal struct{}
+
+func (normal) Type() core.Type {
+	return core.Normal
 }
 
-func normalRun(m *core.Message) (any, error, error) {
-	if len(m.Command.Runtime.Args) < 1 {
+func (normal) Frontends() int {
+	return frontends.All
+}
+
+func (normal) Names() []string {
+	return []string{
+		"wikipedia",
+		"wiki",
+	}
+}
+
+func (normal) Description() string {
+	return "Search something on wikipedia."
+}
+
+func (normal) UsageArgs() string {
+	return "<query...>"
+}
+
+func (normal) Parent() core.Commander {
+	return nil
+}
+
+func (normal) Children() core.Commanders {
+	return nil
+}
+
+func (normal) Init() error {
+	return nil
+}
+
+func (c normal) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
 	switch m.Frontend {
 	case frontends.Discord:
-		return normalRunDiscord(m)
+		return c.discord(m)
 	default:
-		return normalRunText(m)
+		return c.text(m)
 	}
 }
 
-func normalRunDiscord(m *core.Message) (any, error, error) {
-	res, usrErr, err := normalRunCore(m)
+func (c normal) discord(m *core.Message) (any, error, error) {
+	res, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,20 +73,20 @@ func normalRunDiscord(m *core.Message) (any, error, error) {
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: normalRunErr(usrErr, res),
+		Description: c.err(usrErr, res),
 	}
 	return embed, usrErr, nil
 }
 
-func normalRunText(m *core.Message) (string, error, error) {
-	res, usrErr, err := normalRunCore(m)
+func (c normal) text(m *core.Message) (string, error, error) {
+	res, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return normalRunErr(usrErr, res), usrErr, nil
+	return c.err(usrErr, res), usrErr, nil
 }
 
-func normalRunErr(usrErr error, res page) string {
+func (normal) err(usrErr error, res page) string {
 	switch usrErr {
 	case nil:
 		return res.Canonicalurl
@@ -69,6 +97,6 @@ func normalRunErr(usrErr error, res page) string {
 	}
 }
 
-func normalRunCore(m *core.Message) (page, error, error) {
+func (normal) core(m *core.Message) (page, error, error) {
 	return search(m.RawArgs(0))
 }
