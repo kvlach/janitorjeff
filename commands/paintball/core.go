@@ -311,7 +311,6 @@ func generateQuestion(round int) (*dg.MessageEmbed, []string, string) {
 }
 
 func generateAnswer(round int, winner, poster string, answers []string, last bool) *dg.MessageEmbed {
-
 	var title string
 	if winner == "" {
 		title = fmt.Sprintf("**Round %d: Nobody Answered**", round)
@@ -380,7 +379,7 @@ func generateScorecard(scores []*score) *dg.MessageEmbed {
 		Description: desc,
 		Fields:      fields,
 		Footer: &dg.MessageEmbedFooter{
-			Text: "Want to play Paintball? Enter: !pb play",
+			Text: "Want to play Paintball? Enter: !pb",
 		},
 	}
 
