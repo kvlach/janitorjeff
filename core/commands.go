@@ -7,13 +7,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Type int
+type CommandType int
 
 // The command types.
 const (
 	// A simplified command with might not give full control over something but
 	// it has a very easy to use API.
-	Normal Type = 1 << iota
+	Normal CommandType = 1 << iota
 
 	// The full command and usually consists of many subcommands which makes it
 	// less intuitive for the average person.
@@ -33,7 +33,7 @@ const (
 // A command needs to implement this interface.
 type Commander interface {
 	// The command's type.
-	Type() Type
+	Type() CommandType
 
 	// The frontends where this command will be available at. This *must* be set
 	// otherwise the command will never get matched.
@@ -121,7 +121,7 @@ func (cmd *Command) Usage() string {
 
 type Commanders []Commander
 
-func (cmds Commanders) match(frontend int, t Type, name string) (Commander, error) {
+func (cmds Commanders) match(frontend int, t CommandType, name string) (Commander, error) {
 	name = strings.ToLower(name)
 
 	for _, c := range cmds {
@@ -153,7 +153,7 @@ func (cmds Commanders) match(frontend int, t Type, name string) (Commander, erro
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1). This makes it easy to know which
 // aliases where used by the user when invoking a command.
-func (cmds *Commanders) Match(t Type, frontend int, args []string) (Commander, int, error) {
+func (cmds *Commanders) Match(t CommandType, frontend int, args []string) (Commander, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0

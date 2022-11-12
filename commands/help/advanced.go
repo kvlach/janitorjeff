@@ -9,7 +9,7 @@ var Advanced = advanced{}
 
 type advanced struct{}
 
-func (advanced) Type() core.Type {
+func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 

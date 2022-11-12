@@ -9,7 +9,7 @@ var Admin = admin{}
 
 type admin struct{}
 
-func (admin) Type() core.Type {
+func (admin) Type() core.CommandType {
 	return core.Admin
 }
 

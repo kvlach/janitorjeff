@@ -8,7 +8,7 @@ var Normal = normal{}
 
 type normal struct{}
 
-func (normal) Type() core.Type {
+func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
@@ -56,7 +56,7 @@ var NormalZone = normalZone{}
 
 type normalZone struct{}
 
-func (c normalZone) Type() core.Type {
+func (c normalZone) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

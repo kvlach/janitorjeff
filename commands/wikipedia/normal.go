@@ -13,7 +13,7 @@ var Normal = normal{}
 
 type normal struct{}
 
-func (normal) Type() core.Type {
+func (normal) Type() core.CommandType {
 	return core.Normal
 }
 

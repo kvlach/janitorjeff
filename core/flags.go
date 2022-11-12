@@ -50,7 +50,7 @@ func (f *Flags) Parse() ([]string, error) {
 	return f.FlagSet.Args(), err
 }
 
-func TypeFlag(p *Type, value Type, f *Flags) {
+func TypeFlag(p *CommandType, value CommandType, f *Flags) {
 	*p = value
 
 	f.FlagSet.Func("type", "comma separated command types", func(s string) error {
