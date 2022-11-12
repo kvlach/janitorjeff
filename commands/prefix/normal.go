@@ -25,7 +25,7 @@ var Normal = normal{}
 
 type normal struct{}
 
-func (normal) Type() core.Type {
+func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
@@ -92,7 +92,7 @@ var NormalAdd = normalAdd{}
 
 type normalAdd struct{}
 
-func (c normalAdd) Type() core.Type {
+func (c normalAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -278,7 +278,7 @@ var NormalDelete = normalDelete{}
 
 type normalDelete struct{}
 
-func (c normalDelete) Type() core.Type {
+func (c normalDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -447,7 +447,7 @@ var NormalList = normalList{}
 
 type normalList struct{}
 
-func (c normalList) Type() core.Type {
+func (c normalList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -544,7 +544,7 @@ var NormalReset = normalReset{}
 
 type normalReset struct{}
 
-func (c normalReset) Type() core.Type {
+func (c normalReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

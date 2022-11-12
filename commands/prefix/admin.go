@@ -24,7 +24,7 @@ var Admin = admin{}
 
 type admin struct{}
 
-func (admin) Type() core.Type {
+func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
@@ -77,7 +77,7 @@ var AdminAdd = adminAdd{}
 
 type adminAdd struct{}
 
-func (c adminAdd) Type() core.Type {
+func (c adminAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -208,7 +208,7 @@ var AdminDelete = adminDelete{}
 
 type adminDelete struct{}
 
-func (c adminDelete) Type() core.Type {
+func (c adminDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -344,7 +344,7 @@ var AdminList = adminList{}
 
 type adminList struct{}
 
-func (c adminList) Type() core.Type {
+func (c adminList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -421,7 +421,7 @@ var AdminReset = adminReset{}
 
 type adminReset struct{}
 
-func (c adminReset) Type() core.Type {
+func (c adminReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

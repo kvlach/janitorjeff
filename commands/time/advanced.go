@@ -25,7 +25,7 @@ var Advanced = advanced{}
 
 type advanced struct{}
 
-func (advanced) Type() core.Type {
+func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
@@ -86,7 +86,7 @@ var AdvancedNow = advancedNow{}
 
 type advancedNow struct{}
 
-func (c advancedNow) Type() core.Type {
+func (c advancedNow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -200,7 +200,7 @@ var AdvancedConvert = advancedConvert{}
 
 type advancedConvert struct{}
 
-func (c advancedConvert) Type() core.Type {
+func (c advancedConvert) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -293,7 +293,7 @@ var AdvancedTimestamp = advancedTimestamp{}
 
 type advancedTimestamp struct{}
 
-func (c advancedTimestamp) Type() core.Type {
+func (c advancedTimestamp) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -406,7 +406,7 @@ var AdvancedTimezone = advancedTimezone{}
 
 type advancedTimezone struct{}
 
-func (c advancedTimezone) Type() core.Type {
+func (c advancedTimezone) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -459,7 +459,7 @@ var AdvancedTimezoneShow = advancedTimezoneShow{}
 
 type advancedTimezoneShow struct{}
 
-func (c advancedTimezoneShow) Type() core.Type {
+func (c advancedTimezoneShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -559,7 +559,7 @@ var AdvancedTimezoneSet = advancedTimezoneSet{}
 
 type advancedTimezoneSet struct{}
 
-func (c advancedTimezoneSet) Type() core.Type {
+func (c advancedTimezoneSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -667,7 +667,7 @@ var AdvancedTimezoneDelete = advancedTimezoneDelete{}
 
 type advancedTimezoneDelete struct{}
 
-func (c advancedTimezoneDelete) Type() core.Type {
+func (c advancedTimezoneDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -764,7 +764,7 @@ var AdvancedRemind = advancedRemind{}
 
 type advancedRemind struct{}
 
-func (c advancedRemind) Type() core.Type {
+func (c advancedRemind) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -816,7 +816,7 @@ var AdvancedRemindAdd = advancedRemindAdd{}
 
 type advancedRemindAdd struct{}
 
-func (c advancedRemindAdd) Type() core.Type {
+func (c advancedRemindAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -918,7 +918,7 @@ var AdvancedRemindDelete = advancedRemindDelete{}
 
 type advancedRemindDelete struct{}
 
-func (c advancedRemindDelete) Type() core.Type {
+func (c advancedRemindDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -1021,7 +1021,7 @@ var AdvancedRemindList = advancedRemindList{}
 
 type advancedRemindList struct{}
 
-func (c advancedRemindList) Type() core.Type {
+func (c advancedRemindList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

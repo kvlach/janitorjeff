@@ -14,7 +14,7 @@ var Advanced = advanced{}
 
 type advanced struct{}
 
-func (advanced) Type() core.Type {
+func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
@@ -103,7 +103,7 @@ var AdvancedShow = advancedShow{}
 
 type advancedShow struct{}
 
-func (c advancedShow) Type() core.Type {
+func (c advancedShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -203,7 +203,7 @@ var AdvancedSet = advancedSet{}
 
 type advancedSet struct{}
 
-func (c advancedSet) Type() core.Type {
+func (c advancedSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -312,7 +312,7 @@ var AdvancedDelete = advancedDelete{}
 
 type advancedDelete struct{}
 
-func (c advancedDelete) Type() core.Type {
+func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

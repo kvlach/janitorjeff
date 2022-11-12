@@ -14,7 +14,7 @@ var Normal = normal{}
 
 type normal struct{}
 
-func (normal) Type() core.Type {
+func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
@@ -64,7 +64,7 @@ var NormalTwitch = normalTwitch{}
 
 type normalTwitch struct{}
 
-func (c normalTwitch) Type() core.Type {
+func (c normalTwitch) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

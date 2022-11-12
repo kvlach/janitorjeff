@@ -11,7 +11,7 @@ var Advanced = advanced{}
 
 type advanced struct{}
 
-func (advanced) Type() core.Type {
+func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
@@ -62,7 +62,7 @@ var AdvancedSearch = advancedSearch{}
 
 type advancedSearch struct{}
 
-func (c advancedSearch) Type() core.Type {
+func (c advancedSearch) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
@@ -141,7 +141,7 @@ var AdvancedRandom = advancedRandom{}
 
 type advancedRandom struct{}
 
-func (c advancedRandom) Type() core.Type {
+func (c advancedRandom) Type() core.CommandType {
 	return c.Parent().Type()
 }
 

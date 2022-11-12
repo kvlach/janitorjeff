@@ -32,7 +32,7 @@ import (
 // the prefix `!` can't be used for both normal and advanced commands.
 
 type Prefix struct {
-	Type   Type
+	Type   CommandType
 	Prefix string
 }
 
@@ -156,7 +156,7 @@ func (db *DB) PrefixList(scope int64) ([]Prefix, error) {
 	var prefixes []Prefix
 	for rows.Next() {
 		var prefix string
-		var t Type
+		var t CommandType
 		if err := rows.Scan(&prefix, &t); err != nil {
 			return nil, err
 		}
