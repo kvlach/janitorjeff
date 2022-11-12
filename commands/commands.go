@@ -20,7 +20,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Commands = core.Commanders{
+var Commands = core.CommandsStatic{
 	category.Normal,
 
 	command.Normal,

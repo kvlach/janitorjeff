@@ -70,12 +70,12 @@ func (normal) UsageArgs() string {
 	return "(add | edit | delete | list)"
 }
 
-func (normal) Parent() core.Commander {
+func (normal) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.Commanders {
-	return core.Commanders{
+func (normal) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		NormalAdd,
 		NormalEdit,
 		NormalDelete,
@@ -143,11 +143,11 @@ func (normalAdd) UsageArgs() string {
 	return "<trigger> <text>"
 }
 
-func (normalAdd) Parent() core.Commander {
+func (normalAdd) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalAdd) Children() core.Commanders {
+func (normalAdd) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -300,11 +300,11 @@ func (normalEdit) UsageArgs() string {
 	return "<trigger> <text>"
 }
 
-func (normalEdit) Parent() core.Commander {
+func (normalEdit) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalEdit) Children() core.Commanders {
+func (normalEdit) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -423,11 +423,11 @@ func (normalDelete) UsageArgs() string {
 	return "<trigger>"
 }
 
-func (normalDelete) Parent() core.Commander {
+func (normalDelete) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalDelete) Children() core.Commanders {
+func (normalDelete) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -543,11 +543,11 @@ func (normalList) UsageArgs() string {
 	return ""
 }
 
-func (normalList) Parent() core.Commander {
+func (normalList) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalList) Children() core.Commanders {
+func (normalList) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -652,11 +652,11 @@ func (normalHistory) UsageArgs() string {
 	return "<trigger>"
 }
 
-func (normalHistory) Parent() core.Commander {
+func (normalHistory) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalHistory) Children() core.Commanders {
+func (normalHistory) Children() core.CommandsStatic {
 	return nil
 }
 

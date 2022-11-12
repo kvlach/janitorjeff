@@ -28,12 +28,12 @@ func (normal) UsageArgs() string {
 	return "[<user> | (zone)]"
 }
 
-func (normal) Parent() core.Commander {
+func (normal) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.Commanders {
-	return core.Commanders{
+func (normal) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		NormalZone,
 	}
 }
@@ -78,11 +78,11 @@ func (normalZone) UsageArgs() string {
 	return "[timezone]"
 }
 
-func (normalZone) Parent() core.Commander {
+func (normalZone) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalZone) Children() core.Commanders {
+func (normalZone) Children() core.CommandsStatic {
 	return nil
 }
 

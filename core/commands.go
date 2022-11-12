@@ -31,7 +31,7 @@ const (
 // includes things like the prefix used, the arguments passed, etc.
 
 // A command needs to implement this interface.
-type Commander interface {
+type CommandStatic interface {
 	// The command's type.
 	Type() CommandType
 
@@ -55,10 +55,10 @@ type Commander interface {
 	UsageArgs() string
 
 	// A command's parent, this is automatically set during bot startup.
-	Parent() Commander
+	Parent() CommandStatic
 
 	// The command's sub-commands.
-	Children() Commanders
+	Children() CommandsStatic
 
 	// This is executed during bot startup. Should be used to set things up
 	// necessary for the command, for example DB schemas.
@@ -75,7 +75,7 @@ type Commander interface {
 //	<prefix><command> [sub-command...] <usage-args>
 //
 // For example: !command delete <command>
-func Format(cmd Commander, prefix string) string {
+func Format(cmd CommandStatic, prefix string) string {
 	var args string
 	if cmd.UsageArgs() != "" {
 		args = " " + cmd.UsageArgs()
@@ -107,7 +107,7 @@ type CommandRuntime struct {
 }
 
 type Command struct {
-	Commander
+	CommandStatic
 	CommandRuntime
 }
 
@@ -119,9 +119,9 @@ func (cmd *Command) Usage() string {
 	return usage
 }
 
-type Commanders []Commander
+type CommandsStatic []CommandStatic
 
-func (cmds Commanders) match(frontend int, t CommandType, name string) (Commander, error) {
+func (cmds CommandsStatic) match(frontend int, t CommandType, name string) (CommandStatic, error) {
 	name = strings.ToLower(name)
 
 	for _, c := range cmds {
@@ -153,7 +153,7 @@ func (cmds Commanders) match(frontend int, t CommandType, name string) (Commande
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1). This makes it easy to know which
 // aliases where used by the user when invoking a command.
-func (cmds *Commanders) Match(t CommandType, frontend int, args []string) (Commander, int, error) {
+func (cmds *CommandsStatic) Match(t CommandType, frontend int, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0

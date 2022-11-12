@@ -36,12 +36,12 @@ func (normal) UsageArgs() string {
 	return "(twitch)"
 }
 
-func (normal) Parent() core.Commander {
+func (normal) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.Commanders {
-	return core.Commanders{
+func (normal) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		NormalTwitch,
 	}
 }
@@ -86,11 +86,11 @@ func (normalTwitch) UsageArgs() string {
 	return ""
 }
 
-func (normalTwitch) Parent() core.Commander {
+func (normalTwitch) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalTwitch) Children() core.Commanders {
+func (normalTwitch) Children() core.CommandsStatic {
 	return nil
 }
 

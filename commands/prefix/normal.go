@@ -47,12 +47,12 @@ func (normal) UsageArgs() string {
 	return "(add|del) <prefix> | list | reset"
 }
 
-func (normal) Parent() core.Commander {
+func (normal) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.Commanders {
-	return core.Commanders{
+func (normal) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		NormalAdd,
 		NormalDelete,
 		NormalList,
@@ -112,11 +112,11 @@ func (normalAdd) UsageArgs() string {
 	return "<prefix>"
 }
 
-func (normalAdd) Parent() core.Commander {
+func (normalAdd) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalAdd) Children() core.Commanders {
+func (normalAdd) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -298,11 +298,11 @@ func (normalDelete) UsageArgs() string {
 	return "<prefix>"
 }
 
-func (normalDelete) Parent() core.Commander {
+func (normalDelete) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalDelete) Children() core.Commanders {
+func (normalDelete) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -467,11 +467,11 @@ func (normalList) UsageArgs() string {
 	return ""
 }
 
-func (normalList) Parent() core.Commander {
+func (normalList) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalList) Children() core.Commanders {
+func (normalList) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -566,11 +566,11 @@ func (normalReset) UsageArgs() string {
 	return ""
 }
 
-func (normalReset) Parent() core.Commander {
+func (normalReset) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalReset) Children() core.Commanders {
+func (normalReset) Children() core.CommandsStatic {
 	return nil
 }
 

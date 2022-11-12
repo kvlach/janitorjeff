@@ -29,11 +29,11 @@ func (admin) UsageArgs() string {
 	return cmdUsageArgs
 }
 
-func (admin) Parent() core.Commander {
+func (admin) Parent() core.CommandStatic {
 	return nil
 }
 
-func (admin) Children() core.Commanders {
+func (admin) Children() core.CommandsStatic {
 	return nil
 }
 

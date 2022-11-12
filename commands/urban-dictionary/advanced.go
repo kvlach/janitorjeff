@@ -33,12 +33,12 @@ func (advanced) UsageArgs() string {
 	return "(search | random)"
 }
 
-func (advanced) Parent() core.Commander {
+func (advanced) Parent() core.CommandStatic {
 	return nil
 }
 
-func (advanced) Children() core.Commanders {
-	return core.Commanders{
+func (advanced) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdvancedSearch,
 		AdvancedRandom,
 	}
@@ -85,11 +85,11 @@ func (advancedSearch) UsageArgs() string {
 	return "<term...>"
 }
 
-func (advancedSearch) Parent() core.Commander {
+func (advancedSearch) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedSearch) Children() core.Commanders {
+func (advancedSearch) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -164,11 +164,11 @@ func (advancedRandom) UsageArgs() string {
 	return ""
 }
 
-func (advancedRandom) Parent() core.Commander {
+func (advancedRandom) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedRandom) Children() core.Commanders {
+func (advancedRandom) Children() core.CommandsStatic {
 	return nil
 }
 

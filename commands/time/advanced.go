@@ -47,12 +47,12 @@ func (advanced) UsageArgs() string {
 	return "(now | convert | timestamp | timezone | remind)"
 }
 
-func (advanced) Parent() core.Commander {
+func (advanced) Parent() core.CommandStatic {
 	return nil
 }
 
-func (advanced) Children() core.Commanders {
-	return core.Commanders{
+func (advanced) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdvancedNow,
 		AdvancedConvert,
 		AdvancedTimestamp,
@@ -108,11 +108,11 @@ func (advancedNow) UsageArgs() string {
 	return "[person]"
 }
 
-func (advancedNow) Parent() core.Commander {
+func (advancedNow) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedNow) Children() core.Commanders {
+func (advancedNow) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -222,11 +222,11 @@ func (advancedConvert) UsageArgs() string {
 	return "<timestamp> <timezone>"
 }
 
-func (advancedConvert) Parent() core.Commander {
+func (advancedConvert) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedConvert) Children() core.Commanders {
+func (advancedConvert) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -315,11 +315,11 @@ func (advancedTimestamp) UsageArgs() string {
 	return "<when...>"
 }
 
-func (advancedTimestamp) Parent() core.Commander {
+func (advancedTimestamp) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedTimestamp) Children() core.Commanders {
+func (advancedTimestamp) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -429,12 +429,12 @@ func (advancedTimezone) UsageArgs() string {
 	return "(show | set | delete)"
 }
 
-func (advancedTimezone) Parent() core.Commander {
+func (advancedTimezone) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedTimezone) Children() core.Commanders {
-	return core.Commanders{
+func (advancedTimezone) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdvancedTimezoneShow,
 		AdvancedTimezoneSet,
 		AdvancedTimezoneDelete,
@@ -479,11 +479,11 @@ func (advancedTimezoneShow) UsageArgs() string {
 	return ""
 }
 
-func (advancedTimezoneShow) Parent() core.Commander {
+func (advancedTimezoneShow) Parent() core.CommandStatic {
 	return AdvancedTimezone
 }
 
-func (advancedTimezoneShow) Children() core.Commanders {
+func (advancedTimezoneShow) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -581,11 +581,11 @@ func (advancedTimezoneSet) UsageArgs() string {
 	return "<timezone>"
 }
 
-func (advancedTimezoneSet) Parent() core.Commander {
+func (advancedTimezoneSet) Parent() core.CommandStatic {
 	return AdvancedTimezone
 }
 
-func (advancedTimezoneSet) Children() core.Commanders {
+func (advancedTimezoneSet) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -687,11 +687,11 @@ func (advancedTimezoneDelete) UsageArgs() string {
 	return ""
 }
 
-func (advancedTimezoneDelete) Parent() core.Commander {
+func (advancedTimezoneDelete) Parent() core.CommandStatic {
 	return AdvancedTimezone
 }
 
-func (advancedTimezoneDelete) Children() core.Commanders {
+func (advancedTimezoneDelete) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -786,12 +786,12 @@ func (advancedRemind) UsageArgs() string {
 	return "(add | delete | list)"
 }
 
-func (advancedRemind) Parent() core.Commander {
+func (advancedRemind) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedRemind) Children() core.Commanders {
-	return core.Commanders{
+func (advancedRemind) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdvancedRemindAdd,
 		AdvancedRemindDelete,
 		AdvancedRemindList,
@@ -836,11 +836,11 @@ func (advancedRemindAdd) UsageArgs() string {
 	return "(<person> to <what> in <when> | <person> in <when> to <what>)"
 }
 
-func (advancedRemindAdd) Parent() core.Commander {
+func (advancedRemindAdd) Parent() core.CommandStatic {
 	return AdvancedRemind
 }
 
-func (advancedRemindAdd) Children() core.Commanders {
+func (advancedRemindAdd) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -938,11 +938,11 @@ func (advancedRemindDelete) UsageArgs() string {
 	return "<id>"
 }
 
-func (advancedRemindDelete) Parent() core.Commander {
+func (advancedRemindDelete) Parent() core.CommandStatic {
 	return AdvancedRemind
 }
 
-func (advancedRemindDelete) Children() core.Commanders {
+func (advancedRemindDelete) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -1041,11 +1041,11 @@ func (advancedRemindList) UsageArgs() string {
 	return ""
 }
 
-func (advancedRemindList) Parent() core.Commander {
+func (advancedRemindList) Parent() core.CommandStatic {
 	return AdvancedRemind
 }
 
-func (advancedRemindList) Children() core.Commanders {
+func (advancedRemindList) Children() core.CommandsStatic {
 	return nil
 }
 

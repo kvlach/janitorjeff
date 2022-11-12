@@ -33,12 +33,12 @@ func (admin) UsageArgs() string {
 	return "(place | person)"
 }
 
-func (admin) Parent() core.Commander {
+func (admin) Parent() core.CommandStatic {
 	return nil
 }
 
-func (admin) Children() core.Commanders {
-	return core.Commanders{
+func (admin) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdminPlace,
 		AdminPerson,
 	}
@@ -84,11 +84,11 @@ func (adminPlace) UsageArgs() string {
 	return "<id>"
 }
 
-func (adminPlace) Parent() core.Commander {
+func (adminPlace) Parent() core.CommandStatic {
 	return Admin
 }
 
-func (adminPlace) Children() core.Commanders {
+func (adminPlace) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -141,11 +141,11 @@ func (adminPerson) UsageArgs() string {
 	return "<id> [parent]"
 }
 
-func (adminPerson) Parent() core.Commander {
+func (adminPerson) Parent() core.CommandStatic {
 	return Admin
 }
 
-func (adminPerson) Children() core.Commanders {
+func (adminPerson) Children() core.CommandsStatic {
 	return nil
 }
 
