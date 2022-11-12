@@ -61,7 +61,7 @@ type Prefixes struct {
 }
 
 type GlobalVars struct {
-	Commands *Commanders
+	Commands *CommandsStatic
 	DB       *DB
 	Host     string
 	Hooks    Hooks

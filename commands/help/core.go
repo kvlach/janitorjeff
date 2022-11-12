@@ -36,7 +36,7 @@ func runCore(t core.CommandType, frontend int, args []string, prefix string) (*c
 	}
 
 	cmd := &core.Command{
-		Commander: cmdStatic,
+		CommandStatic: cmdStatic,
 		CommandRuntime: core.CommandRuntime{
 			Name:   args[:index+1],
 			Prefix: prefix,

@@ -37,12 +37,12 @@ func (advanced) UsageArgs() string {
 	return "(show | set | delete)"
 }
 
-func (advanced) Parent() core.Commander {
+func (advanced) Parent() core.CommandStatic {
 	return nil
 }
 
-func (advanced) Children() core.Commanders {
-	return core.Commanders{
+func (advanced) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdvancedShow,
 		AdvancedSet,
 		AdvancedDelete,
@@ -123,11 +123,11 @@ func (advancedShow) UsageArgs() string {
 	return ""
 }
 
-func (advancedShow) Parent() core.Commander {
+func (advancedShow) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedShow) Children() core.Commanders {
+func (advancedShow) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -225,11 +225,11 @@ func (advancedSet) UsageArgs() string {
 	return "<nickname>"
 }
 
-func (advancedSet) Parent() core.Commander {
+func (advancedSet) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedSet) Children() core.Commanders {
+func (advancedSet) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -332,11 +332,11 @@ func (advancedDelete) UsageArgs() string {
 	return ""
 }
 
-func (advancedDelete) Parent() core.Commander {
+func (advancedDelete) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedDelete) Children() core.Commanders {
+func (advancedDelete) Children() core.CommandsStatic {
 	return nil
 }
 

@@ -40,12 +40,12 @@ func (admin) UsageArgs() string {
 	return ""
 }
 
-func (admin) Parent() core.Commander {
+func (admin) Parent() core.CommandStatic {
 	return nil
 }
 
-func (admin) Children() core.Commanders {
-	return core.Commanders{
+func (admin) Children() core.CommandsStatic {
+	return core.CommandsStatic{
 		AdminShow,
 		AdminSet,
 		AdminDelete,
@@ -90,11 +90,11 @@ func (adminShow) UsageArgs() string {
 	return ""
 }
 
-func (adminShow) Parent() core.Commander {
+func (adminShow) Parent() core.CommandStatic {
 	return Admin
 }
 
-func (adminShow) Children() core.Commanders {
+func (adminShow) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -161,11 +161,11 @@ func (adminSet) UsageArgs() string {
 	return "<nick>"
 }
 
-func (adminSet) Parent() core.Commander {
+func (adminSet) Parent() core.CommandStatic {
 	return Admin
 }
 
-func (adminSet) Children() core.Commanders {
+func (adminSet) Children() core.CommandsStatic {
 	return nil
 }
 
@@ -238,11 +238,11 @@ func (adminDelete) UsageArgs() string {
 	return "<nick>"
 }
 
-func (adminDelete) Parent() core.Commander {
+func (adminDelete) Parent() core.CommandStatic {
 	return Admin
 }
 
-func (adminDelete) Children() core.Commanders {
+func (adminDelete) Children() core.CommandsStatic {
 	return nil
 }
 
