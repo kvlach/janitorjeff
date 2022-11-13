@@ -50,6 +50,14 @@ func (d *MessageEdit) Usage(usage string) any {
 	return getUsage(usage)
 }
 
+func (d *MessageEdit) Admin() bool {
+	return isAdmin(d.Session, d.Message.GuildID, d.Message.Author.ID)
+}
+
+func (d *MessageEdit) Mod() bool {
+	return isMod(d.Session, d.Message.GuildID, d.Message.Author.ID)
+}
+
 func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

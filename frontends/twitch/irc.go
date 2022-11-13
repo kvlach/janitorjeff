@@ -161,6 +161,19 @@ func (t *Twitch) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
+func (t *Twitch) Admin() bool {
+	_, ok := t.message.User.Badges["broadcaster"]
+	return ok
+}
+
+func (t *Twitch) Mod() bool {
+	if t.Admin() {
+		return true
+	}
+	_, ok := t.message.User.Badges["moderator"]
+	return ok
+}
+
 func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 	var text string
 	switch t := msg.(type) {

@@ -85,6 +85,14 @@ func (i *InteractionCreate) Usage(usage string) any {
 	return getUsage(usage)
 }
 
+func (i *InteractionCreate) Admin() bool {
+	return isAdmin(i.Session, i.Interaction.GuildID, getUserID(i))
+}
+
+func (i *InteractionCreate) Mod() bool {
+	return isMod(i.Session, i.Interaction.GuildID, getUserID(i))
+}
+
 func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
