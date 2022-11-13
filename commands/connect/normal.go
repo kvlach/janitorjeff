@@ -18,10 +18,6 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.All
-}
-
 func (normal) Permitted(*core.Message) bool {
 	return true
 }
@@ -70,10 +66,6 @@ type normalTwitch struct{}
 
 func (c normalTwitch) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalTwitch) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalTwitch) Permitted(m *core.Message) bool {

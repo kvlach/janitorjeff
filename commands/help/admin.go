@@ -2,7 +2,6 @@ package help
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Admin = admin{}
@@ -11,10 +10,6 @@ type admin struct{}
 
 func (admin) Type() core.CommandType {
 	return core.Admin
-}
-
-func (admin) Frontends() int {
-	return frontends.All
 }
 
 func (admin) Permitted(*core.Message) bool {

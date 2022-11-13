@@ -2,7 +2,6 @@ package help
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Advanced = advanced{}
@@ -11,10 +10,6 @@ type advanced struct{}
 
 func (advanced) Type() core.CommandType {
 	return core.Advanced
-}
-
-func (advanced) Frontends() int {
-	return frontends.All
 }
 
 func (advanced) Permitted(*core.Message) bool {

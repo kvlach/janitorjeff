@@ -12,10 +12,6 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return Advanced.Frontends()
-}
-
 func (normal) Permitted(*core.Message) bool {
 	return true
 }
@@ -62,10 +58,6 @@ type normalZone struct{}
 
 func (c normalZone) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalZone) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalZone) Permitted(m *core.Message) bool {

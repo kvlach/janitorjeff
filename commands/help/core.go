@@ -29,8 +29,8 @@ const (
 
 var errCommandNotFound = errors.New("Command could not be found.")
 
-func runCore(t core.CommandType, frontend int, args []string, prefix string) (*core.Command, []string, error) {
-	cmdStatic, index, err := core.Globals.Commands.Match(t, frontend, args)
+func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, error) {
+	cmdStatic, index, err := core.Globals.Commands.Match(t, m, args)
 	if err != nil {
 		return nil, nil, errCommandNotFound
 	}
@@ -106,7 +106,7 @@ func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 }
 
 func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
-	cmd, aliases, usrErr := runCore(t, m.Frontend, m.Command.Args, m.Command.Prefix)
+	cmd, aliases, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}, usrErr, nil
 	}
@@ -114,7 +114,7 @@ func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, e
 }
 
 func runText(t core.CommandType, m *core.Message) (string, error, error) {
-	cmd, aliases, usrErr := runCore(t, m.Frontend, m.Command.Args, m.Command.Prefix)
+	cmd, aliases, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return fmt.Sprint(usrErr), usrErr, nil
 	}

@@ -12,10 +12,6 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return AdvancedSearch.Frontends()
-}
-
 func (normal) Permitted(*core.Message) bool {
 	return true
 }

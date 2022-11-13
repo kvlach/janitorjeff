@@ -51,10 +51,6 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.All
-}
-
 func (normal) Permitted(m *core.Message) bool {
 	return m.Mod()
 }
@@ -129,10 +125,6 @@ type normalAdd struct{}
 
 func (c normalAdd) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalAdd) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalAdd) Permitted(m *core.Message) bool {
@@ -267,7 +259,7 @@ func (normalAdd) isBuiltin(m *core.Message, scope int64, trigger string) (bool, 
 
 	for _, p := range prefixes {
 		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
-		_, _, err := core.Globals.Commands.Match(core.Normal, m.Frontend, cmdName)
+		_, _, err := core.Globals.Commands.Match(core.Normal, m, cmdName)
 		// if there is no error that means a command was matched and thus a
 		// collision exists
 		if err == nil {
@@ -290,10 +282,6 @@ type normalEdit struct{}
 
 func (c normalEdit) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalEdit) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalEdit) Permitted(m *core.Message) bool {
@@ -419,10 +407,6 @@ func (c normalDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalDelete) Frontends() int {
-	return c.Parent().Frontends()
-}
-
 func (c normalDelete) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
@@ -543,10 +527,6 @@ func (c normalList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalList) Frontends() int {
-	return c.Parent().Frontends()
-}
-
 func (c normalList) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
@@ -652,10 +632,6 @@ type normalHistory struct{}
 
 func (c normalHistory) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalHistory) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalHistory) Permitted(m *core.Message) bool {

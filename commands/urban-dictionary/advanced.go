@@ -15,10 +15,6 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Frontends() int {
-	return frontends.All
-}
-
 func (advanced) Permitted(*core.Message) bool {
 	return true
 }
@@ -68,10 +64,6 @@ type advancedSearch struct{}
 
 func (c advancedSearch) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c advancedSearch) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c advancedSearch) Permitted(m *core.Message) bool {
@@ -151,10 +143,6 @@ type advancedRandom struct{}
 
 func (c advancedRandom) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c advancedRandom) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c advancedRandom) Permitted(m *core.Message) bool {

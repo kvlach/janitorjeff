@@ -19,11 +19,10 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.Discord
-}
-
-func (normal) Permitted(*core.Message) bool {
+func (normal) Permitted(m *core.Message) bool {
+	if m.Frontend != frontends.Discord {
+		return false
+	}
 	return true
 }
 
