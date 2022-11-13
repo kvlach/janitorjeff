@@ -17,6 +17,10 @@ func (normal) Frontends() int {
 	return frontends.All
 }
 
+func (normal) Permitted(*core.Message) bool {
+	return true
+}
+
 func (normal) Names() []string {
 	return cmdNames
 }

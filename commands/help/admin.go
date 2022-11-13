@@ -17,6 +17,10 @@ func (admin) Frontends() int {
 	return frontends.All
 }
 
+func (admin) Permitted(*core.Message) bool {
+	return true
+}
+
 func (admin) Names() []string {
 	return cmdNames
 }

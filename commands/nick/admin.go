@@ -25,6 +25,10 @@ func (admin) Frontends() int {
 	return frontends.All
 }
 
+func (admin) Permitted(*core.Message) bool {
+	return true
+}
+
 func (admin) Names() []string {
 	return []string{
 		"nick",
@@ -76,6 +80,10 @@ func (c adminShow) Type() core.CommandType {
 
 func (c adminShow) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c adminShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (adminShow) Names() []string {
@@ -145,6 +153,10 @@ func (c adminSet) Type() core.CommandType {
 
 func (c adminSet) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c adminSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (adminSet) Names() []string {
@@ -224,6 +236,10 @@ func (c adminDelete) Type() core.CommandType {
 
 func (c adminDelete) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c adminDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (adminDelete) Names() []string {

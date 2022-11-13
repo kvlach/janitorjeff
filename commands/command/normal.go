@@ -55,6 +55,10 @@ func (normal) Frontends() int {
 	return frontends.All
 }
 
+func (normal) Permitted(m *core.Message) bool {
+	return m.Mod()
+}
+
 func (normal) Names() []string {
 	return []string{
 		"command",
@@ -129,6 +133,10 @@ func (c normalAdd) Type() core.CommandType {
 
 func (c normalAdd) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c normalAdd) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (normalAdd) Names() []string {
@@ -288,6 +296,10 @@ func (c normalEdit) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c normalEdit) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (normalEdit) Names() []string {
 	return core.Edit
 }
@@ -411,6 +423,10 @@ func (c normalDelete) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c normalDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (normalDelete) Names() []string {
 	return core.Delete
 }
@@ -531,6 +547,10 @@ func (c normalList) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c normalList) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (normalList) Names() []string {
 	return core.List
 }
@@ -636,6 +656,10 @@ func (c normalHistory) Type() core.CommandType {
 
 func (c normalHistory) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c normalHistory) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (normalHistory) Names() []string {

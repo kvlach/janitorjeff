@@ -33,6 +33,10 @@ func (advanced) Frontends() int {
 	return frontends.All
 }
 
+func (advanced) Permitted(*core.Message) bool {
+	return true
+}
+
 func (advanced) Names() []string {
 	return []string{
 		"time",
@@ -92,6 +96,10 @@ func (c advancedNow) Type() core.CommandType {
 
 func (c advancedNow) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedNow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedNow) Names() []string {
@@ -208,6 +216,10 @@ func (c advancedConvert) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c advancedConvert) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (advancedConvert) Names() []string {
 	return []string{
 		"convert",
@@ -299,6 +311,10 @@ func (c advancedTimestamp) Type() core.CommandType {
 
 func (c advancedTimestamp) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedTimestamp) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedTimestamp) Names() []string {
@@ -414,6 +430,10 @@ func (c advancedTimezone) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c advancedTimezone) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (advancedTimezone) Names() []string {
 	return []string{
 		"timezone",
@@ -465,6 +485,10 @@ func (c advancedTimezoneShow) Type() core.CommandType {
 
 func (c advancedTimezoneShow) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedTimezoneShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedTimezoneShow) Names() []string {
@@ -565,6 +589,10 @@ func (c advancedTimezoneSet) Type() core.CommandType {
 
 func (c advancedTimezoneSet) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedTimezoneSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedTimezoneSet) Names() []string {
@@ -675,6 +703,10 @@ func (c advancedTimezoneDelete) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c advancedTimezoneDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (advancedTimezoneDelete) Names() []string {
 	return core.Delete
 }
@@ -772,6 +804,10 @@ func (c advancedRemind) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c advancedRemind) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (advancedRemind) Names() []string {
 	return []string{
 		"remind",
@@ -822,6 +858,10 @@ func (c advancedRemindAdd) Type() core.CommandType {
 
 func (c advancedRemindAdd) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedRemindAdd) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedRemindAdd) Names() []string {
@@ -926,6 +966,10 @@ func (c advancedRemindDelete) Frontends() int {
 	return c.Parent().Frontends()
 }
 
+func (c advancedRemindDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
 func (advancedRemindDelete) Names() []string {
 	return core.Delete
 }
@@ -1027,6 +1071,10 @@ func (c advancedRemindList) Type() core.CommandType {
 
 func (c advancedRemindList) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedRemindList) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedRemindList) Names() []string {

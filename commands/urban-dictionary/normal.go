@@ -16,6 +16,10 @@ func (normal) Frontends() int {
 	return AdvancedSearch.Frontends()
 }
 
+func (normal) Permitted(*core.Message) bool {
+	return true
+}
+
 func (normal) Names() []string {
 	return Advanced.Names()
 }

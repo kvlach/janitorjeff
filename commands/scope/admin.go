@@ -19,6 +19,10 @@ func (admin) Frontends() int {
 	return frontends.All
 }
 
+func (admin) Permitted(*core.Message) bool {
+	return true
+}
+
 func (admin) Names() []string {
 	return []string{
 		"scope",
@@ -68,6 +72,10 @@ func (c adminPlace) Type() core.CommandType {
 
 func (c adminPlace) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c adminPlace) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (adminPlace) Names() []string {
@@ -125,6 +133,10 @@ func (c adminPerson) Type() core.CommandType {
 
 func (c adminPerson) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c adminPerson) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (adminPerson) Names() []string {

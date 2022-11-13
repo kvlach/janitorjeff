@@ -38,6 +38,10 @@ type CommandStatic interface {
 	// The frontends where this command will be available at.
 	Frontends() int
 
+	// Any other checks required for a command to be executed. Returns true if
+	// the command is allowed to be executed. Usually is just a mod/admin check.
+	Permitted(m *Message) bool
+
 	// All the aliases a command has. The first item in the list is considered
 	// the main name and so should be the simplest and most intuitive one for
 	// the average person. For example if it's a delete subcommand the first

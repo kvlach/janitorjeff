@@ -19,6 +19,10 @@ func (advanced) Frontends() int {
 	return frontends.All
 }
 
+func (advanced) Permitted(*core.Message) bool {
+	return true
+}
+
 func (advanced) Names() []string {
 	return []string{
 		"ud",
@@ -68,6 +72,10 @@ func (c advancedSearch) Type() core.CommandType {
 
 func (c advancedSearch) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedSearch) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedSearch) Names() []string {
@@ -147,6 +155,10 @@ func (c advancedRandom) Type() core.CommandType {
 
 func (c advancedRandom) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c advancedRandom) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (advancedRandom) Names() []string {

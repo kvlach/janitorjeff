@@ -274,6 +274,10 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 
+	if !m.Command.Permitted(m) {
+		return nil, ErrSilence
+	}
+
 	resp, usrErr, err := m.Command.Run(m)
 	if err == ErrSilence {
 		return nil, err
