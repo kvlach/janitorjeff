@@ -89,6 +89,14 @@ func (d *Message) Usage(usage string) any {
 	return getUsage(usage)
 }
 
+func (d *Message) Admin() bool {
+	return isAdmin(d.Session, d.Message.GuildID, d.Message.Author.ID)
+}
+
+func (d *Message) Mod() bool {
+	return isMod(d.Session, d.Message.GuildID, d.Message.Author.ID)
+}
+
 func (d *Message) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

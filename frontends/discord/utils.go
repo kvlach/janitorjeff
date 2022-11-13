@@ -248,6 +248,48 @@ func parse(m *dg.Message) *core.Message {
 	return msg
 }
 
+func memberHasPerms(s *dg.Session, guildID, userID string, perms int64) (bool, error) {
+	// if message is a DM
+	if guildID == "" {
+		return true, nil
+	}
+
+	member, err := s.State.Member(guildID, userID)
+	if err != nil {
+		if member, err = s.GuildMember(guildID, userID); err != nil {
+			return false, err
+		}
+	}
+
+	for _, roleID := range member.Roles {
+		role, err := s.State.Role(guildID, roleID)
+		if err != nil {
+			return false, err
+		}
+		if role.Permissions&perms != 0 {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func isAdmin(s *dg.Session, guildID string, userID string) bool {
+	has, err := memberHasPerms(s, guildID, userID, dg.PermissionAdministrator)
+	if err != nil {
+		return false
+	}
+	return has
+}
+
+func isMod(s *dg.Session, guildID string, userID string) bool {
+	has, err := memberHasPerms(s, guildID, userID, dg.PermissionBanMembers)
+	if err != nil {
+		return false
+	}
+	return has
+}
+
 func getDisplayName(member *dg.Member, author *dg.User) string {
 	var displayName string
 

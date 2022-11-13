@@ -47,6 +47,12 @@ type Messenger interface {
 
 	Usage(usage string) any
 
+	// Should return true only if a user has basically every permission.
+	Admin() bool
+
+	// General rule of thumb is that if they can ban people, they are mods.
+	Mod() bool
+
 	// Sends a message to the appropriate scope, `resp` could be `nil` depending
 	// on the frontend.
 	Send(msg any, usrErr error) (resp *Message, err error)
@@ -296,4 +302,12 @@ func (m *Message) Run() {
 
 func (m *Message) Usage() any {
 	return m.Client.Usage(m.Command.Usage())
+}
+
+func (m *Message) Admin() bool {
+	return m.Client.Admin()
+}
+
+func (m *Message) Mod() bool {
+	return m.Client.Mod()
 }
