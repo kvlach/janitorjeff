@@ -23,8 +23,8 @@ func getUserID(i *InteractionCreate) string {
 	return i.Interaction.User.ID
 }
 
-func (i *InteractionCreate) Admin() bool {
-	return isAdmin(getUserID(i))
+func (i *InteractionCreate) BotAdmin() bool {
+	return isBotAdmin(getUserID(i))
 }
 
 func (i *InteractionCreate) Parse() (*core.Message, error) {

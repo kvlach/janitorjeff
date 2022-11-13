@@ -19,7 +19,7 @@ import (
 // to be added.
 type Messenger interface {
 	// Checks if the message's author is a bot admin
-	Admin() bool
+	BotAdmin() bool
 
 	Parse() (*Message, error)
 
@@ -264,7 +264,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 
-	if m.Command.Type() == Admin && m.Client.Admin() == false {
+	if m.Command.Type() == Admin && m.Client.BotAdmin() == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 

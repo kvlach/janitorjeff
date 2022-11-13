@@ -16,8 +16,8 @@ type MessageEdit struct {
 	Message *dg.MessageUpdate
 }
 
-func (d *MessageEdit) Admin() bool {
-	return isAdmin(d.Message.Author.ID)
+func (d *MessageEdit) BotAdmin() bool {
+	return isBotAdmin(d.Message.Author.ID)
 }
 
 func (d *MessageEdit) Parse() (*core.Message, error) {
