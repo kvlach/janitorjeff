@@ -56,7 +56,7 @@ func CreateClient(person, place int64) (*Twitch, error) {
 
 var twitchIrcClient *tirc.Client
 
-func (t *Twitch) Admin() bool {
+func (t *Twitch) BotAdmin() bool {
 	return false
 }
 

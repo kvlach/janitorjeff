@@ -215,7 +215,7 @@ func getPlaceID(s string, ds *dg.Session) (string, error) {
 	return s, errInvalidID
 }
 
-func isAdmin(id string) bool {
+func isBotAdmin(id string) bool {
 	for _, admin := range Admins {
 		if id == admin {
 			return true

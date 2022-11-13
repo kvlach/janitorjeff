@@ -55,8 +55,8 @@ func CreateClient(author, channel int64, msgID string) (*Message, error) {
 	return d, nil
 }
 
-func (d *Message) Admin() bool {
-	return isAdmin(d.Message.Author.ID)
+func (d *Message) BotAdmin() bool {
+	return isBotAdmin(d.Message.Author.ID)
 }
 
 func (d *Message) Parse() (*core.Message, error) {

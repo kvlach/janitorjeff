@@ -15,8 +15,8 @@ type MessageCreate struct {
 	Message *dg.MessageCreate
 }
 
-func (d *MessageCreate) Admin() bool {
-	return isAdmin(d.Message.Author.ID)
+func (d *MessageCreate) BotAdmin() bool {
+	return isBotAdmin(d.Message.Author.ID)
 }
 
 func (d *MessageCreate) Parse() (*core.Message, error) {
