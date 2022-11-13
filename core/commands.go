@@ -35,8 +35,7 @@ type CommandStatic interface {
 	// The command's type.
 	Type() CommandType
 
-	// The frontends where this command will be available at. This *must* be set
-	// otherwise the command will never get matched.
+	// The frontends where this command will be available at.
 	Frontends() int
 
 	// All the aliases a command has. The first item in the list is considered
