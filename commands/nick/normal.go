@@ -2,7 +2,6 @@ package nick
 
 import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 var Normal = normal{}
@@ -11,10 +10,6 @@ type normal struct{}
 
 func (normal) Type() core.CommandType {
 	return core.Normal
-}
-
-func (normal) Frontends() int {
-	return frontends.All
 }
 
 func (normal) Permitted(*core.Message) bool {

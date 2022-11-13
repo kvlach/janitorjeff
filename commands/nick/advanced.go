@@ -18,10 +18,6 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Frontends() int {
-	return frontends.All
-}
-
 func (advanced) Permitted(*core.Message) bool {
 	return true
 }
@@ -109,10 +105,6 @@ type advancedShow struct{}
 
 func (c advancedShow) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c advancedShow) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c advancedShow) Permitted(m *core.Message) bool {
@@ -213,10 +205,6 @@ type advancedSet struct{}
 
 func (c advancedSet) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c advancedSet) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c advancedSet) Permitted(m *core.Message) bool {
@@ -326,10 +314,6 @@ type advancedDelete struct{}
 
 func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c advancedDelete) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c advancedDelete) Permitted(m *core.Message) bool {

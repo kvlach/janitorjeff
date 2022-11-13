@@ -164,7 +164,6 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 		}
 	}
 
-	cmd, index, _ := core.Globals.Commands.Match(core.Advanced, Type, args)
 	inter := &InteractionCreate{
 		Session:     s,
 		Interaction: i,
@@ -184,6 +183,8 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 			break
 		}
 	}
+
+	cmd, index, _ := core.Globals.Commands.Match(Type, m, args)
 
 	m.Command = &core.Command{
 		CommandStatic: cmd,

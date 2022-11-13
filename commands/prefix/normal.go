@@ -29,12 +29,8 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.All
-}
-
-func (normal) Permitted(*core.Message) bool {
-	return true
+func (normal) Permitted(m *core.Message) bool {
+	return m.Mod()
 }
 
 func (normal) Names() []string {
@@ -98,10 +94,6 @@ type normalAdd struct{}
 
 func (c normalAdd) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalAdd) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalAdd) Permitted(m *core.Message) bool {
@@ -267,7 +259,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Globals.Commands.Match(core.Normal, m.Frontend, []string{t})
+		_, _, err := core.Globals.Commands.Match(core.Normal, m, []string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -288,10 +280,6 @@ type normalDelete struct{}
 
 func (c normalDelete) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalDelete) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalDelete) Permitted(m *core.Message) bool {
@@ -463,10 +451,6 @@ func (c normalList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalList) Frontends() int {
-	return c.Parent().Frontends()
-}
-
 func (c normalList) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
@@ -562,10 +546,6 @@ type normalReset struct{}
 
 func (c normalReset) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c normalReset) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c normalReset) Permitted(m *core.Message) bool {

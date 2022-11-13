@@ -15,10 +15,6 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Frontends() int {
-	return frontends.All
-}
-
 func (admin) Permitted(*core.Message) bool {
 	return true
 }

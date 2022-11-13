@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
 )
 
 func adminGetFlags(m *core.Message) (*flags, []string, error) {
@@ -19,10 +18,6 @@ type admin struct{}
 
 func (admin) Type() core.CommandType {
 	return core.Admin
-}
-
-func (admin) Frontends() int {
-	return frontends.All
 }
 
 func (admin) Permitted(*core.Message) bool {
@@ -76,10 +71,6 @@ type adminShow struct{}
 
 func (c adminShow) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c adminShow) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c adminShow) Permitted(m *core.Message) bool {
@@ -149,10 +140,6 @@ type adminSet struct{}
 
 func (c adminSet) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c adminSet) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c adminSet) Permitted(m *core.Message) bool {
@@ -232,10 +219,6 @@ type adminDelete struct{}
 
 func (c adminDelete) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c adminDelete) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c adminDelete) Permitted(m *core.Message) bool {

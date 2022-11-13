@@ -16,12 +16,11 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.Twitch
-}
-
-func (normal) Permitted(*core.Message) bool {
-	return true
+func (normal) Permitted(m *core.Message) bool {
+	if m.Frontend != frontends.Twitch {
+		return false
+	}
+	return m.Mod()
 }
 
 func (normal) Names() []string {

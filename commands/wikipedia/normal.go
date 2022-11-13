@@ -17,10 +17,6 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Frontends() int {
-	return frontends.All
-}
-
 func (normal) Permitted(*core.Message) bool {
 	return true
 }

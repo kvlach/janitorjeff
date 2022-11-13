@@ -35,11 +35,9 @@ type CommandStatic interface {
 	// The command's type.
 	Type() CommandType
 
-	// The frontends where this command will be available at.
-	Frontends() int
-
 	// Any other checks required for a command to be executed. Returns true if
-	// the command is allowed to be executed. Usually is just a mod/admin check.
+	// the command is allowed to be executed. Usually used to chcek a user's
+	// permissions or to restrict a command to specific frontends.
 	Permitted(m *Message) bool
 
 	// All the aliases a command has. The first item in the list is considered
@@ -124,11 +122,11 @@ func (cmd *Command) Usage() string {
 
 type CommandsStatic []CommandStatic
 
-func (cmds CommandsStatic) match(frontend int, t CommandType, name string) (CommandStatic, error) {
+func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (CommandStatic, error) {
 	name = strings.ToLower(name)
 
 	for _, c := range cmds {
-		if c.Frontends()&frontend == 0 {
+		if !c.Permitted(m) {
 			continue
 		}
 
@@ -156,18 +154,18 @@ func (cmds CommandsStatic) match(frontend int, t CommandType, name string) (Comm
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1). This makes it easy to know which
 // aliases where used by the user when invoking a command.
-func (cmds *CommandsStatic) Match(t CommandType, frontend int, args []string) (CommandStatic, int, error) {
+func (cmds *CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0
 
-	cmd, err := cmds.match(frontend, t, args[0])
+	cmd, err := cmds.match(t, m, args[0])
 	if err != nil {
 		return nil, -1, err
 	}
 
 	for _, name := range args[1:] {
-		tmp, err := cmd.Children().match(frontend, t, name)
+		tmp, err := cmd.Children().match(t, m, name)
 		if err != nil {
 			return cmd, index, nil
 		}

@@ -15,10 +15,6 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Frontends() int {
-	return frontends.All
-}
-
 func (admin) Permitted(*core.Message) bool {
 	return true
 }
@@ -68,10 +64,6 @@ type adminPlace struct{}
 
 func (c adminPlace) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c adminPlace) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c adminPlace) Permitted(m *core.Message) bool {
@@ -129,10 +121,6 @@ type adminPerson struct{}
 
 func (c adminPerson) Type() core.CommandType {
 	return c.Parent().Type()
-}
-
-func (c adminPerson) Frontends() int {
-	return c.Parent().Frontends()
 }
 
 func (c adminPerson) Permitted(m *core.Message) bool {

@@ -238,7 +238,7 @@ func (m *Message) CommandParse() (*Message, error) {
 	}
 	args[0] = strings.TrimPrefix(rootCmdName, prefix.Prefix)
 
-	cmdStatic, index, err := Globals.Commands.Match(prefix.Type, m.Frontend, args)
+	cmdStatic, index, err := Globals.Commands.Match(prefix.Type, m, args)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't match command: %v", err)
 	}
@@ -272,10 +272,6 @@ func (m *Message) CommandRun() (*Message, error) {
 
 	if m.Command.Type() == Admin && m.Client.BotAdmin() == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
-	}
-
-	if !m.Command.Permitted(m) {
-		return nil, ErrSilence
 	}
 
 	resp, usrErr, err := m.Command.Run(m)
