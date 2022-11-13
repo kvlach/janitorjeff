@@ -22,6 +22,10 @@ func (normal) Frontends() int {
 	return frontends.All
 }
 
+func (normal) Permitted(*core.Message) bool {
+	return true
+}
+
 func (normal) Names() []string {
 	return []string{
 		"connect",
@@ -70,6 +74,10 @@ func (c normalTwitch) Type() core.CommandType {
 
 func (c normalTwitch) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c normalTwitch) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (normalTwitch) Names() []string {

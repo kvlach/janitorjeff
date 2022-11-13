@@ -23,6 +23,10 @@ func (normal) Frontends() int {
 	return frontends.Discord
 }
 
+func (normal) Permitted(*core.Message) bool {
+	return true
+}
+
 func (normal) Names() []string {
 	return []string{
 		"pb",

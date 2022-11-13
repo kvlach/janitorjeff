@@ -16,6 +16,10 @@ func (normal) Frontends() int {
 	return Advanced.Frontends()
 }
 
+func (normal) Permitted(*core.Message) bool {
+	return true
+}
+
 func (normal) Names() []string {
 	return Advanced.Names()
 }
@@ -62,6 +66,10 @@ func (c normalZone) Type() core.CommandType {
 
 func (c normalZone) Frontends() int {
 	return c.Parent().Frontends()
+}
+
+func (c normalZone) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
 }
 
 func (normalZone) Names() []string {
