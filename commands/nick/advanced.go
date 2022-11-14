@@ -33,8 +33,8 @@ func (advanced) Description() string {
 	return "Set, view or delete your nickname."
 }
 
-func (advanced) UsageArgs() string {
-	return "(show | set | delete)"
+func (c advanced) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advanced) Parent() core.CommandStatic {

@@ -29,8 +29,8 @@ func (advanced) Description() string {
 	return "Search a term or get a random one on urban dictionary."
 }
 
-func (advanced) UsageArgs() string {
-	return "(search | random)"
+func (c advanced) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advanced) Parent() core.CommandStatic {

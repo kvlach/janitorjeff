@@ -175,3 +175,13 @@ func (cmds *CommandsStatic) Match(t CommandType, m *Message, args []string) (Com
 
 	return cmd, index, nil
 }
+
+// Return the names of the children in a format that can be used in the
+// UsageArgs function.
+func (cmds CommandsStatic) Usage() string {
+	var names []string
+	for _, c := range cmds {
+		names = append(names, c.Names()[0])
+	}
+	return "(" + strings.Join(names, " | ") + ")"
+}

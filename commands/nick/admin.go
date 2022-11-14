@@ -35,8 +35,8 @@ func (admin) Description() string {
 	return ""
 }
 
-func (admin) UsageArgs() string {
-	return ""
+func (c admin) UsageArgs() string {
+	return c.Parent().UsageArgs()
 }
 
 func (admin) Parent() core.CommandStatic {
