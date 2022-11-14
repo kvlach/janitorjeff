@@ -29,8 +29,8 @@ func (admin) Description() string {
 	return "Scope related commands."
 }
 
-func (admin) UsageArgs() string {
-	return "(place | person)"
+func (c admin) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (admin) Parent() core.CommandStatic {

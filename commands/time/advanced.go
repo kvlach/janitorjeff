@@ -43,8 +43,8 @@ func (advanced) Description() string {
 	return "Time stuff and things."
 }
 
-func (advanced) UsageArgs() string {
-	return "(now | convert | timestamp | timezone | remind)"
+func (c advanced) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advanced) Parent() core.CommandStatic {
@@ -425,8 +425,8 @@ func (advancedTimezone) Description() string {
 	return "Show, set or delete your timezone."
 }
 
-func (advancedTimezone) UsageArgs() string {
-	return "(show | set | delete)"
+func (c advancedTimezone) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advancedTimezone) Parent() core.CommandStatic {
@@ -782,8 +782,8 @@ func (advancedRemind) Description() string {
 	return "Reminder related commands."
 }
 
-func (advancedRemind) UsageArgs() string {
-	return "(add | delete | list)"
+func (c advancedRemind) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advancedRemind) Parent() core.CommandStatic {

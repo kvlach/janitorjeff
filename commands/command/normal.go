@@ -66,8 +66,8 @@ func (normal) Description() string {
 	return "Add, edit, delete or list custom commands."
 }
 
-func (normal) UsageArgs() string {
-	return "(add | edit | delete | list)"
+func (c normal) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (normal) Parent() core.CommandStatic {

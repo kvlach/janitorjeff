@@ -43,8 +43,8 @@ func (normal) Description() string {
 	return "Add, delete, list or reset prefixes."
 }
 
-func (normal) UsageArgs() string {
-	return "(add|del) <prefix> | list | reset"
+func (c normal) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (normal) Parent() core.CommandStatic {

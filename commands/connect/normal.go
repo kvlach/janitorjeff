@@ -32,8 +32,8 @@ func (normal) Description() string {
 	return "Connect one of your accounts to the bot."
 }
 
-func (normal) UsageArgs() string {
-	return "(twitch)"
+func (c normal) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (normal) Parent() core.CommandStatic {
