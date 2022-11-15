@@ -223,9 +223,11 @@ func (c normalAdd) core(m *core.Message) (string, string, error, error) {
 		}
 	}
 
-	exists, err := dbPrefixExists(prefix, scope, core.Normal)
-	if err != nil {
-		return prefix, "", nil, err
+	exists := false
+	for _, p := range prefixes {
+		if p.Prefix == prefix {
+			exists = true
+		}
 	}
 	if exists {
 		return prefix, "", errExists, nil
