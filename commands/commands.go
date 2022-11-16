@@ -22,6 +22,7 @@ import (
 
 var Commands = core.CommandsStatic{
 	category.Normal,
+	category.Advanced,
 
 	command.Normal,
 
