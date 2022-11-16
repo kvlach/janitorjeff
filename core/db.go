@@ -81,6 +81,7 @@ func (_ *SQLDB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
 	return res.LastInsertId()
 }
 
+// Returns the given scope's frontend specific ID
 func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -97,6 +98,7 @@ func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	return id, err
 }
 
+// Returns then given scope's frontend id
 func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
