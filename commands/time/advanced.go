@@ -69,7 +69,7 @@ func (advanced) Init() error {
 		}
 	}()
 
-	return core.Globals.DB.Init(dbSchema)
+	return core.DB.Init(dbSchema)
 }
 
 func (advanced) Run(m *core.Message) (any, error, error) {

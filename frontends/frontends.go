@@ -17,7 +17,7 @@ const (
 
 // This is used to send messages that are not direct replies, e.g. reminders
 func CreateContext(person, place int64, msgID string) (*core.Message, error) {
-	frontend, err := core.Globals.DB.ScopeFrontend(place)
+	frontend, err := core.DB.ScopeFrontend(place)
 	if err != nil {
 		return nil, err
 	}

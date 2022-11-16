@@ -17,7 +17,7 @@ func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 		return person, nil
 	}
 
-	placeID, err := core.Globals.DB.ScopeID(place)
+	placeID, err := core.DB.ScopeID(place)
 	if err != nil {
 		return -1, err
 	}

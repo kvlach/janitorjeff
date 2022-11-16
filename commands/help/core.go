@@ -30,7 +30,7 @@ const (
 var errCommandNotFound = errors.New("Command could not be found.")
 
 func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, error) {
-	cmdStatic, index, err := core.Globals.Commands.Match(t, m, args)
+	cmdStatic, index, err := core.Commands.Match(t, m, args)
 	if err != nil {
 		return nil, nil, errCommandNotFound
 	}

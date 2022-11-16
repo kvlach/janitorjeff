@@ -54,7 +54,7 @@ func getPlaceExactScope(id string, hereChannelID, hereGuildID string, s *dg.Sess
 		return -1, err
 	}
 
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -87,7 +87,7 @@ func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string, s *dg.Se
 		return -1, err
 	}
 
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -139,7 +139,7 @@ func getPersonScope(id string) (int64, error) {
 		return scope, nil
 	}
 
-	db := core.Globals.DB
+	db := core.DB
 
 	tx, err := db.DB.Begin()
 	if err != nil {

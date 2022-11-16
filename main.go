@@ -89,22 +89,12 @@ func main() {
 	defer db.Close()
 	defer log.Debug().Msg("closing db")
 
-	globals := &core.GlobalVars{
-		Commands: &commands.Commands,
-		DB:       db,
-		Host:     readVar("HOST"),
-		Prefixes: core.Prefixes{
-			Admin: []core.Prefix{
-				{Type: core.Admin, Prefix: "##"},
-			},
-			Others: []core.Prefix{
-				{Type: core.Normal, Prefix: "!"},
-				{Type: core.Advanced, Prefix: "$"},
-			},
-		},
-	}
-
-	core.GlobalsInit(globals)
+	core.Commands = &commands.Commands
+	core.DB = db
+	core.Host = readVar("HOST")
+	core.Prefixes.Add(core.Admin, "##")
+	core.Prefixes.Add(core.Normal, "!")
+	core.Prefixes.Add(core.Advanced, "$")
 
 	discord.Admins = []string{"155662023743635456"}
 	twitch.ClientID = readVar("TWITCH_CLIENT_ID")
@@ -116,7 +106,7 @@ func main() {
 
 	commands.Init()
 
-	go http.ListenAndServe(globals.Host, nil)
+	go http.ListenAndServe(core.Host, nil)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)

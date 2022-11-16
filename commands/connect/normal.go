@@ -119,7 +119,7 @@ func (c normalTwitch) text(m *core.Message) (string, error, error) {
 
 func (normalTwitch) core(m *core.Message) (string, error) {
 	clientID := twitch.ClientID
-	redirectURI := fmt.Sprintf("http://%s/twitch/callback", core.Globals.Host)
+	redirectURI := fmt.Sprintf("http://%s/twitch/callback", core.Host)
 
 	c, err := helix.NewClient(&helix.Options{
 		ClientID:    clientID,

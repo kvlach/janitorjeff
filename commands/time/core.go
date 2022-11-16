@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS CommandTimeReminders (
 `
 
 func dbPersonAdd(person, place int64, timezone string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -89,7 +89,7 @@ func dbPersonAdd(person, place int64, timezone string) error {
 }
 
 func dbPersonUpdate(person, place int64, timezone string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -110,7 +110,7 @@ func dbPersonUpdate(person, place int64, timezone string) error {
 }
 
 func dbPersonExists(person, place int64) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -136,7 +136,7 @@ func dbPersonExists(person, place int64) (bool, error) {
 }
 
 func dbPersonDelete(person, place int64) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -154,7 +154,7 @@ func dbPersonDelete(person, place int64) error {
 }
 
 func dbPersonTimezone(person, place int64) (string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -178,7 +178,7 @@ func dbPersonTimezone(person, place int64) (string, error) {
 }
 
 func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -225,7 +225,7 @@ func scanReminders(rows *sql.Rows) ([]reminder, error) {
 }
 
 func dbRemindList(person, place int64) ([]reminder, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -257,7 +257,7 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 }
 
 func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -288,7 +288,7 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 }
 
 func dbRemindDelete(id int64) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -305,7 +305,7 @@ func dbRemindDelete(id int64) error {
 }
 
 func dbRemindExists(id, person int64) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 

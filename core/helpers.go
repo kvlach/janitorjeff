@@ -18,7 +18,7 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	// dropped because it added some unecessary complexity since we couldn't
 	// always trivially know whether a place was a DM or not.
 
-	prefixes, err := Globals.DB.PrefixList(place)
+	prefixes, err := DB.PrefixList(place)
 	if err != nil {
 		return nil, false, err
 	}
@@ -31,7 +31,7 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	inDB := true
 	if len(prefixes) == 0 {
 		inDB = false
-		prefixes = Globals.Prefixes.Others
+		prefixes = Prefixes.Others()
 		log.Debug().Msg("no place specific prefixes, using defaults")
 	}
 
@@ -39,7 +39,7 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	// modified through the config. This means that they are never saved in the
 	// database and so we just append them to the list every time. This doesn't
 	// affect the `inDB` return value.
-	prefixes = append(prefixes, Globals.Prefixes.Admin...)
+	prefixes = append(prefixes, Prefixes.Admin()...)
 
 	// We order by the length of the prefix in order to avoid matching the
 	// wrong prefix. For example, if the prefixes `!` and `!!` both exist in
@@ -72,7 +72,7 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 
 	timeoutchan := make(chan bool)
 
-	id := Globals.Hooks.Register(func(candidate *Message) {
+	id := Hooks.Register(func(candidate *Message) {
 		if check(candidate) {
 			m = candidate
 			timeoutchan <- true
@@ -86,6 +86,6 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 		break
 	}
 
-	Globals.Hooks.Delete(id)
+	Hooks.Delete(id)
 	return m
 }

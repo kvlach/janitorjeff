@@ -51,7 +51,7 @@ func (advanced) Children() core.CommandsStatic {
 
 func (c advanced) Init() error {
 	c.discordAppCommand()
-	return core.Globals.DB.Init(dbSchema)
+	return core.DB.Init(dbSchema)
 }
 
 func (advanced) discordAppCommand() {

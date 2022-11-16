@@ -238,7 +238,7 @@ func (m *Message) CommandParse() (*Message, error) {
 	}
 	args[0] = strings.TrimPrefix(rootCmdName, prefix.Prefix)
 
-	cmdStatic, index, err := Globals.Commands.Match(prefix.Type, m, args)
+	cmdStatic, index, err := Commands.Match(prefix.Type, m, args)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't match command: %v", err)
 	}
@@ -289,7 +289,7 @@ func (m *Message) CommandRun() (*Message, error) {
 }
 
 func (m *Message) Hooks() {
-	for _, h := range Globals.Hooks.Get() {
+	for _, h := range Hooks.Get() {
 		h.run(m)
 	}
 }

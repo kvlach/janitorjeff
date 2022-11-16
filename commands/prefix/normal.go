@@ -61,7 +61,7 @@ func (normal) Children() core.CommandsStatic {
 }
 
 func (c normal) Init() error {
-	core.Globals.Hooks.Register(c.emergencyReset)
+	core.Hooks.Register(c.emergencyReset)
 	return nil
 }
 
@@ -261,7 +261,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Globals.Commands.Match(core.Normal, m, []string{t})
+		_, _, err := core.Commands.Match(core.Normal, m, []string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -628,7 +628,7 @@ func (c normalReset) core(m *core.Message) (string, error) {
 	}
 
 	var prefix string
-	for _, p := range core.Globals.Prefixes.Others {
+	for _, p := range core.Prefixes.Others() {
 		if p.Type == core.Normal {
 			prefix = p.Prefix
 			break

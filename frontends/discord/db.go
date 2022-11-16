@@ -33,13 +33,11 @@ CREATE TABLE IF NOT EXISTS PlatformDiscordUsers (
 `
 
 func dbInit() error {
-	return core.Globals.DB.Init(dbSchema)
+	return core.DB.Init(dbSchema)
 }
 
 func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
-	db := core.Globals.DB
-
-	scope, err := db.ScopeAdd(tx, guildID, Type)
+	scope, err := core.DB.ScopeAdd(tx, guildID, Type)
 	if err != nil {
 		return -1, err
 	}
@@ -56,9 +54,7 @@ func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 }
 
 func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, error) {
-	db := core.Globals.DB
-
-	scope, err := db.ScopeAdd(tx, channelID, Type)
+	scope, err := core.DB.ScopeAdd(tx, channelID, Type)
 	if err != nil {
 		return -1, err
 	}
@@ -75,9 +71,7 @@ func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, e
 }
 
 func dbGetGuildScope(guildID string) (int64, error) {
-	db := core.Globals.DB
-
-	row := db.DB.QueryRow(`
+	row := core.DB.DB.QueryRow(`
 		SELECT id
 		FROM PlatformDiscordGuilds
 		WHERE guild = ?`, guildID)
@@ -88,9 +82,7 @@ func dbGetGuildScope(guildID string) (int64, error) {
 }
 
 func dbGetChannelScope(channelID string) (int64, error) {
-	db := core.Globals.DB
-
-	row := db.DB.QueryRow(`
+	row := core.DB.DB.QueryRow(`
 		SELECT id
 		FROM PlatformDiscordChannels
 		WHERE channel = ?`, channelID)
@@ -101,9 +93,7 @@ func dbGetChannelScope(channelID string) (int64, error) {
 }
 
 func dbGetGuildFromChannel(channelScope int64) (int64, error) {
-	db := core.Globals.DB
-
-	row := db.DB.QueryRow(`
+	row := core.DB.DB.QueryRow(`
 		SELECT guild
 		FROM PlatformDiscordChannels
 		WHERE id = ?`, channelScope)
@@ -114,9 +104,7 @@ func dbGetGuildFromChannel(channelScope int64) (int64, error) {
 }
 
 func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
-	db := core.Globals.DB
-
-	scope, err := db.ScopeAdd(tx, userID, Type)
+	scope, err := core.DB.ScopeAdd(tx, userID, Type)
 	if err != nil {
 		return -1, err
 	}
@@ -135,9 +123,7 @@ func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
 }
 
 func dbGetUserScope(userID string) (int64, error) {
-	db := core.Globals.DB
-
-	row := db.DB.QueryRow(`
+	row := core.DB.DB.QueryRow(`
 		SELECT id
 		FROM PlatformDiscordUsers
 		WHERE user = ?`, userID)
