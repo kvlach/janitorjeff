@@ -94,10 +94,10 @@ func Format(cmd CommandStatic, prefix string) string {
 
 // A command's runtime information.
 type CommandRuntime struct {
-	// Includes all the sub-commands e.g. ["prefix", "add"], so that we can
-	// know which alias is being used in order to display accurate help
-	// messages.
-	Name []string
+	// The "path" taken to invoke the command, i.e. which names were used.
+	// Includes all the sub-commands e.g. ["prefix", "add"] in order to be able
+	// to display accurate help messages.
+	Path []string
 
 	// The arguments passed, includes everything that's not part of the
 	// command's name.
@@ -113,7 +113,7 @@ type Command struct {
 }
 
 func (cmd *Command) Usage() string {
-	usage := cmd.Prefix + strings.Join(cmd.Name, " ")
+	usage := cmd.Prefix + strings.Join(cmd.Path, " ")
 	if cmd.UsageArgs() != "" {
 		usage += " " + cmd.UsageArgs()
 	}
