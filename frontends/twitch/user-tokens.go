@@ -19,7 +19,7 @@ func GetState() (string, error) {
 		return "", err
 	}
 
-	states.Add(state)
+	states.Append(state)
 	go func() {
 		time.Sleep(1 * time.Minute)
 		states.Delete(state)
