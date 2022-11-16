@@ -23,10 +23,7 @@ func (s *States) Delete(token string) {
 	}
 }
 
-func (s *States) Generate() (string, error) {
-	s.Lock()
-	defer s.Unlock()
-
+func (s *States) generate() (string, error) {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -36,7 +33,16 @@ func (s *States) Generate() (string, error) {
 
 	// you never know
 	if s.InUnsafe(state) {
-		return s.Generate()
+		return s.generate()
 	}
 	return state, nil
+}
+
+func (s *States) Generate() (string, error) {
+	// Because generate() recursively calls itself until it generates a state
+	// that does not already exist we need to wrap it in a function that
+	// handles locking and unlocking, otherwise we'd get a mutex deadlock.
+	s.Lock()
+	defer s.Unlock()
+	return s.generate()
 }
