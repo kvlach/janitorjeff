@@ -7,6 +7,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var Commands *CommandsStatic
+
 type CommandType int
 
 // The command types.
