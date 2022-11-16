@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS CommandCommandCommands (
 `
 
 func _dbAdd(scope, creator, timestamp int64, trigger, response string) error {
-	db := core.Globals.DB
+	db := core.DB
 
 	_, err := db.DB.Exec(`
 		INSERT INTO CommandCommandCommands(
@@ -48,21 +48,19 @@ func _dbAdd(scope, creator, timestamp int64, trigger, response string) error {
 		Msg("added command")
 
 	return err
-
 }
 
 func dbAdd(scope, creator int64, trigger, response string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	timestamp := time.Now().UTC().UnixNano()
 	return _dbAdd(scope, creator, timestamp, trigger, response)
-
 }
 
 func _dbDel(scope, deleter, timestamp int64, trigger string) error {
-	db := core.Globals.DB
+	db := core.DB
 
 	_, err := db.DB.Exec(`
 		UPDATE CommandCommandCommands
@@ -82,7 +80,7 @@ func _dbDel(scope, deleter, timestamp int64, trigger string) error {
 }
 
 func dbDel(scope, deleter int64, trigger string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -91,7 +89,7 @@ func dbDel(scope, deleter int64, trigger string) error {
 }
 
 func dbModify(scope, author int64, trigger, response string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -118,7 +116,7 @@ func dbModify(scope, author int64, trigger, response string) error {
 }
 
 func dbList(scope int64) ([]string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -127,7 +125,6 @@ func dbList(scope int64) ([]string, error) {
 		FROM CommandCommandCommands
 		WHERE scope = ? and active = ?
 	`, scope, true)
-
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")
 		return nil, err
@@ -157,7 +154,7 @@ func dbList(scope int64) ([]string, error) {
 }
 
 func dbGetResponse(scope int64, trigger string) (string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -189,14 +186,13 @@ type customCommand struct {
 }
 
 func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, error) {
-	db := core.Globals.DB
+	db := core.DB
 
 	rows, err := db.DB.Query(`
 		SELECT response, creator, created, deleter, deleted
 		FROM CommandCommandCommands
 		WHERE scope = ? and trigger = ? and active = ?
 	`, scope, trigger, active)
-
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")
 		return nil, err
@@ -247,7 +243,7 @@ func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, erro
 }
 
 func dbHistory(scope int64, trigger string) ([]customCommand, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 

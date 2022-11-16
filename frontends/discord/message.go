@@ -14,7 +14,7 @@ type Message struct {
 }
 
 func CreateClient(author, channel int64, msgID string) (*Message, error) {
-	channelID, err := core.Globals.DB.ScopeID(channel)
+	channelID, err := core.DB.ScopeID(channel)
 	if err != nil {
 		return nil, err
 	}
@@ -24,12 +24,12 @@ func CreateClient(author, channel int64, msgID string) (*Message, error) {
 		return nil, err
 	}
 
-	guildID, err := core.Globals.DB.ScopeID(guild)
+	guildID, err := core.DB.ScopeID(guild)
 	if err != nil {
 		return nil, err
 	}
 
-	authorID, err := core.Globals.DB.ScopeID(author)
+	authorID, err := core.DB.ScopeID(author)
 	if err != nil {
 		return nil, err
 	}

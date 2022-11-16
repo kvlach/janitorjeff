@@ -15,7 +15,7 @@ import (
 
 type TestDB struct {
 	name string
-	db   *core.DB
+	db   *core.SQLDB
 }
 
 func NewTestDB(name string) *TestDB {

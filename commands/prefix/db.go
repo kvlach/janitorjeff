@@ -7,7 +7,7 @@ import (
 )
 
 func dbScopeExists(scope int64) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -32,7 +32,7 @@ func dbScopeExists(scope int64) (bool, error) {
 }
 
 func dbPrefixExists(prefix string, scope int64, t core.CommandType) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -58,7 +58,7 @@ func dbPrefixExists(prefix string, scope int64, t core.CommandType) (bool, error
 }
 
 func dbAdd(prefix string, scope int64, t core.CommandType) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -76,7 +76,7 @@ func dbAdd(prefix string, scope int64, t core.CommandType) error {
 }
 
 func dbDel(prefix string, scope int64) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -94,7 +94,7 @@ func dbDel(prefix string, scope int64) error {
 }
 
 func dbReset(scope int64) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 

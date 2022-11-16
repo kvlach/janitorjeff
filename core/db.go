@@ -8,33 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Prefixes:
-//
-// Some very basic prefix support has to exist in the core in order to be able
-// to find scope specific prefixes when parsing the message. Only thing that is
-// supported is creating the table and getting a list of prefixes for the
-// current scope. The rest (adding, deleting, etc.) is handled externally by a
-// command.
-//
-// The idea of having the ability to have an arbitrary number of prefixes
-// originated from the fact that I wanted to not have to use a prefix when
-// DMing the bot, as it is pointless to do so in that case. So after building
-// support for more than 1 prefix it felt unecessary to limit it to just DMs,
-// as that would be an artificial limit on what the bot is already supports and
-// not really a necessity.
-//
-// There are 3 main prefix types:
-//  - normal
-//  - advanced
-//  - admin
-// These are used to call normal, advanced and admin commands respectively. A
-// prefix has to be unique accross all types (in a specific scope), for example
-// the prefix `!` can't be used for both normal and advanced commands.
-
-type Prefix struct {
-	Type   CommandType
-	Prefix string
-}
+var DB *SQLDB
 
 const schema = `
 CREATE TABLE IF NOT EXISTS Scopes (
@@ -55,18 +29,18 @@ CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
 );
 `
 
-type DB struct {
+type SQLDB struct {
 	Lock sync.RWMutex
 	DB   *sql.DB
 }
 
-func Open(driver, source string) (*DB, error) {
+func Open(driver, source string) (*SQLDB, error) {
 	sqlDB, err := sql.Open(driver, fmt.Sprintf("file:%s?_foreign_keys=on", source))
 	if err != nil {
 		return nil, err
 	}
 
-	db := &DB{DB: sqlDB}
+	db := &SQLDB{DB: sqlDB}
 	if err := db.Init(schema); err != nil {
 		return nil, err
 	}
@@ -74,13 +48,13 @@ func Open(driver, source string) (*DB, error) {
 	return db, nil
 }
 
-func (db *DB) Close() error {
+func (db *SQLDB) Close() error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 	return db.DB.Close()
 }
 
-func (db *DB) Init(schema string) error {
+func (db *SQLDB) Init(schema string) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -97,7 +71,7 @@ func (db *DB) Init(schema string) error {
 	return tx.Commit()
 }
 
-func (_ *DB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
+func (_ *SQLDB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
 	res, err := tx.Exec(`
 		INSERT INTO Scopes(original_id, frontend)
 		VALUES (?, ?)`, id, frontend)
@@ -107,7 +81,7 @@ func (_ *DB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
 	return res.LastInsertId()
 }
 
-func (db *DB) ScopeID(scope int64) (string, error) {
+func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -123,7 +97,7 @@ func (db *DB) ScopeID(scope int64) (string, error) {
 	return id, err
 }
 
-func (db *DB) ScopeFrontend(scope int64) (int64, error) {
+func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -140,7 +114,7 @@ func (db *DB) ScopeFrontend(scope int64) (int64, error) {
 }
 
 // Returns the list of all prefixes for a specific scope.
-func (db *DB) PrefixList(scope int64) ([]Prefix, error) {
+func (db *SQLDB) PrefixList(scope int64) ([]Prefix, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS CommandNickNicknames (
 `
 
 func dbPersonAdd(person, place int64, nick string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -51,7 +51,7 @@ func dbPersonAdd(person, place int64, nick string) error {
 }
 
 func dbPersonUpdate(person, place int64, nick string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -72,7 +72,7 @@ func dbPersonUpdate(person, place int64, nick string) error {
 }
 
 func dbPersonExists(person, place int64) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -98,7 +98,7 @@ func dbPersonExists(person, place int64) (bool, error) {
 }
 
 func dbNickExists(nick string, place int64) (bool, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -124,7 +124,7 @@ func dbNickExists(nick string, place int64) (bool, error) {
 }
 
 func dbPersonDelete(person, place int64) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -142,7 +142,7 @@ func dbPersonDelete(person, place int64) error {
 }
 
 func dbPersonNick(person, place int64) (string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -166,7 +166,7 @@ func dbPersonNick(person, place int64) (string, error) {
 }
 
 func dbGetPerson(nick string, place int64) (int64, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -276,5 +276,5 @@ func (f *flags) Place() *flags {
 //////////
 
 func init_() error {
-	return core.Globals.DB.Init(dbSchema)
+	return core.DB.Init(dbSchema)
 }

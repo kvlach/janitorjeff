@@ -177,14 +177,14 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 	}
 
 	var prefix string
-	for _, p := range core.Globals.Prefixes.Others {
+	for _, p := range core.Prefixes.Others() {
 		if p.Type == core.Normal {
 			prefix = p.Prefix
 			break
 		}
 	}
 
-	cmd, index, _ := core.Globals.Commands.Match(Type, m, args)
+	cmd, index, _ := core.Commands.Match(Type, m, args)
 
 	m.Command = &core.Command{
 		CommandStatic: cmd,

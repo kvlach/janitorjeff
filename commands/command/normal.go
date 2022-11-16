@@ -85,8 +85,8 @@ func (normal) Children() core.CommandsStatic {
 }
 
 func (c normal) Init() error {
-	core.Globals.Hooks.Register(c.writeCustomCommand)
-	return core.Globals.DB.Init(dbShema)
+	core.Hooks.Register(c.writeCustomCommand)
+	return core.DB.Init(dbShema)
 }
 
 func (normal) writeCustomCommand(m *core.Message) {
@@ -259,7 +259,7 @@ func (normalAdd) isBuiltin(m *core.Message, scope int64, trigger string) (bool, 
 
 	for _, p := range prefixes {
 		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
-		_, _, err := core.Globals.Commands.Match(core.Normal, m, cmdName)
+		_, _, err := core.Commands.Match(core.Normal, m, cmdName)
 		// if there is no error that means a command was matched and thus a
 		// collision exists
 		if err == nil {

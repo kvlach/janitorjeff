@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS PlatformTwitchChannels (
 `
 
 func dbInit() error {
-	return core.Globals.DB.Init(dbSchema)
+	return core.DB.Init(dbSchema)
 }
 
 func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
@@ -39,7 +39,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 		return scope, nil
 	}
 
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -66,7 +66,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 }
 
 func twitchGetChannelScope(channelID string) (int64, error) {
-	db := core.Globals.DB
+	db := core.DB
 
 	row := db.DB.QueryRow(`
 		SELECT id
@@ -79,7 +79,7 @@ func twitchGetChannelScope(channelID string) (int64, error) {
 }
 
 func dbGetChannel(scope int64) (string, string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
@@ -94,7 +94,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 }
 
 func SetUserAccessToken(accessToken, refreshToken, channelID string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -112,7 +112,7 @@ func SetUserAccessToken(accessToken, refreshToken, channelID string) error {
 }
 
 func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -125,7 +125,7 @@ func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
 }
 
 func GetUserAccessToken(channelID string) (string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
@@ -137,7 +137,7 @@ func GetUserAccessToken(channelID string) (string, error) {
 }
 
 func dbGetetUserRefreshToken(accessToken string) (string, error) {
-	db := core.Globals.DB
+	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
