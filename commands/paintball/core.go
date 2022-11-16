@@ -186,7 +186,7 @@ func shuffle(s string) string {
 	return re.ReplaceAllStringFunc(s, func(m string) string {
 		rand.Seed(time.Now().UnixNano())
 		runes := []rune(m)
-		rand.Shuffle(len(m), func(i, j int) {
+		rand.Shuffle(len(runes), func(i, j int) {
 			runes[i], runes[j] = runes[j], runes[i]
 		})
 		return strings.ToLower(string(runes))
