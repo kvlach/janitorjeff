@@ -172,9 +172,8 @@ func (m *Message) HereLogical() (int64, error) {
 	return here, nil
 }
 
-// Returns the given place's prefixes and also whether or not they were taken
+// Returns the logical here's prefixes and also whether or not they were taken
 // from the database (if not then that means the default ones were used).
-// Returns the logical here's prefixes.
 func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.HereLogical()
 	if err != nil {
