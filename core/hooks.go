@@ -4,6 +4,8 @@ import (
 	"sync"
 )
 
+// Hooks are a list of functions that are applied one-by-one to incoming
+// messages.
 var Hooks = hooks{}
 
 type hook struct {
