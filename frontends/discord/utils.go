@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -365,7 +364,7 @@ func sendText(s *dg.Session, m *dg.Message, text string, ping bool) (*core.Messa
 	if lenLim > lenCnt(text) {
 		resp, err = msgSend(s, m, text, nil, ping)
 	} else {
-		parts := utils.Split(text, lenCnt, lenLim)
+		parts := core.Split(text, lenCnt, lenLim)
 		for _, p := range parts {
 			resp, err = msgSend(s, m, p, nil, ping)
 		}

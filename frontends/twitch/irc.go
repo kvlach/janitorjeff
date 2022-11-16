@@ -8,7 +8,6 @@ import (
 	"unicode/utf8"
 
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/utils"
 
 	tirc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/nicklaw5/helix"
@@ -196,7 +195,7 @@ func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 		return nil, nil
 	}
 
-	parts := utils.Split(text, lenCnt, lenLim)
+	parts := core.Split(text, lenCnt, lenLim)
 	for _, p := range parts {
 		t.client.Say(t.message.Channel, fmt.Sprintf("%s%s", mention, p))
 	}
