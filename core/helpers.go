@@ -70,17 +70,17 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 func Await(timeout time.Duration, check func(*Message) bool) *Message {
 	var m *Message
 
-	timeoutchan := make(chan bool)
+	found := make(chan bool)
 
 	id := Hooks.Register(func(candidate *Message) {
 		if check(candidate) {
 			m = candidate
-			timeoutchan <- true
+			found <- true
 		}
 	})
 
 	select {
-	case <-timeoutchan:
+	case <-found:
 		break
 	case <-time.After(timeout):
 		break
