@@ -69,6 +69,8 @@ func (ps prefixes) Others() []Prefix {
 	return others
 }
 
+// Returns the given place's prefixes and also whether or not they were taken
+// from the database (if not then that means the default ones were used).
 func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	// Initially the empty prefix was added if a message came from a DM, so
 	// that normal commands could be run without using any prefix. This was
