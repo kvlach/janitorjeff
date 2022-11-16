@@ -66,7 +66,8 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 	return prefixes, inDB, nil
 }
 
-// Monitor incoming messages until `check` is true or until timeout.
+// Monitor incoming messages until `check` is true or until timeout. If nothing
+// is matched then the returned object will be nil.
 func Await(timeout time.Duration, check func(*Message) bool) *Message {
 	var m *Message
 
