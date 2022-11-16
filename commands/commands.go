@@ -50,6 +50,7 @@ var Commands = core.CommandsStatic{
 	time.Advanced,
 
 	title.Normal,
+	title.Advanced,
 
 	urban_dictionary.Normal,
 	urban_dictionary.Advanced,
