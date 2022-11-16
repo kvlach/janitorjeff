@@ -13,7 +13,7 @@ type Flags struct {
 }
 
 func NewFlags(m *Message) *Flags {
-	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Name, " "))
+	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Path, " "))
 	f := &Flags{
 		FlagSet: flag.NewFlagSet(name, flag.ContinueOnError),
 		Msg:     m,

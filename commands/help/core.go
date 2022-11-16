@@ -38,12 +38,12 @@ func runCore(t core.CommandType, m *core.Message, args []string, prefix string) 
 	cmd := &core.Command{
 		CommandStatic: cmdStatic,
 		CommandRuntime: core.CommandRuntime{
-			Name:   args[:index+1],
+			Path:   args[:index+1],
 			Prefix: prefix,
 		},
 	}
 
-	cmdName := cmd.Name[len(cmd.Name)-1]
+	cmdName := cmd.Path[len(cmd.Path)-1]
 	aliases := make([]string, 0, len(cmdStatic.Names())-1)
 
 	for _, name := range cmdStatic.Names() {
@@ -84,10 +84,10 @@ func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 
 	if len(aliases) > 0 {
 		var base string
-		if len(cmd.Name) == 1 {
+		if len(cmd.Path) == 1 {
 			base = cmd.Prefix
 		} else {
-			cmdBase := strings.Join(cmd.Name[:len(cmd.Name)-1], " ")
+			cmdBase := strings.Join(cmd.Path[:len(cmd.Path)-1], " ")
 			base = fmt.Sprintf("%s%s ", cmd.Prefix, cmdBase)
 		}
 

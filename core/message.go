@@ -119,7 +119,7 @@ func (m *Message) RawArgs(n int) string {
 	fields := m.FieldsSpace()
 
 	// Skip over the command + the given offset
-	s := strings.Join(fields[len(m.Command.Name)+n:], "")
+	s := strings.Join(fields[len(m.Command.Path)+n:], "")
 
 	log.Debug().
 		Int("offset", n).
@@ -250,7 +250,7 @@ func (m *Message) CommandParse() (*Message, error) {
 		Send()
 
 	cmdRuntime := CommandRuntime{
-		Name:   cmdName,
+		Path:   cmdName,
 		Args:   args,
 		Prefix: prefix.Prefix,
 	}
@@ -281,7 +281,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		// passing an empty error in order to get any error specific rendering
 		// that might be supported
 		m.Write("Something went wrong...", errors.New(""))
-		return nil, fmt.Errorf("failed to run command '%v': %v", m.Command.Name, err)
+		return nil, fmt.Errorf("failed to run command '%v': %v", m.Command.Path, err)
 	}
 
 	return m.Write(resp, usrErr)

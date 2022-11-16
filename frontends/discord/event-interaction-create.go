@@ -189,7 +189,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 	m.Command = &core.Command{
 		CommandStatic: cmd,
 		CommandRuntime: core.CommandRuntime{
-			Name:   args[:index+1],
+			Path:   args[:index+1],
 			Args:   args[index+1:],
 			Prefix: prefix,
 		},
