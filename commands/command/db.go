@@ -12,7 +12,7 @@ const dbShema = `
 CREATE TABLE IF NOT EXISTS CommandCommandCommands (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-	scope INTEGER NOT NULL,
+	place INTEGER NOT NULL,
 	trigger VARCHAR(255) NOT NULL,
 	response VARCHAR(255) NOT NULL,
 	active BOOLEAN NOT NULL,
@@ -22,25 +22,25 @@ CREATE TABLE IF NOT EXISTS CommandCommandCommands (
 	deleter INTEGER,
 	deleted INTEGER,
 
-	FOREIGN KEY (scope) REFERENCES Scopes(id) ON DELETE CASCADE,
+	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (creator) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (deleter) REFERENCES Scopes(id) ON DELETE CASCADE
 )
 `
 
-func _dbAdd(scope, creator, timestamp int64, trigger, response string) error {
+func _dbAdd(place, creator, timestamp int64, trigger, response string) error {
 	db := core.DB
 
 	_, err := db.DB.Exec(`
 		INSERT INTO CommandCommandCommands(
-			scope, trigger, response, active, creator, created
+			place, trigger, response, active, creator, created
 		)
 		VALUES (?, ?, ?, ?, ?, ?)`,
-		scope, trigger, response, true, creator, timestamp)
+		place, trigger, response, true, creator, timestamp)
 
 	log.Debug().
 		Err(err).
-		Int64("scope", scope).
+		Int64("place", place).
 		Str("trigger", trigger).
 		Str("response", response).
 		Int64("creator", creator).
@@ -50,27 +50,27 @@ func _dbAdd(scope, creator, timestamp int64, trigger, response string) error {
 	return err
 }
 
-func dbAdd(scope, creator int64, trigger, response string) error {
+func dbAdd(place, creator int64, trigger, response string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	timestamp := time.Now().UTC().UnixNano()
-	return _dbAdd(scope, creator, timestamp, trigger, response)
+	return _dbAdd(place, creator, timestamp, trigger, response)
 }
 
-func _dbDel(scope, deleter, timestamp int64, trigger string) error {
+func _dbDel(place, deleter, timestamp int64, trigger string) error {
 	db := core.DB
 
 	_, err := db.DB.Exec(`
 		UPDATE CommandCommandCommands
 		SET active = ?, deleter = ?, deleted = ?
-		WHERE scope = ? and trigger = ? and active = ?
-	`, false, deleter, timestamp, scope, trigger, true)
+		WHERE place = ? and trigger = ? and active = ?
+	`, false, deleter, timestamp, place, trigger, true)
 
 	log.Debug().
 		Err(err).
-		Int64("scope", scope).
+		Int64("place", place).
 		Str("trigger", trigger).
 		Int64("deleter", deleter).
 		Int64("timestamp", timestamp).
@@ -79,34 +79,34 @@ func _dbDel(scope, deleter, timestamp int64, trigger string) error {
 	return err
 }
 
-func dbDel(scope, deleter int64, trigger string) error {
+func dbDel(place, deleter int64, trigger string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	timestamp := time.Now().UTC().UnixNano()
-	return _dbDel(scope, deleter, timestamp, trigger)
+	return _dbDel(place, deleter, timestamp, trigger)
 }
 
-func dbModify(scope, author int64, trigger, response string) error {
+func dbModify(place, author int64, trigger, response string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	timestamp := time.Now().UTC().UnixNano()
 
-	err := _dbDel(scope, author, timestamp, trigger)
+	err := _dbDel(place, author, timestamp, trigger)
 	if err != nil {
 		return err
 	}
 
-	err = _dbAdd(scope, author, timestamp, trigger, response)
+	err = _dbAdd(place, author, timestamp, trigger, response)
 	if err != nil {
 		return err
 	}
 
 	log.Debug().
-		Int64("scope", scope).
+		Int64("place", place).
 		Int64("author", author).
 		Str("trigger", trigger).
 		Str("response", response).
@@ -115,7 +115,7 @@ func dbModify(scope, author int64, trigger, response string) error {
 	return nil
 }
 
-func dbList(scope int64) ([]string, error) {
+func dbList(place int64) ([]string, error) {
 	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -123,8 +123,8 @@ func dbList(scope int64) ([]string, error) {
 	rows, err := db.DB.Query(`
 		SELECT trigger
 		FROM CommandCommandCommands
-		WHERE scope = ? and active = ?
-	`, scope, true)
+		WHERE place = ? and active = ?
+	`, place, true)
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")
 		return nil, err
@@ -146,14 +146,14 @@ func dbList(scope int64) ([]string, error) {
 
 	log.Debug().
 		Err(err).
-		Int64("scope", scope).
+		Int64("place", place).
 		Strs("triggers", triggers).
 		Msg("got triggers")
 
 	return triggers, err
 }
 
-func dbGetResponse(scope int64, trigger string) (string, error) {
+func dbGetResponse(place int64, trigger string) (string, error) {
 	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -161,15 +161,15 @@ func dbGetResponse(scope int64, trigger string) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT response
 		FROM CommandCommandCommands
-		WHERE scope = ? and trigger = ? and active = ?
-	`, scope, trigger, true)
+		WHERE place = ? and trigger = ? and active = ?
+	`, place, trigger, true)
 
 	var response string
 	err := row.Scan(&response)
 
 	log.Debug().
 		Err(err).
-		Int64("scope", scope).
+		Int64("place", place).
 		Str("trigger", trigger).
 		Str("response", response).
 		Msg("got response")
@@ -185,14 +185,14 @@ type customCommand struct {
 	deleted  int64
 }
 
-func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, error) {
+func _dbHistory(place int64, trigger string, active bool) ([]customCommand, error) {
 	db := core.DB
 
 	rows, err := db.DB.Query(`
 		SELECT response, creator, created, deleter, deleted
 		FROM CommandCommandCommands
-		WHERE scope = ? and trigger = ? and active = ?
-	`, scope, trigger, active)
+		WHERE place = ? and trigger = ? and active = ?
+	`, place, trigger, active)
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")
 		return nil, err
@@ -234,7 +234,7 @@ func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, erro
 
 	log.Debug().
 		Err(err).
-		Int64("scope", scope).
+		Int64("place", place).
 		Str("trigger", trigger).
 		Interface("history", history).
 		Msg("got a command's history")
@@ -242,17 +242,17 @@ func _dbHistory(scope int64, trigger string, active bool) ([]customCommand, erro
 	return history, err
 }
 
-func dbHistory(scope int64, trigger string) ([]customCommand, error) {
+func dbHistory(place int64, trigger string) ([]customCommand, error) {
 	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
-	inactive, err := _dbHistory(scope, trigger, false)
+	inactive, err := _dbHistory(place, trigger, false)
 	if err != nil {
 		return nil, err
 	}
 
-	active, err := _dbHistory(scope, trigger, true)
+	active, err := _dbHistory(place, trigger, true)
 	if err != nil {
 		return nil, err
 	}
