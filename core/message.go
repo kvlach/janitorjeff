@@ -78,7 +78,9 @@ type Channel struct {
 }
 
 type Message struct {
+	// Cache values since they are expensive to retrieve and are needed often
 	author      int64
+	hereExact   int64
 	hereLogical int64
 
 	ID       string
@@ -152,14 +154,20 @@ func (m *Message) Author() (int64, error) {
 
 // Return's the exact here's scope.
 func (m *Message) HereExact() (int64, error) {
-	return m.Client.PlaceExact(m.Channel.ID)
+	if m.hereExact != 0 {
+		return m.hereExact, nil
+	}
+
+	here, err := m.Client.PlaceExact(m.Channel.ID)
+	if err != nil {
+		return -1, err
+	}
+	m.hereExact = here
+	return here, nil
 }
 
 // Returns the logical here's scope.
 func (m *Message) HereLogical() (int64, error) {
-	// used way more often than HereExact, which is why only this one gets
-	// cached
-
 	if m.hereLogical != 0 {
 		return m.hereLogical, nil
 	}
