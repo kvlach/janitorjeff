@@ -1,7 +1,6 @@
 package command
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,36 +10,6 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
-	"github.com/rs/zerolog/log"
-)
-
-func checkTriggerExists(m *core.Message, trigger string) (bool, int64, error) {
-	exists := false
-
-	here, err := m.HereLogical()
-	if err != nil {
-		return exists, here, err
-	}
-
-	triggers, err := dbList(here)
-	if err != nil {
-		return exists, here, err
-	}
-
-	for _, t := range triggers {
-		if t == trigger {
-			exists = true
-			break
-		}
-	}
-
-	return exists, here, nil
-}
-
-var (
-	errTriggerExists   = errors.New("trigger already exists")
-	errTriggerNotFound = errors.New("trigger was not found")
-	errBuiltinCommand  = errors.New("trigger collides with a built-in command")
 )
 
 var Advanced = advanced{}
@@ -209,65 +178,20 @@ func (advancedAdd) err(usrErr error, trigger string) string {
 
 func (c advancedAdd) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
-
-	exists, place, err := checkTriggerExists(m, trigger)
-	if err != nil {
-		return trigger, nil, err
-	}
-	if exists == true {
-		log.Debug().
-			Int64("place", place).
-			Str("trigger", trigger).
-			Msg("trigger already exists in this place")
-
-		return trigger, errTriggerExists, nil
-	}
-
-	builtin, err := c.isBuiltin(m, place, trigger)
-	if err != nil {
-		return trigger, nil, err
-	}
-	if builtin == true {
-		return trigger, errBuiltinCommand, nil
-	}
-
 	response := m.RawArgs(1)
 
 	author, err := m.Author()
 	if err != nil {
-		return trigger, nil, err
+		return "", nil, err
 	}
 
-	err = dbAdd(place, author, trigger, response)
-
-	log.Debug().
-		Err(err).
-		Int64("place", place).
-		Str("trigger", trigger).
-		Str("response", response).
-		Int64("author", author).
-		Msg("added custom command")
-
-	return trigger, nil, err
-}
-
-func (advancedAdd) isBuiltin(m *core.Message, place int64, trigger string) (bool, error) {
-	prefixes, _, err := m.Prefixes()
+	here, err := m.HereLogical()
 	if err != nil {
-		return false, err
+		return "", nil, err
 	}
 
-	for _, p := range prefixes {
-		cmdName := []string{strings.TrimPrefix(trigger, p.Prefix)}
-		_, _, err := core.Commands.Match(core.Advanced, m, cmdName)
-		// if there is no error that means a command was matched and thus a
-		// collision exists
-		if err == nil {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	usrErr, err := runAdd(here, author, trigger, response)
+	return trigger, usrErr, err
 }
 
 //////////
@@ -364,33 +288,20 @@ func (advancedEdit) err(usrErr error, trigger string) string {
 
 func (advancedEdit) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
-
-	exists, place, err := checkTriggerExists(m, trigger)
-	if err != nil {
-		return trigger, nil, err
-	}
-	if exists == false {
-		return trigger, errTriggerNotFound, nil
-	}
-
 	response := m.RawArgs(1)
 
 	author, err := m.Author()
 	if err != nil {
-		return trigger, nil, err
+		return "", nil, err
 	}
 
-	err = dbModify(place, author, trigger, response)
+	here, err := m.HereLogical()
+	if err != nil {
+		return "", nil, err
+	}
 
-	log.Debug().
-		Err(err).
-		Int64("place", place).
-		Int64("author", author).
-		Str("trigger", trigger).
-		Str("response", response).
-		Msg("modified  custom command")
-
-	return trigger, nil, err
+	usrErr, err := runEdit(here, author, trigger, response)
+	return trigger, usrErr, err
 }
 
 ////////////
@@ -488,29 +399,18 @@ func (advancedDelete) err(usrErr error, trigger string) string {
 func (advancedDelete) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
 
-	exists, place, err := checkTriggerExists(m, trigger)
+	here, err := m.HereLogical()
 	if err != nil {
-		return trigger, nil, err
-	}
-	if exists == false {
-		return trigger, errTriggerNotFound, nil
+		return "", nil, err
 	}
 
 	author, err := m.Author()
 	if err != nil {
-		return trigger, nil, err
+		return "", nil, err
 	}
 
-	err = dbDel(place, author, trigger)
-
-	log.Debug().
-		Err(err).
-		Int64("place", place).
-		Str("trigger", trigger).
-		Int64("author", author).
-		Msg("deleted custom command")
-
-	return trigger, nil, err
+	usrErr, err := runDelete(here, author, trigger)
+	return trigger, usrErr, err
 }
 
 //////////
@@ -605,19 +505,7 @@ func (c advancedList) Core(m *core.Message) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	triggers, err := dbList(here)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Debug().
-		Err(err).
-		Int64("place", here).
-		Strs("triggers", triggers).
-		Msg("got triggers")
-
-	return triggers, nil
+	return runList(here)
 }
 
 /////////////
@@ -679,7 +567,7 @@ func (c advancedHistory) Run(m *core.Message) (any, error, error) {
 
 func formatTime(timestamp int64) string {
 	seconds := timestamp / int64(time.Second) // nanoseconds to seconds
-	return fmt.Sprintf("on <t:%d:D> at <t:%d:T>", seconds, seconds)
+	return fmt.Sprintf("<t:%d:D>", seconds)
 }
 
 func formatCreate(timestamp int64, response string) string {
@@ -722,13 +610,13 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 			when = append(when, formatTime(hist.created))
 		} else if history[i-1].deleted == hist.created {
 			// modification
-			action = append(action, "modified")
+			action = append(action, "edited")
 			response = append(response, hist.response)
 			when = append(when, formatTime(hist.created))
 		} else {
 			// deletion
 			action = append(action, "deleted")
-			response = append(response, history[i-1].response)
+			response = append(response, "")
 			when = append(when, formatTime(history[i-1].deleted))
 
 			action = append(action, "created")
@@ -738,7 +626,7 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 
 		if i == len(history)-1 && hist.deleted != 0 {
 			action = append(action, "deleted")
-			response = append(response, hist.response)
+			response = append(response, "")
 			when = append(when, formatTime(hist.deleted))
 		}
 	}
@@ -770,18 +658,11 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 func (advancedHistory) core(m *core.Message) (string, []customCommand, error) {
 	trigger := m.Command.Args[0]
 
-	// We don't check to see if the trigger exists since this command may be
-	// used to view the history of a deleted trigger
-
 	here, err := m.HereLogical()
 	if err != nil {
 		return trigger, nil, err
 	}
 
-	history, err := dbHistory(here, trigger)
-	if err != nil {
-		return trigger, nil, err
-	}
-
-	return trigger, history, nil
+	history, err := runHistory(here, trigger)
+	return trigger, history, err
 }

@@ -79,7 +79,7 @@ func _dbDel(place, deleter, timestamp int64, trigger string) error {
 	return err
 }
 
-func dbDel(place, deleter int64, trigger string) error {
+func dbDelete(place, deleter int64, trigger string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -88,31 +88,57 @@ func dbDel(place, deleter int64, trigger string) error {
 	return _dbDel(place, deleter, timestamp, trigger)
 }
 
-func dbModify(place, author int64, trigger, response string) error {
+func dbEdit(place, editor int64, trigger, response string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	timestamp := time.Now().UTC().UnixNano()
 
-	err := _dbDel(place, author, timestamp, trigger)
+	err := _dbDel(place, editor, timestamp, trigger)
 	if err != nil {
 		return err
 	}
 
-	err = _dbAdd(place, author, timestamp, trigger, response)
+	err = _dbAdd(place, editor, timestamp, trigger, response)
 	if err != nil {
 		return err
 	}
 
 	log.Debug().
 		Int64("place", place).
-		Int64("author", author).
+		Int64("author", editor).
 		Str("trigger", trigger).
 		Str("response", response).
 		Msg("changed trigger's response")
 
 	return nil
+}
+
+func dbTriggerExists(place int64, trigger string) (bool, error) {
+	db := core.DB
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var exists bool
+
+	row := db.DB.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM CommandCommandCommands
+			WHERE trigger = ? and place = ? and active = ?
+			LIMIT 1
+		)`, trigger, place, true)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Str("trigger", trigger).
+		Int64("place", place).
+		Bool("exists", exists).
+		Msg("checked db to see if trigger exists")
+
+	return exists, err
 }
 
 func dbList(place int64) ([]string, error) {

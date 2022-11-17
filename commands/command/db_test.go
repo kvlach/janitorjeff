@@ -45,7 +45,7 @@ func TestDBList(t *testing.T) {
 }
 
 func TestDBModify(t *testing.T) {
-	if err := dbModify(testScope, testAuthor, testTrigger, testResponseModify); err != nil {
+	if err := dbEdit(testScope, testAuthor, testTrigger, testResponseModify); err != nil {
 		t.Fatal(err)
 	}
 
@@ -59,7 +59,7 @@ func TestDBModify(t *testing.T) {
 }
 
 func TestDBDelete(t *testing.T) {
-	if err := dbDel(testScope, testAuthor, testTrigger); err != nil {
+	if err := dbDelete(testScope, testAuthor, testTrigger); err != nil {
 		t.Fatal(err)
 	}
 
