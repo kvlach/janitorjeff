@@ -254,7 +254,7 @@ func (c normalAdd) core(m *core.Message) (string, string, error, error) {
 // !prefix add .
 // .prefix // both trigger
 func customCommandCollision(m *core.Message, prefix string) (string, error) {
-	triggers, err := command.NormalList.Core(m)
+	triggers, err := command.AdvancedList.Core(m)
 	if err != nil {
 		return "", err
 	}
