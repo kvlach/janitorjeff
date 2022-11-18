@@ -96,7 +96,7 @@ func init() {
 
 		userID := res.Data.UserID
 
-		err = SetUserAccessToken(accessToken, refreshToken, userID)
+		err = dbSetUserAccessToken(accessToken, refreshToken, userID)
 		if err != nil {
 			log.Debug().Err(err).Send()
 			fail(w, r)

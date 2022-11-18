@@ -21,7 +21,7 @@ func dbInit() error {
 	return core.DB.Init(dbSchema)
 }
 
-func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
+func dbAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
 	var channelID, channelName string
 	if id == m.User.ID {
 		channelID = m.User.ID
@@ -34,7 +34,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	}
 
 	// if scope exists return it instead of re-adding it
-	scope, err := twitchGetChannelScope(channelID)
+	scope, err := dbGetChannelScope(channelID)
 	if err == nil {
 		return scope, nil
 	}
@@ -65,7 +65,7 @@ func twitchChannelAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64
 	return scope, tx.Commit()
 }
 
-func twitchGetChannelScope(channelID string) (int64, error) {
+func dbGetChannelScope(channelID string) (int64, error) {
 	db := core.DB
 
 	row := db.DB.QueryRow(`
@@ -93,7 +93,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 	return id, name, err
 }
 
-func SetUserAccessToken(accessToken, refreshToken, channelID string) error {
+func dbSetUserAccessToken(accessToken, refreshToken, channelID string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -124,7 +124,7 @@ func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
 	return err
 }
 
-func GetUserAccessToken(channelID string) (string, error) {
+func dbGetUserAccessToken(channelID string) (string, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
