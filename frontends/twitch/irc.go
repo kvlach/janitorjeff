@@ -137,7 +137,7 @@ func (t *Twitch) Person(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return twitchChannelAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) PlaceExact(id string) (int64, error) {
@@ -145,7 +145,7 @@ func (t *Twitch) PlaceExact(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return twitchChannelAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) PlaceLogical(id string) (int64, error) {
@@ -153,7 +153,7 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return twitchChannelAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message, h)
 }
 
 func (t *Twitch) Usage(usage string) any {
@@ -224,7 +224,7 @@ func (t *Twitch) Helix() (*Helix, error) {
 		return nil, err
 	}
 
-	userAccessToken, err := GetUserAccessToken(t.message.RoomID)
+	userAccessToken, err := dbGetUserAccessToken(t.message.RoomID)
 	if err == nil {
 		h.SetUserAccessToken(userAccessToken)
 	} else {
