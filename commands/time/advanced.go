@@ -833,7 +833,7 @@ func (advancedRemindAdd) Description() string {
 }
 
 func (advancedRemindAdd) UsageArgs() string {
-	return "(<person> to <what> in <when> | <person> in <when> to <what>)"
+	return "<what> (in|on) <when>"
 }
 
 func (advancedRemindAdd) Parent() core.CommandStatic {
@@ -864,16 +864,14 @@ func (c advancedRemindAdd) Run(m *core.Message) (any, error, error) {
 }
 
 func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) {
-	rxPerson := `(?P<person>[^\s]+)`
+	rxWhat := `(?P<what>.+)`
 	rxWhen := `(in|on)\s+(?P<when>.+)`
-	rxWhat := `to\s+(?P<what>.+)`
 
-	re := regexp.MustCompile(`^` + rxPerson + `\s+` + rxWhat + `\s+` + rxWhen + `$`)
+	re := regexp.MustCompile(`^` + rxWhat + `\s+` + rxWhen + `$`)
 	groupNames := re.SubexpNames()
 
 	var when string
 	var what string
-	var who string
 
 	for _, match := range re.FindAllStringSubmatch(m.RawArgs(0), -1) {
 		for i, text := range match {
@@ -884,13 +882,11 @@ func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) 
 				when = text
 			case "what":
 				what = text
-			case "person":
-				who = text
 			}
 		}
 	}
 
-	person, err := nick.ParsePersonHere(m, who)
+	author, err := m.Author()
 	if err != nil {
 		return time.Time{}, -1, nil, err
 	}
@@ -905,7 +901,7 @@ func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) 
 		return time.Time{}, -1, nil, err
 	}
 
-	return runRemindAdd(when, what, m.ID, person, hereExact, hereLogical)
+	return runRemindAdd(when, what, m.ID, author, hereExact, hereLogical)
 }
 
 ///////////////////
