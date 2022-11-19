@@ -1,6 +1,8 @@
 package time
 
 import (
+	"regexp"
+
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
@@ -38,8 +40,34 @@ func (normal) Children() core.CommandsStatic {
 	}
 }
 
-func (normal) Init() error {
+func (c normal) Init() error {
+	core.Hooks.Register(c.addReminder)
 	return nil
+}
+
+func (normal) addReminder(m *core.Message) {
+	re := regexp.MustCompile(`^remind\s+me\s+to\s+` + `(?P<cmd>.+(in|on)\s+.+)`)
+
+	groupNames := re.SubexpNames()
+	for _, match := range re.FindAllStringSubmatch(m.Raw, -1) {
+		for i, text := range match {
+			if groupNames[i] == "cmd" {
+				m.Raw = text
+			}
+		}
+	}
+
+	m.Command = &core.Command{
+		CommandRuntime: core.CommandRuntime{
+			Args: m.Fields(),
+		},
+	}
+
+	resp, usrErr, err := AdvancedRemindAdd.Run(m)
+	if err != nil {
+		return
+	}
+	m.Write(resp, usrErr)
 }
 
 func (normal) Run(m *core.Message) (any, error, error) {
