@@ -125,7 +125,7 @@ func (adminShow) core(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return runShow(fs.person, fs.place)
+	return Show(fs.person, fs.place)
 }
 
 /////////
@@ -203,7 +203,7 @@ func (adminSet) core(m *core.Message) (string, error, error) {
 		return "", core.ErrMissingArgs, nil
 	}
 	nick := args[0]
-	usrErr, err := runSet(nick, fs.person, fs.place)
+	usrErr, err := Set(nick, fs.person, fs.place)
 	return nick, usrErr, err
 }
 
@@ -273,5 +273,5 @@ func (adminDelete) core(m *core.Message) (error, error) {
 	if err != nil {
 		return nil, err
 	}
-	return runDelete(fs.person, fs.place)
+	return Delete(fs.person, fs.place)
 }

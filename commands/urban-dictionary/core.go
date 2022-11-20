@@ -76,11 +76,11 @@ func read(u string) (definition, error, error) {
 	return def, nil, nil
 }
 
-func search(term string) (definition, error, error) {
+func Search(term string) (definition, error, error) {
 	return read(base + define + url.QueryEscape(term))
 }
 
-func rand() (definition, error, error) {
+func Random() (definition, error, error) {
 	return read(base + random)
 }
 

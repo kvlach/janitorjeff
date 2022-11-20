@@ -336,7 +336,7 @@ func dbRemindExists(id, person int64) (bool, error) {
 //     //
 /////////
 
-func runNow(person, place int64) (time.Time, error, error) {
+func Now(person, place int64) (time.Time, error, error) {
 	now := time.Now().UTC()
 
 	exists, err := dbPersonExists(person, place)
@@ -361,7 +361,7 @@ func runNow(person, place int64) (time.Time, error, error) {
 	return now.In(loc), nil, nil
 }
 
-func runConvert(target, tz string) (string, error, error) {
+func Convert(target, tz string) (string, error, error) {
 	var t time.Time
 	if target == "now" {
 		t = time.Now().UTC()
@@ -381,7 +381,7 @@ func runConvert(target, tz string) (string, error, error) {
 	return t.In(loc).Format(time.UnixDate), nil, nil
 }
 
-func parseTime(when string, person, place int64) (time.Time, error, error) {
+func Time(when string, person, place int64) (time.Time, error, error) {
 	tz, err := dbPersonTimezone(person, place)
 	var loc *time.Location
 	if err == nil {
@@ -404,15 +404,15 @@ func parseTime(when string, person, place int64) (time.Time, error, error) {
 	return t, nil, nil
 }
 
-func runTimestamp(when string, person, place int64) (time.Time, error, error) {
-	t, usrErr, err := parseTime(when, person, place)
+func Timestamp(when string, person, place int64) (time.Time, error, error) {
+	t, usrErr, err := Time(when, person, place)
 	if usrErr != nil || err != nil {
 		return time.Time{}, usrErr, err
 	}
 	return t, nil, nil
 }
 
-func runTimezoneShow(person, place int64) (string, error, error) {
+func TimezoneShow(person, place int64) (string, error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return "", nil, err
@@ -429,7 +429,7 @@ func runTimezoneShow(person, place int64) (string, error, error) {
 	return tz, nil, nil
 }
 
-func runTimezoneSet(tz string, person, place int64) (string, error, error) {
+func TimezoneSet(tz string, person, place int64) (string, error, error) {
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
 		return tz, errTimezone, nil
@@ -448,7 +448,7 @@ func runTimezoneSet(tz string, person, place int64) (string, error, error) {
 	return tz, nil, dbPersonAdd(person, place, tz)
 }
 
-func runTimezoneDelete(person, place int64) (error, error) {
+func TimezoneDelete(person, place int64) (error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return nil, err
@@ -459,8 +459,8 @@ func runTimezoneDelete(person, place int64) (error, error) {
 	return nil, dbPersonDelete(person, place)
 }
 
-func runRemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
-	t, usrErr, err := parseTime(when, person, placeLogical)
+func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
+	t, usrErr, err := Time(when, person, placeLogical)
 	if usrErr != nil || err != nil {
 		return t, -1, usrErr, err
 	}
@@ -477,7 +477,7 @@ func runRemindAdd(when, what, msgID string, person, placeExact, placeLogical int
 	return t, id, nil, err
 }
 
-func runRemindDelete(id, person int64) (error, error) {
+func RemindDelete(id, person int64) (error, error) {
 	// if the person their own reminder, but from a different place then we
 	// allow that
 	exists, err := dbRemindExists(id, person)
@@ -490,7 +490,7 @@ func runRemindDelete(id, person int64) (error, error) {
 	return nil, dbRemindDelete(id)
 }
 
-func runRemindList(person, place int64) ([]reminder, error, error) {
+func RemindList(person, place int64) ([]reminder, error, error) {
 	rs, err := dbRemindList(person, place)
 	if err != nil {
 		return nil, nil, err

@@ -195,7 +195,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 //     //
 /////////
 
-func runShow(person, place int64) (string, error, error) {
+func Show(person, place int64) (string, error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return "", nil, err
@@ -208,7 +208,7 @@ func runShow(person, place int64) (string, error, error) {
 	return nick, nil, err
 }
 
-func runSet(nick string, person, place int64) (error, error) {
+func Set(nick string, person, place int64) (error, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func runSet(nick string, person, place int64) (error, error) {
 	return nil, dbPersonAdd(person, place, nick)
 }
 
-func runDelete(person, place int64) (error, error) {
+func Delete(person, place int64) (error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return nil, err

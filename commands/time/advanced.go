@@ -186,7 +186,7 @@ func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
 		return time.Time{}, cmdTzSet, nil, err
 	}
 
-	now, usrErr, err := runNow(person, here)
+	now, usrErr, err := Now(person, here)
 	return now, cmdTzSet, usrErr, err
 }
 
@@ -280,7 +280,7 @@ func (advancedConvert) err(usrErr error, t string) string {
 func (advancedConvert) core(m *core.Message) (string, error, error) {
 	target := m.Command.Args[0]
 	tz := m.Command.Args[1]
-	return runConvert(target, tz)
+	return Convert(target, tz)
 }
 
 ///////////////
@@ -393,7 +393,7 @@ func (advancedTimestamp) core(m *core.Message) (time.Time, error, error) {
 
 	when := m.RawArgs(0)
 
-	return runTimestamp(when, author, here)
+	return Timestamp(when, author, here)
 }
 
 //////////////
@@ -546,7 +546,7 @@ func (advancedTimezoneShow) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runTimezoneShow(author, here)
+	return TimezoneShow(author, here)
 }
 
 //////////////////
@@ -654,7 +654,7 @@ func (advancedTimezoneSet) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runTimezoneSet(tz, author, here)
+	return TimezoneSet(tz, author, here)
 }
 
 /////////////////////
@@ -751,7 +751,7 @@ func (advancedTimezoneDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	return runTimezoneDelete(author, here)
+	return TimezoneDelete(author, here)
 }
 
 ////////////
@@ -901,7 +901,7 @@ func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) 
 		return time.Time{}, -1, nil, err
 	}
 
-	return runRemindAdd(when, what, m.ID, author, hereExact, hereLogical)
+	return RemindAdd(when, what, m.ID, author, hereExact, hereLogical)
 }
 
 ///////////////////
@@ -1004,7 +1004,7 @@ func (advancedRemindDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	return runRemindDelete(id, author)
+	return RemindDelete(id, author)
 }
 
 /////////////////
@@ -1096,5 +1096,5 @@ func (advancedRemindList) core(m *core.Message) ([]reminder, error, error) {
 		return nil, nil, err
 	}
 
-	return runRemindList(author, here)
+	return RemindList(author, here)
 }
