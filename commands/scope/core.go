@@ -4,7 +4,7 @@ import (
 	"git.slowtyper.com/slowtyper/janitorjeff/core"
 )
 
-func runPlace(target string, client core.Messenger) (int64, error) {
+func Place(target string, client core.Messenger) (int64, error) {
 	id, err := client.PlaceID(target)
 	if err != nil {
 		return -1, err
@@ -12,7 +12,7 @@ func runPlace(target string, client core.Messenger) (int64, error) {
 	return client.PlaceLogical(id)
 }
 
-func runPerson(target, parent string, client core.Messenger) (int64, error) {
+func Person(target, parent string, client core.Messenger) (int64, error) {
 	placeID, err := client.PlaceID(parent)
 	if err != nil {
 		return -1, err
