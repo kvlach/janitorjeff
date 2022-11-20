@@ -128,7 +128,7 @@ func (c advancedSearch) text(m *core.Message) (string, error, error) {
 
 func (advancedSearch) core(m *core.Message) (definition, error, error) {
 	term := m.RawArgs(0)
-	return search(term)
+	return Search(term)
 }
 
 ////////////
@@ -202,5 +202,5 @@ func (c advancedRandom) text() (string, error, error) {
 }
 
 func (advancedRandom) core() (definition, error, error) {
-	return rand()
+	return Random()
 }

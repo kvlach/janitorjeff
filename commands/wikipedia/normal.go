@@ -98,5 +98,5 @@ func (normal) err(usrErr error, res page) string {
 }
 
 func (normal) core(m *core.Message) (page, error, error) {
-	return search(m.RawArgs(0))
+	return Search(m.RawArgs(0))
 }

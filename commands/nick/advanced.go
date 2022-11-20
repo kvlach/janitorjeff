@@ -190,7 +190,7 @@ func (advancedShow) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	return runShow(author, here)
+	return Show(author, here)
 }
 
 /////////
@@ -298,7 +298,7 @@ func (c advancedSet) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := runSet(nick, author, here)
+	usrErr, err := Set(nick, author, here)
 	return nick, usrErr, err
 }
 
@@ -396,5 +396,5 @@ func (advancedDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	return runDelete(author, here)
+	return Delete(author, here)
 }

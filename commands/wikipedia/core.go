@@ -31,7 +31,7 @@ type response struct {
 	} `json:"query"`
 }
 
-func search(query string) (page, error, error) {
+func Search(query string) (page, error, error) {
 	resp, err := http.Get(queryURL + url.QueryEscape(query))
 	if err != nil {
 		return page{}, nil, err

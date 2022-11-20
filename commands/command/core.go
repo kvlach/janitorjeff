@@ -46,7 +46,7 @@ func isBuiltin(place int64, trigger string) (bool, error) {
 	return false, nil
 }
 
-func runAdd(place, creator int64, trigger, response string) (error, error) {
+func Add(place, creator int64, trigger, response string) (error, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func runAdd(place, creator int64, trigger, response string) (error, error) {
 	return nil, dbAdd(place, creator, trigger, response)
 }
 
-func runEdit(place, editor int64, trigger, response string) (error, error) {
+func Edit(place, editor int64, trigger, response string) (error, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func runEdit(place, editor int64, trigger, response string) (error, error) {
 	return nil, dbEdit(place, editor, trigger, response)
 }
 
-func runDelete(place, deleter int64, trigger string) (error, error) {
+func Delete(place, deleter int64, trigger string) (error, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
@@ -88,11 +88,11 @@ func runDelete(place, deleter int64, trigger string) (error, error) {
 	return nil, dbDelete(place, deleter, trigger)
 }
 
-func runList(place int64) ([]string, error) {
+func List(place int64) ([]string, error) {
 	return dbList(place)
 }
 
-func runHistory(place int64, trigger string) ([]customCommand, error) {
+func History(place int64, trigger string) ([]customCommand, error) {
 	// We don't check to see if the trigger exists since this command may be
 	// used to view the history of a deleted trigger
 	return dbHistory(place, trigger)

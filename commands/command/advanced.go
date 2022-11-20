@@ -190,7 +190,7 @@ func (c advancedAdd) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := runAdd(here, author, trigger, response)
+	usrErr, err := Add(here, author, trigger, response)
 	return trigger, usrErr, err
 }
 
@@ -300,7 +300,7 @@ func (advancedEdit) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := runEdit(here, author, trigger, response)
+	usrErr, err := Edit(here, author, trigger, response)
 	return trigger, usrErr, err
 }
 
@@ -409,7 +409,7 @@ func (advancedDelete) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := runDelete(here, author, trigger)
+	usrErr, err := Delete(here, author, trigger)
 	return trigger, usrErr, err
 }
 
@@ -505,7 +505,7 @@ func (c advancedList) Core(m *core.Message) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return runList(here)
+	return List(here)
 }
 
 /////////////
@@ -663,6 +663,6 @@ func (advancedHistory) core(m *core.Message) (string, []customCommand, error) {
 		return trigger, nil, err
 	}
 
-	history, err := runHistory(here, trigger)
+	history, err := History(here, trigger)
 	return trigger, history, err
 }
