@@ -48,6 +48,10 @@ func (c normal) Init() error {
 func (normal) addReminder(m *core.Message) {
 	re := regexp.MustCompile(`^remind\s+me\s+to\s+` + `(?P<cmd>.+(in|on)\s+.+)`)
 
+	if !re.MatchString(m.Raw) {
+		return
+	}
+
 	groupNames := re.SubexpNames()
 	for _, match := range re.FindAllStringSubmatch(m.Raw, -1) {
 		for i, text := range match {
