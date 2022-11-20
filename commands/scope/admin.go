@@ -106,7 +106,7 @@ func (c adminPlace) Run(m *core.Message) (any, error, error) {
 
 func (adminPlace) core(m *core.Message) (int64, error) {
 	target := m.Command.Args[0]
-	return runPlace(target, m.Client)
+	return Place(target, m.Client)
 }
 
 ////////////
@@ -176,7 +176,7 @@ func (adminPerson) parent(m *core.Message) (any, error, error) {
 	target := m.Command.Args[0]
 	parent := m.Command.Args[1]
 
-	person, err := runPerson(target, parent, m.Client)
+	person, err := Person(target, parent, m.Client)
 	return fmt.Sprint(person), nil, err
 }
 
@@ -187,6 +187,6 @@ func (adminPerson) noParent(m *core.Message) (any, error, error) {
 
 	target := m.Command.Args[0]
 
-	person, err := runPerson(target, "", m.Client)
+	person, err := Person(target, "", m.Client)
 	return fmt.Sprint(person), nil, err
 }
