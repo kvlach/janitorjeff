@@ -3,7 +3,7 @@ package nick
 import (
 	"fmt"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 )
 
 func adminGetFlags(m *core.Message) (*flags, []string, error) {

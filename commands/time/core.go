@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
+	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
 
 	"github.com/rs/zerolog/log"
 	"github.com/tj/go-naturaldate"

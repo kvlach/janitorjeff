@@ -1,4 +1,4 @@
-module git.slowtyper.com/slowtyper/janitorjeff
+module github.com/janitorjeff/jeff-bot
 
 go 1.18
 

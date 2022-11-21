@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/internal/testkit"
+	"github.com/janitorjeff/jeff-bot/internal/testkit"
 	"github.com/rs/zerolog"
 )
 

@@ -3,7 +3,7 @@ package command
 import (
 	"time"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 
 	"github.com/rs/zerolog/log"
 )

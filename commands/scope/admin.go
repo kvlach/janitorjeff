@@ -3,8 +3,8 @@ package scope
 import (
 	"fmt"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
+	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
 )
 
 var Admin = admin{}

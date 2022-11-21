@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"

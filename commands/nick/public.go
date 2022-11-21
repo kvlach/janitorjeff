@@ -1,7 +1,7 @@
 package nick
 
 import (
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 )
 
 // Tries to find a person from the given string. If "me" is passed the author
