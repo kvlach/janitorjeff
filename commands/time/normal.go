@@ -3,7 +3,7 @@ package time
 import (
 	"regexp"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 )
 
 var Normal = normal{}

@@ -3,9 +3,9 @@ package frontends
 import (
 	"fmt"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends/discord"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends/twitch"
+	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
+	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 )
 
 const (

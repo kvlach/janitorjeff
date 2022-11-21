@@ -7,7 +7,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 
 	tirc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/nicklaw5/helix"

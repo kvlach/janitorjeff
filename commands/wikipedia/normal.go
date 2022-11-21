@@ -3,8 +3,8 @@ package wikipedia
 import (
 	"fmt"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
-	"git.slowtyper.com/slowtyper/janitorjeff/frontends"
+	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
 
 	dg "github.com/bwmarrin/discordgo"
 )

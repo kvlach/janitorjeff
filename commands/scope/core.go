@@ -1,7 +1,7 @@
 package scope
 
 import (
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 )
 
 func Place(target string, client core.Messenger) (int64, error) {

@@ -3,7 +3,7 @@ package discord
 import (
 	"fmt"
 
-	"git.slowtyper.com/slowtyper/janitorjeff/core"
+	"github.com/janitorjeff/jeff-bot/core"
 
 	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
