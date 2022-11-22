@@ -57,10 +57,10 @@ type CommandStatic interface {
 	// - (literal-string) or (many | literals)
 	UsageArgs() string
 
-	// A command's parent, this is automatically set during bot startup.
+	// A command's parent, returns nil if there is no parent.
 	Parent() CommandStatic
 
-	// The command's sub-commands.
+	// The command's sub-commands, returns nil if there are no sub-commands.
 	Children() CommandsStatic
 
 	// This is executed during bot startup. Should be used to set things up
