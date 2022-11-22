@@ -3,7 +3,6 @@ package twitch
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
@@ -14,18 +13,7 @@ import (
 var states = &core.States{}
 
 func GetState() (string, error) {
-	state, err := states.Generate()
-	if err != nil {
-		return "", err
-	}
-
-	states.Append(state)
-	go func() {
-		time.Sleep(1 * time.Minute)
-		states.Delete(state)
-	}()
-
-	return state, nil
+	return states.New()
 }
 
 func init() {
