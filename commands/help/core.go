@@ -43,7 +43,11 @@ func runCore(t core.CommandType, m *core.Message, args []string, prefix string) 
 		},
 	}
 
-	cmdName := cmd.Path[len(cmd.Path)-1]
+	// Convert to lower case in order to correctly match the command's name in
+	// the list of aliases (since they are all lowercase, and the user could
+	// have typed the command otherwise)
+	cmdName := strings.ToLower(cmd.Path[len(cmd.Path)-1])
+
 	aliases := make([]string, 0, len(cmdStatic.Names())-1)
 
 	for _, name := range cmdStatic.Names() {
