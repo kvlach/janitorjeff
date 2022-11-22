@@ -51,6 +51,23 @@ func (s *States) Generate() (string, error) {
 	return s.generate()
 }
 
+// Create a new state and add it to the list of states for 1 minute after which
+// it is removed.
+func (s *States) New() (string, error) {
+	state, err := s.Generate()
+	if err != nil {
+		return "", err
+	}
+
+	s.Append(state)
+	go func() {
+		time.Sleep(1 * time.Minute)
+		s.Delete(state)
+	}()
+
+	return state, nil
+}
+
 func OnlyOneBitSet(n int) bool {
 	// https://stackoverflow.com/a/28303898
 	return n&(n-1) == 0
