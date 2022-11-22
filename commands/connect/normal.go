@@ -135,7 +135,7 @@ func (normalTwitch) core(m *core.Message) (string, error) {
 		"moderation:read",
 	}
 
-	state, err := twitch.GetState()
+	state, err := twitch.NewState()
 	if err != nil {
 		return "", err
 	}

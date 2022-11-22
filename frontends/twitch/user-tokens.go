@@ -12,7 +12,7 @@ import (
 
 var states = &core.States{}
 
-func GetState() (string, error) {
+func NewState() (string, error) {
 	return states.New()
 }
 
