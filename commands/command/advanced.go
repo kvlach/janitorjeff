@@ -465,7 +465,7 @@ func (c advancedList) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	triggers, err := c.Core(m)
+	triggers, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -489,7 +489,7 @@ func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 }
 
 func (c advancedList) text(m *core.Message) (string, error, error) {
-	triggers, err := c.Core(m)
+	triggers, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -500,7 +500,7 @@ func (c advancedList) text(m *core.Message) (string, error, error) {
 	return strings.Join(triggers, ", "), nil, nil
 }
 
-func (c advancedList) Core(m *core.Message) ([]string, error) {
+func (c advancedList) core(m *core.Message) ([]string, error) {
 	here, err := m.HereLogical()
 	if err != nil {
 		return nil, err

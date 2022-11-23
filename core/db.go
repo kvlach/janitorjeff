@@ -21,11 +21,11 @@ INSERT OR IGNORE INTO Scopes VALUES(1,1,'');
 
 CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	scope INTEGER NOT NULL,
+	place INTEGER NOT NULL,
 	prefix VARCHAR(255) NOT NULL,
 	type INTEGER NOT NULL,
-	UNIQUE(scope, prefix),
-	FOREIGN KEY (scope) REFERENCES Scopes(id) ON DELETE CASCADE
+	UNIQUE(place, prefix),
+	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
 );
 `
 
@@ -116,14 +116,14 @@ func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 }
 
 // Returns the list of all prefixes for a specific scope.
-func (db *SQLDB) PrefixList(scope int64) ([]Prefix, error) {
+func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	rows, err := db.DB.Query(`
 		SELECT prefix, type
 		FROM CommandPrefixPrefixes
-		WHERE scope = ?`, scope)
+		WHERE place = ?`, place)
 	if err != nil {
 		return nil, err
 	}

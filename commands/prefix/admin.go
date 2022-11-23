@@ -163,39 +163,8 @@ func (adminAdd) core(m *core.Message) (string, string, error, error) {
 
 	scope := fs.scopeFlag
 
-	collision, err := customCommandCollision(m, prefix)
-	if err != nil {
-		return prefix, "", nil, err
-	}
-	if collision != "" {
-		return prefix, collision, errCustomCommandExists, nil
-	}
-
-	prefixes, scopeExists, err := core.PlacePrefixes(scope)
-	if err != nil {
-		return prefix, "", nil, err
-	}
-
-	for _, p := range prefixes {
-		if p.Prefix == prefix {
-			return prefix, "", errExists, nil
-		}
-	}
-
-	if scopeExists == false {
-		for _, p := range prefixes {
-			// admin prefixes are static
-			if p.Type == core.Admin {
-				continue
-			}
-
-			if err = dbAdd(p.Prefix, scope, p.Type); err != nil {
-				return prefix, "", nil, err
-			}
-		}
-	}
-
-	return prefix, "", nil, dbAdd(prefix, scope, t)
+	collision, usrErr, err := Add(prefix, t, scope)
+	return prefix, collision, usrErr, err
 }
 
 ////////////
@@ -291,47 +260,8 @@ func (adminDelete) core(m *core.Message) (string, error, error) {
 	scope := fs.scopeFlag
 	prefix := args[0]
 
-	prefixes, scopeExists, err := core.PlacePrefixes(scope)
-	if err != nil {
-		return prefix, nil, err
-	}
-
-	exists := false
-	for _, p := range prefixes {
-		if p.Prefix == prefix {
-			// Admin commands are static, so if the user tries to delete an
-			// admin command, throw an error.
-			if p.Type == core.Admin {
-				return prefix, errAdmin, nil
-			}
-			exists = true
-		}
-	}
-
-	if exists == false {
-		return prefix, errNotFound, nil
-	}
-	if len(prefixes) == 1 {
-		return prefix, errOneLeft, nil
-	}
-
-	// If the scope doesn't exist then the default prefixes are being used and
-	// they are not present in the DB. So if the user tries to delete one
-	// nothing will happen. So we first add them all to the DB. Admin prefixes
-	// are not scope specific and thus don't need to be added.
-	if scopeExists == false {
-		for _, p := range prefixes {
-			if p.Type == core.Admin {
-				continue
-			}
-
-			if err = dbAdd(p.Prefix, scope, p.Type); err != nil {
-				return prefix, nil, err
-			}
-		}
-	}
-
-	return prefix, nil, dbDel(prefix, scope)
+	usrErr, err := Delete(prefix, core.All, scope)
+	return prefix, usrErr, err
 }
 
 //////////
@@ -377,38 +307,16 @@ func (adminList) Init() error {
 }
 
 func (c adminList) Run(m *core.Message) (any, error, error) {
-	prefixes, usrErr, err := c.core(m)
-	if err != nil {
-		return nil, nil, err
-	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
-	}
-	return fmt.Sprint(prefixes), nil, nil
+	prefixes, err := c.core(m)
+	return fmt.Sprint(prefixes), nil, err
 }
 
-func (adminList) core(m *core.Message) ([]core.Prefix, error, error) {
+func (adminList) core(m *core.Message) ([]core.Prefix, error) {
 	fs, _, err := getAdminFlags(m)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	types := fs.typeFlag
-	scope := fs.scopeFlag
-
-	prefixes, _, err := core.PlacePrefixes(scope)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	requestedPrefixes := []core.Prefix{}
-	for _, p := range prefixes {
-		if types&p.Type != 0 {
-			requestedPrefixes = append(requestedPrefixes, p)
-		}
-	}
-
-	return requestedPrefixes, nil, nil
+	return List(fs.typeFlag, fs.scopeFlag)
 }
 
 ///////////
@@ -456,21 +364,13 @@ func (adminReset) Init() error {
 }
 
 func (c adminReset) Run(m *core.Message) (any, error, error) {
-	usrErr, err := c.core(m)
-	if err != nil {
-		return nil, nil, err
-	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
-	}
-	return "Reset prefixes", nil, nil
+	return "Reset prefixes.", nil, c.core(m)
 }
 
-func (adminReset) core(m *core.Message) (error, error) {
+func (adminReset) core(m *core.Message) error {
 	fs, _, err := getAdminFlags(m)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	scope := fs.scopeFlag
-	return nil, dbReset(scope)
+	return Reset(fs.scopeFlag)
 }
