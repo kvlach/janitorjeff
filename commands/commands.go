@@ -38,7 +38,7 @@ var Commands = core.CommandsStatic{
 
 	paintball.Normal,
 
-	prefix.Normal,
+	prefix.Advanced,
 	prefix.Admin,
 
 	rps.Normal,
