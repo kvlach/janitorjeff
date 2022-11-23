@@ -1,24 +1,15 @@
 package prefix
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/commands/command"
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
-)
-
-var (
-	errExists              = errors.New("prefix exists already")
-	errNotFound            = errors.New("prefix not found")
-	errOneLeft             = errors.New("only one prefix left")
-	errCustomCommandExists = errors.New("if this prefix is added then there will be a collision with a custom command")
 )
 
 var Advanced = advanced{}
@@ -125,6 +116,10 @@ func (advancedAdd) Init() error {
 }
 
 func (c advancedAdd) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -134,8 +129,6 @@ func (c advancedAdd) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	log.Debug().Msg("running discord renderer")
-
 	prefix, collision, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
@@ -143,11 +136,6 @@ func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 
 	prefix = discord.PlaceInBackticks(prefix)
 	collision = discord.PlaceInBackticks(collision)
-
-	switch usrErr {
-	case core.ErrMissingArgs:
-		return m.Usage().(*dg.MessageEmbed), usrErr, nil
-	}
 
 	embed := &dg.MessageEmbed{
 		Description: c.err(usrErr, prefix, collision),
@@ -157,117 +145,36 @@ func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 }
 
 func (c advancedAdd) text(m *core.Message) (string, error, error) {
-	log.Debug().Msg("running plain text renderer")
-
 	prefix, collision, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
 	}
-
-	switch usrErr {
-	case core.ErrMissingArgs:
-		return m.Usage().(string), usrErr, nil
-	}
-
 	return c.err(usrErr, prefix, collision), usrErr, nil
 }
 
-func (c advancedAdd) err(err error, prefix, collision string) string {
-	switch err {
+func (c advancedAdd) err(usrErr error, prefix, collision string) string {
+	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case errExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
 	case errCustomCommandExists:
-		return fmt.Sprintf("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.", prefix, collision)
+		return fmt.Sprintf(fmt.Sprint(usrErr), prefix, collision)
 	default:
-		return "Something went wrong..."
+		return fmt.Sprint(usrErr)
 	}
 }
 
 func (c advancedAdd) core(m *core.Message) (string, string, error, error) {
-	if len(m.Command.Args) < 1 {
-		return "", "", core.ErrMissingArgs, nil
-	}
 	prefix := m.Command.Args[0]
 
-	scope, err := m.HereLogical()
-	if err != nil {
-		return prefix, "", nil, err
-	}
-	log.Debug().Int64("scope", scope).Send()
-
-	prefixes, scopeExists, err := m.Prefixes()
+	here, err := m.HereLogical()
 	if err != nil {
 		return prefix, "", nil, err
 	}
 
-	log.Debug().
-		Bool("scopeExists", scopeExists).
-		Msg("checked if custom prefixes have been added before for this scope")
-
-	// Only add default prefixes if they've never been added before, this
-	// prevents situations were the default prefixes change and they sneakily
-	// get added without the user realizing.
-	if !scopeExists {
-		log.Debug().Msg("adding default prefixes to scope prefixes")
-
-		for _, p := range prefixes {
-			if p.Type != core.Advanced {
-				continue
-			}
-
-			if err = dbAdd(p.Prefix, scope, core.Advanced); err != nil {
-				return prefix, "", nil, err
-			}
-		}
-	}
-
-	exists := false
-	for _, p := range prefixes {
-		if p.Prefix == prefix {
-			exists = true
-		}
-	}
-	if exists {
-		return prefix, "", errExists, nil
-	}
-
-	collision, err := customCommandCollision(m, prefix)
-	if err != nil {
-		return prefix, "", nil, err
-	}
-	if collision != "" {
-		return prefix, collision, errCustomCommandExists, nil
-	}
-
-	err = dbAdd(prefix, scope, core.Advanced)
-	return prefix, "", nil, err
-}
-
-// if the prefix changes after a custom command has been added it's
-// possible that a collision maybe be created
-//
-// for example:
-// !prefix reset
-// !cmd add .prefix test // this works because . is not a valid prefix atm
-// !prefix add .
-// .prefix // both trigger
-func customCommandCollision(m *core.Message, prefix string) (string, error) {
-	triggers, err := command.AdvancedList.Core(m)
-	if err != nil {
-		return "", err
-	}
-
-	for _, t := range triggers {
-		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Commands.Match(core.Advanced, m, []string{t})
-		if err == nil {
-			return prefix + t, nil
-		}
-	}
-
-	return "", nil
+	collision, usrErr, err := Add(prefix, c.Type(), here)
+	return prefix, collision, usrErr, err
 }
 
 ////////////
@@ -313,6 +220,10 @@ func (advancedDelete) Init() error {
 }
 
 func (c advancedDelete) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -322,8 +233,6 @@ func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	log.Debug().Msg("running discord renderer")
-
 	prefix, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, usrErr, err
@@ -332,8 +241,6 @@ func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error
 	resetCommand := ""
 
 	switch usrErr {
-	case core.ErrMissingArgs:
-		return m.Usage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
 		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
@@ -349,8 +256,6 @@ func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error
 }
 
 func (c advancedDelete) text(m *core.Message) (string, error, error) {
-	log.Debug().Msg("running plain text renderer")
-
 	prefix, usrErr, err := c.core(m)
 	if err != nil {
 		return "", usrErr, err
@@ -382,61 +287,16 @@ func (advancedDelete) err(err error, m *core.Message, prefix, resetCommand strin
 	}
 }
 
-func (advancedDelete) core(m *core.Message) (string, error, error) {
-	if len(m.Command.Args) < 1 {
-		return "", core.ErrMissingArgs, nil
-	}
+func (c advancedDelete) core(m *core.Message) (string, error, error) {
 	prefix := m.Command.Args[0]
 
-	scope, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return prefix, nil, err
 	}
 
-	log.Debug().
-		Str("prefix", prefix).
-		Int64("scope", scope).
-		Send()
-
-	prefixes, scopeExists, err := m.Prefixes()
-	if err != nil {
-		return prefix, nil, err
-	}
-	var exists bool
-	for _, p := range prefixes {
-		if p.Type != core.Advanced {
-			continue
-		}
-
-		if p.Prefix == prefix {
-			exists = true
-		}
-	}
-
-	if !exists {
-		return prefix, errNotFound, nil
-	}
-
-	if len(prefixes) == 1 {
-		return prefix, errOneLeft, nil
-	}
-
-	// If the scope doesn't exist then the default prefixes are being used and
-	// they are not present in the DB. So if the user tries to delete one
-	// nothing will happen. So we first add them all to the DB.
-	if !scopeExists {
-		for _, p := range prefixes {
-			if p.Type != core.Advanced {
-				continue
-			}
-
-			if err = dbAdd(p.Prefix, scope, core.Advanced); err != nil {
-				return prefix, nil, err
-			}
-		}
-	}
-
-	return prefix, nil, dbDel(prefix, scope)
+	usrErr, err := Delete(prefix, c.Type(), here)
+	return prefix, usrErr, err
 }
 
 //////////
@@ -523,17 +383,25 @@ func (c advancedList) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("Prefixes: %s", strings.Join(prefixes, " ")), nil, nil
 }
 
-func (advancedList) core(m *core.Message) ([]string, error) {
-	prefixes, _, err := m.Prefixes()
+func (c advancedList) core(m *core.Message) ([]string, error) {
+	here, err := m.HereLogical()
+	if err != nil {
+		return nil, err
+	}
 
-	advanced := []string{}
+	prefixes, err := List(c.Type(), here)
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := []string{}
 	for _, p := range prefixes {
-		if p.Type == core.Advanced {
-			advanced = append(advanced, p.Prefix)
+		if p.Type == c.Type() {
+			filtered = append(filtered, p.Prefix)
 		}
 	}
 
-	return advanced, err
+	return filtered, nil
 }
 
 ///////////
@@ -617,15 +485,12 @@ func (c advancedReset) text(m *core.Message) (string, error, error) {
 }
 
 func (c advancedReset) core(m *core.Message) (string, error) {
-	scope, err := m.HereLogical()
+	here, err := m.HereLogical()
 	if err != nil {
 		return "", err
 	}
 
-	err = dbReset(scope)
-	if err != nil {
-		return "", err
-	}
+	err = Reset(here)
 
 	var prefix string
 	for _, p := range core.Prefixes.Others() {
