@@ -21,56 +21,56 @@ var (
 	errCustomCommandExists = errors.New("if this prefix is added then there will be a collision with a custom command")
 )
 
-var Normal = normal{}
+var Advanced = advanced{}
 
-type normal struct{}
+type advanced struct{}
 
-func (normal) Type() core.CommandType {
-	return core.Normal
+func (advanced) Type() core.CommandType {
+	return core.Advanced
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.Message) bool {
 	return m.Mod()
 }
 
-func (normal) Names() []string {
+func (advanced) Names() []string {
 	return []string{
 		"prefix",
 	}
 }
 
-func (normal) Description() string {
+func (advanced) Description() string {
 	return "Add, delete, list or reset prefixes."
 }
 
-func (c normal) UsageArgs() string {
+func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
-func (normal) Parent() core.CommandStatic {
+func (advanced) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.CommandsStatic {
+func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
-		NormalAdd,
-		NormalDelete,
-		NormalList,
-		NormalReset,
+		AdvancedAdd,
+		AdvancedDelete,
+		AdvancedList,
+		AdvancedReset,
 	}
 }
 
-func (c normal) Init() error {
+func (c advanced) Init() error {
 	core.Hooks.Register(c.emergencyReset)
 	return nil
 }
 
-func (normal) emergencyReset(m *core.Message) {
+func (advanced) emergencyReset(m *core.Message) {
 	if m.Raw != "!!!PleaseResetThePrefixesBackToTheDefaultsThanks!!!" {
 		return
 	}
 
-	resp, usrErr, err := NormalReset.Run(m)
+	resp, usrErr, err := AdvancedReset.Run(m)
 	if err != nil {
 		return
 	}
@@ -78,7 +78,7 @@ func (normal) emergencyReset(m *core.Message) {
 	m.Write(resp, usrErr)
 }
 
-func (normal) Run(m *core.Message) (any, error, error) {
+func (advanced) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -88,43 +88,43 @@ func (normal) Run(m *core.Message) (any, error, error) {
 //     //
 /////////
 
-var NormalAdd = normalAdd{}
+var AdvancedAdd = advancedAdd{}
 
-type normalAdd struct{}
+type advancedAdd struct{}
 
-func (c normalAdd) Type() core.CommandType {
+func (c advancedAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalAdd) Permitted(m *core.Message) bool {
+func (c advancedAdd) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalAdd) Names() []string {
+func (advancedAdd) Names() []string {
 	return core.Add
 }
 
-func (normalAdd) Description() string {
+func (advancedAdd) Description() string {
 	return "Add a prefix."
 }
 
-func (normalAdd) UsageArgs() string {
+func (advancedAdd) UsageArgs() string {
 	return "<prefix>"
 }
 
-func (normalAdd) Parent() core.CommandStatic {
-	return Normal
+func (advancedAdd) Parent() core.CommandStatic {
+	return Advanced
 }
 
-func (normalAdd) Children() core.CommandsStatic {
+func (advancedAdd) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalAdd) Init() error {
+func (advancedAdd) Init() error {
 	return nil
 }
 
-func (c normalAdd) Run(m *core.Message) (any, error, error) {
+func (c advancedAdd) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -133,7 +133,7 @@ func (c normalAdd) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normalAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefix, collision, usrErr, err := c.core(m)
@@ -156,7 +156,7 @@ func (c normalAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, usrErr, nil
 }
 
-func (c normalAdd) text(m *core.Message) (string, error, error) {
+func (c advancedAdd) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefix, collision, usrErr, err := c.core(m)
@@ -172,7 +172,7 @@ func (c normalAdd) text(m *core.Message) (string, error, error) {
 	return c.err(usrErr, prefix, collision), usrErr, nil
 }
 
-func (c normalAdd) err(err error, prefix, collision string) string {
+func (c advancedAdd) err(err error, prefix, collision string) string {
 	switch err {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
@@ -185,7 +185,7 @@ func (c normalAdd) err(err error, prefix, collision string) string {
 	}
 }
 
-func (c normalAdd) core(m *core.Message) (string, string, error, error) {
+func (c advancedAdd) core(m *core.Message) (string, string, error, error) {
 	if len(m.Command.Args) < 1 {
 		return "", "", core.ErrMissingArgs, nil
 	}
@@ -213,11 +213,11 @@ func (c normalAdd) core(m *core.Message) (string, string, error, error) {
 		log.Debug().Msg("adding default prefixes to scope prefixes")
 
 		for _, p := range prefixes {
-			if p.Type != core.Normal {
+			if p.Type != core.Advanced {
 				continue
 			}
 
-			if err = dbAdd(p.Prefix, scope, core.Normal); err != nil {
+			if err = dbAdd(p.Prefix, scope, core.Advanced); err != nil {
 				return prefix, "", nil, err
 			}
 		}
@@ -241,7 +241,7 @@ func (c normalAdd) core(m *core.Message) (string, string, error, error) {
 		return prefix, collision, errCustomCommandExists, nil
 	}
 
-	err = dbAdd(prefix, scope, core.Normal)
+	err = dbAdd(prefix, scope, core.Advanced)
 	return prefix, "", nil, err
 }
 
@@ -261,7 +261,7 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 
 	for _, t := range triggers {
 		t = strings.TrimPrefix(t, prefix)
-		_, _, err := core.Commands.Match(core.Normal, m, []string{t})
+		_, _, err := core.Commands.Match(core.Advanced, m, []string{t})
 		if err == nil {
 			return prefix + t, nil
 		}
@@ -276,43 +276,43 @@ func customCommandCollision(m *core.Message, prefix string) (string, error) {
 //        //
 ////////////
 
-var NormalDelete = normalDelete{}
+var AdvancedDelete = advancedDelete{}
 
-type normalDelete struct{}
+type advancedDelete struct{}
 
-func (c normalDelete) Type() core.CommandType {
+func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalDelete) Permitted(m *core.Message) bool {
+func (c advancedDelete) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalDelete) Names() []string {
+func (advancedDelete) Names() []string {
 	return core.Delete
 }
 
-func (normalDelete) Description() string {
+func (advancedDelete) Description() string {
 	return "Delete a prefix."
 }
 
-func (normalDelete) UsageArgs() string {
+func (advancedDelete) UsageArgs() string {
 	return "<prefix>"
 }
 
-func (normalDelete) Parent() core.CommandStatic {
-	return Normal
+func (advancedDelete) Parent() core.CommandStatic {
+	return Advanced
 }
 
-func (normalDelete) Children() core.CommandsStatic {
+func (advancedDelete) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalDelete) Init() error {
+func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c normalDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -321,7 +321,7 @@ func (c normalDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normalDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefix, usrErr, err := c.core(m)
@@ -335,7 +335,7 @@ func (c normalDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	case core.ErrMissingArgs:
 		return m.Usage().(*dg.MessageEmbed), usrErr, nil
 	case errOneLeft:
-		resetCommand = core.Format(NormalReset, m.Command.Prefix)
+		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
 	}
 
@@ -348,7 +348,7 @@ func (c normalDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, usrErr, nil
 }
 
-func (c normalDelete) text(m *core.Message) (string, error, error) {
+func (c advancedDelete) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefix, usrErr, err := c.core(m)
@@ -362,13 +362,13 @@ func (c normalDelete) text(m *core.Message) (string, error, error) {
 	case core.ErrMissingArgs:
 		return m.Usage().(string), usrErr, nil
 	case errOneLeft:
-		resetCommand = core.Format(NormalReset, m.Command.Prefix)
+		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 	}
 
 	return c.err(usrErr, m, prefix, resetCommand), usrErr, nil
 }
 
-func (normalDelete) err(err error, m *core.Message, prefix, resetCommand string) string {
+func (advancedDelete) err(err error, m *core.Message, prefix, resetCommand string) string {
 	switch err {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
@@ -382,7 +382,7 @@ func (normalDelete) err(err error, m *core.Message, prefix, resetCommand string)
 	}
 }
 
-func (normalDelete) core(m *core.Message) (string, error, error) {
+func (advancedDelete) core(m *core.Message) (string, error, error) {
 	if len(m.Command.Args) < 1 {
 		return "", core.ErrMissingArgs, nil
 	}
@@ -404,7 +404,7 @@ func (normalDelete) core(m *core.Message) (string, error, error) {
 	}
 	var exists bool
 	for _, p := range prefixes {
-		if p.Type != core.Normal {
+		if p.Type != core.Advanced {
 			continue
 		}
 
@@ -426,11 +426,11 @@ func (normalDelete) core(m *core.Message) (string, error, error) {
 	// nothing will happen. So we first add them all to the DB.
 	if !scopeExists {
 		for _, p := range prefixes {
-			if p.Type != core.Normal {
+			if p.Type != core.Advanced {
 				continue
 			}
 
-			if err = dbAdd(p.Prefix, scope, core.Normal); err != nil {
+			if err = dbAdd(p.Prefix, scope, core.Advanced); err != nil {
 				return prefix, nil, err
 			}
 		}
@@ -445,43 +445,43 @@ func (normalDelete) core(m *core.Message) (string, error, error) {
 //      //
 //////////
 
-var NormalList = normalList{}
+var AdvancedList = advancedList{}
 
-type normalList struct{}
+type advancedList struct{}
 
-func (c normalList) Type() core.CommandType {
+func (c advancedList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalList) Permitted(m *core.Message) bool {
+func (c advancedList) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalList) Names() []string {
+func (advancedList) Names() []string {
 	return core.List
 }
 
-func (normalList) Description() string {
+func (advancedList) Description() string {
 	return "List the current prefixes."
 }
 
-func (normalList) UsageArgs() string {
+func (advancedList) UsageArgs() string {
 	return ""
 }
 
-func (normalList) Parent() core.CommandStatic {
-	return Normal
+func (advancedList) Parent() core.CommandStatic {
+	return Advanced
 }
 
-func (normalList) Children() core.CommandsStatic {
+func (advancedList) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalList) Init() error {
+func (advancedList) Init() error {
 	return nil
 }
 
-func (c normalList) Run(m *core.Message) (any, error, error) {
+func (c advancedList) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -490,7 +490,7 @@ func (c normalList) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normalList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	prefixes, err := c.core(m)
@@ -512,7 +512,7 @@ func (c normalList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func (c normalList) text(m *core.Message) (string, error, error) {
+func (c advancedList) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	prefixes, err := c.core(m)
@@ -523,17 +523,17 @@ func (c normalList) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("Prefixes: %s", strings.Join(prefixes, " ")), nil, nil
 }
 
-func (normalList) core(m *core.Message) ([]string, error) {
+func (advancedList) core(m *core.Message) ([]string, error) {
 	prefixes, _, err := m.Prefixes()
 
-	normal := []string{}
+	advanced := []string{}
 	for _, p := range prefixes {
-		if p.Type == core.Normal {
-			normal = append(normal, p.Prefix)
+		if p.Type == core.Advanced {
+			advanced = append(advanced, p.Prefix)
 		}
 	}
 
-	return normal, err
+	return advanced, err
 }
 
 ///////////
@@ -542,45 +542,45 @@ func (normalList) core(m *core.Message) ([]string, error) {
 //       //
 ///////////
 
-var NormalReset = normalReset{}
+var AdvancedReset = advancedReset{}
 
-type normalReset struct{}
+type advancedReset struct{}
 
-func (c normalReset) Type() core.CommandType {
+func (c advancedReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalReset) Permitted(m *core.Message) bool {
+func (c advancedReset) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalReset) Names() []string {
+func (advancedReset) Names() []string {
 	return []string{
 		"reset",
 	}
 }
 
-func (normalReset) Description() string {
+func (advancedReset) Description() string {
 	return "Reset prefixes to bot defaults."
 }
 
-func (normalReset) UsageArgs() string {
+func (advancedReset) UsageArgs() string {
 	return ""
 }
 
-func (normalReset) Parent() core.CommandStatic {
-	return Normal
+func (advancedReset) Parent() core.CommandStatic {
+	return Advanced
 }
 
-func (normalReset) Children() core.CommandsStatic {
+func (advancedReset) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalReset) Init() error {
+func (advancedReset) Init() error {
 	return nil
 }
 
-func (c normalReset) Run(m *core.Message) (any, error, error) {
+func (c advancedReset) Run(m *core.Message) (any, error, error) {
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -589,7 +589,7 @@ func (c normalReset) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normalReset) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedReset) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	log.Debug().Msg("running discord renderer")
 
 	listCmd, err := c.core(m)
@@ -605,7 +605,7 @@ func (c normalReset) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func (c normalReset) text(m *core.Message) (string, error, error) {
+func (c advancedReset) text(m *core.Message) (string, error, error) {
 	log.Debug().Msg("running plain text renderer")
 
 	listCmd, err := c.core(m)
@@ -616,7 +616,7 @@ func (c normalReset) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("Prefixes have been reset. To view the list of the currently available prefixes run: %s", listCmd), nil, nil
 }
 
-func (c normalReset) core(m *core.Message) (string, error) {
+func (c advancedReset) core(m *core.Message) (string, error) {
 	scope, err := m.HereLogical()
 	if err != nil {
 		return "", err
@@ -629,7 +629,7 @@ func (c normalReset) core(m *core.Message) (string, error) {
 
 	var prefix string
 	for _, p := range core.Prefixes.Others() {
-		if p.Type == core.Normal {
+		if p.Type == core.Advanced {
 			prefix = p.Prefix
 			break
 		}
@@ -637,7 +637,7 @@ func (c normalReset) core(m *core.Message) (string, error) {
 
 	// can't just use the prefix that was used to invoke this command because
 	// it might not be valid for this scope since a reset just happened
-	listCmd := core.Format(NormalList, prefix)
+	listCmd := core.Format(AdvancedList, prefix)
 
 	return listCmd, nil
 }
