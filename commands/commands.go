@@ -2,8 +2,8 @@ package commands
 
 import (
 	"github.com/janitorjeff/jeff-bot/commands/category"
-	"github.com/janitorjeff/jeff-bot/commands/command"
 	"github.com/janitorjeff/jeff-bot/commands/connect"
+	"github.com/janitorjeff/jeff-bot/commands/custom-command"
 	"github.com/janitorjeff/jeff-bot/commands/help"
 	"github.com/janitorjeff/jeff-bot/commands/nick"
 	"github.com/janitorjeff/jeff-bot/commands/paintball"
@@ -24,9 +24,9 @@ var Commands = core.CommandsStatic{
 	category.Normal,
 	category.Advanced,
 
-	command.Advanced,
-
 	connect.Normal,
+
+	custom_command.Advanced,
 
 	help.Normal,
 	help.Advanced,

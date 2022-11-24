@@ -1,4 +1,4 @@
-package command
+package custom_command
 
 import (
 	"fmt"
