@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/commands/command"
+	"github.com/janitorjeff/jeff-bot/commands/custom-command"
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
@@ -37,7 +37,7 @@ var (
 // !prefix add .
 // .prefix // both trigger
 func customCommandCollision(prefix string, place int64) (string, error) {
-	triggers, err := command.List(place)
+	triggers, err := custom_command.List(place)
 	if err != nil {
 		return "", err
 	}
