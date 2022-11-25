@@ -5,6 +5,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/connect"
 	"github.com/janitorjeff/jeff-bot/commands/custom-command"
 	"github.com/janitorjeff/jeff-bot/commands/help"
+	"github.com/janitorjeff/jeff-bot/commands/id"
 	"github.com/janitorjeff/jeff-bot/commands/nick"
 	"github.com/janitorjeff/jeff-bot/commands/paintball"
 	"github.com/janitorjeff/jeff-bot/commands/prefix"
@@ -31,6 +32,8 @@ var Commands = core.CommandsStatic{
 	help.Normal,
 	help.Advanced,
 	help.Admin,
+
+	id.Normal,
 
 	nick.Normal,
 	nick.Advanced,
