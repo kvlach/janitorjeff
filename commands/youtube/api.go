@@ -15,8 +15,12 @@ type Client struct {
 }
 
 type Video struct {
-	id    string
-	title string
+	ID    string
+	Title string
+}
+
+func (v Video) URL() string {
+	return "https://youtu.be/" + v.ID
 }
 
 func New() (*Client, error) {
