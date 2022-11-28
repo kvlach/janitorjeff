@@ -31,3 +31,8 @@ var Show = []string{
 	"view",
 	"get",
 }
+
+var Search = []string{
+	"search",
+	"find",
+}

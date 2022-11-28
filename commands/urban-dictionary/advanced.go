@@ -71,10 +71,7 @@ func (c advancedSearch) Permitted(m *core.Message) bool {
 }
 
 func (advancedSearch) Names() []string {
-	return []string{
-		"search",
-		"find",
-	}
+	return core.Search
 }
 
 func (advancedSearch) Description() string {
