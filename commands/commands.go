@@ -63,6 +63,7 @@ var Commands = core.CommandsStatic{
 
 	wikipedia.Normal,
 
+	youtube.Normal,
 	youtube.Advanced,
 }
 
