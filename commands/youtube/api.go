@@ -39,6 +39,8 @@ func New() (*Client, error) {
 func (c *Client) SearchVideos(query string, maxResults int64) ([]Video, error) {
 	call := c.service.Search.List([]string{"id", "snippet"}).
 		Q(query).
+		Type("video").
+		EventType("completed").
 		MaxResults(maxResults)
 
 	response, err := call.Do()
