@@ -1,5 +1,6 @@
 package core
 
 var (
-	Host string
+	Host       string
+	YouTubeKey string
 )
