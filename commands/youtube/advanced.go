@@ -108,7 +108,7 @@ func (c advancedSearch) Run(m *core.Message) (any, error, error) {
 func (advancedSearch) err(usrErr error, v Video) string {
 	switch usrErr {
 	case nil:
-		return "https://youtu.be/" + v.id
+		return v.URL()
 	default:
 		return fmt.Sprint(usrErr)
 	}
