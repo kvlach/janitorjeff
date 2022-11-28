@@ -92,6 +92,7 @@ func main() {
 	core.Commands = &commands.Commands
 	core.DB = db
 	core.Host = readVar("HOST")
+	core.YouTubeKey = readVar("YOUTUBE")
 	core.Prefixes.Add(core.Admin, "##")
 	core.Prefixes.Add(core.Normal, "!")
 	core.Prefixes.Add(core.Advanced, "$")

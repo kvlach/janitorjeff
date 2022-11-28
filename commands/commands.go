@@ -16,6 +16,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/title"
 	"github.com/janitorjeff/jeff-bot/commands/urban-dictionary"
 	"github.com/janitorjeff/jeff-bot/commands/wikipedia"
+	"github.com/janitorjeff/jeff-bot/commands/youtube"
 	"github.com/janitorjeff/jeff-bot/core"
 
 	"github.com/rs/zerolog/log"
@@ -61,6 +62,8 @@ var Commands = core.CommandsStatic{
 	urban_dictionary.Advanced,
 
 	wikipedia.Normal,
+
+	youtube.Advanced,
 }
 
 // This must be run after all of the global variables have been set (including
