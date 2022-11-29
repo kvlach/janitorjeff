@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/janitorjeff/jeff-bot/commands/audio"
 	"github.com/janitorjeff/jeff-bot/commands/category"
 	"github.com/janitorjeff/jeff-bot/commands/connect"
 	"github.com/janitorjeff/jeff-bot/commands/custom-command"
@@ -23,6 +24,8 @@ import (
 )
 
 var Commands = core.CommandsStatic{
+	audio.Advanced,
+
 	category.Normal,
 	category.Advanced,
 
