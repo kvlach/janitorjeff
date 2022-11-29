@@ -13,6 +13,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/tj/go-naturaldate v1.3.0
 	google.golang.org/api v0.103.0
+	layeh.com/gopus v0.0.0-20210501142526-1ee02d434e32
 )
 
 require (
