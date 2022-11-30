@@ -9,6 +9,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
+	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
 )
 
@@ -45,9 +46,9 @@ func (advanced) Parent() core.CommandStatic {
 func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedPlay,
-		AdvancedStop,
 		AdvancedPause,
 		AdvancedResume,
+		AdvancedSkip,
 	}
 }
 
@@ -111,18 +112,23 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 
 	url := m.Command.Args[0]
 
+	var item Item
+
 	if IsValidURL(url) {
 		info, err := GetInfo(url)
 		if err != nil {
-			panic("site not supported")
+			panic("site not supported or something else went wrong")
 		}
-		url = info.URL
+		item = info
 	} else {
 		vid, usrErr, err := youtube.SearchVideo(m.RawArgs(0))
 		if err != nil || usrErr != nil {
 			panic(err)
 		}
-		url = vid.URL()
+		item = Item{
+			URL:   vid.URL(),
+			Title: vid.Title,
+		}
 	}
 
 	d := m.Client.(*discord.MessageCreate)
@@ -133,9 +139,12 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		panic(err)
 	}
 
-	if s, ok := states.Get(here); ok {
-		s.Set(core.Stop)
-		states.Delete(here)
+	if p, ok := playing.Get(here); ok {
+		p.Queue.Append(item)
+		embed := &dg.MessageEmbed{
+			Description: "Added to queue: " + item.URL,
+		}
+		return embed, nil, nil
 	}
 
 	v, err := discord.JoinUserVoiceChannel(discord.Session, guildID, m.User.ID)
@@ -143,81 +152,21 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		panic(err)
 	}
 
-	s := &core.State{}
-	go stream(v, url, s)
-	states.Set(here, s)
+	q := &gosafe.Slice[Item]{}
+	q.Append(item)
+
+	p := &Playing{
+		State: &core.State{},
+		Queue: q,
+	}
+	go stream(v, p)
+	playing.Set(here, p)
 
 	embed := &dg.MessageEmbed{
-		Description: "Playing " + url,
+		Description: "Playing " + item.URL,
 	}
 
 	return embed, nil, nil
-}
-
-//////////
-//      //
-// stop //
-//      //
-//////////
-
-var AdvancedStop = advancedStop{}
-
-type advancedStop struct{}
-
-func (c advancedStop) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (c advancedStop) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
-}
-
-func (advancedStop) Names() []string {
-	return []string{
-		"stop",
-		"s",
-	}
-}
-
-func (advancedStop) Description() string {
-	return "Stop what is playing."
-}
-
-func (advancedStop) UsageArgs() string {
-	return ""
-}
-
-func (advancedStop) Parent() core.CommandStatic {
-	return Advanced
-}
-
-func (advancedStop) Children() core.CommandsStatic {
-	return nil
-}
-
-func (advancedStop) Init() error {
-	return nil
-}
-
-func (advancedStop) Run(m *core.Message) (any, error, error) {
-	here, err := m.HereLogical()
-	if err != nil {
-		panic(err)
-	}
-
-	if s, ok := states.Get(here); ok {
-		s.Set(core.Stop)
-		states.Delete(here)
-		embed := &dg.MessageEmbed{
-			Description: "Stopped playing.",
-		}
-		return embed, nil, nil
-	} else {
-		embed := &dg.MessageEmbed{
-			Description: "Not playing anything.",
-		}
-		return embed, fmt.Errorf("Not playing anything."), nil
-	}
 }
 
 ///////////
@@ -270,7 +219,7 @@ func (advancedPause) Run(m *core.Message) (any, error, error) {
 		panic(err)
 	}
 
-	s, ok := states.Get(here)
+	p, ok := playing.Get(here)
 
 	if !ok {
 		embed := &dg.MessageEmbed{
@@ -279,8 +228,8 @@ func (advancedPause) Run(m *core.Message) (any, error, error) {
 		return embed, fmt.Errorf("Not playing anything."), nil
 	}
 
-	if s.Get() == core.Play {
-		s.Set(core.Pause)
+	if p.State.Get() == core.Play {
+		p.State.Set(core.Pause)
 		embed := &dg.MessageEmbed{
 			Description: "Paused playing.",
 		}
@@ -345,7 +294,7 @@ func (advancedResume) Run(m *core.Message) (any, error, error) {
 		panic(err)
 	}
 
-	s, ok := states.Get(here)
+	p, ok := playing.Get(here)
 
 	if !ok {
 		embed := &dg.MessageEmbed{
@@ -355,8 +304,8 @@ func (advancedResume) Run(m *core.Message) (any, error, error) {
 
 	}
 
-	if s.Get() == core.Pause {
-		s.Set(core.Play)
+	if p.State.Get() == core.Pause {
+		p.State.Set(core.Play)
 		embed := &dg.MessageEmbed{
 			Description: "Resumed playing.",
 		}
@@ -368,4 +317,72 @@ func (advancedResume) Run(m *core.Message) (any, error, error) {
 		}
 		return embed, errors.New("Not paused"), nil
 	}
+}
+
+//////////
+//      //
+// skip //
+//      //
+//////////
+
+var AdvancedSkip = advancedSkip{}
+
+type advancedSkip struct{}
+
+func (c advancedSkip) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSkip) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSkip) Names() []string {
+	return []string{
+		"skip",
+	}
+}
+
+func (advancedSkip) Description() string {
+	return "Skip the current song."
+}
+
+func (advancedSkip) UsageArgs() string {
+	return ""
+}
+
+func (advancedSkip) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedSkip) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSkip) Init() error {
+	return nil
+}
+
+func (advancedSkip) Run(m *core.Message) (any, error, error) {
+	here, err := m.HereLogical()
+	if err != nil {
+		panic(err)
+	}
+
+	p, ok := playing.Get(here)
+
+	if !ok {
+		embed := &dg.MessageEmbed{
+			Description: "Can't skip, nothing is playing.",
+		}
+		return embed, errors.New("can't skip"), nil
+	}
+
+	p.State.Set(core.Stop)
+
+	embed := &dg.MessageEmbed{
+		Description: "Skipped.",
+	}
+
+	return embed, nil, nil
 }

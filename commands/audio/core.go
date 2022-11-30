@@ -12,39 +12,55 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-type audio struct {
-	state *core.State
-	queue []string
-}
-
-var states = gosafe.Map[int64, *core.State]{}
-
-func stream(v *dg.VoiceConnection, url string, s *core.State) {
-	// Audio only format might not exist in which case we grab the whole thing
-	// and let ffmpeg extract the audio
-	ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", url)
-	discord.PipeThroughFFmpeg(v, ytdl, s)
-}
-
-type Info struct {
-	Title string `json:"title"`
+type Item struct {
 	URL   string `json:"webpage_url"`
+	Title string `json:"title"`
 }
 
-func GetInfo(url string) (Info, error) {
+type Playing struct {
+	State *core.State
+	Queue *gosafe.Slice[Item]
+}
+
+var playing = gosafe.Map[int64, *Playing]{}
+
+func stream(v *dg.VoiceConnection, p *Playing) {
+	for {
+		if p.Queue.Len() == 0 {
+			// TODO: delete this from `playing`?
+			return
+		}
+
+		switch p.State.Get() {
+		case core.Play:
+			// Audio only format might not exist in which case we grab the
+			// whole thing and let ffmpeg extract the audio
+			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
+			discord.PipeThroughFFmpeg(v, ytdl, p.State)
+			p.Queue.DeleteStable(0)
+		case core.Stop:
+			// Stop state means that the skip command was executed and so we
+			// set the state to Play in order for the next item in the queue to
+			// start
+			p.State.Set(core.Play)
+		}
+	}
+}
+
+func GetInfo(url string) (Item, error) {
 	ytdl := exec.Command("yt-dlp", "-j", url)
 	stdout, err := ytdl.StdoutPipe()
 	if err != nil {
-		return Info{}, err
+		return Item{}, err
 	}
 
 	if err := ytdl.Start(); err != nil {
-		return Info{}, err
+		return Item{}, err
 	}
 
-	var info Info
+	var info Item
 	if err := json.NewDecoder(stdout).Decode(&info); err != nil {
-		return Info{}, err
+		return Item{}, err
 	}
 
 	return info, ytdl.Wait()
