@@ -1,7 +1,7 @@
 package core
 
 import (
-	"git.slowtyper.com/slowtyper/gosafe"
+	"github.com/janitorjeff/gosafe"
 )
 
 const (

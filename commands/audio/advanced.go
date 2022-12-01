@@ -10,8 +10,8 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
-	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/janitorjeff/gosafe"
 )
 
 var Advanced = advanced{}

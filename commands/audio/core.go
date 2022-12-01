@@ -9,8 +9,8 @@ import (
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
-	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/janitorjeff/gosafe"
 )
 
 var ErrNotPlaying = errors.New("Not playing anything.")

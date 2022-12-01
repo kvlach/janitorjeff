@@ -5,8 +5,8 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/core"
 
-	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/janitorjeff/gosafe"
 )
 
 var replies = gosafe.Map[string, string]{}
