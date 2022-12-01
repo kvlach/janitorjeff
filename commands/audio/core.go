@@ -27,10 +27,10 @@ type Playing struct {
 
 var playing = gosafe.Map[int64, *Playing]{}
 
-func stream(v *dg.VoiceConnection, p *Playing) {
+func stream(v *dg.VoiceConnection, p *Playing, place int64) {
 	for {
 		if p.Queue.Len() == 0 {
-			// TODO: delete this from `playing`?
+			playing.Delete(place)
 			return
 		}
 
