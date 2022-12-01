@@ -80,6 +80,15 @@ func IsValidURL(rawURL string) bool {
 	return true
 }
 
+func Skip(place int64) error {
+	p, ok := playing.Get(place)
+	if !ok {
+		return ErrNotPlaying
+	}
+	p.State.Set(core.Stop)
+	return nil
+}
+
 func Queue(place int64) ([]Item, error) {
 	p, ok := playing.Get(place)
 	if !ok {
