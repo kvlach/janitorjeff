@@ -215,34 +215,43 @@ func (advancedPause) Init() error {
 	return nil
 }
 
-func (advancedPause) Run(m *core.Message) (any, error, error) {
+func (c advancedPause) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		panic("this should never trigger")
+	}
+}
+
+func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (advancedPause) err(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Paused playing."
+	case ErrNotPlaying:
+		return "Can't pause, nothing is playing."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedPause) core(m *core.Message) (error, error) {
 	here, err := m.HereLogical()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
-	p, ok := playing.Get(here)
-
-	if !ok {
-		embed := &dg.MessageEmbed{
-			Description: "Not playing anything, can't pause.",
-		}
-		return embed, fmt.Errorf("Not playing anything."), nil
-	}
-
-	if p.State.Get() == core.Play {
-		p.State.Set(core.Pause)
-		embed := &dg.MessageEmbed{
-			Description: "Paused playing.",
-		}
-		return embed, nil, nil
-	} else {
-		embed := &dg.MessageEmbed{
-			// Description: "Already paused.",
-			Description: "it's not playing why are you trying to pause fool",
-		}
-		return embed, fmt.Errorf("not paused"), nil
-	}
+	return Pause(here), nil
 }
 
 ////////////
