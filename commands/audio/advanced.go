@@ -365,28 +365,43 @@ func (advancedSkip) Init() error {
 	return nil
 }
 
-func (advancedSkip) Run(m *core.Message) (any, error, error) {
+func (c advancedSkip) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		panic("this should never trigger")
+	}
+}
+
+func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (advancedSkip) err(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Skipped."
+	case ErrNotPlaying:
+		return "Can't skip, not playing anything."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedSkip) core(m *core.Message) (error, error) {
 	here, err := m.HereLogical()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
-	p, ok := playing.Get(here)
-
-	if !ok {
-		embed := &dg.MessageEmbed{
-			Description: "Can't skip, nothing is playing.",
-		}
-		return embed, errors.New("can't skip"), nil
-	}
-
-	p.State.Set(core.Stop)
-
-	embed := &dg.MessageEmbed{
-		Description: "Skipped.",
-	}
-
-	return embed, nil, nil
+	return Skip(here), nil
 }
 
 ///////////
