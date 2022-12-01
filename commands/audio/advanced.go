@@ -161,7 +161,7 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		State: &core.State{},
 		Queue: q,
 	}
-	go stream(v, p)
+	go stream(v, p, here)
 	playing.Set(here, p)
 
 	embed := &dg.MessageEmbed{
