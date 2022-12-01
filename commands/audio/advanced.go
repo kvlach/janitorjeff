@@ -7,7 +7,6 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/youtube"
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/janitorjeff/gosafe"
@@ -22,7 +21,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.Frontend == frontends.Discord
+	return m.Speaker.Voice()
 }
 
 func (advanced) Names() []string {
@@ -132,9 +131,6 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		}
 	}
 
-	d := m.Client.(*discord.MessageCreate)
-	guildID := d.Message.GuildID
-
 	here, err := m.HereLogical()
 	if err != nil {
 		panic(err)
@@ -148,7 +144,7 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		return embed, nil, nil
 	}
 
-	v, err := discord.JoinUserVoiceChannel(discord.Session, guildID, m.User.ID)
+	err = m.Speaker.Join()
 	if err != nil {
 		panic(err)
 	}
@@ -160,7 +156,7 @@ func (advancedPlay) Run(m *core.Message) (any, error, error) {
 		State: &core.State{},
 		Queue: q,
 	}
-	go stream(v, p, here)
+	go stream(m.Speaker, p, here)
 	playing.Set(here, p)
 
 	embed := &dg.MessageEmbed{

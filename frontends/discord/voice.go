@@ -1,12 +1,9 @@
 package discord
 
 import (
-	"bufio"
 	"encoding/binary"
 	"errors"
 	"io"
-	"os/exec"
-	"strconv"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
@@ -28,7 +25,7 @@ const (
 
 var opusEncoder *gopus.Encoder
 
-func FindUserVoiceState(s *dg.Session, guildID, userID string) (*dg.VoiceState, error) {
+func findUserVoiceState(s *dg.Session, guildID, userID string) (*dg.VoiceState, error) {
 	guild, err := s.State.Guild(guildID)
 	if err != nil {
 		return nil, err
@@ -42,10 +39,10 @@ func FindUserVoiceState(s *dg.Session, guildID, userID string) (*dg.VoiceState, 
 	return nil, errors.New("Could not find user's voice state")
 }
 
-// JoinUserVoiceChannel joins a session to the same channel as another user.
-func JoinUserVoiceChannel(s *dg.Session, guildID, userID string) (*dg.VoiceConnection, error) {
+// joinUserVoiceChannel joins a session to the same channel as another user.
+func joinUserVoiceChannel(s *dg.Session, guildID, userID string) (*dg.VoiceConnection, error) {
 	// Find a user's current voice channel
-	vs, err := FindUserVoiceState(s, guildID, userID)
+	vs, err := findUserVoiceState(s, guildID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +51,9 @@ func JoinUserVoiceChannel(s *dg.Session, guildID, userID string) (*dg.VoiceConne
 	return s.ChannelVoiceJoin(vs.GuildID, vs.ChannelID, false, true)
 }
 
-// SendPCM will receive on the provied channel encode
+// sendPCM will receive on the provied channel encode
 // received PCM data into Opus then send that to Discordgo
-func SendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
+func sendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
 	if pcm == nil {
 		return
 	}
@@ -88,13 +85,13 @@ func SendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
 	}
 }
 
-func Play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
+func play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
 	send := make(chan []int16, 2)
 	defer close(send)
 
 	exit := make(chan bool)
 	go func() {
-		SendPCM(v, send)
+		sendPCM(v, send)
 		exit <- true
 	}()
 
@@ -117,40 +114,4 @@ func Play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
 			return
 		}
 	}
-}
-
-func PipeThroughFFmpeg(v *dg.VoiceConnection, cmd *exec.Cmd, s *core.State) error {
-	ffmpeg := exec.Command(
-		"ffmpeg",
-		"-i", "-",
-		"-f", "s16le",
-		"-ar", strconv.Itoa(frameRate),
-		"-ac", strconv.Itoa(channels),
-		"pipe:1",
-	)
-
-	var err error
-	ffmpeg.Stdin, err = cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-
-	ffmpegout, err := ffmpeg.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	ffmpegbuf := bufio.NewReaderSize(ffmpegout, 16384) // 2**14
-
-	if err := ffmpeg.Start(); err != nil {
-		return err
-	}
-	defer ffmpeg.Process.Kill()
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	defer cmd.Process.Kill()
-
-	Play(v, ffmpegbuf, s)
-	return nil
 }
