@@ -89,6 +89,7 @@ type Message struct {
 	User     *User
 	Channel  *Channel
 	Client   Messenger
+	Speaker  Speaker
 	Command  *Command
 }
 

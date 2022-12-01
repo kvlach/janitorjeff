@@ -1,7 +1,9 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -13,7 +15,49 @@ import (
 type MessageCreate struct {
 	Session *dg.Session
 	Message *dg.MessageCreate
+	VC      *dg.VoiceConnection
 }
+
+func messageCreate(s *dg.Session, m *dg.MessageCreate) {
+	// Ignore all messages created by the bot itself
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	if m.Author.Bot {
+		return
+	}
+
+	if len(m.Content) == 0 {
+		return
+	}
+
+	// TODO: remove this when each server can configure which commands will be
+	// active
+	if m.GuildID == "348368013382254602" && strings.HasPrefix(m.Content, "!") {
+		if !strings.HasPrefix(m.Content, "!pb") {
+			return
+		}
+	}
+
+	d := &MessageCreate{
+		Session: s,
+		Message: m,
+	}
+	msg, err := d.Parse()
+	if err != nil {
+		log.Debug().Err(err).Send()
+		return
+	}
+
+	msg.Run()
+}
+
+///////////////
+//           //
+// Messenger //
+//           //
+///////////////
 
 func (d *MessageCreate) BotAdmin() bool {
 	return isBotAdmin(d.Message.Author.ID)
@@ -22,6 +66,7 @@ func (d *MessageCreate) BotAdmin() bool {
 func (d *MessageCreate) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
+	msg.Speaker = d
 	return msg, nil
 }
 
@@ -81,34 +126,37 @@ func (d *MessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
 }
 
-func messageCreate(s *dg.Session, m *dg.MessageCreate) {
-	// Ignore all messages created by the bot itself
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
+/////////////
+//         //
+// Speaker //
+//         //
+/////////////
 
-	if m.Author.Bot {
-		return
-	}
+func (d *MessageCreate) Voice() bool {
+	return true
+}
 
-	if len(m.Content) == 0 {
-		return
-	}
+func (d *MessageCreate) FrameRate() int {
+	return frameRate
+}
 
-	// TODO: remove this when each server can configure which commands will be
-	// active
-	if m.GuildID == "348368013382254602" && strings.HasPrefix(m.Content, "!") {
-		if !strings.HasPrefix(m.Content, "!pb") {
-			return
-		}
-	}
+func (d *MessageCreate) Channels() int {
+	return channels
+}
 
-	d := &MessageCreate{s, m}
-	msg, err := d.Parse()
+func (d *MessageCreate) Join() error {
+	v, err := joinUserVoiceChannel(d.Session, d.Message.GuildID, d.Message.Author.ID)
 	if err != nil {
-		log.Debug().Err(err).Send()
-		return
+		return err
 	}
+	d.VC = v
+	return nil
+}
 
-	msg.Run()
+func (d *MessageCreate) Say(buf io.Reader, s *core.State) error {
+	if d.VC == nil {
+		return errors.New("not connected to a voice channel")
+	}
+	play(d.VC, buf, s)
+	return nil
 }

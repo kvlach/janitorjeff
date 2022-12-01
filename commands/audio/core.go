@@ -7,9 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
-	dg "github.com/bwmarrin/discordgo"
 	"github.com/janitorjeff/gosafe"
 )
 
@@ -30,7 +28,7 @@ type Playing struct {
 
 var playing = gosafe.Map[int64, *Playing]{}
 
-func stream(v *dg.VoiceConnection, p *Playing, place int64) {
+func stream(s core.Speaker, p *Playing, place int64) {
 	for {
 		if p.Queue.Len() == 0 {
 			playing.Delete(place)
@@ -42,7 +40,7 @@ func stream(v *dg.VoiceConnection, p *Playing, place int64) {
 			// Audio only format might not exist in which case we grab the
 			// whole thing and let ffmpeg extract the audio
 			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
-			discord.PipeThroughFFmpeg(v, ytdl, p.State)
+			core.PipeThroughFFmpeg(s, ytdl, p.State)
 			p.Queue.DeleteStable(0)
 		case core.Stop:
 			// Stop state means that the skip command was executed and so we
