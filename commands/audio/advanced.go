@@ -3,6 +3,7 @@ package audio
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/janitorjeff/jeff-bot/commands/youtube"
 	"github.com/janitorjeff/jeff-bot/core"
@@ -49,6 +50,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedPause,
 		AdvancedResume,
 		AdvancedSkip,
+		AdvancedQueue,
 	}
 }
 
@@ -385,4 +387,106 @@ func (advancedSkip) Run(m *core.Message) (any, error, error) {
 	}
 
 	return embed, nil, nil
+}
+
+///////////
+//       //
+// queue //
+//       //
+///////////
+
+var AdvancedQueue = advancedQueue{}
+
+type advancedQueue struct{}
+
+func (c advancedQueue) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedQueue) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedQueue) Names() []string {
+	return []string{
+		"queue",
+	}
+}
+
+func (advancedQueue) Description() string {
+	return "View the song queue."
+}
+
+func (advancedQueue) UsageArgs() string {
+	return ""
+}
+
+func (advancedQueue) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedQueue) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedQueue) Init() error {
+	return nil
+}
+
+func (c advancedQueue) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		panic("this should never trigger")
+	}
+}
+
+func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	items, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	if usrErr != nil {
+		return &dg.MessageEmbed{Description: c.err(usrErr)}, usrErr, nil
+	}
+
+	var titles []string
+	for _, item := range items {
+		titles = append(titles, item.Title)
+	}
+
+	embed := &dg.MessageEmbed{
+		Fields: []*dg.MessageEmbedField{
+			{
+				Name:  "Titles",
+				Value: strings.Join(titles, "\n"),
+			},
+		},
+	}
+
+	return embed, nil, nil
+}
+
+func (advancedQueue) err(usrErr error) string {
+	switch usrErr {
+	case ErrNotPlaying:
+		return "Not playing anything, the queue is empty."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedQueue) core(m *core.Message) ([]Item, error, error) {
+	here, err := m.HereLogical()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	items, usrErr := Queue(here)
+	if usrErr != nil {
+		return nil, usrErr, nil
+	}
+
+	return items, nil, nil
 }
