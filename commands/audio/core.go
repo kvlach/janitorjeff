@@ -2,6 +2,7 @@ package audio
 
 import (
 	"encoding/json"
+	"errors"
 	"net/url"
 	"os/exec"
 
@@ -11,6 +12,8 @@ import (
 	"git.slowtyper.com/slowtyper/gosafe"
 	dg "github.com/bwmarrin/discordgo"
 )
+
+var ErrNotPlaying = errors.New("Not playing anything.")
 
 type Item struct {
 	URL   string `json:"webpage_url"`
@@ -75,4 +78,21 @@ func IsValidURL(rawURL string) bool {
 		return false
 	}
 	return true
+}
+
+func Queue(place int64) ([]Item, error) {
+	p, ok := playing.Get(place)
+	if !ok {
+		return nil, ErrNotPlaying
+	}
+
+	p.Queue.RLock()
+	defer p.Queue.RUnlock()
+
+	var items []Item
+	for i := 0; i < p.Queue.LenUnsafe(); i++ {
+		items = append(items, p.Queue.GetUnsafe(i))
+	}
+
+	return items, nil
 }
