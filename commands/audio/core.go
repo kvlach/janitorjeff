@@ -13,7 +13,10 @@ import (
 	"github.com/janitorjeff/gosafe"
 )
 
-var ErrNotPlaying = errors.New("Not playing anything.")
+var (
+	ErrNotPaused  = errors.New("Not paused.")
+	ErrNotPlaying = errors.New("Not playing anything.")
+)
 
 type Item struct {
 	URL   string `json:"webpage_url"`
@@ -89,6 +92,18 @@ func Pause(place int64) error {
 		return ErrNotPlaying
 	}
 	p.State.Set(core.Pause)
+	return nil
+}
+
+func Resume(place int64) error {
+	p, ok := playing.Get(place)
+	if !ok {
+		return ErrNotPlaying
+	}
+	if p.State.Get() != core.Pause {
+		return ErrNotPaused
+	}
+	p.State.Set(core.Play)
 	return nil
 }
 

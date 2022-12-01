@@ -1,7 +1,6 @@
 package audio
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -299,35 +298,45 @@ func (advancedResume) Init() error {
 	return nil
 }
 
-func (advancedResume) Run(m *core.Message) (any, error, error) {
+func (c advancedResume) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		panic("this should never trigger")
+	}
+}
+
+func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (advancedResume) err(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Resumed playing."
+	case ErrNotPlaying:
+		return "Can't resume, not playing anything."
+	case ErrNotPaused:
+		return "It's not paused what do you want from meeeeeeee"
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedResume) core(m *core.Message) (error, error) {
 	here, err := m.HereLogical()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
-	p, ok := playing.Get(here)
-
-	if !ok {
-		embed := &dg.MessageEmbed{
-			Description: "Not playing anything, can't resume.",
-		}
-		return embed, fmt.Errorf("Not playing anything."), nil
-
-	}
-
-	if p.State.Get() == core.Pause {
-		p.State.Set(core.Play)
-		embed := &dg.MessageEmbed{
-			Description: "Resumed playing.",
-		}
-		return embed, nil, nil
-	} else {
-		embed := &dg.MessageEmbed{
-			// Description: "It's not paused, what's the point of resuming!",
-			Description: "it's not paused what do you want from meeeeeeee",
-		}
-		return embed, errors.New("Not paused"), nil
-	}
+	return Resume(here), nil
 }
 
 //////////
