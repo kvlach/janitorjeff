@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"git.slowtyper.com/slowtyper/gosafe"
+	"github.com/janitorjeff/gosafe"
 	"github.com/rivo/uniseg"
 )
 

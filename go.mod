@@ -3,9 +3,9 @@ module github.com/janitorjeff/jeff-bot
 go 1.18
 
 require (
-	git.slowtyper.com/slowtyper/gosafe v0.1.0
 	github.com/bwmarrin/discordgo v0.26.1
 	github.com/gempir/go-twitch-irc/v2 v2.8.1
+	github.com/janitorjeff/gosafe v0.0.0-20221201085303-bf1022fefa84
 	github.com/joho/godotenv v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/nicklaw5/helix v1.25.0
