@@ -81,9 +81,13 @@ type User interface {
 	Mod() bool
 }
 
-type Channel struct {
-	ID   string
-	Name string
+type Channel interface {
+	// The channel ID, this should be a unique, static, identifier for that
+	// frontend.
+	ID() string
+
+	// The channel's name.
+	Name() string
 }
 
 type Message struct {
@@ -96,7 +100,7 @@ type Message struct {
 	Frontend int
 	Raw      string
 	User     User
-	Channel  *Channel
+	Channel  Channel
 	Client   Messenger
 	Speaker  Speaker
 	Command  *Command
@@ -168,7 +172,7 @@ func (m *Message) HereExact() (int64, error) {
 		return m.hereExact, nil
 	}
 
-	here, err := m.Client.PlaceExact(m.Channel.ID)
+	here, err := m.Client.PlaceExact(m.Channel.ID())
 	if err != nil {
 		return -1, err
 	}
@@ -182,7 +186,7 @@ func (m *Message) HereLogical() (int64, error) {
 		return m.hereLogical, nil
 	}
 
-	here, err := m.Client.PlaceLogical(m.Channel.ID)
+	here, err := m.Client.PlaceLogical(m.Channel.ID())
 	if err != nil {
 		return -1, err
 	}
