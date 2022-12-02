@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,56 @@ var (
 type Twitch struct {
 	client  *tirc.Client
 	message *tirc.PrivateMessage
+}
+
+func onPrivateMessage(m tirc.PrivateMessage) {
+	irc := &Twitch{client: twitchIrcClient, message: &m}
+	msg, err := irc.Parse()
+	if err != nil {
+		log.Debug().Err(err).Send()
+		return
+	}
+
+	msg.Run()
+}
+
+func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oauth string, channels []string) {
+	if err := dbInit(); err != nil {
+		log.Fatal().Err(err).Msg("failed to init twitch db schema")
+	}
+
+	twitchIrcClient = tirc.NewClient(nick, oauth)
+
+	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
+
+	twitchIrcClient.Join(channels...)
+
+	log.Debug().Msg("connecting to twitch irc")
+	var err error
+	// FIXME: Race condition??? (err doesn't have time to be set)
+	go func() {
+		err = twitchIrcClient.Connect()
+	}()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to connect to twitch irc")
+	} else {
+		log.Debug().Msg("connected to twitch irc")
+	}
+
+	if err := generateAppAccessToken(); err != nil {
+		panic(err)
+	}
+
+	wgInit.Done()
+	<-stop
+
+	log.Debug().Msg("closing twitch irc")
+	if err = twitchIrcClient.Disconnect(); err != nil {
+		log.Debug().Err(err).Msg("failed to close twitch irc connection")
+	} else {
+		log.Debug().Msg("closed twitch irc")
+	}
+	wgStop.Done()
 }
 
 func CreateClient(person, place int64) (*Twitch, error) {
@@ -55,6 +106,30 @@ func CreateClient(person, place int64) (*Twitch, error) {
 
 var twitchIrcClient *tirc.Client
 
+func (t *Twitch) Helix() (*Helix, error) {
+	h, err := helix.NewClient(&helix.Options{
+		ClientID: ClientID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userAccessToken, err := dbGetUserAccessToken(t.message.RoomID)
+	if err == nil {
+		h.SetUserAccessToken(userAccessToken)
+	} else {
+		h.SetAppAccessToken(appAccessToken.Get())
+	}
+
+	return &Helix{h}, nil
+}
+
+///////////////
+//           //
+// Messenger //
+//           //
+///////////////
+
 func (t *Twitch) BotAdmin() bool {
 	return false
 }
@@ -79,6 +154,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		User:     user,
 		Channel:  channel,
 		Client:   t,
+		Speaker:  t,
 	}
 
 	return msg, nil
@@ -216,91 +292,28 @@ func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
 	return t.Ping(msg, usrErr)
 }
 
-func (t *Twitch) Helix() (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
-		ClientID: ClientID,
-	})
-	if err != nil {
-		return nil, err
-	}
+/////////////
+//         //
+// Speaker //
+//         //
+/////////////
 
-	userAccessToken, err := dbGetUserAccessToken(t.message.RoomID)
-	if err == nil {
-		h.SetUserAccessToken(userAccessToken)
-	} else {
-		h.SetAppAccessToken(appAccessToken.Get())
-	}
-
-	return &Helix{h}, nil
+func (t *Twitch) Voice() bool {
+	return false
 }
 
-// func (tirc *TwitchIRC) Delete() error {
-// 	_, err := tirc.Write(fmt.Sprintf("/delete %s", tirc.ID))
-// 	return err
-// }
-
-// func (tirc *TwitchIRC) Edit(msg any) (*core.Message, error) {
-// 	return nil, fmt.Errorf("editing not supported for twitch irc")
-// }
-
-func onPrivateMessage(m tirc.PrivateMessage) {
-	irc := &Twitch{client: twitchIrcClient, message: &m}
-	msg, err := irc.Parse()
-	if err != nil {
-		log.Debug().Err(err).Send()
-		return
-	}
-
-	msg.Run()
+func (t *Twitch) FrameRate() int {
+	return 0
 }
 
-// func IRCInit(nick string, oauth string, channels []string) *twitchIRC.Client {
-// 	twitchIrcClient = twitchIRC.NewClient(nick, oauth)
+func (t *Twitch) Channels() int {
+	return 0
+}
 
-// 	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
+func (t *Twitch) Join() error {
+	return nil
+}
 
-// 	twitchIrcClient.Join(channels...)
-
-// 	go twitchIrcClient.Connect()
-
-// 	return twitchIrcClient
-// }
-
-func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oauth string, channels []string) {
-	if err := dbInit(); err != nil {
-		log.Fatal().Err(err).Msg("failed to init twitch db schema")
-	}
-
-	twitchIrcClient = tirc.NewClient(nick, oauth)
-
-	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
-
-	twitchIrcClient.Join(channels...)
-
-	log.Debug().Msg("connecting to twitch irc")
-	var err error
-	// FIXME: Race condition??? (err doesn't have time to be set)
-	go func() {
-		err = twitchIrcClient.Connect()
-	}()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to connect to twitch irc")
-	} else {
-		log.Debug().Msg("connected to twitch irc")
-	}
-
-	if err := generateAppAccessToken(); err != nil {
-		panic(err)
-	}
-
-	wgInit.Done()
-	<-stop
-
-	log.Debug().Msg("closing twitch irc")
-	if err = twitchIrcClient.Disconnect(); err != nil {
-		log.Debug().Err(err).Msg("failed to close twitch irc connection")
-	} else {
-		log.Debug().Msg("closed twitch irc")
-	}
-	wgStop.Done()
+func (t *Twitch) Say(io.Reader, *core.State) error {
+	return nil
 }
