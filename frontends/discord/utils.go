@@ -231,9 +231,8 @@ func parse(m *dg.Message) *core.Message {
 		Member:  m.Member,
 	}
 
-	channel := &core.Channel{
-		ID:   m.ChannelID,
-		Name: m.ChannelID,
+	ch := &Channel{
+		ChannelID: m.ChannelID,
 	}
 
 	msg := &core.Message{
@@ -241,7 +240,7 @@ func parse(m *dg.Message) *core.Message {
 		Frontend: Type,
 		Raw:      m.Content,
 		User:     u,
-		Channel:  channel,
+		Channel:  ch,
 	}
 
 	return msg

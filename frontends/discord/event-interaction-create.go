@@ -69,18 +69,18 @@ func (i *InteractionCreate) Mod() bool {
 ///////////////
 
 func (i *InteractionCreate) Parse() (*core.Message, error) {
-	channel := &core.Channel{
-		ID:   i.Interaction.ChannelID,
-		Name: i.Interaction.ChannelID,
-	}
+	// channel := &core.Channel{
+	// 	ID:   i.Interaction.ChannelID,
+	// 	Name: i.Interaction.ChannelID,
+	// }
 
 	m := &core.Message{
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
 		User:     i,
-		Channel:  channel,
-		Client:   i,
+		// Channel:  channel,
+		Client: i,
 	}
 	return m, nil
 }
