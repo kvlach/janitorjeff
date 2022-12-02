@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/commands/youtube"
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
-	"github.com/janitorjeff/gosafe"
 )
 
 var Advanced = advanced{}
@@ -105,65 +104,45 @@ func (advancedPlay) Init() error {
 	return nil
 }
 
-func (advancedPlay) Run(m *core.Message) (any, error, error) {
+func (c advancedPlay) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	url := m.Command.Args[0]
-
-	var item Item
-
-	if IsValidURL(url) {
-		info, err := GetInfo(url)
-		if err != nil {
-			panic("site not supported or something else went wrong")
-		}
-		item = info
-	} else {
-		vid, usrErr, err := youtube.SearchVideo(m.RawArgs(0))
-		if err != nil || usrErr != nil {
-			panic(err)
-		}
-		item = Item{
-			URL:   vid.URL(),
-			Title: vid.Title,
-		}
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		panic("this should never trigger")
 	}
+}
 
+func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	item, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr, discord.PlaceInBackticks(item.Title)),
+	}
+	return embed, usrErr, nil
+}
+
+func (advancedPlay) err(usrErr error, title string) string {
+	switch usrErr {
+	case nil:
+		return fmt.Sprintf("Added %s in the queue.", title)
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedPlay) core(m *core.Message) (Item, error, error) {
 	here, err := m.HereLogical()
 	if err != nil {
-		panic(err)
+		return Item{}, nil, err
 	}
-
-	if p, ok := playing.Get(here); ok {
-		p.Queue.Append(item)
-		embed := &dg.MessageEmbed{
-			Description: "Added to queue: " + item.URL,
-		}
-		return embed, nil, nil
-	}
-
-	err = m.Speaker.Join()
-	if err != nil {
-		panic(err)
-	}
-
-	q := &gosafe.Slice[Item]{}
-	q.Append(item)
-
-	p := &Playing{
-		State: &core.State{},
-		Queue: q,
-	}
-	go stream(m.Speaker, p, here)
-	playing.Set(here, p)
-
-	embed := &dg.MessageEmbed{
-		Description: "Playing " + item.URL,
-	}
-
-	return embed, nil, nil
+	return Play(m.Command.Args, m.Speaker, here)
 }
 
 ///////////
