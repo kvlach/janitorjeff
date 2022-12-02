@@ -104,7 +104,7 @@ func (pb *pb) Playing(place int64, v bool) {
 	}
 }
 
-func (pb *pb) Point(place int64, player *core.User) {
+func (pb *pb) Point(place int64, player core.User) {
 	pb.Lock()
 	defer pb.Unlock()
 
@@ -112,12 +112,12 @@ func (pb *pb) Point(place int64, player *core.User) {
 	// so an ok way to keep track of score
 
 	for _, s := range pb.active[place] {
-		if s.player == player.Mention {
+		if s.player == player.Mention() {
 			s.points += 1
 			return
 		}
 	}
-	pb.active[place] = append(pb.active[place], &score{player.Mention, 1})
+	pb.active[place] = append(pb.active[place], &score{player.Mention(), 1})
 }
 
 func (pb *pb) Scores(place int64) []*score {

@@ -158,7 +158,7 @@ func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet st
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
-		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.User.Mention, cmdTzSet)
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.User.Mention(), cmdTzSet)
 	case errPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
@@ -633,7 +633,7 @@ func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
 func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Added %s with timezone %s", m.User.Mention, tz)
+		return fmt.Sprintf("Added %s with timezone %s", m.User.Mention(), tz)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
@@ -732,9 +732,9 @@ func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
 func (advancedTimezoneDelete) err(usrErr error, m *core.Message) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Deleted timezone for user %s", m.User.Mention)
+		return fmt.Sprintf("Deleted timezone for user %s", m.User.Mention())
 	case errTimezoneNotSet:
-		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.User.Mention)
+		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.User.Mention())
 	default:
 		return fmt.Sprint(usrErr)
 	}

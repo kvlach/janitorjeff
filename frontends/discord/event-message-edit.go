@@ -53,10 +53,6 @@ func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
 //           //
 ///////////////
 
-func (d *MessageEdit) BotAdmin() bool {
-	return isBotAdmin(d.Message.Author.ID)
-}
-
 func (d *MessageEdit) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
@@ -86,14 +82,6 @@ func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
 
 func (d *MessageEdit) Usage(usage string) any {
 	return getUsage(usage)
-}
-
-func (d *MessageEdit) Admin() bool {
-	return isAdmin(d.Session, d.Message.GuildID, d.Message.Author.ID)
-}
-
-func (d *MessageEdit) Mod() bool {
-	return isMod(d.Session, d.Message.GuildID, d.Message.Author.ID)
 }
 
 func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {

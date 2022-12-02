@@ -18,9 +18,6 @@ import (
 // The frontend abstraction layer, a frontend needs to implement this in order
 // to be added.
 type Messenger interface {
-	// Checks if the message's author is a bot admin
-	BotAdmin() bool
-
 	Parse() (*Message, error)
 
 	// Returns the ID of the passed string. The returned ID must be valid.
@@ -47,12 +44,6 @@ type Messenger interface {
 
 	Usage(usage string) any
 
-	// Should return true only if a user has basically every permission.
-	Admin() bool
-
-	// General rule of thumb is that if they can ban people, they are mods.
-	Mod() bool
-
 	// Sends a message to the appropriate scope, `resp` could be `nil` depending
 	// on the frontend.
 	Send(msg any, usrErr error) (resp *Message, err error)
@@ -65,11 +56,29 @@ type Messenger interface {
 	Write(msg any, usrErr error) (resp *Message, err error)
 }
 
-type User struct {
-	ID          string
-	Name        string
-	DisplayName string
-	Mention     string
+type User interface {
+	// The user ID, this should be a unique, static, identifier for the user in
+	// that frontend.
+	ID() string
+
+	// The username.
+	Name() string
+
+	// The display name. If only usernames exist for that frontend then returns
+	// the username.
+	DisplayName() string
+
+	// Mention the user. This should ideally ping them in some way.
+	Mention() string
+
+	// Checks if the user is a bot admin.
+	BotAdmin() bool
+
+	// Should return true only if a user has basically every permission.
+	Admin() bool
+
+	// General rule of thumb is that if they can ban people, they are mods.
+	Mod() bool
 }
 
 type Channel struct {
@@ -86,7 +95,7 @@ type Message struct {
 	ID       string
 	Frontend int
 	Raw      string
-	User     *User
+	User     User
 	Channel  *Channel
 	Client   Messenger
 	Speaker  Speaker
@@ -145,7 +154,7 @@ func (m *Message) Author() (int64, error) {
 		return m.author, nil
 	}
 
-	author, err := m.Client.Person(m.User.ID)
+	author, err := m.Client.Person(m.User.ID())
 	if err != nil {
 		return -1, err
 	}
@@ -278,7 +287,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 
-	if m.Command.Type() == Admin && m.Client.BotAdmin() == false {
+	if m.Command.Type() == Admin && m.User.BotAdmin() == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 
@@ -310,12 +319,4 @@ func (m *Message) Run() {
 
 func (m *Message) Usage() any {
 	return m.Client.Usage(m.Command.Usage())
-}
-
-func (m *Message) Admin() bool {
-	return m.Client.Admin()
-}
-
-func (m *Message) Mod() bool {
-	return m.Client.Mod()
 }

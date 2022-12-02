@@ -58,10 +58,6 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 //           //
 ///////////////
 
-func (d *MessageCreate) BotAdmin() bool {
-	return isBotAdmin(d.Message.Author.ID)
-}
-
 func (d *MessageCreate) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
@@ -91,14 +87,6 @@ func (d *MessageCreate) PlaceLogical(id string) (int64, error) {
 
 func (d *MessageCreate) Usage(usage string) any {
 	return getUsage(usage)
-}
-
-func (d *MessageCreate) Admin() bool {
-	return isAdmin(d.Session, d.Message.GuildID, d.Message.Author.ID)
-}
-
-func (d *MessageCreate) Mod() bool {
-	return isMod(d.Session, d.Message.GuildID, d.Message.Author.ID)
 }
 
 func (d *MessageCreate) send(msg any, usrErr error, ping bool) (*core.Message, error) {
