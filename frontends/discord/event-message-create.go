@@ -1,7 +1,6 @@
 package discord
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -154,9 +153,5 @@ func (d *MessageCreate) Join() error {
 }
 
 func (d *MessageCreate) Say(buf io.Reader, s *core.State) error {
-	if d.VC == nil {
-		return errors.New("not connected to a voice channel")
-	}
-	play(d.VC, buf, s)
-	return nil
+	return voicePlay(d.VC, buf, s)
 }

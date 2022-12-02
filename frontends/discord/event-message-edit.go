@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
@@ -14,7 +15,43 @@ var replies = gosafe.Map[string, string]{}
 type MessageEdit struct {
 	Session *dg.Session
 	Message *dg.MessageUpdate
+	VC      *dg.VoiceConnection
 }
+
+func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
+	// For some reason this randomly gets triggered if a link has been sent
+	// and there has been no edit to the message. Perhaps it could be have
+	// something to do with the message getting automatically edited in order
+	// for the embed to added. This is difficult to test as it usually doesn't
+	// happen.
+	if m.Author == nil {
+		return
+	}
+
+	if m.Author.Bot {
+		return
+	}
+
+	if len(m.Content) == 0 {
+		return
+	}
+
+	d := &MessageEdit{
+		Session: s,
+		Message: m,
+	}
+	msg, err := d.Parse()
+	if err != nil {
+		return
+	}
+	msg.Run()
+}
+
+///////////////
+//           //
+// Messenger //
+//           //
+///////////////
 
 func (d *MessageEdit) BotAdmin() bool {
 	return isBotAdmin(d.Message.Author.ID)
@@ -23,6 +60,7 @@ func (d *MessageEdit) BotAdmin() bool {
 func (d *MessageEdit) Parse() (*core.Message, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
+	msg.Speaker = d
 	return msg, nil
 }
 
@@ -93,28 +131,33 @@ func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
 }
 
-func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
-	// For some reason this randomly gets triggered if a link has been sent
-	// and there has been no edit to the message. Perhaps it could be have
-	// something to do with the message getting automatically edited in order
-	// for the embed to added. This is difficult to test as it usually doesn't
-	// happen.
-	if m.Author == nil {
-		return
-	}
+/////////////
+//         //
+// Speaker //
+//         //
+/////////////
 
-	if m.Author.Bot {
-		return
-	}
+func (d *MessageEdit) Voice() bool {
+	return true
+}
 
-	if len(m.Content) == 0 {
-		return
-	}
+func (d *MessageEdit) FrameRate() int {
+	return frameRate
+}
 
-	d := &MessageEdit{s, m}
-	msg, err := d.Parse()
+func (d *MessageEdit) Channels() int {
+	return channels
+}
+
+func (d *MessageEdit) Join() error {
+	v, err := joinUserVoiceChannel(d.Session, d.Message.GuildID, d.Message.Author.ID)
 	if err != nil {
-		return
+		return err
 	}
-	msg.Run()
+	d.VC = v
+	return nil
+}
+
+func (d *MessageEdit) Say(buf io.Reader, s *core.State) error {
+	return voicePlay(d.VC, buf, s)
 }

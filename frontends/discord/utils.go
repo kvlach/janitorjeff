@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -373,7 +374,7 @@ func sendText(s *dg.Session, m *dg.Message, text string, ping bool) (*core.Messa
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{s, resp}).Parse()
+	return (&Message{Session: s, Message: resp}).Parse()
 }
 
 func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, ping bool) (*core.Message, error) {
@@ -383,7 +384,7 @@ func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{s, resp}).Parse()
+	return (&Message{Session: s, Message: resp}).Parse()
 }
 
 func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
@@ -423,7 +424,7 @@ func editText(s *dg.Session, m *dg.Message, id, text string) (*core.Message, err
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{s, resp}).Parse()
+	return (&Message{Session: s, Message: resp}).Parse()
 }
 
 func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
@@ -432,7 +433,7 @@ func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr erro
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{s, resp}).Parse()
+	return (&Message{Session: s, Message: resp}).Parse()
 }
 
 func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
@@ -464,4 +465,12 @@ func PlaceInBackticks(s string) string {
 
 	s = strings.ReplaceAll(s, "`", zeroWidthSpace+"`"+zeroWidthSpace)
 	return fmt.Sprintf("``%s``", s)
+}
+
+func voicePlay(v *dg.VoiceConnection, buf io.Reader, s *core.State) error {
+	if v == nil {
+		return errors.New("not connected to a voice channel")
+	}
+	play(v, buf, s)
+	return nil
 }
