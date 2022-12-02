@@ -130,16 +130,9 @@ func (t *Twitch) Helix() (*Helix, error) {
 //           //
 ///////////////
 
-func (t *Twitch) BotAdmin() bool {
-	return false
-}
-
 func (t *Twitch) Parse() (*core.Message, error) {
-	user := &core.User{
-		ID:          t.message.User.ID,
-		Name:        t.message.User.Name,
-		DisplayName: t.message.User.DisplayName,
-		Mention:     fmt.Sprintf("@%s", t.message.User.DisplayName),
+	u := User{
+		User: t.message.User,
 	}
 
 	channel := &core.Channel{
@@ -151,7 +144,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		ID:       t.message.ID,
 		Frontend: Type,
 		Raw:      t.message.Message,
-		User:     user,
+		User:     u,
 		Channel:  channel,
 		Client:   t,
 		Speaker:  t,
@@ -234,19 +227,6 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 
 func (t *Twitch) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
-}
-
-func (t *Twitch) Admin() bool {
-	_, ok := t.message.User.Badges["broadcaster"]
-	return ok
-}
-
-func (t *Twitch) Mod() bool {
-	if t.Admin() {
-		return true
-	}
-	_, ok := t.message.User.Badges["moderator"]
-	return ok
 }
 
 func (t *Twitch) send(msg any, mention string) (*core.Message, error) {

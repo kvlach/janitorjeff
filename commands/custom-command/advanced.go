@@ -21,7 +21,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.Mod()
+	return m.User.Mod()
 }
 
 func (advanced) Names() []string {

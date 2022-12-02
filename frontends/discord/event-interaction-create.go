@@ -16,35 +16,59 @@ type InteractionCreate struct {
 	Data        *dg.ApplicationCommandInteractionData
 }
 
-func getUserID(i *InteractionCreate) string {
+//////////
+//      //
+// User //
+//      //
+//////////
+
+func (i *InteractionCreate) ID() string {
 	if i.Interaction.Member != nil {
 		return i.Interaction.Member.User.ID
 	}
 	return i.Interaction.User.ID
 }
 
-func (i *InteractionCreate) BotAdmin() bool {
-	return isBotAdmin(getUserID(i))
+func (i *InteractionCreate) Name() string {
+	if i.Interaction.Member != nil {
+		return i.Interaction.Member.User.Username
+	}
+	return i.Interaction.User.Username
 }
 
-func (i *InteractionCreate) Parse() (*core.Message, error) {
-	var user *core.User
+func (i *InteractionCreate) DisplayName() string {
 	if i.Interaction.Member != nil {
-		user = &core.User{
-			ID:          i.Interaction.Member.User.ID,
-			Name:        i.Interaction.Member.User.Username,
-			DisplayName: i.Interaction.Member.User.Username,
-			Mention:     i.Interaction.Member.Mention(),
-		}
-	} else {
-		user = &core.User{
-			ID:          i.Interaction.User.ID,
-			Name:        i.Interaction.User.Username,
-			DisplayName: i.Interaction.User.Username,
-			Mention:     i.Interaction.User.Mention(),
-		}
+		return i.Interaction.Member.User.Username
 	}
+	return i.Interaction.User.Username
+}
 
+func (i *InteractionCreate) Mention() string {
+	if i.Interaction.Member != nil {
+		return i.Interaction.Member.Mention()
+	}
+	return i.Interaction.User.Mention()
+}
+
+func (i *InteractionCreate) BotAdmin() bool {
+	return isBotAdmin(i.ID())
+}
+
+func (i *InteractionCreate) Admin() bool {
+	return isAdmin(i.Session, i.Interaction.GuildID, i.ID())
+}
+
+func (i *InteractionCreate) Mod() bool {
+	return isMod(i.Session, i.Interaction.GuildID, i.ID())
+}
+
+///////////////
+//           //
+// Messenger //
+//           //
+///////////////
+
+func (i *InteractionCreate) Parse() (*core.Message, error) {
 	channel := &core.Channel{
 		ID:   i.Interaction.ChannelID,
 		Name: i.Interaction.ChannelID,
@@ -54,7 +78,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
-		User:     user,
+		User:     i,
 		Channel:  channel,
 		Client:   i,
 	}
@@ -62,7 +86,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 }
 
 func (i *InteractionCreate) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, getUserID(i), i.Session)
+	return getPersonID(s, placeID, i.ID(), i.Session)
 }
 
 func (i *InteractionCreate) PlaceID(s string) (string, error) {
@@ -83,14 +107,6 @@ func (i *InteractionCreate) PlaceLogical(id string) (int64, error) {
 
 func (i *InteractionCreate) Usage(usage string) any {
 	return getUsage(usage)
-}
-
-func (i *InteractionCreate) Admin() bool {
-	return isAdmin(i.Session, i.Interaction.GuildID, getUserID(i))
-}
-
-func (i *InteractionCreate) Mod() bool {
-	return isMod(i.Session, i.Interaction.GuildID, getUserID(i))
 }
 
 func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {

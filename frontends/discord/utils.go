@@ -225,11 +225,10 @@ func isBotAdmin(id string) bool {
 }
 
 func parse(m *dg.Message) *core.Message {
-	user := &core.User{
-		ID:          m.Author.ID,
-		Name:        m.Author.Username,
-		DisplayName: getDisplayName(m.Member, m.Author),
-		Mention:     m.Author.Mention(),
+	u := &User{
+		GuildID: m.GuildID,
+		Author:  m.Author,
+		Member:  m.Member,
 	}
 
 	channel := &core.Channel{
@@ -241,7 +240,7 @@ func parse(m *dg.Message) *core.Message {
 		ID:       m.ID,
 		Frontend: Type,
 		Raw:      m.Content,
-		User:     user,
+		User:     u,
 		Channel:  channel,
 	}
 
