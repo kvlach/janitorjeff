@@ -113,7 +113,7 @@ func (c advancedPlay) Run(m *core.Message) (any, error, error) {
 	case frontends.Discord:
 		return c.discord(m)
 	default:
-		panic("this should never trigger")
+		return c.text(m)
 	}
 }
 
@@ -126,6 +126,15 @@ func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 		Description: c.err(usrErr, discord.PlaceInBackticks(item.Title)),
 	}
 	return embed, usrErr, nil
+}
+
+func (c advancedPlay) text(m *core.Message) (string, error, error) {
+	item, usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	title := fmt.Sprintf("'%s'", item.Title)
+	return c.err(usrErr, title), usrErr, nil
 }
 
 func (advancedPlay) err(usrErr error, title string) string {
@@ -194,7 +203,7 @@ func (c advancedPause) Run(m *core.Message) (any, error, error) {
 	case frontends.Discord:
 		return c.discord(m)
 	default:
-		panic("this should never trigger")
+		return c.text(m)
 	}
 }
 
@@ -207,6 +216,14 @@ func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 		Description: c.err(usrErr),
 	}
 	return embed, usrErr, nil
+}
+
+func (c advancedPause) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.err(usrErr), usrErr, nil
 }
 
 func (advancedPause) err(usrErr error) string {
@@ -278,7 +295,7 @@ func (c advancedResume) Run(m *core.Message) (any, error, error) {
 	case frontends.Discord:
 		return c.discord(m)
 	default:
-		panic("this should never trigger")
+		return c.text(m)
 	}
 }
 
@@ -291,6 +308,14 @@ func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, error, error
 		Description: c.err(usrErr),
 	}
 	return embed, usrErr, nil
+}
+
+func (c advancedResume) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.err(usrErr), usrErr, nil
 }
 
 func (advancedResume) err(usrErr error) string {
@@ -363,7 +388,7 @@ func (c advancedSkip) Run(m *core.Message) (any, error, error) {
 	case frontends.Discord:
 		return c.discord(m)
 	default:
-		panic("this should never trigger")
+		return c.text(m)
 	}
 }
 
@@ -376,6 +401,14 @@ func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 		Description: c.err(usrErr),
 	}
 	return embed, usrErr, nil
+}
+
+func (c advancedSkip) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.err(usrErr), usrErr, nil
 }
 
 func (advancedSkip) err(usrErr error) string {
@@ -446,22 +479,17 @@ func (c advancedQueue) Run(m *core.Message) (any, error, error) {
 	case frontends.Discord:
 		return c.discord(m)
 	default:
-		panic("this should never trigger")
+		return c.text(m)
 	}
 }
 
 func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	items, usrErr, err := c.core(m)
+	titles, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	if usrErr != nil {
 		return &dg.MessageEmbed{Description: c.err(usrErr)}, usrErr, nil
-	}
-
-	var titles []string
-	for _, item := range items {
-		titles = append(titles, item.Title)
 	}
 
 	embed := &dg.MessageEmbed{
@@ -476,6 +504,17 @@ func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 	return embed, nil, nil
 }
 
+func (c advancedQueue) text(m *core.Message) (string, error, error) {
+	titles, usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	if usrErr != nil {
+		return c.err(usrErr), usrErr, nil
+	}
+	return strings.Join(titles, "  ||  "), nil, nil
+}
+
 func (advancedQueue) err(usrErr error) string {
 	switch usrErr {
 	case ErrNotPlaying:
@@ -485,7 +524,7 @@ func (advancedQueue) err(usrErr error) string {
 	}
 }
 
-func (advancedQueue) core(m *core.Message) ([]Item, error, error) {
+func (advancedQueue) core(m *core.Message) ([]string, error, error) {
 	here, err := m.HereLogical()
 	if err != nil {
 		return nil, nil, err
@@ -496,5 +535,10 @@ func (advancedQueue) core(m *core.Message) ([]Item, error, error) {
 		return nil, usrErr, nil
 	}
 
-	return items, nil, nil
+	var titles []string
+	for _, item := range items {
+		titles = append(titles, item.Title)
+	}
+
+	return titles, nil, nil
 }
