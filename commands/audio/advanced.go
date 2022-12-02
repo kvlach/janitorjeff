@@ -364,7 +364,7 @@ func (advancedSkip) Names() []string {
 }
 
 func (advancedSkip) Description() string {
-	return "Skip the current song."
+	return "Skip the currently playing item."
 }
 
 func (advancedSkip) UsageArgs() string {
@@ -455,7 +455,7 @@ func (advancedQueue) Names() []string {
 }
 
 func (advancedQueue) Description() string {
-	return "View the song queue."
+	return "View the playback queue."
 }
 
 func (advancedQueue) UsageArgs() string {
