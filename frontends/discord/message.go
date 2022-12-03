@@ -10,7 +10,6 @@ import (
 )
 
 type Message struct {
-	Session *dg.Session
 	Message *dg.Message
 	VC      *dg.VoiceConnection
 }
@@ -42,7 +41,6 @@ func CreateClient(author, channel int64, msgID string) (*Message, error) {
 	}
 
 	d := &Message{
-		Session: Session,
 		Message: &dg.Message{
 			ID:        msgID,
 			ChannelID: channelID,
@@ -71,11 +69,11 @@ func (d *Message) Parse() (*core.Message, error) {
 }
 
 func (d *Message) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, d.Message.Author.ID, d.Session)
+	return getPersonID(s, placeID, d.Message.Author.ID)
 }
 
 func (d *Message) PlaceID(s string) (string, error) {
-	return getPlaceID(s, d.Session)
+	return getPlaceID(s)
 }
 
 func (d *Message) Person(id string) (int64, error) {
@@ -83,11 +81,11 @@ func (d *Message) Person(id string) (int64, error) {
 }
 
 func (d *Message) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
+	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
 func (d *Message) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
+	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
 func (d *Message) Usage(usage string) any {
@@ -97,10 +95,10 @@ func (d *Message) Usage(usage string) any {
 func (d *Message) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
-		return sendText(d.Session, d.Message, msg.(string), ping)
+		return sendText(d.Message, msg.(string), ping)
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
-		return sendEmbed(d.Session, d.Message, embed, usrErr, ping)
+		return sendEmbed(d.Message, embed, usrErr, ping)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
@@ -137,7 +135,7 @@ func (d *Message) Channels() int {
 }
 
 func (d *Message) Join() error {
-	v, err := joinUserVoiceChannel(d.Session, d.Message.GuildID, d.Message.Author.ID)
+	v, err := joinUserVoiceChannel(d.Message.GuildID, d.Message.Author.ID)
 	if err != nil {
 		return err
 	}

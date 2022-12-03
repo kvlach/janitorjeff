@@ -33,9 +33,9 @@ func (u *User) BotAdmin() bool {
 }
 
 func (u *User) Admin() bool {
-	return isAdmin(Session, u.GuildID, u.Author.ID)
+	return isAdmin(u.GuildID, u.Author.ID)
 }
 
 func (u *User) Mod() bool {
-	return isMod(Session, u.GuildID, u.Author.ID)
+	return isMod(u.GuildID, u.Author.ID)
 }

@@ -25,8 +25,8 @@ const (
 
 var opusEncoder *gopus.Encoder
 
-func findUserVoiceState(s *dg.Session, guildID, userID string) (*dg.VoiceState, error) {
-	guild, err := s.State.Guild(guildID)
+func findUserVoiceState(guildID, userID string) (*dg.VoiceState, error) {
+	guild, err := Session.State.Guild(guildID)
 	if err != nil {
 		return nil, err
 	}
@@ -40,15 +40,15 @@ func findUserVoiceState(s *dg.Session, guildID, userID string) (*dg.VoiceState, 
 }
 
 // joinUserVoiceChannel joins a session to the same channel as another user.
-func joinUserVoiceChannel(s *dg.Session, guildID, userID string) (*dg.VoiceConnection, error) {
+func joinUserVoiceChannel(guildID, userID string) (*dg.VoiceConnection, error) {
 	// Find a user's current voice channel
-	vs, err := findUserVoiceState(s, guildID, userID)
+	vs, err := findUserVoiceState(guildID, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Join the user's channel and start unmuted and deafened.
-	return s.ChannelVoiceJoin(vs.GuildID, vs.ChannelID, false, true)
+	return Session.ChannelVoiceJoin(vs.GuildID, vs.ChannelID, false, true)
 }
 
 // sendPCM will receive on the provied channel encode
