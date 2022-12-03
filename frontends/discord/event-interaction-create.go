@@ -11,7 +11,6 @@ import (
 )
 
 type InteractionCreate struct {
-	Session     *dg.Session
 	Interaction *dg.InteractionCreate
 	Data        *dg.ApplicationCommandInteractionData
 }
@@ -55,11 +54,11 @@ func (i *InteractionCreate) BotAdmin() bool {
 }
 
 func (i *InteractionCreate) Admin() bool {
-	return isAdmin(i.Session, i.Interaction.GuildID, i.ID())
+	return isAdmin(i.Interaction.GuildID, i.ID())
 }
 
 func (i *InteractionCreate) Mod() bool {
-	return isMod(i.Session, i.Interaction.GuildID, i.ID())
+	return isMod(i.Interaction.GuildID, i.ID())
 }
 
 ///////////////
@@ -86,11 +85,11 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 }
 
 func (i *InteractionCreate) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, i.ID(), i.Session)
+	return getPersonID(s, placeID, i.ID())
 }
 
 func (i *InteractionCreate) PlaceID(s string) (string, error) {
-	return getPlaceID(s, i.Session)
+	return getPlaceID(s)
 }
 
 func (i *InteractionCreate) Person(id string) (int64, error) {
@@ -98,11 +97,11 @@ func (i *InteractionCreate) Person(id string) (int64, error) {
 }
 
 func (i *InteractionCreate) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, i.Interaction.ChannelID, i.Interaction.GuildID, i.Session)
+	return getPlaceExactScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
 }
 
 func (i *InteractionCreate) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, i.Interaction.ChannelID, i.Interaction.GuildID, i.Session)
+	return getPlaceLogicalScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
 }
 
 func (i *InteractionCreate) Usage(usage string) any {
@@ -118,7 +117,7 @@ func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 				Content: msg.(string),
 			},
 		}
-		return nil, i.Session.InteractionRespond(i.Interaction.Interaction, resp)
+		return nil, Session.InteractionRespond(i.Interaction.Interaction, resp)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
@@ -132,7 +131,7 @@ func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 				},
 			},
 		}
-		return nil, i.Session.InteractionRespond(i.Interaction.Interaction, resp)
+		return nil, Session.InteractionRespond(i.Interaction.Interaction, resp)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
@@ -181,7 +180,6 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 	}
 
 	inter := &InteractionCreate{
-		Session:     s,
 		Interaction: i,
 		Data:        &data,
 	}

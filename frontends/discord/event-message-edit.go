@@ -13,7 +13,6 @@ import (
 var replies = gosafe.Map[string, string]{}
 
 type MessageEdit struct {
-	Session *dg.Session
 	Message *dg.MessageUpdate
 	VC      *dg.VoiceConnection
 }
@@ -37,7 +36,6 @@ func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
 	}
 
 	d := &MessageEdit{
-		Session: s,
 		Message: m,
 	}
 	msg, err := d.Parse()
@@ -61,11 +59,11 @@ func (d *MessageEdit) Parse() (*core.Message, error) {
 }
 
 func (d *MessageEdit) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, d.Message.Author.ID, d.Session)
+	return getPersonID(s, placeID, d.Message.Author.ID)
 }
 
 func (d *MessageEdit) PlaceID(s string) (string, error) {
-	return getPlaceID(s, d.Session)
+	return getPlaceID(s)
 }
 
 func (d *MessageEdit) Person(id string) (int64, error) {
@@ -73,11 +71,11 @@ func (d *MessageEdit) Person(id string) (int64, error) {
 }
 
 func (d *MessageEdit) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
+	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
 func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID, d.Session)
+	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
 func (d *MessageEdit) Usage(usage string) any {
@@ -90,17 +88,17 @@ func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, err
 		text := msg.(string)
 		id, ok := replies.Get(d.Message.ID)
 		if !ok {
-			return sendText(d.Session, d.Message.Message, text, ping)
+			return sendText(d.Message.Message, text, ping)
 		}
-		return editText(d.Session, d.Message.Message, id, text)
+		return editText(d.Message.Message, id, text)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
 		id, ok := replies.Get(d.Message.ID)
 		if !ok {
-			return sendEmbed(d.Session, d.Message.Message, embed, usrErr, ping)
+			return sendEmbed(d.Message.Message, embed, usrErr, ping)
 		}
-		return editEmbed(d.Session, d.Message.Message, embed, usrErr, id)
+		return editEmbed(d.Message.Message, embed, usrErr, id)
 
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
@@ -138,7 +136,7 @@ func (d *MessageEdit) Channels() int {
 }
 
 func (d *MessageEdit) Join() error {
-	v, err := joinUserVoiceChannel(d.Session, d.Message.GuildID, d.Message.Author.ID)
+	v, err := joinUserVoiceChannel(d.Message.GuildID, d.Message.Author.ID)
 	if err != nil {
 		return err
 	}

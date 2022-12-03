@@ -15,16 +15,16 @@ import (
 
 var errInvalidID = errors.New("given string is not a valid ID")
 
-func getChannelGuildIDs(id string, hereChannelID, hereGuildID string, s *dg.Session) (string, string, error) {
+func getChannelGuildIDs(id string, hereChannelID, hereGuildID string) (string, string, error) {
 	var channelID, guildID string
 
 	if id == hereChannelID || id == hereGuildID {
 		channelID = hereChannelID
 		guildID = hereGuildID
-	} else if channel, err := s.Channel(id); err == nil {
+	} else if channel, err := Session.Channel(id); err == nil {
 		channelID = channel.ID
 		guildID = channel.GuildID
-	} else if guild, err := s.Guild(id); err == nil {
+	} else if guild, err := Session.Guild(id); err == nil {
 		channelID = ""
 		guildID = guild.ID
 	} else {
@@ -48,8 +48,8 @@ func getChannelScope(tx *sql.Tx, id string, guild int64) (int64, error) {
 	return dbAddChannelScope(tx, id, guild)
 }
 
-func getPlaceExactScope(id string, hereChannelID, hereGuildID string, s *dg.Session) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID, s)
+func getPlaceExactScope(id string, hereChannelID, hereGuildID string) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID)
 	if err != nil {
 		return -1, err
 	}
@@ -81,8 +81,8 @@ func getPlaceExactScope(id string, hereChannelID, hereGuildID string, s *dg.Sess
 	return channel, tx.Commit()
 }
 
-func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string, s *dg.Session) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID, s)
+func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID)
 	if err != nil {
 		return -1, err
 	}
@@ -162,7 +162,7 @@ func getUsage(usage string) *dg.MessageEmbed {
 	return embed
 }
 
-func getPersonID(s, guildID, authorID string, ds *dg.Session) (string, error) {
+func getPersonID(s, guildID, authorID string) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
 	// this: <@id>
 
@@ -181,14 +181,14 @@ func getPersonID(s, guildID, authorID string, ds *dg.Session) (string, error) {
 		return s, nil
 	}
 
-	if _, err := ds.GuildMember(guildID, s); err != nil {
+	if _, err := Session.GuildMember(guildID, s); err != nil {
 		return "", err
 	}
 
 	return s, nil
 }
 
-func getPlaceID(s string, ds *dg.Session) (string, error) {
+func getPlaceID(s string) (string, error) {
 	// expects one of the following:
 	// - guild id
 	// - channel id
@@ -204,11 +204,11 @@ func getPlaceID(s string, ds *dg.Session) (string, error) {
 	}
 
 	// will usually be a guild, so first try checking that
-	if _, err := ds.Guild(s); err == nil {
+	if _, err := Session.Guild(s); err == nil {
 		return s, nil
 	}
 
-	if _, err := ds.Channel(s); err == nil {
+	if _, err := Session.Channel(s); err == nil {
 		return s, nil
 	}
 
@@ -246,21 +246,21 @@ func parse(m *dg.Message) *core.Message {
 	return msg
 }
 
-func memberHasPerms(s *dg.Session, guildID, userID string, perms int64) (bool, error) {
+func memberHasPerms(guildID, userID string, perms int64) (bool, error) {
 	// if message is a DM
 	if guildID == "" {
 		return true, nil
 	}
 
-	member, err := s.State.Member(guildID, userID)
+	member, err := Session.State.Member(guildID, userID)
 	if err != nil {
-		if member, err = s.GuildMember(guildID, userID); err != nil {
+		if member, err = Session.GuildMember(guildID, userID); err != nil {
 			return false, err
 		}
 	}
 
 	for _, roleID := range member.Roles {
-		role, err := s.State.Role(guildID, roleID)
+		role, err := Session.State.Role(guildID, roleID)
 		if err != nil {
 			return false, err
 		}
@@ -272,16 +272,16 @@ func memberHasPerms(s *dg.Session, guildID, userID string, perms int64) (bool, e
 	return false, nil
 }
 
-func isAdmin(s *dg.Session, guildID string, userID string) bool {
-	has, err := memberHasPerms(s, guildID, userID, dg.PermissionAdministrator)
+func isAdmin(guildID string, userID string) bool {
+	has, err := memberHasPerms(guildID, userID, dg.PermissionAdministrator)
 	if err != nil {
 		return false
 	}
 	return has
 }
 
-func isMod(s *dg.Session, guildID string, userID string) bool {
-	has, err := memberHasPerms(s, guildID, userID, dg.PermissionBanMembers)
+func isMod(guildID string, userID string) bool {
+	has, err := memberHasPerms(guildID, userID, dg.PermissionBanMembers)
 	if err != nil {
 		return false
 	}
@@ -300,7 +300,7 @@ func getDisplayName(member *dg.Member, author *dg.User) string {
 	return displayName
 }
 
-func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
+func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
 	// TODO: Consider adding an option which allows one of these 3 values
 	// - no reply + no ping, just an embed
 	// - reply + no ping (default)
@@ -335,7 +335,7 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed, 
 		Reference:       ref,
 	}
 
-	resp, err := s.ChannelMessageSendComplex(m.ChannelID, reply)
+	resp, err := Session.ChannelMessageSendComplex(m.ChannelID, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -352,7 +352,7 @@ func msgSend(s *dg.Session, m *dg.Message, text string, embed *dg.MessageEmbed, 
 	return resp, nil
 }
 
-func sendText(s *dg.Session, m *dg.Message, text string, ping bool) (*core.Message, error) {
+func sendText(m *dg.Message, text string, ping bool) (*core.Message, error) {
 	var resp *dg.Message
 	var err error
 
@@ -361,31 +361,31 @@ func sendText(s *dg.Session, m *dg.Message, text string, ping bool) (*core.Messa
 	lenCnt := func(s string) int { return len(s) }
 
 	if lenLim > lenCnt(text) {
-		resp, err = msgSend(s, m, text, nil, ping)
+		resp, err = msgSend(m, text, nil, ping)
 	} else {
 		parts := core.Split(text, lenCnt, lenLim)
 		for _, p := range parts {
-			resp, err = msgSend(s, m, p, nil, ping)
+			resp, err = msgSend(m, p, nil, ping)
 		}
 	}
 
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Session: s, Message: resp}).Parse()
+	return (&Message{Message: resp}).Parse()
 }
 
-func sendEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, ping bool) (*core.Message, error) {
+func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, usrErr error, ping bool) (*core.Message, error) {
 	// TODO: implement message scrolling
 	embed = embedColor(embed, usrErr)
-	resp, err := msgSend(s, m, "", embed, ping)
+	resp, err := msgSend(m, "", embed, ping)
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Session: s, Message: resp}).Parse()
+	return (&Message{Message: resp}).Parse()
 }
 
-func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
+func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
 	var embeds []*dg.MessageEmbed
 	if embed != nil {
 		embeds = append(embeds, embed)
@@ -402,7 +402,7 @@ func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmb
 		},
 	}
 
-	resp, err := s.ChannelMessageEditComplex(reply)
+	resp, err := Session.ChannelMessageEditComplex(reply)
 	if err != nil {
 		return nil, err
 	}
@@ -417,21 +417,21 @@ func msgEdit(s *dg.Session, m *dg.Message, id, text string, embed *dg.MessageEmb
 	return resp, nil
 }
 
-func editText(s *dg.Session, m *dg.Message, id, text string) (*core.Message, error) {
-	resp, err := msgEdit(s, m, id, text, nil)
+func editText(m *dg.Message, id, text string) (*core.Message, error) {
+	resp, err := msgEdit(m, id, text, nil)
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Session: s, Message: resp}).Parse()
+	return (&Message{Message: resp}).Parse()
 }
 
-func editEmbed(s *dg.Session, m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
+func editEmbed(m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
 	embed = embedColor(embed, usrErr)
-	resp, err := msgEdit(s, m, id, "", embed)
+	resp, err := msgEdit(m, id, "", embed)
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Session: s, Message: resp}).Parse()
+	return (&Message{Message: resp}).Parse()
 }
 
 func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
