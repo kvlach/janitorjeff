@@ -239,36 +239,6 @@ func Delete(person, place int64) (error, error) {
 	return nil, dbPersonDelete(person, place)
 }
 
-///////////
-//       //
-// flags //
-//       //
-///////////
-
-type flags struct {
-	fs *core.Flags
-
-	person int64
-	place  int64
-}
-
-func newFlags(m *core.Message) *flags {
-	f := &flags{
-		fs: core.NewFlags(m),
-	}
-	return f
-}
-
-func (f *flags) Person() *flags {
-	core.FlagPerson(&f.person, f.fs)
-	return f
-}
-
-func (f *flags) Place() *flags {
-	core.FlagPlace(&f.place, f.fs)
-	return f
-}
-
 //////////
 //      //
 // init //
