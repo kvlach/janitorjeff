@@ -3,14 +3,9 @@ package nick
 import (
 	"fmt"
 
+	"github.com/janitorjeff/jeff-bot/commands/mask"
 	"github.com/janitorjeff/jeff-bot/core"
 )
-
-func adminGetFlags(m *core.Message) (*flags, []string, error) {
-	f := newFlags(m).Place().Person()
-	args, err := f.fs.Parse()
-	return f, args, err
-}
 
 var Admin = admin{}
 
@@ -121,11 +116,15 @@ func (adminShow) err(usrErr error, nick string) string {
 }
 
 func (adminShow) core(m *core.Message) (string, error, error) {
-	fs, _, err := adminGetFlags(m)
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
-	return Show(fs.person, fs.place)
+	t, usrErr, err := mask.Show(author)
+	if usrErr != nil || err != nil {
+		return "", usrErr, err
+	}
+	return Show(t.Person, t.Place)
 }
 
 /////////
@@ -195,15 +194,16 @@ func (adminSet) err(usrErr error) string {
 }
 
 func (adminSet) core(m *core.Message) (string, error, error) {
-	fs, args, err := adminGetFlags(m)
+	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
-	if len(args) == 0 {
-		return "", core.ErrMissingArgs, nil
+	t, usrErr, err := mask.Show(author)
+	if usrErr != nil || err != nil {
+		return "", usrErr, err
 	}
-	nick := args[0]
-	usrErr, err := Set(nick, fs.person, fs.place)
+	nick := m.Command.Args[0]
+	usrErr, err = Set(nick, t.Person, t.Place)
 	return nick, usrErr, err
 }
 
@@ -269,9 +269,13 @@ func (adminDelete) err(usrErr error) string {
 }
 
 func (adminDelete) core(m *core.Message) (error, error) {
-	fs, _, err := adminGetFlags(m)
+	author, err := m.Author()
 	if err != nil {
 		return nil, err
 	}
-	return Delete(fs.person, fs.place)
+	t, usrErr, err := mask.Show(author)
+	if usrErr != nil || err != nil {
+		return usrErr, err
+	}
+	return Delete(t.Person, t.Place)
 }
