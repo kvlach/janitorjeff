@@ -225,7 +225,7 @@ func isBotAdmin(id string) bool {
 }
 
 func parse(m *dg.Message) *core.Message {
-	u := &User{
+	u := &UserMessage{
 		GuildID: m.GuildID,
 		Author:  m.Author,
 		Member:  m.Member,

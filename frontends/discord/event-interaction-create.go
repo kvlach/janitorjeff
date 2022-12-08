@@ -15,52 +15,6 @@ type InteractionCreate struct {
 	Data        *dg.ApplicationCommandInteractionData
 }
 
-//////////
-//      //
-// User //
-//      //
-//////////
-
-func (i *InteractionCreate) ID() string {
-	if i.Interaction.Member != nil {
-		return i.Interaction.Member.User.ID
-	}
-	return i.Interaction.User.ID
-}
-
-func (i *InteractionCreate) Name() string {
-	if i.Interaction.Member != nil {
-		return i.Interaction.Member.User.Username
-	}
-	return i.Interaction.User.Username
-}
-
-func (i *InteractionCreate) DisplayName() string {
-	if i.Interaction.Member != nil {
-		return i.Interaction.Member.User.Username
-	}
-	return i.Interaction.User.Username
-}
-
-func (i *InteractionCreate) Mention() string {
-	if i.Interaction.Member != nil {
-		return i.Interaction.Member.Mention()
-	}
-	return i.Interaction.User.Mention()
-}
-
-func (i *InteractionCreate) BotAdmin() bool {
-	return isBotAdmin(i.ID())
-}
-
-func (i *InteractionCreate) Admin() bool {
-	return isAdmin(i.Interaction.GuildID, i.ID())
-}
-
-func (i *InteractionCreate) Mod() bool {
-	return isMod(i.Interaction.GuildID, i.ID())
-}
-
 ///////////////
 //           //
 // Messenger //
@@ -68,6 +22,12 @@ func (i *InteractionCreate) Mod() bool {
 ///////////////
 
 func (i *InteractionCreate) Parse() (*core.Message, error) {
+	u := &UserInteraction{
+		GuildID: i.Interaction.GuildID,
+		Member:  i.Interaction.Member,
+		User:    i.Interaction.User,
+	}
+
 	// channel := &core.Channel{
 	// 	ID:   i.Interaction.ChannelID,
 	// 	Name: i.Interaction.ChannelID,
@@ -77,7 +37,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
-		User:     i,
+		User:     u,
 		// Channel:  channel,
 		Client: i,
 	}
@@ -85,7 +45,13 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 }
 
 func (i *InteractionCreate) PersonID(s, placeID string) (string, error) {
-	return getPersonID(s, placeID, i.ID())
+	var id string
+	if i.Interaction.Member != nil {
+		id = i.Interaction.Member.User.ID
+	} else {
+		id = i.Interaction.User.ID
+	}
+	return getPersonID(s, placeID, id)
 }
 
 func (i *InteractionCreate) PlaceID(s string) (string, error) {
