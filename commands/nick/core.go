@@ -2,8 +2,6 @@ package nick
 
 import (
 	"errors"
-
-	"github.com/janitorjeff/jeff-bot/core"
 )
 
 var (
@@ -53,14 +51,4 @@ func Delete(person, place int64) (error, error) {
 		return errPersonNotFound, nil
 	}
 	return nil, dbPersonDelete(person, place)
-}
-
-//////////
-//      //
-// init //
-//      //
-//////////
-
-func init_() error {
-	return core.DB.Init(dbSchema)
 }
