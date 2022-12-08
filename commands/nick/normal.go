@@ -12,15 +12,12 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
-	return true
+func (normal) Permitted(m *core.Message) bool {
+	return Advanced.Permitted(m)
 }
 
 func (normal) Names() []string {
-	return []string{
-		"nick",
-		"nickname",
-	}
+	return Advanced.Names()
 }
 
 func (normal) Description() string {
