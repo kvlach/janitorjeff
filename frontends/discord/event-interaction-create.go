@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -13,6 +14,81 @@ import (
 type InteractionCreate struct {
 	Interaction *dg.InteractionCreate
 	Data        *dg.ApplicationCommandInteractionData
+	VC          *dg.VoiceConnection
+}
+
+func RegisterAppCommand(cmd *dg.ApplicationCommand) {
+	guildID := "759669782386966528"
+
+	cmd, err := Session.ApplicationCommandCreate(Session.State.User.ID, guildID, cmd)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(cmd)
+}
+
+func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
+	if i.Type != dg.InteractionApplicationCommand {
+		return
+	}
+	data := i.ApplicationCommandData()
+
+	args := []string{data.Name}
+
+	opts := data.Options
+	for len(opts) != 0 && opts[0].Type == dg.ApplicationCommandOptionSubCommand {
+		args = append(args, opts[0].Name)
+		opts = opts[0].Options
+	}
+
+	if len(opts) != 0 {
+		if val := opts[0].Value; val != nil {
+			args = append(args, strings.Split(fmt.Sprint(val), " ")...)
+		}
+	}
+
+	inter := &InteractionCreate{
+		Interaction: i,
+		Data:        &data,
+	}
+
+	m, err := inter.Parse()
+	if err != nil {
+		log.Debug().Err(err).Send()
+		return
+	}
+
+	var prefix string
+	for _, p := range core.Prefixes.Others() {
+		if p.Type == core.Normal {
+			prefix = p.Prefix
+			break
+		}
+	}
+
+	cmd, index, _ := core.Commands.Match(Type, m, args)
+
+	m.Command = &core.Command{
+		CommandStatic: cmd,
+		CommandRuntime: core.CommandRuntime{
+			Path:   args[:index+1],
+			Args:   args[index+1:],
+			Prefix: prefix,
+		},
+	}
+
+	m.Raw = prefix + strings.Join(args, " ")
+	fmt.Println("MESSAGEEEEEEEEEEEEEEEEEEEEE", m.Raw)
+
+	resp, usrErr, err := cmd.Run(m)
+	if err == core.ErrSilence {
+		return
+	}
+	if err != nil {
+		m.Write("Something went wrong...", fmt.Errorf(""))
+		return
+	}
+	m.Write(resp, usrErr)
 }
 
 ///////////////
@@ -39,6 +115,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		User:     u,
 		Channel:  ch,
 		Client:   i,
+		Speaker:  i,
 	}
 	return m, nil
 }
@@ -114,76 +191,40 @@ func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) 
 	return i.send(msg, usrErr)
 }
 
-func RegisterAppCommand(cmd *dg.ApplicationCommand) {
-	guildID := "759669782386966528"
+/////////////
+//         //
+// Speaker //
+//         //
+/////////////
 
-	cmd, err := Session.ApplicationCommandCreate(Session.State.User.ID, guildID, cmd)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(cmd)
+func (i *InteractionCreate) Voice() bool {
+	return true
 }
 
-func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
-	if i.Type != dg.InteractionApplicationCommand {
-		return
-	}
-	data := i.ApplicationCommandData()
+func (i *InteractionCreate) FrameRate() int {
+	return frameRate
+}
 
-	args := []string{data.Name}
+func (i *InteractionCreate) Channels() int {
+	return channels
+}
 
-	opts := data.Options
-	for len(opts) != 0 && opts[0].Type == dg.ApplicationCommandOptionSubCommand {
-		args = append(args, opts[0].Name)
-		opts = opts[0].Options
-	}
-
-	if len(opts) != 0 {
-		if val := opts[0].Value; val != nil {
-			args = append(args, strings.Split(fmt.Sprint(val), " ")...)
-		}
+func (i *InteractionCreate) Join() error {
+	var userID string
+	if i.Interaction.Member != nil {
+		userID = i.Interaction.Member.User.ID
+	} else {
+		userID = i.Interaction.User.ID
 	}
 
-	inter := &InteractionCreate{
-		Interaction: i,
-		Data:        &data,
-	}
-
-	m, err := inter.Parse()
+	v, err := joinUserVoiceChannel(i.Interaction.GuildID, userID)
 	if err != nil {
-		log.Debug().Err(err).Send()
-		return
+		return err
 	}
+	i.VC = v
+	return nil
+}
 
-	var prefix string
-	for _, p := range core.Prefixes.Others() {
-		if p.Type == core.Normal {
-			prefix = p.Prefix
-			break
-		}
-	}
-
-	cmd, index, _ := core.Commands.Match(Type, m, args)
-
-	m.Command = &core.Command{
-		CommandStatic: cmd,
-		CommandRuntime: core.CommandRuntime{
-			Path:   args[:index+1],
-			Args:   args[index+1:],
-			Prefix: prefix,
-		},
-	}
-
-	m.Raw = prefix + strings.Join(args, " ")
-	fmt.Println("MESSAGEEEEEEEEEEEEEEEEEEEEE", m.Raw)
-
-	resp, usrErr, err := cmd.Run(m)
-	if err == core.ErrSilence {
-		return
-	}
-	if err != nil {
-		m.Write("Something went wrong...", fmt.Errorf(""))
-		return
-	}
-	m.Write(resp, usrErr)
+func (i *InteractionCreate) Say(buf io.Reader, s *core.State) error {
+	return voicePlay(i.VC, buf, s)
 }
