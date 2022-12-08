@@ -136,34 +136,27 @@ func (advancedShow) Init() error {
 }
 
 func (c advancedShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return c.discord(m)
-	default:
-		return c.text(m)
-	}
-}
-
-func (c advancedShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	nick = fmt.Sprintf("**%s**", nick)
-
-	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, nick),
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(nick, usrErr)
+	default:
+		return c.text(nick, usrErr)
 	}
+}
 
+func (c advancedShow) discord(nick string, usrErr error) (*dg.MessageEmbed, error, error) {
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr, fmt.Sprintf("**%s**", nick)),
+	}
 	return embed, usrErr, nil
 }
 
-func (c advancedShow) text(m *core.Message) (string, error, error) {
-	nick, usrErr, err := c.core(m)
-	if err != nil {
-		return "", nil, err
-	}
+func (c advancedShow) text(nick string, usrErr error) (string, error, error) {
 	nick = fmt.Sprintf("'%s'", nick)
 	return c.err(usrErr, nick), usrErr, nil
 }
@@ -242,34 +235,27 @@ func (c advancedSet) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
-		return c.discord(m)
-	default:
-		return c.text(m)
-	}
-}
-
-func (c advancedSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	nick, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	nick = fmt.Sprintf("**%s**", nick)
-
-	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, nick),
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(nick, usrErr)
+	default:
+		return c.text(nick, usrErr)
 	}
+}
 
+func (c advancedSet) discord(nick string, usrErr error) (*dg.MessageEmbed, error, error) {
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr, fmt.Sprintf("**%s**", nick)),
+	}
 	return embed, usrErr, nil
 }
 
-func (c advancedSet) text(m *core.Message) (string, error, error) {
-	nick, usrErr, err := c.core(m)
-	if err != nil {
-		return "", nil, err
-	}
+func (c advancedSet) text(nick string, usrErr error) (string, error, error) {
 	nick = fmt.Sprintf("'%s'", nick)
 	return c.err(usrErr, nick), usrErr, nil
 }
@@ -345,32 +331,27 @@ func (advancedDelete) Init() error {
 }
 
 func (c advancedDelete) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
-		return c.discord(m)
-	default:
-		return c.text(m)
-	}
-}
-
-func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(usrErr)
+	default:
+		return c.text(usrErr)
+	}
+}
+
+func (c advancedDelete) discord(usrErr error) (*dg.MessageEmbed, error, error) {
 	embed := &dg.MessageEmbed{
 		Description: c.err(usrErr),
 	}
-
 	return embed, usrErr, nil
 }
 
-func (c advancedDelete) text(m *core.Message) (string, error, error) {
-	usrErr, err := c.core(m)
-	if err != nil {
-		return "", nil, err
-	}
+func (c advancedDelete) text(usrErr error) (string, error, error) {
 	return c.err(usrErr), usrErr, nil
 }
 
