@@ -28,18 +28,17 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		User:    i.Interaction.User,
 	}
 
-	// channel := &core.Channel{
-	// 	ID:   i.Interaction.ChannelID,
-	// 	Name: i.Interaction.ChannelID,
-	// }
+	ch := &Channel{
+		ChannelID: i.Interaction.ChannelID,
+	}
 
 	m := &core.Message{
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
 		User:     u,
-		// Channel:  channel,
-		Client: i,
+		Channel:  ch,
+		Client:   i,
 	}
 	return m, nil
 }
