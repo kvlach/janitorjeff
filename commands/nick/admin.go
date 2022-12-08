@@ -1,10 +1,9 @@
 package nick
 
 import (
-	"fmt"
-
 	"github.com/janitorjeff/jeff-bot/commands/mask"
 	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
 )
 
 var Admin = admin{}
@@ -15,23 +14,20 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(*core.Message) bool {
-	return true
+func (admin) Permitted(m *core.Message) bool {
+	return Advanced.Permitted(m)
 }
 
 func (admin) Names() []string {
-	return []string{
-		"nick",
-		"nickname",
-	}
+	return Advanced.Names()
 }
 
 func (admin) Description() string {
-	return ""
+	return Advanced.Description()
 }
 
-func (c admin) UsageArgs() string {
-	return c.Parent().UsageArgs()
+func (admin) UsageArgs() string {
+	return Advanced.UsageArgs()
 }
 
 func (admin) Parent() core.CommandStatic {
@@ -73,15 +69,15 @@ func (c adminShow) Permitted(m *core.Message) bool {
 }
 
 func (adminShow) Names() []string {
-	return core.Show
+	return AdvancedShow.Names()
 }
 
 func (adminShow) Description() string {
-	return ""
+	return AdvancedShow.Description()
 }
 
 func (adminShow) UsageArgs() string {
-	return ""
+	return AdvancedShow.UsageArgs()
 }
 
 func (adminShow) Parent() core.CommandStatic {
@@ -99,19 +95,14 @@ func (adminShow) Init() error {
 func (c adminShow) Run(m *core.Message) (any, error, error) {
 	nick, usrErr, err := c.core(m)
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
-	return c.err(usrErr, nick), usrErr, nil
-}
 
-func (adminShow) err(usrErr error, nick string) string {
-	switch usrErr {
-	case nil:
-		return nick
-	case errPersonNotFound:
-		return "nickname not set"
+	switch m.Frontend {
+	case frontends.Discord:
+		return AdvancedShow.discord(nick, usrErr)
 	default:
-		return fmt.Sprint(usrErr)
+		return AdvancedShow.text(nick, usrErr)
 	}
 }
 
@@ -120,10 +111,12 @@ func (adminShow) core(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
+
 	t, usrErr, err := mask.Show(author)
 	if usrErr != nil || err != nil {
 		return "", usrErr, err
 	}
+
 	return Show(t.Person, t.Place)
 }
 
@@ -146,17 +139,15 @@ func (c adminSet) Permitted(m *core.Message) bool {
 }
 
 func (adminSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return AdvancedSet.Names()
 }
 
 func (adminSet) Description() string {
-	return ""
+	return AdvancedSet.Description()
 }
 
 func (adminSet) UsageArgs() string {
-	return "<nick>"
+	return AdvancedSet.UsageArgs()
 }
 
 func (adminSet) Parent() core.CommandStatic {
@@ -172,37 +163,37 @@ func (adminSet) Init() error {
 }
 
 func (c adminSet) Run(m *core.Message) (any, error, error) {
-	_, usrErr, err := c.core(m)
-	if err != nil {
-		return "", nil, err
-	}
-	if usrErr == core.ErrMissingArgs {
+	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
-	return c.err(usrErr), usrErr, nil
-}
 
-func (adminSet) err(usrErr error) string {
-	switch usrErr {
-	case nil:
-		return "set nickname"
-	case errNickExists:
-		return "nickname already exists"
-	default:
-		return fmt.Sprint(usrErr)
+	nick, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
 	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return AdvancedSet.discord(nick, usrErr)
+	default:
+		return AdvancedSet.text(nick, usrErr)
+	}
+
 }
 
 func (adminSet) core(m *core.Message) (string, error, error) {
+	nick := m.Command.Args[0]
+
 	author, err := m.Author()
 	if err != nil {
 		return "", nil, err
 	}
+
 	t, usrErr, err := mask.Show(author)
 	if usrErr != nil || err != nil {
 		return "", usrErr, err
 	}
-	nick := m.Command.Args[0]
+
 	usrErr, err = Set(nick, t.Person, t.Place)
 	return nick, usrErr, err
 }
@@ -226,15 +217,15 @@ func (c adminDelete) Permitted(m *core.Message) bool {
 }
 
 func (adminDelete) Names() []string {
-	return core.Delete
+	return AdvancedDelete.Names()
 }
 
 func (adminDelete) Description() string {
-	return ""
+	return AdvancedDelete.Description()
 }
 
 func (adminDelete) UsageArgs() string {
-	return "<nick>"
+	return AdvancedDelete.UsageArgs()
 }
 
 func (adminDelete) Parent() core.CommandStatic {
@@ -252,19 +243,14 @@ func (adminDelete) Init() error {
 func (c adminDelete) Run(m *core.Message) (any, error, error) {
 	usrErr, err := c.core(m)
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
-	return c.err(usrErr), usrErr, nil
-}
 
-func (adminDelete) err(usrErr error) string {
-	switch usrErr {
-	case nil:
-		return "removed nick"
-	case errPersonNotFound:
-		return "person doesn't have a nickname in specified place"
+	switch m.Frontend {
+	case frontends.Discord:
+		return AdvancedDelete.discord(usrErr)
 	default:
-		return fmt.Sprint(usrErr)
+		return AdvancedDelete.text(usrErr)
 	}
 }
 
@@ -273,9 +259,11 @@ func (adminDelete) core(m *core.Message) (error, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	t, usrErr, err := mask.Show(author)
 	if usrErr != nil || err != nil {
 		return usrErr, err
 	}
+
 	return Delete(t.Person, t.Place)
 }
