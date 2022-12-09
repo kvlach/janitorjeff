@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	ErrPersonNotFound = errors.New("user nick not found")
-	ErrNickExists     = errors.New("nick is used by a different user")
+	ErrPersonNotFound = errors.New("You have not set a nickname.")
+	ErrNickExists     = errors.New("Nickname is already in use either by you or someone else.")
 )
 
 // Show returns the person's nickname in the specified place. If no nickname
