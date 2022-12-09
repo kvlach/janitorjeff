@@ -165,7 +165,7 @@ func (advancedShow) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
-	case errPersonNotFound:
+	case ErrPersonNotFound:
 		return "You have not set a nickname."
 	default:
 		return fmt.Sprint(usrErr)
@@ -264,7 +264,7 @@ func (c advancedSet) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Nickname set to %s", nick)
-	case errNickExists:
+	case ErrNickExists:
 		return fmt.Sprintf("Nickname %s is already being used by another user.", nick)
 	default:
 		return fmt.Sprint(usrErr)
@@ -359,7 +359,7 @@ func (advancedDelete) err(usrErr error) string {
 	switch usrErr {
 	case nil:
 		return "Deleted your nickname."
-	case errPersonNotFound:
+	case ErrPersonNotFound:
 		return "Can't delete, you haven't set a nickname here."
 	default:
 		return fmt.Sprint(usrErr)
