@@ -5,19 +5,19 @@ import (
 )
 
 var (
-	errPersonNotFound = errors.New("user nick not found")
-	errNickExists     = errors.New("nick is used by a different user")
+	ErrPersonNotFound = errors.New("user nick not found")
+	ErrNickExists     = errors.New("nick is used by a different user")
 )
 
 // Show returns the person's nickname in the specified place. If no nickname
-// has been set then returns an errPersonNotFound error.
+// has been set then returns an ErrPersonNotFound error.
 func Show(person, place int64) (string, error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return "", nil, err
 	}
 	if !exists {
-		return "", errPersonNotFound, nil
+		return "", ErrPersonNotFound, nil
 	}
 
 	nick, err := dbPersonNick(person, place)
@@ -26,14 +26,14 @@ func Show(person, place int64) (string, error, error) {
 
 // Set sets the person's nickname in the specified place. If the person has set
 // their nickname already then it updates it. If the nickname already exists in
-// that place then it returns an errNickExists error.
+// that place then it returns an ErrNickExists error.
 func Set(nick string, person, place int64) (error, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
 		return nil, err
 	}
 	if nickExists {
-		return errNickExists, nil
+		return ErrNickExists, nil
 	}
 
 	personExists, err := dbPersonExists(person, place)
@@ -48,14 +48,14 @@ func Set(nick string, person, place int64) (error, error) {
 }
 
 // Delete deletes the person's nickname in the specified place. If no nickname
-// has been set then returns an errPersonNotFound error.
+// has been set then returns an ErrPersonNotFound error.
 func Delete(person, place int64) (error, error) {
 	exists, err := dbPersonExists(person, place)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return errPersonNotFound, nil
+		return ErrPersonNotFound, nil
 	}
 	return nil, dbPersonDelete(person, place)
 }
