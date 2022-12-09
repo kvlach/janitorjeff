@@ -264,8 +264,6 @@ func (c advancedSet) err(usrErr error, nick string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Nickname set to %s", nick)
-	case ErrNickExists:
-		return fmt.Sprintf("Nickname %s is already being used by another user.", nick)
 	default:
 		return fmt.Sprint(usrErr)
 	}
