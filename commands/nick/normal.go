@@ -21,7 +21,7 @@ func (normal) Names() []string {
 }
 
 func (normal) Description() string {
-	return "View or set your nickname."
+	return "Show or set your nickname."
 }
 
 func (normal) UsageArgs() string {

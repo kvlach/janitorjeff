@@ -30,7 +30,7 @@ func (advanced) Names() []string {
 }
 
 func (advanced) Description() string {
-	return "Set, view or delete your nickname."
+	return "Show, set or delete your nickname."
 }
 
 func (c advanced) UsageArgs() string {
@@ -116,7 +116,7 @@ func (advancedShow) Names() []string {
 }
 
 func (advancedShow) Description() string {
-	return "View your current nickname."
+	return "Show your current nickname."
 }
 
 func (advancedShow) UsageArgs() string {
