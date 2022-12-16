@@ -12,7 +12,6 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/paintball"
 	"github.com/janitorjeff/jeff-bot/commands/prefix"
 	"github.com/janitorjeff/jeff-bot/commands/rps"
-	"github.com/janitorjeff/jeff-bot/commands/scope"
 	"github.com/janitorjeff/jeff-bot/commands/test"
 	"github.com/janitorjeff/jeff-bot/commands/time"
 	"github.com/janitorjeff/jeff-bot/commands/title"
@@ -53,8 +52,6 @@ var Commands = core.CommandsStatic{
 	prefix.Admin,
 
 	rps.Normal,
-
-	scope.Admin,
 
 	test.Admin,
 
