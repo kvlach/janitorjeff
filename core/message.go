@@ -56,32 +56,37 @@ type Messenger interface {
 	Write(msg any, usrErr error) (resp *Message, err error)
 }
 
+// Author is the interface used to abstract a frontend's message author.
 type Author interface {
-	// The user ID, this should be a unique, static, identifier for the user in
-	// that frontend.
+	// ID returns the author's ID, this should be a unique, static, identifier
+	// in that frontend.
 	ID() string
 
-	// The username.
+	// Name returns the author's username.
 	Name() string
 
-	// The display name. If only usernames exist for that frontend then returns
-	// the username.
+	// DisplayName return's the author's display name. If only usernames exist
+	// for that frontend then returns the username.
 	DisplayName() string
 
-	// Mention the user. This should ideally ping them in some way.
+	// Mention return's a string that mention's the author. This should ideally
+	// ping them in some way.
 	Mention() string
 
-	// Checks if the user is a bot admin.
+	// BotAdmin returns true if the author is a bot admin. Otherwise returns
+	// false.
 	BotAdmin() bool
 
-	// Should return true only if a user has basically every permission.
+	// Admin checks if the author is considered an admin. Should return true
+	// only if the author has basically every permission.
 	Admin() bool
 
-	// General rule of thumb is that if they can ban people, they are mods.
+	// Mod checks if the author is considered a moderator. General rule of thumb
+	// is that if the author can ban people, then they are mods.
 	Mod() bool
 
-	// Gets the author's scope. If it doesn't exist it will create it and add
-	// it to the database.
+	// Scope return's the author's scope. If it doesn't exist it will create it
+	// and add it to the database.
 	Scope() (author int64, err error)
 }
 
