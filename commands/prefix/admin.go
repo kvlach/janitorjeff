@@ -133,9 +133,9 @@ func (adminAdd) err(usrErr error, m *core.Message, prefix, collision string) any
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case core.ErrMissingArgs:
 		return m.Usage()
-	case errExists:
+	case ErrExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
-	case errCustomCommandExists:
+	case ErrCustomCommandExists:
 		return fmt.Sprintf("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.", prefix, collision)
 	default:
 		return fmt.Sprint(usrErr)
@@ -231,9 +231,9 @@ func (adminDelete) err(usrErr error, m *core.Message, prefix string) any {
 		return fmt.Sprintf("Deleted prefix %s", prefix)
 	case core.ErrMissingArgs:
 		return m.Usage()
-	case errNotFound:
+	case ErrNotFound:
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
-	case errOneLeft:
+	case ErrOneLeft:
 		resetCmd := core.Format(AdminReset, m.Command.Prefix)
 		switch m.Frontend {
 		case frontends.Discord:

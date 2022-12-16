@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	errExists   = errors.New("The prefix already exists.")
-	errNotFound = errors.New("The prefix was not found.")
-	errOneLeft  = errors.New("Only one prefix is left.")
+	ErrExists   = errors.New("The prefix already exists.")
+	ErrNotFound = errors.New("The prefix was not found.")
+	ErrOneLeft  = errors.New("Only one prefix is left.")
 
-	errCustomCommandExists = errors.New("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.")
+	ErrCustomCommandExists = errors.New("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.")
 )
 
 /////////
@@ -51,6 +51,12 @@ func customCommandCollision(prefix string, place int64) (string, error) {
 	return "", nil
 }
 
+// Add adds a prefix of type t in the specified place. If the prefix, regardless
+// of type, already exists then returns an ErrExists error. If a custom command
+// happens to collide with the newly added prefix (for example if the custom
+// command `.help` exists and the prefix `.` is added then `.help` would collide
+// with the built-in command `help`) then returns an ErrCustomCommandExists
+// error.
 func Add(prefix string, t core.CommandType, place int64) (string, error, error) {
 	prefixes, inDB, err := core.PlacePrefixes(place)
 	if err != nil {
@@ -70,7 +76,7 @@ func Add(prefix string, t core.CommandType, place int64) (string, error, error) 
 
 	for _, p := range prefixes {
 		if p.Prefix == prefix {
-			return "", errExists, nil
+			return "", ErrExists, nil
 		}
 	}
 
@@ -79,7 +85,7 @@ func Add(prefix string, t core.CommandType, place int64) (string, error, error) 
 		return "", nil, err
 	}
 	if collision != "" {
-		return collision, errCustomCommandExists, nil
+		return collision, ErrCustomCommandExists, nil
 	}
 
 	return "", nil, dbAdd(prefix, t, place)
@@ -126,9 +132,9 @@ func cmdAddErr(usrErr error, prefix, collision string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
-	case errExists:
+	case ErrExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
-	case errCustomCommandExists:
+	case ErrCustomCommandExists:
 		return fmt.Sprintf(fmt.Sprint(usrErr), prefix, collision)
 	default:
 		return fmt.Sprint(usrErr)
@@ -153,6 +159,9 @@ func cmdAddCore(t core.CommandType, m *core.Message) (string, string, error, err
 //        //
 ////////////
 
+// Delete removes the prefix of type t from the specified place. If the prefix
+// doesn't exist returns an ErrNotFound error. If there is only one prefix of
+// that type left then returns an ErrOneLeft error.
 func Delete(prefix string, t core.CommandType, place int64) (error, error) {
 	prefixes, inDB, err := core.PlacePrefixes(place)
 	if err != nil {
@@ -171,10 +180,10 @@ func Delete(prefix string, t core.CommandType, place int64) (error, error) {
 	}
 
 	if !exists {
-		return errNotFound, nil
+		return ErrNotFound, nil
 	}
 	if len(prefixes) == 1 {
-		return errOneLeft, nil
+		return ErrOneLeft, nil
 	}
 
 	// If the scope doesn't exist then the default prefixes are being used and
@@ -213,7 +222,7 @@ func cmdDeleteDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, er
 	resetCommand := ""
 
 	switch usrErr {
-	case errOneLeft:
+	case ErrOneLeft:
 		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
 	}
@@ -238,7 +247,7 @@ func cmdDeleteText(t core.CommandType, m *core.Message) (string, error, error) {
 	switch usrErr {
 	case core.ErrMissingArgs:
 		return m.Usage().(string), usrErr, nil
-	case errOneLeft:
+	case ErrOneLeft:
 		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 	}
 
@@ -249,9 +258,9 @@ func cmdDeleteErr(err error, m *core.Message, prefix, resetCommand string) strin
 	switch err {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
-	case errNotFound:
+	case ErrNotFound:
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
-	case errOneLeft:
+	case ErrOneLeft:
 		return fmt.Sprintf("Can't delete, %s is the only prefix left.\n", prefix) +
 			fmt.Sprintf("If you wish to reset to the default prefixes run: %s", resetCommand)
 	default:
@@ -277,6 +286,10 @@ func cmdDeleteCore(t core.CommandType, m *core.Message) (string, error, error) {
 //      //
 //////////
 
+// List returns a list of prefixes with type t in the specified place. It is
+// possible to return prefixes of multiple types like so:
+//
+//	List(core.Normal|core.Advanced, place)
 func List(t core.CommandType, place int64) ([]core.Prefix, error) {
 	prefixes, _, err := core.PlacePrefixes(place)
 
@@ -359,6 +372,8 @@ func cmdListCore(t core.CommandType, m *core.Message) ([]string, error) {
 //       //
 ///////////
 
+// Reset wipes all the prefixes from the database making it so the default ones
+// will have to be used.
 func Reset(place int64) error {
 	return dbReset(place)
 }
