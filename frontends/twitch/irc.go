@@ -131,7 +131,7 @@ func (t *Twitch) Helix() (*Helix, error) {
 ///////////////
 
 func (t *Twitch) Parse() (*core.Message, error) {
-	u := User{
+	author := Author{
 		User: t.message.User,
 	}
 
@@ -139,8 +139,8 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		ID:       t.message.ID,
 		Frontend: Type,
 		Raw:      t.message.Message,
-		User:     u,
-		Channel:  u, // users and channels are the same thing on twitch
+		Author:   author,
+		Channel:  author, // users and channels are the same thing on twitch
 		Client:   t,
 		Speaker:  t,
 	}
@@ -201,7 +201,7 @@ func (t *Twitch) Person(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message.User, h)
 }
 
 func (t *Twitch) PlaceExact(id string) (int64, error) {
@@ -209,7 +209,7 @@ func (t *Twitch) PlaceExact(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message.User, h)
 }
 
 func (t *Twitch) PlaceLogical(id string) (int64, error) {
@@ -217,7 +217,7 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message, h)
+	return dbAddChannel(id, t.message.User, h)
 }
 
 func (t *Twitch) Usage(usage string) any {

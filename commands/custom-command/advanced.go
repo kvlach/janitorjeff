@@ -21,7 +21,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.User.Mod()
+	return m.Author.Mod()
 }
 
 func (advanced) Names() []string {
@@ -180,7 +180,7 @@ func (c advancedAdd) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -290,7 +290,7 @@ func (advancedEdit) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -404,7 +404,7 @@ func (advancedDelete) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}

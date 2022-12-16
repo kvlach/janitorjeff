@@ -135,7 +135,7 @@ func (adminShow) err(usrErr error, t Target) string {
 }
 
 func (adminShow) core(m *core.Message) (Target, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return Target{}, nil, err
 	}
@@ -219,7 +219,7 @@ func (c adminSet) text(m *core.Message) (string, error, error) {
 }
 
 func (adminSet) core(m *core.Message) (Target, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return Target{}, err
 	}
@@ -308,7 +308,7 @@ func (adminDelete) err(usrErr error) string {
 }
 
 func (adminDelete) core(m *core.Message) (error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err
 	}

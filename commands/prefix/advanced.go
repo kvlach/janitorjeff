@@ -13,7 +13,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.User.Mod()
+	return m.Author.Mod()
 }
 
 func (advanced) Names() []string {

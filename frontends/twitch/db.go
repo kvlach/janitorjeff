@@ -21,11 +21,11 @@ func dbInit() error {
 	return core.DB.Init(dbSchema)
 }
 
-func dbAddChannel(id string, m *tirc.PrivateMessage, h *Helix) (int64, error) {
+func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
 	var channelID, channelName string
-	if id == m.User.ID {
-		channelID = m.User.ID
-		channelName = m.User.Name
+	if id == u.ID {
+		channelID = u.ID
+		channelName = u.Name
 	} else if u, err := h.GetUser(id); err == nil {
 		channelID = id
 		channelName = u.Login

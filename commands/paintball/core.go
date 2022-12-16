@@ -104,7 +104,7 @@ func (pb *pb) Playing(place int64, v bool) {
 	}
 }
 
-func (pb *pb) Point(place int64, player core.User) {
+func (pb *pb) Point(place int64, player core.Author) {
 	pb.Lock()
 	defer pb.Unlock()
 

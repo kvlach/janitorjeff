@@ -107,7 +107,7 @@ func (c adminShow) Run(m *core.Message) (any, error, error) {
 }
 
 func (adminShow) core(m *core.Message) (string, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -184,7 +184,7 @@ func (c adminSet) Run(m *core.Message) (any, error, error) {
 func (adminSet) core(m *core.Message) (string, error, error) {
 	nick := m.Command.Args[0]
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -255,7 +255,7 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (adminDelete) core(m *core.Message) (error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err
 	}
