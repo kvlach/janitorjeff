@@ -68,7 +68,7 @@ func Delete(person, place int64) (error, error) {
 // etc.)
 func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 	if s == "me" {
-		return m.Author()
+		return m.Author.Scope()
 	}
 
 	if person, err := dbGetPerson(s, place); err == nil {

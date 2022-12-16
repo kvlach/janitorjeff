@@ -20,7 +20,7 @@ func (advanced) Permitted(m *core.Message) bool {
 	if m.Frontend != frontends.Twitch {
 		return false
 	}
-	return m.User.Mod()
+	return m.Author.Mod()
 }
 
 func (advanced) Names() []string {

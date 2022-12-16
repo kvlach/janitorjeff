@@ -158,7 +158,7 @@ func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet st
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
-		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.User.Mention(), cmdTzSet)
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention(), cmdTzSet)
 	case errPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
@@ -172,7 +172,7 @@ func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
 	var person int64
 	var err error
 	if len(m.Command.Args) == 0 {
-		person, err = m.Author()
+		person, err = m.Author.Scope()
 	} else {
 		person, err = nick.ParsePersonHere(m, m.Command.Args[0])
 	}
@@ -381,7 +381,7 @@ func (advancedTimestamp) err(usrErr error, t time.Time) string {
 }
 
 func (advancedTimestamp) core(m *core.Message) (time.Time, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -536,7 +536,7 @@ func (advancedTimezoneShow) err(usrErr error, tz string) string {
 }
 
 func (advancedTimezoneShow) core(m *core.Message) (string, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -633,7 +633,7 @@ func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
 func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Added %s with timezone %s", m.User.Mention(), tz)
+		return fmt.Sprintf("Added %s with timezone %s", m.Author.Mention(), tz)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
@@ -644,7 +644,7 @@ func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string 
 func (advancedTimezoneSet) core(m *core.Message) (string, error, error) {
 	tz := m.Command.Args[0]
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -732,16 +732,16 @@ func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
 func (advancedTimezoneDelete) err(usrErr error, m *core.Message) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Deleted timezone for user %s", m.User.Mention())
+		return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention())
 	case errTimezoneNotSet:
-		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.User.Mention())
+		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.Author.Mention())
 	default:
 		return fmt.Sprint(usrErr)
 	}
 }
 
 func (advancedTimezoneDelete) core(m *core.Message) (error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err
 	}
@@ -886,7 +886,7 @@ func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) 
 		}
 	}
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return time.Time{}, -1, nil, err
 	}
@@ -999,7 +999,7 @@ func (advancedRemindDelete) core(m *core.Message) (error, error) {
 		return errInvalidRemindID, nil
 	}
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err
 	}
@@ -1086,7 +1086,7 @@ func (c advancedRemindList) discord(m *core.Message) (string, error, error) {
 }
 
 func (advancedRemindList) core(m *core.Message) ([]reminder, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, nil, err
 	}

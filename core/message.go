@@ -56,7 +56,7 @@ type Messenger interface {
 	Write(msg any, usrErr error) (resp *Message, err error)
 }
 
-type User interface {
+type Author interface {
 	// The user ID, this should be a unique, static, identifier for the user in
 	// that frontend.
 	ID() string
@@ -79,6 +79,10 @@ type User interface {
 
 	// General rule of thumb is that if they can ban people, they are mods.
 	Mod() bool
+
+	// Gets the author's scope. If it doesn't exist it will create it and add
+	// it to the database.
+	Scope() (author int64, err error)
 }
 
 type Channel interface {
@@ -92,14 +96,13 @@ type Channel interface {
 
 type Message struct {
 	// Cache values since they are expensive to retrieve and are needed often
-	author      int64
 	hereExact   int64
 	hereLogical int64
 
 	ID       string
 	Frontend int
 	Raw      string
-	User     User
+	Author   Author
 	Channel  Channel
 	Client   Messenger
 	Speaker  Speaker
@@ -148,22 +151,6 @@ func (m *Message) RawArgs(n int) string {
 // Sends a message.
 func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
-}
-
-// Return's the author's scope.
-func (m *Message) Author() (int64, error) {
-	// caches the scope to avoid unecessary database queries
-
-	if m.author != 0 {
-		return m.author, nil
-	}
-
-	author, err := m.Client.Person(m.User.ID())
-	if err != nil {
-		return -1, err
-	}
-	m.author = author
-	return author, nil
 }
 
 // Return's the exact here's scope.
@@ -291,7 +278,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 
-	if m.Command.Type() == Admin && m.User.BotAdmin() == false {
+	if m.Command.Type() == Admin && m.Author.BotAdmin() == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 

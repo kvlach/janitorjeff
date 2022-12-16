@@ -98,7 +98,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 ///////////////
 
 func (i *InteractionCreate) Parse() (*core.Message, error) {
-	u := &UserInteraction{
+	author := &AuthorInteraction{
 		GuildID: i.Interaction.GuildID,
 		Member:  i.Interaction.Member,
 		User:    i.Interaction.User,
@@ -112,7 +112,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		ID:       i.Data.ID,
 		Frontend: Type,
 		Raw:      "", // TODO
-		User:     u,
+		Author:   author,
 		Channel:  ch,
 		Client:   i,
 		Speaker:  i,

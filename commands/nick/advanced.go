@@ -173,7 +173,7 @@ func (advancedShow) err(usrErr error, nick string) string {
 }
 
 func (advancedShow) core(m *core.Message) (string, error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -272,7 +272,7 @@ func (c advancedSet) err(usrErr error, nick string) string {
 func (c advancedSet) core(m *core.Message) (string, error, error) {
 	nick := m.Command.Args[0]
 
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
 	}
@@ -365,7 +365,7 @@ func (advancedDelete) err(usrErr error) string {
 }
 
 func (advancedDelete) core(m *core.Message) (error, error) {
-	author, err := m.Author()
+	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err
 	}
