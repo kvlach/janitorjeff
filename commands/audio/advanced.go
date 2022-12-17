@@ -47,6 +47,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedPause,
 		AdvancedResume,
 		AdvancedSkip,
+		AdvancedLoop,
 		AdvancedQueue,
 	}
 }
@@ -428,6 +429,241 @@ func (advancedSkip) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 	return Skip(here), nil
+}
+
+//////////
+//      //
+// loop //
+//      //
+//////////
+
+var AdvancedLoop = advancedLoop{}
+
+type advancedLoop struct{}
+
+func (c advancedLoop) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedLoop) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedLoop) Names() []string {
+	return []string{
+		"loop",
+	}
+}
+
+func (advancedLoop) Description() string {
+	return "Turn looping on or off."
+}
+
+func (c advancedLoop) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (advancedLoop) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedLoop) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedLoopOn,
+		AdvancedLoopOff,
+	}
+}
+
+func (advancedLoop) Init() error {
+	return nil
+}
+
+func (advancedLoop) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+/////////////
+//         //
+// loop on //
+//         //
+/////////////
+
+var AdvancedLoopOn = advancedLoopOn{}
+
+type advancedLoopOn struct{}
+
+func (c advancedLoopOn) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedLoopOn) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedLoopOn) Names() []string {
+	return []string{
+		"on",
+	}
+}
+
+func (advancedLoopOn) Description() string {
+	return "Will play the current item on loop, indefinitely!"
+}
+
+func (advancedLoopOn) UsageArgs() string {
+	return ""
+}
+
+func (advancedLoopOn) Parent() core.CommandStatic {
+	return AdvancedLoop
+}
+
+func (advancedLoopOn) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedLoopOn) Init() error {
+	return nil
+}
+
+func (c advancedLoopOn) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (c advancedLoopOn) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.err(usrErr), usrErr, nil
+}
+
+func (advancedLoopOn) err(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Current item is now on loop!"
+	case ErrNotPlaying:
+		return "Can't loop, nothing is playing."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedLoopOn) core(m *core.Message) (error, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return nil, err
+	}
+	return LoopOn(here), nil
+}
+
+//////////////
+//          //
+// loop off //
+//          //
+//////////////
+
+var AdvancedLoopOff = advancedLoopOff{}
+
+type advancedLoopOff struct{}
+
+func (c advancedLoopOff) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedLoopOff) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedLoopOff) Names() []string {
+	return []string{
+		"off",
+	}
+}
+
+func (advancedLoopOff) Description() string {
+	return "Turn looping off."
+}
+
+func (advancedLoopOff) UsageArgs() string {
+	return ""
+}
+
+func (advancedLoopOff) Parent() core.CommandStatic {
+	return AdvancedLoop
+}
+
+func (advancedLoopOff) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedLoopOff) Init() error {
+	return nil
+}
+
+func (c advancedLoopOff) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.err(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (c advancedLoopOff) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.err(usrErr), usrErr, nil
+}
+
+func (advancedLoopOff) err(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Turned looping off."
+	case ErrNotPlaying:
+		return "Can't turn looping off, nothing is playing."
+	case ErrNotLooping:
+		return "Not looping, can't turn it off."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedLoopOff) core(m *core.Message) (error, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return nil, err
+	}
+	return LoopOff(here), nil
 }
 
 ///////////
