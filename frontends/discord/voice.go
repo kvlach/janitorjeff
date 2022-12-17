@@ -108,7 +108,7 @@ func play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
 
 	for {
 		switch s.Get() {
-		case core.Play:
+		case core.Play, core.Loop:
 			audiobuf := make([]int16, frameSize*channels)
 			err := binary.Read(buf, binary.LittleEndian, &audiobuf)
 			if err == io.EOF || err == io.ErrUnexpectedEOF {

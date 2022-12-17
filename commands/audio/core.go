@@ -16,6 +16,7 @@ import (
 var (
 	ErrNotPaused        = errors.New("Not paused.")
 	ErrNotPlaying       = errors.New("Not playing anything.")
+	ErrNotLooping       = errors.New("Not looping.")
 	ErrSiteNotSupported = errors.New("This website is not supported.")
 )
 
@@ -31,7 +32,7 @@ type Playing struct {
 
 var playing = gosafe.Map[int64, *Playing]{}
 
-func stream(s core.Speaker, p *Playing, place int64) {
+func stream(sp core.Speaker, p *Playing, place int64) {
 	for {
 		if p.Queue.Len() == 0 {
 			playing.Delete(place)
@@ -39,12 +40,14 @@ func stream(s core.Speaker, p *Playing, place int64) {
 		}
 
 		switch p.State.Get() {
-		case core.Play:
+		case core.Play, core.Loop:
 			// Audio only format might not exist in which case we grab the
 			// whole thing and let ffmpeg extract the audio
 			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
-			core.PipeThroughFFmpeg(s, ytdl, p.State)
-			p.Queue.DeleteStable(0)
+			core.PipeThroughFFmpeg(sp, ytdl, p.State)
+			if p.State.Get() != core.Loop {
+				p.Queue.DeleteStable(0)
+			}
 		case core.Stop:
 			// Stop state means that the skip command was executed and so we
 			// set the state to Play in order for the next item in the queue to
@@ -160,6 +163,27 @@ func Skip(place int64) error {
 		return ErrNotPlaying
 	}
 	p.State.Set(core.Stop)
+	return nil
+}
+
+func LoopOn(place int64) error {
+	p, ok := playing.Get(place)
+	if !ok {
+		return ErrNotPlaying
+	}
+	p.State.Set(core.Loop)
+	return nil
+}
+
+func LoopOff(place int64) error {
+	p, ok := playing.Get(place)
+	if !ok {
+		return ErrNotPlaying
+	}
+	if p.State.Get() != core.Loop {
+		return ErrNotLooping
+	}
+	p.State.Set(core.Play)
 	return nil
 }
 
