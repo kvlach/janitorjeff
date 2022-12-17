@@ -231,8 +231,9 @@ func parse(m *dg.Message) *core.Message {
 		Member:  m.Member,
 	}
 
-	ch := &Channel{
+	h := &Here{
 		ChannelID: m.ChannelID,
+		GuildID:   m.GuildID,
 	}
 
 	msg := &core.Message{
@@ -240,7 +241,7 @@ func parse(m *dg.Message) *core.Message {
 		Frontend: Type,
 		Raw:      m.Content,
 		Author:   author,
-		Channel:  ch,
+		Here:     h,
 	}
 
 	return msg

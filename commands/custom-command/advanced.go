@@ -65,7 +65,7 @@ func (advanced) writeCustomCommand(m *core.Message) {
 		return
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return
 	}
@@ -185,7 +185,7 @@ func (c advancedAdd) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -295,7 +295,7 @@ func (advancedEdit) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -399,7 +399,7 @@ func (advancedDelete) err(usrErr error, trigger string) string {
 func (advancedDelete) core(m *core.Message) (string, error, error) {
 	trigger := m.Command.Args[0]
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -501,7 +501,7 @@ func (c advancedList) text(m *core.Message) (string, error, error) {
 }
 
 func (c advancedList) core(m *core.Message) ([]string, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -658,7 +658,7 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 func (advancedHistory) core(m *core.Message) (string, []customCommand, error) {
 	trigger := m.Command.Args[0]
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return trigger, nil, err
 	}

@@ -90,25 +90,42 @@ type Author interface {
 	Scope() (author int64, err error)
 }
 
-type Channel interface {
-	// The channel ID, this should be a unique, static, identifier for that
-	// frontend.
+// Here is the interface used to abstract the place where message came from, e.g.
+// channel, server, etc.
+//
+// Two type's of scopes exist for places, the exact and the logical. The logical
+// is the area where things are generally expected to work. For example: if a
+// user adds a custom command in a discord server they would probably expect it
+// to work in the entire server and not just in the specific channel that they
+// added it in. If on the other hand someone adds a custom command in a discord
+// DM, then no guild exists and thus the channel's scope would have to be used.
+// On the other hand the exact scope is, as its name suggests, the scope of the
+// exact place the message came from and does not account for context, so using
+// the previous discord server example, it would be the channel's scope where
+// the message came from instead of the server's.
+type Here interface {
+	// ID returns the channel's ID, this should be a unique, static, identifier
+	// in that frontend.
 	ID() string
 
-	// The channel's name.
+	// Name return's the channel's name.
 	Name() string
+
+	// ScopeExact returns the here's exact scope. See the interface's doc
+	// comment for more information on exact scopes.
+	ScopeExact() (place int64, err error)
+
+	// ScopeLogical returns the here's logical scope. See the interface's doc
+	// comment for more information on logical scopes.
+	ScopeLogical() (place int64, err error)
 }
 
 type Message struct {
-	// Cache values since they are expensive to retrieve and are needed often
-	hereExact   int64
-	hereLogical int64
-
 	ID       string
 	Frontend int
 	Raw      string
 	Author   Author
-	Channel  Channel
+	Here     Here
 	Client   Messenger
 	Speaker  Speaker
 	Command  *Command
@@ -158,38 +175,10 @@ func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-// Return's the exact here's scope.
-func (m *Message) HereExact() (int64, error) {
-	if m.hereExact != 0 {
-		return m.hereExact, nil
-	}
-
-	here, err := m.Client.PlaceExact(m.Channel.ID())
-	if err != nil {
-		return -1, err
-	}
-	m.hereExact = here
-	return here, nil
-}
-
-// Returns the logical here's scope.
-func (m *Message) HereLogical() (int64, error) {
-	if m.hereLogical != 0 {
-		return m.hereLogical, nil
-	}
-
-	here, err := m.Client.PlaceLogical(m.Channel.ID())
-	if err != nil {
-		return -1, err
-	}
-	m.hereLogical = here
-	return here, nil
-}
-
 // Returns the logical here's prefixes and also whether or not they were taken
 // from the database (if not then that means the default ones were used).
 func (m *Message) Prefixes() ([]Prefix, bool, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, false, err
 	}

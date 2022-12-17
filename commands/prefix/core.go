@@ -144,7 +144,7 @@ func cmdAddErr(usrErr error, prefix, collision string) string {
 func cmdAddCore(t core.CommandType, m *core.Message) (string, string, error, error) {
 	prefix := m.Command.Args[0]
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return prefix, "", nil, err
 	}
@@ -271,7 +271,7 @@ func cmdDeleteErr(err error, m *core.Message, prefix, resetCommand string) strin
 func cmdDeleteCore(t core.CommandType, m *core.Message) (string, error, error) {
 	prefix := m.Command.Args[0]
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return prefix, nil, err
 	}
@@ -346,7 +346,7 @@ func cmdListText(t core.CommandType, m *core.Message) (string, error, error) {
 }
 
 func cmdListCore(t core.CommandType, m *core.Message) ([]string, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -415,7 +415,7 @@ func cmdResetText(m *core.Message) (string, error, error) {
 }
 
 func cmdResetCore(m *core.Message) (string, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", err
 	}

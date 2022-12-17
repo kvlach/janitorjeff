@@ -200,7 +200,7 @@ func simplify(s string) string {
 
 func awaitAnswer(here int64, answers []string) *core.Message {
 	msg := core.Await(15*time.Second, func(m *core.Message) bool {
-		place, err := m.HereExact()
+		place, err := m.Here.ScopeExact()
 		if err != nil {
 			return false
 		}

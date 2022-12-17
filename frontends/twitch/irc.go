@@ -140,7 +140,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		Frontend: Type,
 		Raw:      t.message.Message,
 		Author:   author,
-		Channel:  author, // users and channels are the same thing on twitch
+		Here:     author, // users and channels are the same thing on twitch
 		Client:   t,
 		Speaker:  t,
 	}
