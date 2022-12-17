@@ -101,5 +101,5 @@ func (normal) core(m *core.Message) (string, error) {
 		return core.DB.ScopeID(person)
 	}
 
-	return m.Client.PersonID(s, m.Channel.ID())
+	return m.Client.PersonID(s, m.Here.ID())
 }

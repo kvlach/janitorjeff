@@ -178,7 +178,7 @@ func (advancedShow) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -277,7 +277,7 @@ func (c advancedSet) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -370,7 +370,7 @@ func (advancedDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}

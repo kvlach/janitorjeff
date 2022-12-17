@@ -147,7 +147,7 @@ func (advancedPlay) err(usrErr error, title string) string {
 }
 
 func (advancedPlay) core(m *core.Message) (Item, error, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Item{}, nil, err
 	}
@@ -238,7 +238,7 @@ func (advancedPause) err(usrErr error) string {
 }
 
 func (advancedPause) core(m *core.Message) (error, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func (advancedResume) err(usrErr error) string {
 }
 
 func (advancedResume) core(m *core.Message) (error, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func (advancedSkip) err(usrErr error) string {
 }
 
 func (advancedSkip) core(m *core.Message) (error, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -525,7 +525,7 @@ func (advancedQueue) err(usrErr error) string {
 }
 
 func (advancedQueue) core(m *core.Message) ([]string, error, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, nil, err
 	}

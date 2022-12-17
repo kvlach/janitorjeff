@@ -181,7 +181,7 @@ func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
 		return time.Time{}, cmdTzSet, errPersonNotFound, nil
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return time.Time{}, cmdTzSet, nil, err
 	}
@@ -386,7 +386,7 @@ func (advancedTimestamp) core(m *core.Message) (time.Time, error, error) {
 		return time.Time{}, nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -541,7 +541,7 @@ func (advancedTimezoneShow) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -649,7 +649,7 @@ func (advancedTimezoneSet) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
 	}
@@ -746,7 +746,7 @@ func (advancedTimezoneDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
@@ -891,12 +891,12 @@ func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) 
 		return time.Time{}, -1, nil, err
 	}
 
-	hereExact, err := m.HereExact()
+	hereExact, err := m.Here.ScopeExact()
 	if err != nil {
 		return time.Time{}, -1, nil, err
 	}
 
-	hereLogical, err := m.HereLogical()
+	hereLogical, err := m.Here.ScopeLogical()
 	if err != nil {
 		return time.Time{}, -1, nil, err
 	}
@@ -1091,7 +1091,7 @@ func (advancedRemindList) core(m *core.Message) ([]reminder, error, error) {
 		return nil, nil, err
 	}
 
-	here, err := m.HereExact()
+	here, err := m.Here.ScopeExact()
 	if err != nil {
 		return nil, nil, err
 	}

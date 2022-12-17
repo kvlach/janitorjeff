@@ -104,8 +104,9 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		User:    i.Interaction.User,
 	}
 
-	ch := &Channel{
+	h := &Here{
 		ChannelID: i.Interaction.ChannelID,
+		GuildID:   i.Interaction.GuildID,
 	}
 
 	m := &core.Message{
@@ -113,7 +114,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		Frontend: Type,
 		Raw:      "", // TODO
 		Author:   author,
-		Channel:  ch,
+		Here:     h,
 		Client:   i,
 		Speaker:  i,
 	}

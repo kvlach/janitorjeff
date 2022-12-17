@@ -90,7 +90,7 @@ func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 
 // Same as ParsePerson but uses the default place instead
 func ParsePersonHere(m *core.Message, s string) (int64, error) {
-	here, err := m.HereLogical()
+	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return -1, err
 	}

@@ -91,7 +91,7 @@ func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
 		return normalHelp, nil, nil
 	}
 
-	here, err := m.HereExact()
+	here, err := m.Here.ScopeExact()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -105,7 +105,7 @@ func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	game.Playing(here, true)
-	return c.playF(m.Channel.ID(), here, rounds)
+	return c.playF(m.Here.ID(), here, rounds)
 }
 
 func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, error) {
