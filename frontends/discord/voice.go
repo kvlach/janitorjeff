@@ -8,6 +8,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/core"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 	"layeh.com/gopus"
 )
 
@@ -86,6 +87,16 @@ func sendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
 }
 
 func play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
+	if err := v.Speaking(true); err != nil {
+		log.Debug().Err(err).Msg("Couldn't set speaking to true")
+	}
+
+	defer func() {
+		if err := v.Speaking(false); err != nil {
+			log.Debug().Err(err).Msg("Couldn't set speakig to false")
+		}
+	}()
+
 	send := make(chan []int16, 2)
 	defer close(send)
 
