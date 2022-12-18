@@ -28,9 +28,9 @@ type State struct {
 }
 
 type Speaker interface {
-	// Whether or not the frontend supports voice chatting that the bot can
+	// Enabled returns true if the frontend supports voice chat that the bot can
 	// connect to.
-	Voice() bool
+	Enabled() bool
 
 	// The audio's expected frame rate.
 	FrameRate() int

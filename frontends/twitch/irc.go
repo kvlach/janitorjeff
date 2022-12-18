@@ -273,7 +273,7 @@ func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
 //         //
 /////////////
 
-func (t *Twitch) Voice() bool {
+func (t *Twitch) Enabled() bool {
 	return false
 }
 

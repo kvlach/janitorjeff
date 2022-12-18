@@ -198,7 +198,7 @@ func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) 
 //         //
 /////////////
 
-func (i *InteractionCreate) Voice() bool {
+func (i *InteractionCreate) Enabled() bool {
 	return true
 }
 

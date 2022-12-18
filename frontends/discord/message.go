@@ -122,7 +122,7 @@ func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
 //         //
 /////////////
 
-func (d *Message) Voice() bool {
+func (d *Message) Enabled() bool {
 	return true
 }
 

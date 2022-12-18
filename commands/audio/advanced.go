@@ -20,7 +20,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.Speaker.Voice()
+	return m.Speaker.Enabled()
 }
 
 func (advanced) Names() []string {
