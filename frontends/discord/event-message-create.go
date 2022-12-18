@@ -117,7 +117,7 @@ func (d *MessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 //         //
 /////////////
 
-func (d *MessageCreate) Voice() bool {
+func (d *MessageCreate) Enabled() bool {
 	return true
 }
 

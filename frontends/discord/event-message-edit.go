@@ -123,7 +123,7 @@ func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 //         //
 /////////////
 
-func (d *MessageEdit) Voice() bool {
+func (d *MessageEdit) Enabled() bool {
 	return true
 }
 
