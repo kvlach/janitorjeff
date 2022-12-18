@@ -30,7 +30,7 @@ func (advanced) Names() []string {
 }
 
 func (advanced) Description() string {
-	return "Play music yo."
+	return "Audio related commands."
 }
 
 func (c advanced) UsageArgs() string {
