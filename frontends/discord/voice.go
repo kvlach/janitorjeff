@@ -12,6 +12,37 @@ import (
 	"layeh.com/gopus"
 )
 
+type Speaker struct {
+	GuildID  string
+	AuthorID string
+	VC       *dg.VoiceConnection
+}
+
+func (*Speaker) Enabled() bool {
+	return true
+}
+
+func (*Speaker) FrameRate() int {
+	return frameRate
+}
+
+func (*Speaker) Channels() int {
+	return channels
+}
+
+func (sp *Speaker) Join() error {
+	v, err := joinUserVoiceChannel(sp.GuildID, sp.AuthorID)
+	if err != nil {
+		return err
+	}
+	sp.VC = v
+	return nil
+}
+
+func (sp *Speaker) Say(buf io.Reader, s *core.State) error {
+	return voicePlay(sp.VC, buf, s)
+}
+
 // *Very* heavily inspired from https://github.com/bwmarrin/dgvoice/
 
 // Technically the below settings can be adjusted however that poses
@@ -125,4 +156,12 @@ func play(v *dg.VoiceConnection, buf io.Reader, s *core.State) {
 			return
 		}
 	}
+}
+
+func voicePlay(v *dg.VoiceConnection, buf io.Reader, s *core.State) error {
+	if v == nil {
+		return errors.New("not connected to a voice channel")
+	}
+	play(v, buf, s)
+	return nil
 }

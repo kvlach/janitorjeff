@@ -2,7 +2,6 @@ package discord
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
@@ -64,7 +63,6 @@ func CreateClient(author, channel int64, msgID string) (*Message, error) {
 func (d *Message) Parse() (*core.Message, error) {
 	msg := parse(d.Message)
 	msg.Client = d
-	msg.Speaker = d
 	return msg, nil
 }
 
@@ -114,35 +112,4 @@ func (d *Message) Ping(msg any, usrErr error) (*core.Message, error) {
 
 func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
-}
-
-/////////////
-//         //
-// Speaker //
-//         //
-/////////////
-
-func (d *Message) Enabled() bool {
-	return true
-}
-
-func (d *Message) FrameRate() int {
-	return frameRate
-}
-
-func (d *Message) Channels() int {
-	return channels
-}
-
-func (d *Message) Join() error {
-	v, err := joinUserVoiceChannel(d.Message.GuildID, d.Message.Author.ID)
-	if err != nil {
-		return err
-	}
-	d.VC = v
-	return nil
-}
-
-func (d *Message) Say(buf io.Reader, s *core.State) error {
-	return voicePlay(d.VC, buf, s)
 }

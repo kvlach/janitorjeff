@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 
@@ -236,12 +235,19 @@ func parse(m *dg.Message) *core.Message {
 		GuildID:   m.GuildID,
 	}
 
+	sp := &Speaker{
+		GuildID:  m.GuildID,
+		AuthorID: m.Author.ID,
+		VC:       nil,
+	}
+
 	msg := &core.Message{
 		ID:       m.ID,
 		Frontend: Type,
 		Raw:      m.Content,
 		Author:   author,
 		Here:     h,
+		Speaker:  sp,
 	}
 
 	return msg
@@ -464,12 +470,4 @@ func PlaceInBackticks(s string) string {
 
 	s = strings.ReplaceAll(s, "`", zeroWidthSpace+"`"+zeroWidthSpace)
 	return fmt.Sprintf("``%s``", s)
-}
-
-func voicePlay(v *dg.VoiceConnection, buf io.Reader, s *core.State) error {
-	if v == nil {
-		return errors.New("not connected to a voice channel")
-	}
-	play(v, buf, s)
-	return nil
 }
