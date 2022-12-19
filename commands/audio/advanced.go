@@ -685,9 +685,7 @@ func (c advancedQueue) Permitted(m *core.Message) bool {
 }
 
 func (advancedQueue) Names() []string {
-	return []string{
-		"queue",
-	}
+	return append([]string{"queue"}, core.List...)
 }
 
 func (advancedQueue) Description() string {
