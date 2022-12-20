@@ -3,6 +3,7 @@ package core
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -142,4 +143,16 @@ func Split(text string, lenCnt func(string) int, lenLim int) []string {
 	}
 
 	return parts
+}
+
+// Returns true if the provided string is a valid url.
+func IsValidURL(rawURL string) bool {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	if u.Host == "" {
+		return false
+	}
+	return true
 }
