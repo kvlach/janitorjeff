@@ -6,6 +6,9 @@ import (
 
 var ErrVidNotFound = errors.New("No video was found.")
 
+// SearchVideo will automatically create a client and return the most relevant
+// completed video (not livestreams or premiers). Returns ErrVidNotFound if no
+// video was found.
 func SearchVideo(query string) (Video, error, error) {
 	client, err := New()
 	if err != nil {
