@@ -23,6 +23,7 @@ func (v Video) URL() string {
 	return "https://youtu.be/" + v.ID
 }
 
+// New returns a new youtube client using the key set in core.YouTubeKey.
 func New() (*Client, error) {
 	client := &http.Client{
 		Transport: &transport.APIKey{Key: core.YouTubeKey},
@@ -36,6 +37,9 @@ func New() (*Client, error) {
 	return &Client{core.YouTubeKey, service}, nil
 }
 
+// SearchVideos returns a list of videos, of maxResults length, matching the
+// query and ranked by relevance. Will only return videos, not livestreams or
+// premiers.
 func (c *Client) SearchVideos(query string, maxResults int64) ([]Video, error) {
 	call := c.service.Search.List([]string{"id", "snippet"}).
 		Q(query).
