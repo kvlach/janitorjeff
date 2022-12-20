@@ -3,7 +3,6 @@ package audio
 import (
 	"encoding/json"
 	"errors"
-	"net/url"
 	"os/exec"
 	"strings"
 
@@ -76,17 +75,6 @@ func GetInfo(url string) (Item, error) {
 	return info, ytdl.Wait()
 }
 
-func IsValidURL(rawURL string) bool {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return false
-	}
-	if u.Host == "" {
-		return false
-	}
-	return true
-}
-
 // Play will:
 //   - Check if the first argument is a url, if yes, then will try to stream it.
 //     If not then assumes that it is a search and will query youtube to find
@@ -102,7 +90,7 @@ func Play(args []string, sp core.Speaker, place int64) (Item, error, error) {
 	var item Item
 	var err error
 
-	if IsValidURL(args[0]) {
+	if core.IsValidURL(args[0]) {
 		item, err = GetInfo(args[0])
 		if err != nil {
 			return item, ErrSiteNotSupported, nil
