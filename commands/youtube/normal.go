@@ -13,7 +13,7 @@ func (normal) Type() core.CommandType {
 }
 
 func (normal) Permitted(m *core.Message) bool {
-	return AdvancedSearch.Permitted(m)
+	return AdvancedSearchVideo.Permitted(m)
 }
 
 func (normal) Names() []string {
@@ -25,7 +25,7 @@ func (normal) Description() string {
 }
 
 func (normal) UsageArgs() string {
-	return AdvancedSearch.UsageArgs()
+	return AdvancedSearchVideo.UsageArgs()
 }
 
 func (normal) Parent() core.CommandStatic {
@@ -41,5 +41,5 @@ func (normal) Init() error {
 }
 
 func (normal) Run(m *core.Message) (any, error, error) {
-	return AdvancedSearch.Run(m)
+	return AdvancedSearchVideo.Run(m)
 }
