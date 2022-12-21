@@ -74,11 +74,11 @@ func (advancedSearch) Names() []string {
 }
 
 func (advancedSearch) Description() string {
-	return "Search for a video."
+	return "Group of various search realted commands."
 }
 
-func (advancedSearch) UsageArgs() string {
-	return "<title>"
+func (c advancedSearch) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (advancedSearch) Parent() core.CommandStatic {
@@ -86,14 +86,66 @@ func (advancedSearch) Parent() core.CommandStatic {
 }
 
 func (advancedSearch) Children() core.CommandsStatic {
-	return nil
+	return core.CommandsStatic{
+		AdvancedSearchVideo,
+		AdvancedSearchChannel,
+	}
 }
 
 func (advancedSearch) Init() error {
 	return nil
 }
 
-func (c advancedSearch) Run(m *core.Message) (any, error, error) {
+func (advancedSearch) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+//////////////////
+//              //
+// search video //
+//              //
+//////////////////
+
+var AdvancedSearchVideo = advancedSearchVideo{}
+
+type advancedSearchVideo struct{}
+
+func (c advancedSearchVideo) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSearchVideo) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSearchVideo) Names() []string {
+	return []string{
+		"video",
+		"vid",
+	}
+}
+
+func (advancedSearchVideo) Description() string {
+	return "Search for a video."
+}
+
+func (advancedSearchVideo) UsageArgs() string {
+	return "<title>"
+}
+
+func (advancedSearchVideo) Parent() core.CommandStatic {
+	return AdvancedSearch
+}
+
+func (advancedSearchVideo) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSearchVideo) Init() error {
+	return nil
+}
+
+func (c advancedSearchVideo) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
@@ -105,7 +157,7 @@ func (c advancedSearch) Run(m *core.Message) (any, error, error) {
 	return c.err(usrErr, vid), usrErr, nil
 }
 
-func (advancedSearch) err(usrErr error, v Video) string {
+func (advancedSearchVideo) err(usrErr error, v Video) string {
 	switch usrErr {
 	case nil:
 		return v.URL()
@@ -114,6 +166,76 @@ func (advancedSearch) err(usrErr error, v Video) string {
 	}
 }
 
-func (advancedSearch) core(m *core.Message) (Video, error, error) {
+func (advancedSearchVideo) core(m *core.Message) (Video, error, error) {
 	return SearchVideo(m.RawArgs(0))
+}
+
+////////////////////
+//                //
+// search channel //
+//                //
+////////////////////
+
+var AdvancedSearchChannel = advancedSearchChannel{}
+
+type advancedSearchChannel struct{}
+
+func (c advancedSearchChannel) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSearchChannel) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (c advancedSearchChannel) Names() []string {
+	return []string{
+		"channel",
+		"ch",
+	}
+}
+
+func (advancedSearchChannel) Description() string {
+	return "Search for a channel."
+}
+
+func (advancedSearchChannel) UsageArgs() string {
+	return "<channel...>"
+}
+
+func (advancedSearchChannel) Parent() core.CommandStatic {
+	return AdvancedSearch
+}
+
+func (advancedSearchChannel) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSearchChannel) Init() error {
+	return nil
+}
+
+func (c advancedSearchChannel) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	ch, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return c.err(usrErr, ch), usrErr, nil
+}
+
+func (advancedSearchChannel) err(usrErr error, ch Channel) string {
+	switch usrErr {
+	case nil:
+		return ch.URL()
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedSearchChannel) core(m *core.Message) (Channel, error, error) {
+	return SearchChannel(m.RawArgs(0))
 }
