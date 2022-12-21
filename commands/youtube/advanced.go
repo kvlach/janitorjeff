@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
+
+	dg "github.com/bwmarrin/discordgo"
 )
 
 var Advanced = advanced{}
@@ -150,20 +153,40 @@ func (c advancedSearchVideo) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedSearchVideo) discord(m *core.Message) (any, error, error) {
 	vid, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return c.err(usrErr, vid), usrErr, nil
+
+	// let discord handle the url embed
+	if usrErr == nil {
+		return vid.URL(), nil, nil
+	}
+
+	embed := &dg.MessageEmbed{
+		Description: fmt.Sprint(usrErr),
+	}
+	return embed, usrErr, nil
 }
 
-func (advancedSearchVideo) err(usrErr error, v Video) string {
-	switch usrErr {
-	case nil:
-		return v.URL()
-	default:
-		return fmt.Sprint(usrErr)
+func (c advancedSearchVideo) text(m *core.Message) (string, error, error) {
+	vid, usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
 	}
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
+	return fmt.Sprintf("%s | %s", vid.Title, vid.URL()), nil, nil
 }
 
 func (advancedSearchVideo) core(m *core.Message) (Video, error, error) {
@@ -220,11 +243,40 @@ func (c advancedSearchChannel) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedSearchChannel) discord(m *core.Message) (any, error, error) {
 	ch, usrErr, err := c.core(m)
 	if err != nil {
-		return nil, nil, err
+		return "", nil, err
 	}
-	return c.err(usrErr, ch), usrErr, nil
+
+	// let disocrd handle the url embed
+	if usrErr == nil {
+		return ch.URL(), nil, nil
+	}
+
+	embed := &dg.MessageEmbed{
+		Description: fmt.Sprint(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (c advancedSearchChannel) text(m *core.Message) (string, error, error) {
+	ch, usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
+	return fmt.Sprintf("%s | %s", ch.Title, ch.URL()), nil, nil
 }
 
 func (advancedSearchChannel) err(usrErr error, ch Channel) string {
