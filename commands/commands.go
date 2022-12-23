@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/janitorjeff/jeff-bot/commands/audio"
 	"github.com/janitorjeff/jeff-bot/commands/category"
 	"github.com/janitorjeff/jeff-bot/commands/connect"
@@ -65,6 +67,26 @@ var Commands = core.CommandsStatic{
 
 	youtube.Normal,
 	youtube.Advanced,
+}
+
+// recurse will check if the children have set their parents correctly
+func recurse(cmd core.CommandStatic) {
+	if cmd.Children() == nil {
+		return
+	}
+
+	for _, child := range cmd.Children() {
+		if child.Parent() != cmd {
+			panic(fmt.Sprintf("incorrect parent-child relationship, expected parent %v for child %v but got %v", cmd.Names(), child.Names(), child.Parent().Names()))
+		}
+		recurse(child)
+	}
+}
+
+func init() {
+	for _, cmd := range Commands {
+		recurse(cmd)
+	}
 }
 
 // This must be run after all of the global variables have been set (including
