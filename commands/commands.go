@@ -69,11 +69,32 @@ var Commands = core.CommandsStatic{
 	youtube.Advanced,
 }
 
+// checkNameCollisions checks if there are any name is used more than once in
+// the given list of commands
+func checkNameCollisions(cmds core.CommandsStatic) {
+	// will act like a set
+	names := map[string]struct{}{}
+
+	for _, cmd := range cmds {
+		for _, n := range cmd.Names() {
+			if _, ok := names[n]; ok {
+				panic(fmt.Sprintf("name %s already exists in %v", n, names))
+			}
+			names[n] = struct{}{}
+		}
+	}
+}
+
 // recurse will check if the children have set their parents correctly
+// recurse will recursively go through all of the given commands children and
+// will check if there's any name collisions and if the children have set
+// their parents correctly
 func recurse(cmd core.CommandStatic) {
 	if cmd.Children() == nil {
 		return
 	}
+
+	checkNameCollisions(cmd.Children())
 
 	for _, child := range cmd.Children() {
 		if child.Parent() != cmd {
