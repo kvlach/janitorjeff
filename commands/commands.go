@@ -85,6 +85,16 @@ func checkNameCollisions(cmds core.CommandsStatic) {
 	}
 }
 
+// checkDifferentParentType will check if all the parent's children are of the
+// same command type as the parent.
+func checkDifferentParentType(parent core.CommandStatic, children core.CommandsStatic) {
+	for _, child := range children {
+		if parent.Type() != child.Type() {
+			panic(fmt.Sprintf("child %v is of different type from parent %v", child.Names(), parent.Names()))
+		}
+	}
+}
+
 // recurse will check if the children have set their parents correctly
 // recurse will recursively go through all of the given commands children and
 // will check if there's any name collisions and if the children have set
@@ -95,6 +105,7 @@ func recurse(cmd core.CommandStatic) {
 	}
 
 	checkNameCollisions(cmd.Children())
+	checkDifferentParentType(cmd, cmd.Children())
 
 	for _, child := range cmd.Children() {
 		if child.Parent() != cmd {
