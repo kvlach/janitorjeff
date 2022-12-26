@@ -95,10 +95,26 @@ func checkDifferentParentType(parent core.CommandStatic, children core.CommandsS
 	}
 }
 
-// recurse will check if the children have set their parents correctly
-// recurse will recursively go through all of the given commands children and
-// will check if there's any name collisions and if the children have set
-// their parents correctly
+// checkWrongParentChild will check if a parent's children have set their parent
+// correctly.
+func checkWrongParentInChild(parent core.CommandStatic, children core.CommandsStatic) {
+	for _, child := range children {
+		if child.Parent() != parent {
+			panic(fmt.Sprintf("incorrect parent-child relationship, expected parent %v for child %v but got %v", parent.Names(), child.Names(), child.Parent().Names()))
+		}
+	}
+}
+
+// recurse will recursively go through all the children of the passed command
+// and perform the following checks on them:
+//
+//   - Name collisions: will check if a name is used more than once among the
+//     children
+//   - Wrong type: Will check if a child's command type is different from its
+//     parent's
+//   - Wrong parent: Will check if a child has set its parent incorrectly
+//
+// If any of the above checks fail the program will immediately panic.
 func recurse(cmd core.CommandStatic) {
 	if cmd.Children() == nil {
 		return
@@ -106,11 +122,9 @@ func recurse(cmd core.CommandStatic) {
 
 	checkNameCollisions(cmd.Children())
 	checkDifferentParentType(cmd, cmd.Children())
+	checkWrongParentInChild(cmd, cmd.Children())
 
 	for _, child := range cmd.Children() {
-		if child.Parent() != cmd {
-			panic(fmt.Sprintf("incorrect parent-child relationship, expected parent %v for child %v but got %v", cmd.Names(), child.Names(), child.Parent().Names()))
-		}
 		recurse(child)
 	}
 }
