@@ -187,3 +187,14 @@ func (cmds CommandsStatic) Usage() string {
 	}
 	return "(" + strings.Join(names, " | ") + ")"
 }
+
+// Recurse will recursively go through all of the commands and execute the exec
+// function on them.
+func (cmds CommandsStatic) Recurse(exec func(CommandStatic)) {
+	for _, cmd := range cmds {
+		exec(cmd)
+		if cmd.Children() != nil {
+			cmd.Children().Recurse(exec)
+		}
+	}
+}
