@@ -32,48 +32,51 @@ const (
 // description, the list of all the aliases, etc. and the runtime part which
 // includes things like the prefix used, the arguments passed, etc.
 
-// A command needs to implement this interface.
+// CommandStatic is the the interface used to implement commands.
 type CommandStatic interface {
-	// The command's type.
+	// Type returns the command's type.
 	Type() CommandType
 
-	// Any other checks required for a command to be executed. Returns true if
-	// the command is allowed to be executed. Usually used to chcek a user's
-	// permissions or to restrict a command to specific frontends.
+	// Permitted will perform checks required for a command to be executed.
+	// Returns true if the command is allowed to be executed. Usually used to
+	// chcek a user's permissions or to restrict a command to specific
+	// frontends.
 	Permitted(m *Message) bool
 
-	// All the aliases a command has. The first item in the list is considered
-	// the main name and so should be the simplest and most intuitive one for
-	// the average person. For example if it's a delete subcommand the first
-	// alias should be "delete" instead of "del" or "rm".
+	// Names return a list of all the aliases a command has. The first item in
+	// the list is considered the main name and so should be the simplest and
+	// most intuitive one for the average person. For example if it's a delete
+	// subcommand the first alias should be "delete" instead of "del" or "rm".
 	Names() []string
 
-	// A short description of what the command does.
+	// Description will return a short description of what the command does.
 	Description() string
 
-	// Usage arguments. Should follow this format:
+	// UsageArgs will return the usage arguments. Should follow this format:
 	// - <required>
 	// - [optional]
 	// - (literal-string) or (many | literals)
 	UsageArgs() string
 
-	// A command's parent, returns nil if there is no parent.
+	// Parent returns a command's parent, returns nil if there is no parent.
 	Parent() CommandStatic
 
-	// The command's sub-commands, returns nil if there are no sub-commands.
+	// Children returns the command's sub-commands, returns nil if there are no
+	// sub-commands.
 	Children() CommandsStatic
 
-	// This is executed during bot startup. Should be used to set things up
+	// Init is executed during bot startup. Should be used to set things up
 	// necessary for the command, for example DB schemas.
 	Init() error
 
-	// The function that is called to run the command.
+	// Run is function that is called to run the command.
 	Run(m *Message) (resp any, usrErr error, err error)
 }
 
-// Formats a static command into something that can be shown to a user.
-// Generally used in help messages to point the user to a specific command in
-// order to avoid hardcoding it. Returns the command in the following format:
+// Format will return a string representation of the given command in a format
+// that can be shown to a user. Generally used in help messages to point the
+// user to a specific command in order to avoid hardcoding it. Returns the
+// command in the following format:
 //
 //	<prefix><command> [sub-command...] <usage-args>
 //
@@ -94,7 +97,7 @@ func Format(cmd CommandStatic, prefix string) string {
 	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
 }
 
-// A command's runtime information.
+// CommandRuntime holds a command's runtime information.
 type CommandRuntime struct {
 	// The "path" taken to invoke the command, i.e. which names were used.
 	// Includes all the sub-commands e.g. ["prefix", "add"] in order to be able
@@ -147,15 +150,14 @@ func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (Comman
 	return nil, fmt.Errorf("command '%s' not found", name)
 }
 
-// Given a list of arguments match the appropriate command. The arguments don't
-// have to correspond to a command exactly. For example,
+// Match will return the corresponding command based on the list of arguments.
+// The arguments don't have to match a command exactly. For example:
 //
-// `args = [prefix add abc]`.
+//	args = [prefix add abc]
 //
-// In this case the prefix's subcommand `add` will be matched and returned.
+// In this case the prefix's subcommand "add" will be matched and returned.
 // Alongside it the index of the last valid command will be returned (in this
-// case the index of "add", which is 1). This makes it easy to know which
-// aliases where used by the user when invoking a command.
+// case the index of "add", which is 1).
 func (cmds *CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
@@ -178,7 +180,7 @@ func (cmds *CommandsStatic) Match(t CommandType, m *Message, args []string) (Com
 	return cmd, index, nil
 }
 
-// Return the names of the children in a format that can be used in the
+// Usage returns the names of the children in a format that can be used in the
 // UsageArgs function.
 func (cmds CommandsStatic) Usage() string {
 	var names []string
