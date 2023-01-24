@@ -156,3 +156,22 @@ func IsValidURL(rawURL string) bool {
 	}
 	return true
 }
+
+// Clean returns a string with every character except the ones in the a-z, A-Z
+// and 0-9 ranges stripped from the passed string. Assumes ASCII.
+func Clean(s string) string {
+	var b strings.Builder
+
+	// the simplified string will, at most, have len(s) number of bytes
+	b.Grow(len(s))
+
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+
+		if ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') {
+			b.WriteByte(c)
+		}
+	}
+
+	return b.String()
+}

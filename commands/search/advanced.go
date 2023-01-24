@@ -1,6 +1,7 @@
 package search
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -63,17 +64,19 @@ func (c advanced) Run(m *core.Message) (any, error, error) {
 func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	cmds := c.core(m)
 
-	var desc strings.Builder
-	for i, cmd := range cmds {
-		desc.WriteString("`")
-		desc.WriteString(core.Format(cmd, m.Command.Prefix))
-		desc.WriteString("`\n")
-		desc.WriteString(cmd.Description())
+	fmt.Println(cmds)
 
-		if i != len(cmds)-1 {
-			desc.WriteString("\n\n")
-		}
-	}
+	var desc strings.Builder
+	// for i, cmd := range cmds {
+	// 	desc.WriteString("`")
+	// 	desc.WriteString(core.Format(cmd, m.Command.Prefix))
+	// 	desc.WriteString("`\n")
+	// 	desc.WriteString(cmd.Description())
+
+	// 	if i != len(cmds)-1 {
+	// 		desc.WriteString("\n\n")
+	// 	}
+	// }
 
 	embed := &dg.MessageEmbed{
 		Description: desc.String(),
@@ -83,20 +86,20 @@ func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 }
 
 func (c advanced) text(m *core.Message) (string, error, error) {
-	cmds := c.core(m)
+	// cmds := c.core(m)
 
 	var b strings.Builder
-	for i, cmd := range cmds {
-		b.WriteString(core.Format(cmd, m.Command.Prefix))
+	// for i, cmd := range cmds {
+	// 	b.WriteString(core.Format(cmd, m.Command.Prefix))
 
-		if i != len(cmds)-1 {
-			b.WriteString(" █ ")
-		}
-	}
+	// 	if i != len(cmds)-1 {
+	// 		b.WriteString(" █ ")
+	// 	}
+	// }
 
 	return b.String(), nil, nil
 }
 
-func (c advanced) core(m *core.Message) core.CommandsStatic {
+func (c advanced) core(m *core.Message) map[core.CommandStatic]int {
 	return Search(m.RawArgs(0), c.Type())
 }
