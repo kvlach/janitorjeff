@@ -21,6 +21,14 @@ func dbInit() error {
 	return core.DB.Init(dbSchema)
 }
 
+func dbAddChannelSimple(uid, uname string) (int64, error) {
+	u := tirc.User{
+		ID:   uid,
+		Name: uname,
+	}
+	return dbAddChannel(uid, u, nil)
+}
+
 func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
 	var channelID, channelName string
 	if id == u.ID {
