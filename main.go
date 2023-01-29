@@ -91,7 +91,8 @@ func main() {
 
 	core.Commands = &commands.Commands
 	core.DB = db
-	core.Host = readVar("HOST")
+	core.Port = readVar("PORT")
+	core.Domain = readVar("DOMAIN")
 	core.YouTubeKey = readVar("YOUTUBE")
 	core.Prefixes.Add(core.Admin, "##")
 	core.Prefixes.Add(core.Normal, "!")
@@ -107,7 +108,7 @@ func main() {
 
 	commands.Init()
 
-	go http.ListenAndServe(core.Host, nil)
+	go http.ListenAndServe("localhost:"+core.Port, nil)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
