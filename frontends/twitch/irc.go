@@ -135,12 +135,17 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		User: t.message.User,
 	}
 
+	here := Here{
+		RoomID:   t.message.RoomID,
+		RoomName: t.message.Channel,
+	}
+
 	msg := &core.Message{
 		ID:       t.message.ID,
 		Frontend: Type,
 		Raw:      t.message.Message,
 		Author:   author,
-		Here:     author, // users and channels are the same thing on twitch
+		Here:     here,
 		Client:   t,
 		Speaker:  t,
 	}
