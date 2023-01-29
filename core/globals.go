@@ -1,6 +1,7 @@
 package core
 
 var (
-	Host       string
+	Port       string
+	Domain     string
 	YouTubeKey string
 )
