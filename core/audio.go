@@ -51,7 +51,9 @@ type Speaker interface {
 	Say(buf io.Reader, s *State) error
 }
 
-func PipeThroughFFmpeg(sp Speaker, cmd *exec.Cmd, st *State) error {
+// FFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and
+// transform into audio that the speaker can transmit.
+func FFmpegBufferPipe(sp Speaker, inBuf io.ReadCloser, st *State) error {
 	ffmpeg := exec.Command(
 		"ffmpeg",
 		"-i", "-",
@@ -62,10 +64,7 @@ func PipeThroughFFmpeg(sp Speaker, cmd *exec.Cmd, st *State) error {
 	)
 
 	var err error
-	ffmpeg.Stdin, err = cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
+	ffmpeg.Stdin = inBuf
 
 	ffmpegout, err := ffmpeg.StdoutPipe()
 	if err != nil {
@@ -78,11 +77,20 @@ func PipeThroughFFmpeg(sp Speaker, cmd *exec.Cmd, st *State) error {
 	}
 	defer ffmpeg.Process.Kill()
 
+	sp.Say(ffmpegbuf, st)
+	return nil
+}
+
+// FFmpegCommandPipe works exactly like FFmpegBufferPipe except it accepts a
+// command instead of a buffer. Provided just for convenience.
+func FFmpegCommandPipe(sp Speaker, cmd *exec.Cmd, st *State) error {
+	pipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	defer cmd.Process.Kill()
-
-	sp.Say(ffmpegbuf, st)
-	return nil
+	return FFmpegBufferPipe(sp, pipe, st)
 }
