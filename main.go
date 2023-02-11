@@ -94,6 +94,7 @@ func main() {
 	core.Port = readVar("PORT")
 	core.Domain = readVar("DOMAIN")
 	core.YouTubeKey = readVar("YOUTUBE")
+	core.TikTokSessionID = readVar("TIKTOK_SESSION_ID")
 	core.Prefixes.Add(core.Admin, "##")
 	core.Prefixes.Add(core.Normal, "!")
 	core.Prefixes.Add(core.Advanced, "$")

@@ -1,7 +1,8 @@
 package core
 
 var (
-	Port       string
-	Domain     string
-	YouTubeKey string
+	Domain          string
+	Port            string
+	TikTokSessionID string
+	YouTubeKey      string
 )
