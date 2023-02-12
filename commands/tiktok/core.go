@@ -78,7 +78,7 @@ func TTS(text string) ([]byte, error) {
 
 // Play will, if necessary join the appropriate voice channel, and start playing
 // the TTS specified by text.
-func Play(sp core.Speaker, text string) error {
+func Play(sp core.AudioSpeaker, text string) error {
 	audio, err := TTS(text)
 	if err != nil {
 		return err
@@ -89,11 +89,11 @@ func Play(sp core.Speaker, text string) error {
 		return err
 	}
 
-	state := &core.State{}
-	state.Set(core.Play)
+	state := &core.AudioState{}
+	state.Set(core.AudioPlay)
 
 	buf := ioutil.NopCloser(bytes.NewReader(audio))
-	core.FFmpegBufferPipe(sp, buf, state)
+	core.AudioFFmpegBufferPipe(sp, buf, state)
 
 	return nil
 }
@@ -101,7 +101,7 @@ func Play(sp core.Speaker, text string) error {
 // Start will create a hook and will monitor all incoming messages, if they
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
-func Start(sp core.Speaker, twitchUsername string) {
+func Start(sp core.AudioSpeaker, twitchUsername string) {
 	id := core.Hooks.Register(func(m *core.Message) {
 		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
 			return

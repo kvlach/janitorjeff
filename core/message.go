@@ -127,7 +127,7 @@ type Message struct {
 	Author   Author
 	Here     Here
 	Client   Messenger
-	Speaker  Speaker
+	Speaker  AudioSpeaker
 	Command  *Command
 }
 

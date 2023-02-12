@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	Play int = iota
-	Loop
-	Pause
-	Stop
+	AudioPlay int = iota
+	AudioLoop
+	AudioPause
+	AudioStop
 )
 
 // A select with multiple ready cases chooses one pseudo-randomly. So if the
@@ -23,11 +23,11 @@ const (
 // the pause when the goroutine should not be paused anymore.
 //
 // Source: https://stackoverflow.com/a/60490371
-type State struct {
+type AudioState struct {
 	gosafe.Value[int]
 }
 
-type Speaker interface {
+type AudioSpeaker interface {
 	// Enabled returns true if the frontend supports voice chat that the bot can
 	// connect to.
 	Enabled() bool
@@ -48,12 +48,12 @@ type Speaker interface {
 
 	// Send audio. Must have connected to a voice channel first, otherwise
 	// returns an error.
-	Say(buf io.Reader, s *State) error
+	Say(buf io.Reader, s *AudioState) error
 }
 
-// FFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and
+// AudioFFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and
 // transform into audio that the speaker can transmit.
-func FFmpegBufferPipe(sp Speaker, inBuf io.ReadCloser, st *State) error {
+func AudioFFmpegBufferPipe(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) error {
 	ffmpeg := exec.Command(
 		"ffmpeg",
 		"-i", "-",
@@ -81,9 +81,9 @@ func FFmpegBufferPipe(sp Speaker, inBuf io.ReadCloser, st *State) error {
 	return nil
 }
 
-// FFmpegCommandPipe works exactly like FFmpegBufferPipe except it accepts a
-// command instead of a buffer. Provided just for convenience.
-func FFmpegCommandPipe(sp Speaker, cmd *exec.Cmd, st *State) error {
+// AudioFFmpegCommandPipe works exactly like FFmpegBufferPipe except it accepts
+// a command instead of a buffer. Provided just for convenience.
+func AudioFFmpegCommandPipe(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
 	pipe, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -92,5 +92,5 @@ func FFmpegCommandPipe(sp Speaker, cmd *exec.Cmd, st *State) error {
 		return err
 	}
 	defer cmd.Process.Kill()
-	return FFmpegBufferPipe(sp, pipe, st)
+	return AudioFFmpegBufferPipe(sp, pipe, st)
 }
