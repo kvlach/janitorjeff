@@ -294,6 +294,6 @@ func (t *Twitch) Join() error {
 	return nil
 }
 
-func (t *Twitch) Say(io.Reader, *core.State) error {
+func (t *Twitch) Say(io.Reader, *core.AudioState) error {
 	return nil
 }
