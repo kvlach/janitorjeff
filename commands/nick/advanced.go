@@ -112,7 +112,7 @@ func (c advancedShow) Permitted(m *core.Message) bool {
 }
 
 func (advancedShow) Names() []string {
-	return core.Show
+	return core.AliasesShow
 }
 
 func (advancedShow) Description() string {
@@ -305,7 +305,7 @@ func (c advancedDelete) Permitted(m *core.Message) bool {
 }
 
 func (advancedDelete) Names() []string {
-	return core.Delete
+	return core.AliasesDelete
 }
 
 func (advancedDelete) Description() string {

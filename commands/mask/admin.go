@@ -74,7 +74,7 @@ func (c adminShow) Permitted(m *core.Message) bool {
 }
 
 func (adminShow) Names() []string {
-	return core.Show
+	return core.AliasesShow
 }
 
 func (adminShow) Description() string {
@@ -247,7 +247,7 @@ func (c adminDelete) Permitted(m *core.Message) bool {
 }
 
 func (adminDelete) Names() []string {
-	return core.Delete
+	return core.AliasesDelete
 }
 
 func (adminDelete) Description() string {

@@ -468,7 +468,7 @@ func (c advancedTimezoneShow) Permitted(m *core.Message) bool {
 }
 
 func (advancedTimezoneShow) Names() []string {
-	return core.Show
+	return core.AliasesShow
 }
 
 func (advancedTimezoneShow) Description() string {
@@ -676,7 +676,7 @@ func (c advancedTimezoneDelete) Permitted(m *core.Message) bool {
 }
 
 func (advancedTimezoneDelete) Names() []string {
-	return core.Delete
+	return core.AliasesDelete
 }
 
 func (advancedTimezoneDelete) Description() string {
@@ -825,7 +825,7 @@ func (c advancedRemindAdd) Permitted(m *core.Message) bool {
 }
 
 func (advancedRemindAdd) Names() []string {
-	return core.Add
+	return core.AliasesAdd
 }
 
 func (advancedRemindAdd) Description() string {
@@ -923,7 +923,7 @@ func (c advancedRemindDelete) Permitted(m *core.Message) bool {
 }
 
 func (advancedRemindDelete) Names() []string {
-	return core.Delete
+	return core.AliasesDelete
 }
 
 func (advancedRemindDelete) Description() string {
@@ -1026,7 +1026,7 @@ func (c advancedRemindList) Permitted(m *core.Message) bool {
 }
 
 func (advancedRemindList) Names() []string {
-	return core.List
+	return core.AliasesList
 }
 
 func (advancedRemindList) Description() string {
