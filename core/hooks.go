@@ -5,7 +5,7 @@ import (
 )
 
 // Hooks are a list of functions that are applied one-by-one to incoming
-// messages.
+// messages. All operations are thread safe.
 var Hooks = hooks{}
 
 type hook struct {
@@ -23,7 +23,8 @@ type hooks struct {
 	total int
 }
 
-// Returns the hook's id which is used to delete the hook.
+// Register returns the hook's id which can be used to delete the hook by
+// calling the Delete method.
 func (hs *hooks) Register(f func(*Message)) int {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
@@ -38,8 +39,8 @@ func (hs *hooks) Register(f func(*Message)) int {
 	return hs.total
 }
 
-// Deletes the hook with the given id. If the hook doesn't exist then nothing
-// happens.
+// Delete will delete the hook with the given id. If the hook doesn't exist then
+// nothing happens.
 func (hs *hooks) Delete(id int) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
@@ -52,6 +53,7 @@ func (hs *hooks) Delete(id int) {
 	}
 }
 
+// Get returns the list of hooks.
 func (hs *hooks) Get() []hook {
 	hs.lock.RLock()
 	defer hs.lock.RUnlock()
