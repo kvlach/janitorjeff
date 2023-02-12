@@ -101,7 +101,7 @@ func (c advancedAdd) Permitted(m *core.Message) bool {
 }
 
 func (advancedAdd) Names() []string {
-	return core.Add
+	return core.AliasesAdd
 }
 
 func (advancedAdd) Description() string {
@@ -213,7 +213,7 @@ func (c advancedEdit) Permitted(m *core.Message) bool {
 }
 
 func (advancedEdit) Names() []string {
-	return core.Edit
+	return core.AliasesEdit
 }
 
 func (advancedEdit) Description() string {
@@ -323,7 +323,7 @@ func (c advancedDelete) Permitted(m *core.Message) bool {
 }
 
 func (advancedDelete) Names() []string {
-	return core.Delete
+	return core.AliasesDelete
 }
 
 func (advancedDelete) Description() string {
@@ -432,7 +432,7 @@ func (c advancedList) Permitted(m *core.Message) bool {
 }
 
 func (advancedList) Names() []string {
-	return core.List
+	return core.AliasesList
 }
 
 func (advancedList) Description() string {

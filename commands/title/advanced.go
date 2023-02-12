@@ -75,7 +75,7 @@ func (c advancedShow) Permitted(m *core.Message) bool {
 }
 
 func (advancedShow) Names() []string {
-	return core.Show
+	return core.AliasesShow
 }
 
 func (advancedShow) Description() string {
@@ -136,7 +136,7 @@ func (c advancedEdit) Permitted(m *core.Message) bool {
 }
 
 func (advancedEdit) Names() []string {
-	return core.Edit
+	return core.AliasesEdit
 }
 
 func (advancedEdit) Description() string {

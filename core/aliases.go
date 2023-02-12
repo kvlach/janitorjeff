@@ -2,37 +2,37 @@ package core
 
 // These are common sub-commands and so we declare them here.
 
-var Add = []string{
+var AliasesAdd = []string{
 	"add",
 	"new",
 	"create",
 }
 
-var Edit = []string{
+var AliasesEdit = []string{
 	"edit",
 	"modify",
 	"change",
 }
 
-var Delete = []string{
+var AliasesDelete = []string{
 	"delete",
 	"del",
 	"remove",
 	"rm",
 }
 
-var List = []string{
+var AliasesList = []string{
 	"list",
 	"ls",
 }
 
-var Show = []string{
+var AliasesShow = []string{
 	"show",
 	"view",
 	"get",
 }
 
-var Search = []string{
+var AliasesSearch = []string{
 	"search",
 	"find",
 }
