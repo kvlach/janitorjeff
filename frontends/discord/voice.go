@@ -43,6 +43,14 @@ func (sp *Speaker) Say(buf io.Reader, s *core.AudioState) error {
 	return voicePlay(sp.VC, buf, s)
 }
 
+func (sp *Speaker) AuthorDeafened() (bool, error) {
+	vs, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
+	if err != nil {
+		return false, err
+	}
+	return vs.SelfDeaf, nil
+}
+
 // *Very* heavily inspired from https://github.com/bwmarrin/dgvoice/
 
 // Technically the below settings can be adjusted however that poses

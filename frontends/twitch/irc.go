@@ -297,3 +297,7 @@ func (t *Twitch) Join() error {
 func (t *Twitch) Say(io.Reader, *core.AudioState) error {
 	return nil
 }
+
+func (t *Twitch) AuthorDeafened() (bool, error) {
+	return false, nil
+}
