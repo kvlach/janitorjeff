@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -181,6 +182,12 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 	id := core.Hooks.Register(func(m *core.Message) {
 		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
 			return
+		}
+
+		for _, arg := range strings.Fields(m.Raw) {
+			if core.IsValidURL(arg) {
+				return
+			}
 		}
 
 		author, err := m.Author.Scope()
