@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
@@ -22,6 +24,70 @@ var (
 	ErrPersonNotFound = errors.New("Person's voice has not been set.")
 )
 
+var Voices = []string{
+	// DISNEY VOICES
+	"en_us_ghostface",       // Ghost Face
+	"en_us_chewbacca",       // Chewbacca
+	"en_us_c3po",            // C3PO
+	"en_us_stitch",          // Stitch
+	"en_us_stormtrooper",    // Stormtrooper
+	"en_us_rocket",          // Rocket
+	"en_female_madam_leota", // Madame Leota
+	"en_male_ghosthost",     // Ghost Host
+	"en_male_pirate",        // Pirate
+
+	// ENGLISH VOICES
+	"en_au_001", // English AU - Female
+	"en_au_002", // English AU - Male
+	"en_uk_001", // English UK - Male 1
+	"en_uk_003", // English UK - Male 2
+	"en_us_001", // English US - Female 1
+	"en_us_002", // English US - Female 2
+	"en_us_006", // English US - Male 1
+	"en_us_007", // English US - Male 2
+	"en_us_009", // English US - Male 3
+	"en_us_010", // English US - Male 4
+
+	// EUROPE VOICES
+	"fr_001", // French - Male 1
+	"fr_002", // French - Male 2
+	"de_001", // German - Female
+	"de_002", // German - Male
+	"es_002", // Spanish - Male
+
+	// AMERICA VOICES
+	"es_mx_002", // Spanish MX - Male
+	"br_001",    // Portuguese BR - Female 1
+	"br_003",    // Portuguese BR - Female 2
+	"br_004",    // Portuguese BR - Female 3
+	"br_005",    // Portuguese BR - Male
+
+	// ASIA VOICES
+	"id_001", // Indonesian - Female
+	"jp_001", // Japanese - Female 1
+	"jp_003", // Japanese - Female 2
+	"jp_005", // Japanese - Female 3
+	"jp_006", // Japanese - Male
+	"kr_002", // Korean - Male 1
+	"kr_003", // Korean - Female
+	"kr_004", // Korean - Male 2
+
+	// SINGING VOICES
+	"en_female_f08_salut_damour",       // Alto
+	"en_male_m03_lobby",                // Tenor
+	"en_male_m03_sunshine_soon",        // Sunshine Soon
+	"en_female_f08_warmy_breeze",       // Warmy Breeze
+	"en_female_ht_f08_glorious",        // Glorious
+	"en_male_sing_funny_it_goes_up",    // It Goes Up
+	"en_male_m2_xhxs_m03_silly",        // Chipmunk
+	"en_female_ht_f08_wonderful_world", // Dramatic
+
+	// OTHER
+	"en_male_narration",   // Narrator
+	"en_male_funny",       // Wacky
+	"en_female_emotional", // Peaceful
+	"en_male_cody",        // Serious
+}
 
 type TTSResp struct {
 	Data struct {
@@ -80,6 +146,12 @@ func TTS(voice, text string) ([]byte, error) {
 	return decoded, nil
 }
 
+// RandomVoice returns a random voice ID.
+func RandomVoice() string {
+	rand.Seed(time.Now().UnixNano())
+	return Voices[rand.Intn(len(Voices))]
+}
+
 // Play will, if necessary join the appropriate voice channel, and start playing
 // the TTS specified by text.
 func Play(sp core.AudioSpeaker, voice, text string) error {
@@ -121,7 +193,16 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		voice := MustUserVoiceGet(author, here)
+		voice, usrErr, err := UserVoiceGet(author, here)
+		if err != nil {
+			return
+		}
+		if usrErr == ErrPersonNotFound {
+			voice = RandomVoice()
+			if err := UserVoiceSet(author, here, voice); err != nil {
+				return
+			}
+		}
 
 		Play(sp, voice, m.Raw)
 	})
@@ -152,17 +233,6 @@ func UserVoiceGet(person, place int64) (string, error, error) {
 	}
 	voice, err := dbPersonGetVoice(person, place)
 	return voice, nil, err
-}
-
-// MustUserVoiceGet works like UserVoiceGet the only difference being that if
-// no voice has been set in this place for the person then it returns the
-// default en_us_002 voice.
-func MustUserVoiceGet(person, place int64) string {
-	usrVoice, usrErr, err := UserVoiceGet(person, place)
-	if usrErr == nil && err == nil {
-		return usrVoice
-	}
-	return "en_us_002"
 }
 
 // UserVoiceSet sets the user voice.
