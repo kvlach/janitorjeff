@@ -49,6 +49,10 @@ type AudioSpeaker interface {
 	// Send audio. Must have connected to a voice channel first, otherwise
 	// returns an error.
 	Say(buf io.Reader, s *AudioState) error
+
+	// AuthorDeafened returns true if the author that originally made the bot
+	// join the voice channel is currently deafened.
+	AuthorDeafened() (bool, error)
 }
 
 // AudioFFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and

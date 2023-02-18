@@ -229,3 +229,19 @@ func (i *InteractionCreate) Join() error {
 func (i *InteractionCreate) Say(buf io.Reader, s *core.AudioState) error {
 	return voicePlay(i.VC, buf, s)
 }
+
+func (i *InteractionCreate) AuthorDeafened() (bool, error) {
+	var authorID string
+
+	if i.Interaction.Member != nil {
+		authorID = i.Interaction.Message.Author.ID
+	} else {
+		authorID = i.Interaction.User.ID
+	}
+
+	vs, err := Session.State.VoiceState(i.Interaction.GuildID, authorID)
+	if err != nil {
+		return false, err
+	}
+	return vs.SelfDeaf, nil
+}

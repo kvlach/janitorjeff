@@ -16,6 +16,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends"
 
 	"github.com/janitorjeff/gosafe"
+	"github.com/rs/zerolog/log"
 )
 
 var Hooks = gosafe.Map[string, int]{}
@@ -181,6 +182,17 @@ func Play(sp core.AudioSpeaker, voice, text string) error {
 func Start(sp core.AudioSpeaker, twitchUsername string) {
 	id := core.Hooks.Register(func(m *core.Message) {
 		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
+			return
+		}
+
+		deaf, err := sp.AuthorDeafened()
+
+		log.Debug().
+			Err(err).
+			Bool("deaf", deaf).
+			Msg("checked if author is deafened")
+
+		if err != nil || deaf {
 			return
 		}
 
