@@ -53,6 +53,10 @@ type AudioSpeaker interface {
 	// AuthorDeafened returns true if the author that originally made the bot
 	// join the voice channel is currently deafened.
 	AuthorDeafened() (bool, error)
+
+	// AuthorConnected returns true if the author that originally made the bot
+	// join the voice channel is currently connected to that same voice channel.
+	AuthorConnected() (bool, error)
 }
 
 // AudioFFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and

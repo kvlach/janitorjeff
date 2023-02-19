@@ -245,3 +245,8 @@ func (i *InteractionCreate) AuthorDeafened() (bool, error) {
 	}
 	return vs.SelfDeaf, nil
 }
+
+func (i *InteractionCreate) AuthorConnected() (bool, error) {
+	// TODO: implement this
+	return false, nil
+}

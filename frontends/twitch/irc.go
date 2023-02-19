@@ -301,3 +301,7 @@ func (t *Twitch) Say(io.Reader, *core.AudioState) error {
 func (t *Twitch) AuthorDeafened() (bool, error) {
 	return false, nil
 }
+
+func (t *Twitch) AuthorConnected() (bool, error) {
+	return false, nil
+}
