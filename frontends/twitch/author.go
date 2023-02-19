@@ -43,6 +43,14 @@ func (a Author) Mod() bool {
 	return ok
 }
 
+func (a Author) Subscriber() bool {
+	if _, ok := a.User.Badges["subscriber"]; ok {
+		return true
+	}
+	_, ok := a.User.Badges["founder"]
+	return ok
+}
+
 func (a Author) Scope() (int64, error) {
 	return dbAddChannel(a.ID(), a.User, nil)
 }

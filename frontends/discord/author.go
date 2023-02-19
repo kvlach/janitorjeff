@@ -42,6 +42,10 @@ func (a *AuthorMessage) Mod() bool {
 	return isMod(a.GuildID, a.Author.ID)
 }
 
+func (a *AuthorMessage) Subscriber() bool {
+	return false
+}
+
 func (a *AuthorMessage) Scope() (int64, error) {
 	if a.scope != 0 {
 		return a.scope, nil
@@ -102,6 +106,10 @@ func (a *AuthorInteraction) Admin() bool {
 
 func (a *AuthorInteraction) Mod() bool {
 	return isMod(a.GuildID, a.ID())
+}
+
+func (a *AuthorInteraction) Subscriber() bool {
+	return false
 }
 
 func (a *AuthorInteraction) Scope() (int64, error) {

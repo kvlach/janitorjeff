@@ -20,6 +20,7 @@ import (
 )
 
 var Hooks = gosafe.Map[string, int]{}
+var SubOnly = gosafe.Map[string, bool]{}
 
 var (
 	ErrHookNotFound   = errors.New("Wasn't monitoring, what are you even trynna do??")
@@ -180,8 +181,22 @@ func Play(sp core.AudioSpeaker, voice, text string) error {
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
 func Start(sp core.AudioSpeaker, twitchUsername string) {
+	SubOnly.Set(twitchUsername, false)
+
 	id := core.Hooks.Register(func(m *core.Message) {
 		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
+			return
+		}
+
+		subonly, ok := SubOnly.Get(twitchUsername)
+		if !ok {
+			log.Debug().Msg("expected to find value in SubOnly map but didn't, skipping")
+			return
+		}
+		log.Debug().Bool("subonly", subonly).Msg("checked if subonly mode is on")
+
+		if subonly && !(m.Author.Subscriber() || m.Author.Mod()) {
+			log.Debug().Msg("author is neither a sub nor a mod, skipping")
 			return
 		}
 
@@ -237,6 +252,7 @@ func Stop(twitchUsername string) error {
 	}
 	core.Hooks.Delete(id)
 	Hooks.Delete(twitchUsername)
+	SubOnly.Delete(twitchUsername)
 	return nil
 }
 

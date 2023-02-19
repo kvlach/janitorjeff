@@ -46,6 +46,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedStart,
 		AdvancedStop,
 		AdvancedUser,
+		AdvancedSubOnly,
 	}
 }
 
@@ -312,4 +313,205 @@ func (advancedUser) core(m *core.Message) (string, error) {
 	}
 
 	return voice, UserVoiceSet(person, here, voice)
+}
+
+/////////////
+//         //
+// subonly //
+//         //
+/////////////
+
+var AdvancedSubOnly = advancedSubOnly{}
+
+type advancedSubOnly struct{}
+
+func (c advancedSubOnly) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSubOnly) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSubOnly) Names() []string {
+	return []string{
+		"subonly",
+	}
+}
+
+func (advancedSubOnly) Description() string {
+	return "The TTS will only read subs' and mods' messages."
+}
+
+func (c advancedSubOnly) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (advancedSubOnly) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedSubOnly) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedSubOnlyOn,
+		AdvancedSubOnlyOff,
+	}
+}
+
+func (advancedSubOnly) Init() error {
+	return nil
+}
+
+func (c advancedSubOnly) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+////////////////
+//            //
+// subonly on //
+//            //
+////////////////
+
+var AdvancedSubOnlyOn = advancedSubOnlyOn{}
+
+type advancedSubOnlyOn struct{}
+
+func (c advancedSubOnlyOn) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSubOnlyOn) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSubOnlyOn) Names() []string {
+	return []string{
+		"on",
+	}
+}
+
+func (advancedSubOnlyOn) Description() string {
+	return "Toggle sub-only mode on."
+}
+
+func (advancedSubOnlyOn) UsageArgs() string {
+	return "<channel>"
+}
+
+func (advancedSubOnlyOn) Parent() core.CommandStatic {
+	return AdvancedSubOnly
+}
+
+func (advancedSubOnlyOn) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSubOnlyOn) Init() error {
+	return nil
+}
+
+func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	c.core(m)
+	embed := &dg.MessageEmbed{
+		Description: "Turned sub-only mode on.",
+	}
+	return embed, nil, nil
+}
+
+func (c advancedSubOnlyOn) text(m *core.Message) (string, error, error) {
+	c.core(m)
+	return "Turned sub-only mode on.", nil, nil
+}
+
+func (advancedSubOnlyOn) core(m *core.Message) {
+	twitchUsername := m.Command.Args[0]
+	SubOnly.Set(twitchUsername, true)
+}
+
+/////////////////
+//             //
+// subonly off //
+//             //
+/////////////////
+
+var AdvancedSubOnlyOff = advancedSubOnlyOff{}
+
+type advancedSubOnlyOff struct{}
+
+func (c advancedSubOnlyOff) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSubOnlyOff) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSubOnlyOff) Names() []string {
+	return []string{
+		"off",
+	}
+}
+
+func (advancedSubOnlyOff) Description() string {
+	return "Toggle sub-only mode off."
+}
+
+func (advancedSubOnlyOff) UsageArgs() string {
+	return "<channel>"
+}
+
+func (advancedSubOnlyOff) Parent() core.CommandStatic {
+	return AdvancedSubOnly
+}
+
+func (advancedSubOnlyOff) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSubOnlyOff) Init() error {
+	return nil
+}
+
+func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	c.core(m)
+	embed := &dg.MessageEmbed{
+		Description: "Turned sub-only mode off.",
+	}
+	return embed, nil, nil
+}
+
+func (c advancedSubOnlyOff) text(m *core.Message) (string, error, error) {
+	c.core(m)
+	return "Turned sub-only mode off.", nil, nil
+}
+
+func (advancedSubOnlyOff) core(m *core.Message) {
+	twitchUsername := m.Command.Args[0]
+	SubOnly.Set(twitchUsername, false)
 }
