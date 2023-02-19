@@ -51,6 +51,15 @@ func (sp *Speaker) AuthorDeafened() (bool, error) {
 	return vs.SelfDeaf, nil
 }
 
+func (sp *Speaker) AuthorConnected() (bool, error) {
+	// FIXME: If the user is connected to a different channel then this will
+	// return true, we don't want this.
+
+	_, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
+	// if no error, then a voice state exists
+	return err == nil, nil
+}
+
 // *Very* heavily inspired from https://github.com/bwmarrin/dgvoice/
 
 // Technically the below settings can be adjusted however that poses

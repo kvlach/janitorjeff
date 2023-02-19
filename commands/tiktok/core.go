@@ -200,6 +200,20 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
+		con, err := sp.AuthorConnected()
+		log.Debug().
+			Err(err).
+			Bool("connected", con).
+			Msg("checked if author is still connected")
+
+		if err != nil {
+			return
+		}
+		if !con {
+			Stop(twitchUsername)
+			return
+		}
+
 		deaf, err := sp.AuthorDeafened()
 
 		log.Debug().
