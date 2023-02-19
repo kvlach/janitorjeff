@@ -85,6 +85,11 @@ type Author interface {
 	// is that if the author can ban people, then they are mods.
 	Mod() bool
 
+	// Subcriber checks if the author is considered a subscriber. General rule of
+	// is that if they are paying money in some way, then they are subs. If no
+	// such thing exists for the specific frontend, then always returns false.
+	Subscriber() bool
+
 	// Scope return's the author's scope. If it doesn't exist it will create it
 	// and add it to the database.
 	Scope() (author int64, err error)
