@@ -75,14 +75,14 @@ var Voices = []string{
 	"kr_004", // Korean - Male 2
 
 	// SINGING VOICES
-	"en_female_f08_salut_damour",       // Alto
-	"en_male_m03_lobby",                // Tenor
-	"en_male_m03_sunshine_soon",        // Sunshine Soon
-	"en_female_f08_warmy_breeze",       // Warmy Breeze
-	"en_female_ht_f08_glorious",        // Glorious
-	"en_male_sing_funny_it_goes_up",    // It Goes Up
-	"en_male_m2_xhxs_m03_silly",        // Chipmunk
-	"en_female_ht_f08_wonderful_world", // Dramatic
+	// "en_female_f08_salut_damour",       // Alto
+	// "en_male_m03_lobby",                // Tenor
+	// "en_male_m03_sunshine_soon",        // Sunshine Soon
+	// "en_female_f08_warmy_breeze",       // Warmy Breeze
+	// "en_female_ht_f08_glorious",        // Glorious
+	// "en_male_sing_funny_it_goes_up",    // It Goes Up
+	// "en_male_m2_xhxs_m03_silly",        // Chipmunk
+	// "en_female_ht_f08_wonderful_world", // Dramatic
 
 	// OTHER
 	"en_male_narration",   // Narrator
