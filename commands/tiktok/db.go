@@ -7,7 +7,7 @@ import (
 )
 
 const dbSchema = `
-CREATE TABLE IF NOT EXISTS CommandTikTokCustomUserVoices (
+CREATE TABLE IF NOT EXISTS CommandTTSCustomUserVoices (
 	person INTEGER NOT NULL,
 	place INTEGER NOT NULL,
 	voice VARCHAR(255) NOT NULL,
@@ -31,7 +31,7 @@ func dbPersonVoiceExists(person, place int64) (bool, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM CommandTikTokCustomUserVoices
+			SELECT 1 FROM CommandTTSCustomUserVoices
 			WHERE person = ? and place = ?
 			LIMIT 1
 		)`, person, place)
@@ -57,7 +57,7 @@ func dbPersonGetVoice(person, place int64) (string, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT voice
-		FROM CommandTikTokCustomUserVoices
+		FROM CommandTTSCustomUserVoices
 		WHERE person = ? and place = ?`, person, place)
 
 	err := row.Scan(&voice)
@@ -78,7 +78,7 @@ func dbPersonAddVoice(person, place int64, voice string) error {
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		INSERT INTO CommandTikTokCustomUserVoices(person, place, voice)
+		INSERT INTO CommandTTSCustomUserVoices(person, place, voice)
 		VALUES (?, ?, ?)`, person, place, voice)
 
 	log.Debug().
@@ -97,7 +97,7 @@ func dbPersonUpdateVoice(person, place int64, voice string) error {
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		UPDATE CommandTikTokCustomUserVoices
+		UPDATE CommandTTSCustomUserVoices
 		SET voice = ?
 		WHERE person = ? and place = ?
 	`, voice, person, place)
