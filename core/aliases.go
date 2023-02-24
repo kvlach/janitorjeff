@@ -30,6 +30,9 @@ var AliasesShow = []string{
 	"show",
 	"view",
 	"get",
+	"status",
+	"state",
+	"?",
 }
 
 var AliasesSearch = []string{
