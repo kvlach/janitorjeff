@@ -355,6 +355,7 @@ func (advancedSubOnly) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedSubOnlyOn,
 		AdvancedSubOnlyOff,
+		AdvancedSubOnlyShow,
 	}
 }
 
@@ -514,4 +515,86 @@ func (c advancedSubOnlyOff) text(m *core.Message) (string, error, error) {
 func (advancedSubOnlyOff) core(m *core.Message) {
 	twitchUsername := m.Command.Args[0]
 	SubOnly.Set(twitchUsername, false)
+}
+
+//////////////////
+//              //
+// subonly show //
+//              //
+//////////////////
+
+var AdvancedSubOnlyShow = advancedSubOnlyShow{}
+
+type advancedSubOnlyShow struct{}
+
+func (c advancedSubOnlyShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedSubOnlyShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedSubOnlyShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedSubOnlyShow) Description() string {
+	return "Check if sub-only is turned on or off."
+}
+
+func (advancedSubOnlyShow) UsageArgs() string {
+	return "<channel>"
+}
+
+func (advancedSubOnlyShow) Parent() core.CommandStatic {
+	return AdvancedSubOnly
+}
+
+func (advancedSubOnlyShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedSubOnlyShow) Init() error {
+	return nil
+}
+
+func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	subonly := c.core(m)
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(subonly),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedSubOnlyShow) text(m *core.Message) (string, error, error) {
+	subonly := c.core(m)
+	return c.fmt(subonly), nil, nil
+}
+
+func (c advancedSubOnlyShow) fmt(subonly bool) string {
+	state := "off"
+	if subonly {
+		state = "on"
+	}
+	return "Sub-only mode is currently " + state + "."
+}
+
+func (advancedSubOnlyShow) core(m *core.Message) bool {
+	twitchUsername := m.Command.Args[0]
+	subonly, _ := SubOnly.Get(twitchUsername)
+	return subonly
 }
