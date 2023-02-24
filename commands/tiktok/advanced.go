@@ -330,7 +330,7 @@ func (c advancedSubOnly) Type() core.CommandType {
 }
 
 func (c advancedSubOnly) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return c.Parent().Permitted(m) && m.Author.Mod()
 }
 
 func (advancedSubOnly) Names() []string {
@@ -396,7 +396,7 @@ func (advancedSubOnlyOn) Description() string {
 }
 
 func (advancedSubOnlyOn) UsageArgs() string {
-	return "<channel>"
+	return ""
 }
 
 func (advancedSubOnlyOn) Parent() core.CommandStatic {
@@ -412,10 +412,6 @@ func (advancedSubOnlyOn) Init() error {
 }
 
 func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
-	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
-	}
-
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -425,21 +421,34 @@ func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	c.core(m)
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
 	embed := &dg.MessageEmbed{
-		Description: "Turned sub-only mode on.",
+		Description: c.fmt(),
 	}
 	return embed, nil, nil
 }
 
 func (c advancedSubOnlyOn) text(m *core.Message) (string, error, error) {
-	c.core(m)
-	return "Turned sub-only mode on.", nil, nil
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
 }
 
-func (advancedSubOnlyOn) core(m *core.Message) {
-	twitchUsername := m.Command.Args[0]
-	SubOnly.Set(twitchUsername, true)
+func (advancedSubOnlyOn) fmt() string {
+	return "Turned sub-only mode on."
+}
+
+func (advancedSubOnlyOn) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return SubOnlySet(here, true)
 }
 
 /////////////////
@@ -471,7 +480,7 @@ func (advancedSubOnlyOff) Description() string {
 }
 
 func (advancedSubOnlyOff) UsageArgs() string {
-	return "<channel>"
+	return ""
 }
 
 func (advancedSubOnlyOff) Parent() core.CommandStatic {
@@ -487,10 +496,6 @@ func (advancedSubOnlyOff) Init() error {
 }
 
 func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
-	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
-	}
-
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -500,21 +505,34 @@ func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	c.core(m)
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
 	embed := &dg.MessageEmbed{
-		Description: "Turned sub-only mode off.",
+		Description: c.fmt(),
 	}
 	return embed, nil, nil
 }
 
 func (c advancedSubOnlyOff) text(m *core.Message) (string, error, error) {
-	c.core(m)
-	return "Turned sub-only mode off.", nil, nil
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
 }
 
-func (advancedSubOnlyOff) core(m *core.Message) {
-	twitchUsername := m.Command.Args[0]
-	SubOnly.Set(twitchUsername, false)
+func (advancedSubOnlyOff) fmt() string {
+	return "Turned sub-only mode off."
+}
+
+func (advancedSubOnlyOff) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return SubOnlySet(here, false)
 }
 
 //////////////////
@@ -544,7 +562,7 @@ func (advancedSubOnlyShow) Description() string {
 }
 
 func (advancedSubOnlyShow) UsageArgs() string {
-	return "<channel>"
+	return ""
 }
 
 func (advancedSubOnlyShow) Parent() core.CommandStatic {
@@ -560,10 +578,6 @@ func (advancedSubOnlyShow) Init() error {
 }
 
 func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
-	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
-	}
-
 	switch m.Frontend {
 	case frontends.Discord:
 		return c.discord(m)
@@ -573,7 +587,10 @@ func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	subonly := c.core(m)
+	subonly, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(subonly),
 	}
@@ -581,20 +598,25 @@ func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, error, 
 }
 
 func (c advancedSubOnlyShow) text(m *core.Message) (string, error, error) {
-	subonly := c.core(m)
+	subonly, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
 	return c.fmt(subonly), nil, nil
 }
 
 func (c advancedSubOnlyShow) fmt(subonly bool) string {
-	state := "off"
+	subonlyStr := "off"
 	if subonly {
-		state = "on"
+		subonlyStr = "on"
 	}
-	return "Sub-only mode is currently " + state + "."
+	return "Sub-only mode is currently " + subonlyStr + "."
 }
 
-func (advancedSubOnlyShow) core(m *core.Message) bool {
-	twitchUsername := m.Command.Args[0]
-	subonly, _ := SubOnly.Get(twitchUsername)
-	return subonly
+func (advancedSubOnlyShow) core(m *core.Message) (bool, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return false, err
+	}
+	return SubOnlyGet(here)
 }
