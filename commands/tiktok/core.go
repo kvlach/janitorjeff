@@ -20,7 +20,6 @@ import (
 )
 
 var Hooks = gosafe.Map[string, int]{}
-var SubOnly = gosafe.Map[string, bool]{}
 
 var (
 	ErrHookNotFound   = errors.New("Wasn't monitoring, what are you even trynna do??")
@@ -181,20 +180,20 @@ func Play(sp core.AudioSpeaker, voice, text string) error {
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
 func Start(sp core.AudioSpeaker, twitchUsername string) {
-	SubOnly.Set(twitchUsername, false)
-
 	id := core.Hooks.Register(func(m *core.Message) {
 		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
 			return
 		}
 
-		subonly, ok := SubOnly.Get(twitchUsername)
-		if !ok {
-			log.Debug().Msg("expected to find value in SubOnly map but didn't, skipping")
+		here, err := m.Here.ScopeLogical()
+		if err != nil {
 			return
 		}
-		log.Debug().Bool("subonly", subonly).Msg("checked if subonly mode is on")
 
+		subonly, err := SubOnlyGet(here)
+		if err != nil {
+			return
+		}
 		if subonly && !(m.Author.Subscriber() || m.Author.Mod()) {
 			log.Debug().Msg("author is neither a sub nor a mod, skipping")
 			return
@@ -236,11 +235,6 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		here, err := m.Here.ScopeLogical()
-		if err != nil {
-			return
-		}
-
 		voice, usrErr, err := UserVoiceGet(author, here)
 		if err != nil {
 			return
@@ -266,7 +260,6 @@ func Stop(twitchUsername string) error {
 	}
 	core.Hooks.Delete(id)
 	Hooks.Delete(twitchUsername)
-	SubOnly.Delete(twitchUsername)
 	return nil
 }
 
@@ -294,4 +287,29 @@ func UserVoiceSet(person, place int64, voice string) error {
 		return dbPersonUpdateVoice(person, place, voice)
 	}
 	return dbPersonAddVoice(person, place, voice)
+}
+
+// SettingsGenerate will check if the default settings have already been
+// generated for the specified place, and if not, will do so.
+func SettingsGenerate(place int64) error {
+	exists, err := dbPlaceSettingsExist(place)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	return dbPlaceSettingsGenerate(place)
+}
+
+// SubOnlyGet returns the sub-only state for the specified place.
+func SubOnlyGet(place int64) (bool, error) {
+	SettingsGenerate(place)
+	return dbSubOnlyGet(place)
+}
+
+// SubOnlySet sets the sub-only state for the specified place.
+func SubOnlySet(place int64, state bool) error {
+	SettingsGenerate(place)
+	return dbSubOnlySet(place, state)
 }
