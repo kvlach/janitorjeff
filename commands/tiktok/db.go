@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS CommandTikTokCustomUserVoices (
 )
 `
 
-func dbPersonExists(person, place int64) (bool, error) {
+func dbPersonVoiceExists(person, place int64) (bool, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()

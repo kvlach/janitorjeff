@@ -273,7 +273,7 @@ func Stop(twitchUsername string) error {
 // UserVoiceGet returns the person's voice in this place. Returns
 // ErrPersonNotFound if no voice has been set.
 func UserVoiceGet(person, place int64) (string, error, error) {
-	exists, err := dbPersonExists(person, place)
+	exists, err := dbPersonVoiceExists(person, place)
 	if err != nil {
 		return "", nil, err
 	}
@@ -286,7 +286,7 @@ func UserVoiceGet(person, place int64) (string, error, error) {
 
 // UserVoiceSet sets the user voice.
 func UserVoiceSet(person, place int64, voice string) error {
-	exists, err := dbPersonExists(person, place)
+	exists, err := dbPersonVoiceExists(person, place)
 	if err != nil {
 		return err
 	}
