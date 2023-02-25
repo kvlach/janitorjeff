@@ -1,4 +1,4 @@
-package tiktok
+package tts
 
 import (
 	"github.com/janitorjeff/jeff-bot/core"

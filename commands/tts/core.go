@@ -1,4 +1,4 @@
-package tiktok
+package tts
 
 import (
 	"bytes"
