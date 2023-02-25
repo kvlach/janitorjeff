@@ -45,7 +45,7 @@ func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedStart,
 		AdvancedStop,
-		AdvancedUser,
+		AdvancedVoice,
 		AdvancedSubOnly,
 	}
 }
@@ -217,100 +217,101 @@ func (advancedStop) core(m *core.Message) error {
 	return Stop(twitchUsername)
 }
 
-//////////
-//      //
-// user //
-//      //
-//////////
+///////////
+//       //
+// voice //
+//       //
+///////////
 
-var AdvancedUser = advancedUser{}
+var AdvancedVoice = advancedVoice{}
 
-type advancedUser struct{}
+type advancedVoice struct{}
 
-func (c advancedUser) Type() core.CommandType {
+func (c advancedVoice) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedUser) Permitted(m *core.Message) bool {
+func (c advancedVoice) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m) && m.Author.Mod()
 }
 
-func (advancedUser) Names() []string {
+func (advancedVoice) Names() []string {
 	return []string{
-		"user",
+		"voice",
+		"v",
 	}
 }
 
-func (advancedUser) Description() string {
+func (advancedVoice) Description() string {
 	return "Control a user's voice."
 }
 
-func (c advancedUser) UsageArgs() string {
+func (c advancedVoice) UsageArgs() string {
 	return c.Children().Usage()
 }
 
-func (advancedUser) Parent() core.CommandStatic {
+func (advancedVoice) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedUser) Children() core.CommandsStatic {
+func (advancedVoice) Children() core.CommandsStatic {
 	return core.CommandsStatic{
-		AdvancedUserShow,
-		AdvancedUserSet,
+		AdvancedVoiceShow,
+		AdvancedVoiceSet,
 	}
 }
 
-func (advancedUser) Init() error {
+func (advancedVoice) Init() error {
 	return nil
 }
 
-func (c advancedUser) Run(m *core.Message) (any, error, error) {
+func (c advancedVoice) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
-///////////////
-//           //
-// user show //
-//           //
-///////////////
+////////////////
+//            //
+// voice show //
+//            //
+////////////////
 
-var AdvancedUserShow = advancedUserShow{}
+var AdvancedVoiceShow = advancedVoiceShow{}
 
-type advancedUserShow struct{}
+type advancedVoiceShow struct{}
 
-func (c advancedUserShow) Type() core.CommandType {
+func (c advancedVoiceShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedUserShow) Permitted(m *core.Message) bool {
+func (c advancedVoiceShow) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedUserShow) Names() []string {
+func (advancedVoiceShow) Names() []string {
 	return core.AliasesShow
 }
 
-func (advancedUserShow) Description() string {
+func (advancedVoiceShow) Description() string {
 	return "Show a user's voice."
 }
 
-func (advancedUserShow) UsageArgs() string {
+func (advancedVoiceShow) UsageArgs() string {
 	return "<user>"
 }
 
-func (advancedUserShow) Parent() core.CommandStatic {
-	return AdvancedUser
+func (advancedVoiceShow) Parent() core.CommandStatic {
+	return AdvancedVoice
 }
 
-func (advancedUserShow) Children() core.CommandsStatic {
+func (advancedVoiceShow) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedUserShow) Init() error {
+func (advancedVoiceShow) Init() error {
 	return nil
 }
 
-func (c advancedUserShow) Run(m *core.Message) (any, error, error) {
+func (c advancedVoiceShow) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
@@ -323,7 +324,7 @@ func (c advancedUserShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedUserShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -334,7 +335,7 @@ func (c advancedUserShow) discord(m *core.Message) (*dg.MessageEmbed, error, err
 	return embed, nil, nil
 }
 
-func (c advancedUserShow) text(m *core.Message) (string, error, error) {
+func (c advancedVoiceShow) text(m *core.Message) (string, error, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -342,11 +343,11 @@ func (c advancedUserShow) text(m *core.Message) (string, error, error) {
 	return c.fmt(voice), nil, nil
 }
 
-func (c advancedUserShow) fmt(voice string) string {
+func (c advancedVoiceShow) fmt(voice string) string {
 	return "The user's voice is: " + voice
 }
 
-func (advancedUserShow) core(m *core.Message) (string, error) {
+func (advancedVoiceShow) core(m *core.Message) (string, error) {
 	user := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()
@@ -362,51 +363,51 @@ func (advancedUserShow) core(m *core.Message) (string, error) {
 	return PersonVoiceGet(person, here)
 }
 
-//////////////
-//          //
-// user set //
-//          //
-//////////////
+///////////////
+//           //
+// voice set //
+//           //
+///////////////
 
-var AdvancedUserSet = advancedUserSet{}
+var AdvancedVoiceSet = advancedVoiceSet{}
 
-type advancedUserSet struct{}
+type advancedVoiceSet struct{}
 
-func (c advancedUserSet) Type() core.CommandType {
+func (c advancedVoiceSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedUserSet) Permitted(m *core.Message) bool {
+func (c advancedVoiceSet) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedUserSet) Names() []string {
+func (advancedVoiceSet) Names() []string {
 	return []string{
 		"set",
 	}
 }
 
-func (advancedUserSet) Description() string {
+func (advancedVoiceSet) Description() string {
 	return "Set a user's voice."
 }
 
-func (advancedUserSet) UsageArgs() string {
+func (advancedVoiceSet) UsageArgs() string {
 	return "<user> <voice>"
 }
 
-func (advancedUserSet) Parent() core.CommandStatic {
-	return AdvancedUser
+func (advancedVoiceSet) Parent() core.CommandStatic {
+	return AdvancedVoice
 }
 
-func (advancedUserSet) Children() core.CommandsStatic {
+func (advancedVoiceSet) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedUserSet) Init() error {
+func (advancedVoiceSet) Init() error {
 	return nil
 }
 
-func (c advancedUserSet) Run(m *core.Message) (any, error, error) {
+func (c advancedVoiceSet) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
@@ -419,7 +420,7 @@ func (c advancedUserSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedUserSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -433,7 +434,7 @@ func (c advancedUserSet) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 	return embed, nil, nil
 }
 
-func (c advancedUserSet) text(m *core.Message) (string, error, error) {
+func (c advancedVoiceSet) text(m *core.Message) (string, error, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -443,7 +444,7 @@ func (c advancedUserSet) text(m *core.Message) (string, error, error) {
 	return "Added voice " + voice, nil, nil
 }
 
-func (advancedUserSet) core(m *core.Message) (string, error) {
+func (advancedVoiceSet) core(m *core.Message) (string, error) {
 	user := m.Command.Args[0]
 	voice := m.Command.Args[1]
 
