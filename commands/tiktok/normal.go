@@ -4,6 +4,12 @@ import (
 	"github.com/janitorjeff/jeff-bot/core"
 )
 
+///////////
+//       //
+// voice //
+//       //
+///////////
+
 // NormalVoice is not a sub-command
 var NormalVoice = normalVoice{}
 
