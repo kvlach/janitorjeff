@@ -235,15 +235,9 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		voice, usrErr, err := UserVoiceGet(author, here)
+		voice, err := PersonVoiceGet(author, here)
 		if err != nil {
 			return
-		}
-		if usrErr == ErrPersonNotFound {
-			voice = RandomVoice()
-			if err := UserVoiceSet(author, here, voice); err != nil {
-				return
-			}
 		}
 
 		Play(sp, voice, m.Raw)
@@ -263,35 +257,39 @@ func Stop(twitchUsername string) error {
 	return nil
 }
 
-// UserVoiceGet returns the person's voice in this place. Returns
-// ErrPersonNotFound if no voice has been set.
-func UserVoiceGet(person, place int64) (string, error, error) {
-	exists, err := dbPersonVoiceExists(person, place)
-	if err != nil {
-		return "", nil, err
-	}
-	if !exists {
-		return "", ErrPersonNotFound, nil
-	}
-	voice, err := dbPersonGetVoice(person, place)
-	return voice, nil, err
-}
-
-// UserVoiceSet sets the user voice.
-func UserVoiceSet(person, place int64, voice string) error {
-	exists, err := dbPersonVoiceExists(person, place)
+// PersonSettingsGenerate will check if settings for the specified person in
+// the specified place exist, and if not will generate them.
+func PersonSettingsGenerate(person, place int64) error {
+	exists, err := dbPersonSettingsExist(person, place)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return dbPersonUpdateVoice(person, place, voice)
+		return nil
 	}
-	return dbPersonAddVoice(person, place, voice)
+	return dbPersonSettingsGenerate(person, place, RandomVoice())
 }
 
-// SettingsGenerate will check if the default settings have already been
+// PersonVoiceGet returns the person's voice in this place. If no voice has
+// been set then it picks a random one and saves it.
+func PersonVoiceGet(person, place int64) (string, error) {
+	if err := PersonSettingsGenerate(person, place); err != nil {
+		return "", err
+	}
+	return dbPersonSettingsVoiceGet(person, place)
+}
+
+// PersonVoiceSet sets the user voice.
+func PersonVoiceSet(person, place int64, voice string) error {
+	if err := PersonSettingsGenerate(person, place); err != nil {
+		return err
+	}
+	return dbPersonSettingsVoiceSet(person, place, voice)
+}
+
+// PlaceSettingsGenerate will check if the default settings have already been
 // generated for the specified place, and if not, will do so.
-func SettingsGenerate(place int64) error {
+func PlaceSettingsGenerate(place int64) error {
 	exists, err := dbPlaceSettingsExist(place)
 	if err != nil {
 		return err
@@ -304,12 +302,12 @@ func SettingsGenerate(place int64) error {
 
 // SubOnlyGet returns the sub-only state for the specified place.
 func SubOnlyGet(place int64) (bool, error) {
-	SettingsGenerate(place)
+	PlaceSettingsGenerate(place)
 	return dbSubOnlyGet(place)
 }
 
 // SubOnlySet sets the sub-only state for the specified place.
 func SubOnlySet(place int64, state bool) error {
-	SettingsGenerate(place)
+	PlaceSettingsGenerate(place)
 	return dbSubOnlySet(place, state)
 }
