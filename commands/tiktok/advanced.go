@@ -255,6 +255,7 @@ func (advancedUser) Parent() core.CommandStatic {
 
 func (advancedUser) Children() core.CommandsStatic {
 	return core.CommandsStatic{
+		AdvancedUserShow,
 		AdvancedUserSet,
 	}
 }
@@ -265,6 +266,105 @@ func (advancedUser) Init() error {
 
 func (c advancedUser) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+///////////////
+//           //
+// user show //
+//           //
+///////////////
+
+var AdvancedUserShow = advancedUserShow{}
+
+type advancedUserShow struct{}
+
+func (c advancedUserShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedUserShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedUserShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedUserShow) Description() string {
+	return "Show a user's voice."
+}
+
+func (advancedUserShow) UsageArgs() string {
+	return "<user>"
+}
+
+func (advancedUserShow) Parent() core.CommandStatic {
+	return AdvancedUser
+}
+
+func (advancedUserShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedUserShow) Init() error {
+	return nil
+}
+
+func (c advancedUserShow) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedUserShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	voice, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(voice, usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (c advancedUserShow) text(m *core.Message) (string, error, error) {
+	voice, usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(voice, usrErr), usrErr, nil
+}
+
+func (c advancedUserShow) fmt(voice string, usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "The user's voice is: " + voice
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedUserShow) core(m *core.Message) (string, error, error) {
+	user := m.Command.Args[0]
+
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return "", nil, err
+	}
+
+	person, err := nick.ParsePerson(m, here, user)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return UserVoiceGet(person, here)
 }
 
 //////////////
@@ -282,7 +382,7 @@ func (c advancedUserSet) Type() core.CommandType {
 }
 
 func (c advancedUserSet) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m) && m.Author.Mod()
+	return c.Parent().Permitted(m)
 }
 
 func (advancedUserSet) Names() []string {
