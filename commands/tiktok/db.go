@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS CommandTTSPlaceSettings (
 );
 `
 
-func dbPersonVoiceExists(person, place int64) (bool, error) {
+func dbPersonSettingsExist(person, place int64) (bool, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -31,7 +31,7 @@ func dbPersonVoiceExists(person, place int64) (bool, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM CommandTTSCustomUserVoices
+			SELECT 1 FROM CommandTTSPersonSettings
 			WHERE person = ? and place = ?
 			LIMIT 1
 		)`, person, place)
@@ -48,7 +48,25 @@ func dbPersonVoiceExists(person, place int64) (bool, error) {
 	return exists, err
 }
 
-func dbPersonGetVoice(person, place int64) (string, error) {
+// There is no default voice because we want it to be random for each person
+func dbPersonSettingsGenerate(person, place int64, voice string) error {
+	db := core.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	_, err := db.DB.Exec(`
+		INSERT INTO CommandTTSPersonSettings(person, place, voice)
+		VALUES (?, ?, ?)`, person, place, voice)
+
+	log.Debug().
+		Err(err).
+		Int64("place", place).
+		Msg("generated settings")
+
+	return err
+}
+
+func dbPersonSettingsVoiceGet(person, place int64) (string, error) {
 	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -57,7 +75,7 @@ func dbPersonGetVoice(person, place int64) (string, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT voice
-		FROM CommandTTSCustomUserVoices
+		FROM CommandTTSPersonSettings
 		WHERE person = ? and place = ?`, person, place)
 
 	err := row.Scan(&voice)
@@ -72,32 +90,13 @@ func dbPersonGetVoice(person, place int64) (string, error) {
 	return voice, err
 }
 
-func dbPersonAddVoice(person, place int64, voice string) error {
+func dbPersonSettingsVoiceSet(person, place int64, voice string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		INSERT INTO CommandTTSCustomUserVoices(person, place, voice)
-		VALUES (?, ?, ?)`, person, place, voice)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Str("voice", voice).
-		Msg("added person voice in db")
-
-	return err
-}
-
-func dbPersonUpdateVoice(person, place int64, voice string) error {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
-		UPDATE CommandTTSCustomUserVoices
+		UPDATE CommandTTSPersonSettings
 		SET voice = ?
 		WHERE person = ? and place = ?
 	`, voice, person, place)

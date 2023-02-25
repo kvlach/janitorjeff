@@ -324,47 +324,42 @@ func (c advancedUserShow) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedUserShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	voice, usrErr, err := c.core(m)
+	voice, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(voice, usrErr),
+		Description: c.fmt(voice),
 	}
-	return embed, usrErr, nil
+	return embed, nil, nil
 }
 
 func (c advancedUserShow) text(m *core.Message) (string, error, error) {
-	voice, usrErr, err := c.core(m)
+	voice, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(voice, usrErr), usrErr, nil
+	return c.fmt(voice), nil, nil
 }
 
-func (c advancedUserShow) fmt(voice string, usrErr error) string {
-	switch usrErr {
-	case nil:
-		return "The user's voice is: " + voice
-	default:
-		return fmt.Sprint(usrErr)
-	}
+func (c advancedUserShow) fmt(voice string) string {
+	return "The user's voice is: " + voice
 }
 
-func (advancedUserShow) core(m *core.Message) (string, error, error) {
+func (advancedUserShow) core(m *core.Message) (string, error) {
 	user := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
 	person, err := nick.ParsePerson(m, here, user)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
-	return UserVoiceGet(person, here)
+	return PersonVoiceGet(person, here)
 }
 
 //////////////
@@ -462,7 +457,7 @@ func (advancedUserSet) core(m *core.Message) (string, error) {
 		return "", err
 	}
 
-	return voice, UserVoiceSet(person, here, voice)
+	return voice, PersonVoiceSet(person, here, voice)
 }
 
 /////////////
