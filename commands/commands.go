@@ -65,6 +65,7 @@ var Commands = core.CommandsStatic{
 	title.Advanced,
 
 	tts.Advanced,
+	tts.NormalTTS,
 	tts.NormalVoice,
 	tts.NormalSubOnly,
 

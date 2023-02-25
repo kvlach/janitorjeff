@@ -4,6 +4,52 @@ import (
 	"github.com/janitorjeff/jeff-bot/core"
 )
 
+/////////
+//     //
+// tts //
+//     //
+/////////
+
+var NormalTTS = normalTTS{}
+
+type normalTTS struct{}
+
+func (normalTTS) Type() core.CommandType {
+	return core.Normal
+}
+
+func (normalTTS) Permitted(m *core.Message) bool {
+	return AdvancedStart.Permitted(m)
+}
+
+func (normalTTS) Names() []string {
+	return Advanced.Names()
+}
+
+func (normalTTS) Description() string {
+	return AdvancedStart.Description()
+}
+
+func (normalTTS) UsageArgs() string {
+	return AdvancedStart.UsageArgs()
+}
+
+func (normalTTS) Parent() core.CommandStatic {
+	return nil
+}
+
+func (normalTTS) Children() core.CommandsStatic {
+	return nil
+}
+
+func (normalTTS) Init() error {
+	return nil
+}
+
+func (normalTTS) Run(m *core.Message) (any, error, error) {
+	return AdvancedStart.Run(m)
+}
+
 ///////////
 //       //
 // voice //
