@@ -60,6 +60,7 @@ var Commands = core.CommandsStatic{
 
 	tiktok.Advanced,
 	tiktok.NormalVoice,
+	tiktok.NormalSubOnly,
 
 	time.Normal,
 	time.Advanced,
