@@ -59,6 +59,7 @@ var Commands = core.CommandsStatic{
 	search.Advanced,
 
 	tiktok.Advanced,
+	tiktok.NormalVoice,
 
 	time.Normal,
 	time.Advanced,
