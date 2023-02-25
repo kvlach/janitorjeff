@@ -1,4 +1,4 @@
-package tiktok
+package tts
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func (advanced) Permitted(m *core.Message) bool {
 
 func (advanced) Names() []string {
 	return []string{
-		"tiktok",
+		"tts",
 	}
 }
 

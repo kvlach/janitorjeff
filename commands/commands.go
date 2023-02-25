@@ -15,9 +15,9 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/prefix"
 	"github.com/janitorjeff/jeff-bot/commands/rps"
 	"github.com/janitorjeff/jeff-bot/commands/search"
-	"github.com/janitorjeff/jeff-bot/commands/tiktok"
 	"github.com/janitorjeff/jeff-bot/commands/time"
 	"github.com/janitorjeff/jeff-bot/commands/title"
+	"github.com/janitorjeff/jeff-bot/commands/tts"
 	"github.com/janitorjeff/jeff-bot/commands/urban-dictionary"
 	"github.com/janitorjeff/jeff-bot/commands/wikipedia"
 	"github.com/janitorjeff/jeff-bot/commands/youtube"
@@ -58,15 +58,15 @@ var Commands = core.CommandsStatic{
 
 	search.Advanced,
 
-	tiktok.Advanced,
-	tiktok.NormalVoice,
-	tiktok.NormalSubOnly,
-
 	time.Normal,
 	time.Advanced,
 
 	title.Normal,
 	title.Advanced,
+
+	tts.Advanced,
+	tts.NormalVoice,
+	tts.NormalSubOnly,
 
 	urban_dictionary.Normal,
 	urban_dictionary.Advanced,
