@@ -386,9 +386,7 @@ func (c advancedSubOnlyOn) Permitted(m *core.Message) bool {
 }
 
 func (advancedSubOnlyOn) Names() []string {
-	return []string{
-		"on",
-	}
+	return core.AliasesOn
 }
 
 func (advancedSubOnlyOn) Description() string {
@@ -470,9 +468,7 @@ func (c advancedSubOnlyOff) Permitted(m *core.Message) bool {
 }
 
 func (advancedSubOnlyOff) Names() []string {
-	return []string{
-		"off",
-	}
+	return core.AliasesOff
 }
 
 func (advancedSubOnlyOff) Description() string {

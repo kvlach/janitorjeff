@@ -39,3 +39,15 @@ var AliasesSearch = []string{
 	"search",
 	"find",
 }
+
+var AliasesOn = []string{
+	"on",
+	"true",
+	"yes",
+}
+
+var AliasesOff = []string{
+	"off",
+	"false",
+	"no",
+}
