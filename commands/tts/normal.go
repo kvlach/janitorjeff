@@ -10,6 +10,9 @@ import (
 //     //
 /////////
 
+// There's no reason to have a stop sub-command in the normal command since the
+// bot stops listening if the person disconnects from the voice channel.
+
 var NormalTTS = normalTTS{}
 
 type normalTTS struct{}
