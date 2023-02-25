@@ -238,7 +238,6 @@ func (c advancedVoice) Permitted(m *core.Message) bool {
 func (advancedVoice) Names() []string {
 	return []string{
 		"voice",
-		"v",
 	}
 }
 
