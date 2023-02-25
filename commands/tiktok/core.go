@@ -302,12 +302,16 @@ func PlaceSettingsGenerate(place int64) error {
 
 // SubOnlyGet returns the sub-only state for the specified place.
 func SubOnlyGet(place int64) (bool, error) {
-	PlaceSettingsGenerate(place)
+	if err := PlaceSettingsGenerate(place); err != nil {
+		return false, err
+	}
 	return dbSubOnlyGet(place)
 }
 
 // SubOnlySet sets the sub-only state for the specified place.
 func SubOnlySet(place int64, state bool) error {
-	PlaceSettingsGenerate(place)
+	if err := PlaceSettingsGenerate(place); err != nil {
+		return err
+	}
 	return dbSubOnlySet(place, state)
 }
