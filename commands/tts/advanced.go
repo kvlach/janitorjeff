@@ -591,7 +591,7 @@ func (advancedSubOnlyOn) core(m *core.Message) error {
 	if err != nil {
 		return err
 	}
-	return SubOnlySet(here, true)
+	return PlaceSubOnlySet(here, true)
 }
 
 /////////////////
@@ -673,7 +673,7 @@ func (advancedSubOnlyOff) core(m *core.Message) error {
 	if err != nil {
 		return err
 	}
-	return SubOnlySet(here, false)
+	return PlaceSubOnlySet(here, false)
 }
 
 //////////////////
@@ -759,5 +759,5 @@ func (advancedSubOnlyShow) core(m *core.Message) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return SubOnlyGet(here)
+	return PlaceSubOnlyGet(here)
 }

@@ -190,7 +190,7 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		subonly, err := SubOnlyGet(here)
+		subonly, err := PlaceSubOnlyGet(here)
 		if err != nil {
 			return
 		}
@@ -300,16 +300,16 @@ func PlaceSettingsGenerate(place int64) error {
 	return dbPlaceSettingsGenerate(place)
 }
 
-// SubOnlyGet returns the sub-only state for the specified place.
-func SubOnlyGet(place int64) (bool, error) {
+// PlaceSubOnlyGet returns the sub-only state for the specified place.
+func PlaceSubOnlyGet(place int64) (bool, error) {
 	if err := PlaceSettingsGenerate(place); err != nil {
 		return false, err
 	}
 	return dbSubOnlyGet(place)
 }
 
-// SubOnlySet sets the sub-only state for the specified place.
-func SubOnlySet(place int64, state bool) error {
+// PlaceSubOnlySet sets the sub-only state for the specified place.
+func PlaceSubOnlySet(place int64, state bool) error {
 	if err := PlaceSettingsGenerate(place); err != nil {
 		return err
 	}
