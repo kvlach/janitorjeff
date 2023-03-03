@@ -7,6 +7,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/category"
 	"github.com/janitorjeff/jeff-bot/commands/connect"
 	"github.com/janitorjeff/jeff-bot/commands/custom-command"
+	"github.com/janitorjeff/jeff-bot/commands/god"
 	"github.com/janitorjeff/jeff-bot/commands/help"
 	"github.com/janitorjeff/jeff-bot/commands/id"
 	"github.com/janitorjeff/jeff-bot/commands/mask"
@@ -35,6 +36,8 @@ var Commands = core.CommandsStatic{
 	connect.Normal,
 
 	custom_command.Advanced,
+
+	god.Advanced,
 
 	help.Normal,
 	help.Advanced,

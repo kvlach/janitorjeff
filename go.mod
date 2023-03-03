@@ -11,6 +11,7 @@ require (
 	github.com/nicklaw5/helix v1.25.0
 	github.com/rivo/uniseg v0.4.2
 	github.com/rs/zerolog v1.28.0
+	github.com/sashabaranov/go-gpt3 v1.2.1
 	github.com/tj/go-naturaldate v1.3.0
 	google.golang.org/api v0.103.0
 	layeh.com/gopus v0.0.0-20210501142526-1ee02d434e32

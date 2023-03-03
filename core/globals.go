@@ -5,4 +5,5 @@ var (
 	Port            string
 	TikTokSessionID string
 	YouTubeKey      string
+	OpenAIKey       string
 )
