@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/zerolog/log"
 )
 
 var DB *SQLDB
@@ -140,4 +141,124 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	}
 
 	return prefixes, rows.Err()
+}
+
+func (db *SQLDB) placeSettingsExist(table string, place int64) (bool, error) {
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var exists bool
+
+	query := fmt.Sprintf(`
+		SELECT EXISTS (
+			SELECT 1 FROM %s
+			WHERE place = ?
+			LIMIT 1
+		)
+	`, table)
+
+	row := db.DB.QueryRow(query, place)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("place", place).
+		Bool("exist", exists).
+		Msg("checked if place settings exist")
+
+	return exists, err
+}
+
+func (db *SQLDB) placeSettingsGenerate(table string, place int64) error {
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	query := fmt.Sprintf(`
+		INSERT INTO %s (place)
+		VALUES (?)
+	`, table)
+
+	_, err := db.DB.Exec(query, place)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("place", place).
+		Msg("generated settings")
+
+	return err
+}
+
+// PlaceSettingsGenerate will check if settings for the specified place exist
+// and if not will generate them.
+func (db *SQLDB) PlaceSettingsGenerate(table string, place int64) error {
+	exists, err := db.placeSettingsExist(table, place)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	return db.placeSettingsGenerate(table, place)
+}
+
+// PlaceSettingsGet returns the value of the col for the specified place.
+func (db *SQLDB) PlaceSettingsGet(table, col string, place int64) (any, error) {
+	// Make sure that the place settings are present
+	if err := db.PlaceSettingsGenerate(table, place); err != nil {
+		return nil, err
+	}
+
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var val any
+
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM %s
+		WHERE place = ?
+	`, col, table)
+
+	row := db.DB.QueryRow(query, place)
+
+	err := row.Scan(&val)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("place", place).
+		Interface(col, val).
+		Msg("got value")
+
+	return val, err
+}
+
+func (db *SQLDB) PlaceSettingsSet(table, col string, place int64, val any) error {
+	// Make sure that the place settings are present
+	if err := db.PlaceSettingsGenerate(table, place); err != nil {
+		return err
+	}
+
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET %s = ?
+		WHERE place = ?
+	`, table, col)
+
+	_, err := db.DB.Exec(query, val, place)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("place", place).
+		Interface(col, val).
+		Msg("changed setting")
+
+	return err
 }
