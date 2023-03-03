@@ -1,8 +1,11 @@
 package god
 
 import (
+	"time"
+
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/rs/zerolog/log"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -45,6 +48,33 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
+	core.Hooks.Register(func(m *core.Message) {
+		here, err := m.Here.ScopeLogical()
+		if err != nil {
+			return
+		}
+
+		if on, err := ReplyOnGet(here); err != nil || !on {
+			log.Debug().Err(err).Msg("reply not on, skipping")
+			return
+		}
+
+		if should, err := ShouldReply(here); err != nil || !should {
+			log.Debug().Err(err).Msg("shouldn't reply yet, skipping")
+			return
+		}
+
+		resp, err := Talk(m.Raw)
+		if err != nil {
+			return
+		}
+		m.Write(resp, nil)
+
+		if err := ReplyLastSet(here, time.Now()); err != nil {
+			log.Debug().Err(err).Msg("error while trying to set reply")
+			return
+		}
+	})
 	return core.DB.Init(dbSchema)
 }
 
