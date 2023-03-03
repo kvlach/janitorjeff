@@ -1,6 +1,9 @@
 package god
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -9,6 +12,8 @@ import (
 
 	dg "github.com/bwmarrin/discordgo"
 )
+
+var ErrInvalidInterval = errors.New("Expected an integer number as the interval.")
 
 var Advanced = advanced{}
 
@@ -44,6 +49,7 @@ func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedTalk,
 		AdvancedReply,
+		AdvancedInterval,
 	}
 }
 
@@ -463,4 +469,236 @@ func (advancedReplyOff) core(m *core.Message) error {
 		return err
 	}
 	return ReplyOnSet(here, false)
+}
+
+//////////////
+//          //
+// interval //
+//          //
+//////////////
+
+var AdvancedInterval = advancedInterval{}
+
+type advancedInterval struct{}
+
+func (c advancedInterval) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedInterval) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedInterval) Names() []string {
+	return []string{
+		"interval",
+	}
+}
+
+func (advancedInterval) Description() string {
+	return "Control the interval between the auto-replies."
+}
+
+func (c advancedInterval) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (advancedInterval) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedInterval) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedIntervalShow,
+		AdvancedIntervalSet,
+	}
+}
+
+func (advancedInterval) Init() error {
+	return nil
+}
+
+func (advancedInterval) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+///////////////////
+//               //
+// interval show //
+//               //
+///////////////////
+
+var AdvancedIntervalShow = advancedIntervalShow{}
+
+type advancedIntervalShow struct{}
+
+func (c advancedIntervalShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedIntervalShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedIntervalShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedIntervalShow) Description() string {
+	return "Show the currently-set interval between the auto-replies."
+}
+
+func (c advancedIntervalShow) UsageArgs() string {
+	return ""
+}
+
+func (advancedIntervalShow) Parent() core.CommandStatic {
+	return AdvancedInterval
+}
+
+func (advancedIntervalShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedIntervalShow) Init() error {
+	return nil
+}
+
+func (c advancedIntervalShow) Run(m *core.Message) (any, error, error) {
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	interval, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(interval),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedIntervalShow) text(m *core.Message) (string, error, error) {
+	interval, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(interval), nil, nil
+}
+
+func (advancedIntervalShow) fmt(interval time.Duration) string {
+	return "The interval is set to: " + interval.String()
+}
+
+func (advancedIntervalShow) core(m *core.Message) (time.Duration, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return time.Second, err
+	}
+	return ReplyIntervalGet(here)
+}
+
+//////////////////
+//              //
+// interval set //
+//              //
+//////////////////
+
+var AdvancedIntervalSet = advancedIntervalSet{}
+
+type advancedIntervalSet struct{}
+
+func (c advancedIntervalSet) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedIntervalSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedIntervalSet) Names() []string {
+	return []string{
+		"set",
+	}
+}
+
+func (advancedIntervalSet) Description() string {
+	return "Set the interval between the auto-replies."
+}
+
+func (c advancedIntervalSet) UsageArgs() string {
+	return "<seconds>"
+}
+
+func (advancedIntervalSet) Parent() core.CommandStatic {
+	return AdvancedInterval
+}
+
+func (advancedIntervalSet) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedIntervalSet) Init() error {
+	return nil
+}
+
+func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	switch m.Frontend {
+	case frontends.Discord:
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(usrErr),
+	}
+	return embed, usrErr, nil
+}
+
+func (c advancedIntervalSet) text(m *core.Message) (string, error, error) {
+	usrErr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(usrErr), usrErr, nil
+}
+
+func (advancedIntervalSet) fmt(usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "Updated the interval."
+	case ErrIntervalTooShort:
+		return "The interval must be larger or equal to " + core.MinGodInterval.String() + "."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedIntervalSet) core(m *core.Message) (error, error) {
+	seconds, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
+	if err != nil {
+		return ErrInvalidInterval, nil
+	}
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return nil, err
+	}
+	return ReplyIntervalSet(here, time.Duration(seconds)*time.Second)
 }

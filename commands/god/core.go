@@ -2,12 +2,15 @@ package god
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
+
+var ErrIntervalTooShort = errors.New("The given interval is too short.")
 
 func Talk(prompt string) (string, error) {
 	c := gogpt.NewClient(core.OpenAIKey)
@@ -40,6 +43,13 @@ func ReplyIntervalGet(place int64) (time.Duration, error) {
 		return time.Second, err
 	}
 	return time.Duration(interval.(int64)) * time.Second, nil
+}
+
+func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
+	if core.MinGodInterval > dur {
+		return ErrIntervalTooShort, nil
+	}
+	return nil, core.DB.PlaceSettingsSet(dbTablePlaceSettings, "reply_interval", place, int(dur.Seconds()))
 }
 
 func ReplyLastGet(place int64) (time.Time, error) {

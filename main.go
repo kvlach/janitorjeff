@@ -8,9 +8,11 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/janitorjeff/jeff-bot/commands"
 	"github.com/janitorjeff/jeff-bot/core"
@@ -96,6 +98,13 @@ func main() {
 	core.YouTubeKey = readVar("YOUTUBE")
 	core.TikTokSessionID = readVar("TIKTOK_SESSION_ID")
 	core.OpenAIKey = readVar("OPENAI_KEY")
+
+	minGodIntervalSeconds, err := strconv.Atoi(readVar("MIN_GOD_INTERVAL_SECONDS"))
+	if err != nil {
+		panic("invalid MIN_GOD_INTERVAL_SECONDS value, expected a number")
+	}
+	core.MinGodInterval = time.Duration(minGodIntervalSeconds) * time.Second
+
 	core.Prefixes.Add(core.Admin, "##")
 	core.Prefixes.Add(core.Normal, "!")
 	core.Prefixes.Add(core.Advanced, "$")
