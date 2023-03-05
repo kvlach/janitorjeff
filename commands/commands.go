@@ -38,6 +38,7 @@ var Commands = core.CommandsStatic{
 	custom_command.Advanced,
 
 	god.Advanced,
+	god.Normal,
 
 	help.Normal,
 	help.Advanced,
