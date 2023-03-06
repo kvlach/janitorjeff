@@ -32,7 +32,7 @@ func Talk(prompt string) (string, error) {
 
 	req := gogpt.CompletionRequest{
 		Model:     gogpt.GPT3TextDavinci003,
-		MaxTokens: 20,
+		MaxTokens: 40,
 		Prompt:    prompt,
 	}
 	resp, err := c.CreateCompletion(ctx, req)
