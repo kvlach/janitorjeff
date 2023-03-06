@@ -680,43 +680,45 @@ func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := c.core(m)
+	interval, usrErr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(usrErr),
+		Description: c.fmt(interval, usrErr),
 	}
 	return embed, usrErr, nil
 }
 
 func (c advancedIntervalSet) text(m *core.Message) (string, error, error) {
-	usrErr, err := c.core(m)
+	interval, usrErr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(usrErr), usrErr, nil
+	return c.fmt(interval, usrErr), usrErr, nil
 }
 
-func (advancedIntervalSet) fmt(usrErr error) string {
+func (advancedIntervalSet) fmt(interval time.Duration, usrErr error) string {
 	switch usrErr {
 	case nil:
-		return "Updated the interval."
+		return fmt.Sprintf("Updated the interval to %s.", interval)
 	case ErrIntervalTooShort:
-		return "The interval must be larger or equal to " + core.MinGodInterval.String() + "."
+		return fmt.Sprintf("The interval %s is too short, must be longer or equal to %s.", interval, core.MinGodInterval)
 	default:
 		return fmt.Sprint(usrErr)
 	}
 }
 
-func (advancedIntervalSet) core(m *core.Message) (error, error) {
+func (advancedIntervalSet) core(m *core.Message) (time.Duration, error, error) {
 	seconds, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
 	if err != nil {
-		return ErrInvalidInterval, nil
+		return time.Second, ErrInvalidInterval, nil
 	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return time.Second, nil, err
 	}
-	return ReplyIntervalSet(here, time.Duration(seconds)*time.Second)
+	interval := time.Duration(seconds) * time.Second
+	usrErr, err := ReplyIntervalSet(here, interval)
+	return interval, usrErr, err
 }
