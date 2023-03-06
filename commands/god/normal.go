@@ -34,6 +34,7 @@ func (normal) Parent() core.CommandStatic {
 
 func (normal) Children() core.CommandsStatic {
 	return core.CommandsStatic{
+		NormalReply,
 		NormalInterval,
 	}
 }
@@ -44,6 +45,147 @@ func (normal) Init() error {
 
 func (normal) Run(m *core.Message) (any, error, error) {
 	return AdvancedTalk.Run(m)
+}
+
+///////////
+//       //
+// reply //
+//       //
+///////////
+
+var NormalReply = normalReply{}
+
+type normalReply struct{}
+
+func (c normalReply) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c normalReply) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (normalReply) Names() []string {
+	return AdvancedReply.Names()
+}
+
+func (normalReply) Description() string {
+	return AdvancedReply.Description()
+}
+
+func (c normalReply) UsageArgs() string {
+	return c.Children().UsageOptional()
+}
+
+func (normalReply) Parent() core.CommandStatic {
+	return Normal
+}
+
+func (normalReply) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		NormalReplyOn,
+		NormalReplyOff,
+	}
+}
+
+func (normalReply) Init() error {
+	return nil
+}
+
+func (normalReply) Run(m *core.Message) (any, error, error) {
+	return AdvancedReplyShow.Run(m)
+}
+
+//////////////
+//          //
+// reply on //
+//          //
+//////////////
+
+var NormalReplyOn = normalReplyOn{}
+
+type normalReplyOn struct{}
+
+func (c normalReplyOn) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c normalReplyOn) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (normalReplyOn) Names() []string {
+	return AdvancedReplyOn.Names()
+}
+
+func (normalReplyOn) Description() string {
+	return AdvancedReplyOn.Description()
+}
+
+func (c normalReplyOn) UsageArgs() string {
+	return AdvancedReplyOn.UsageArgs()
+}
+
+func (normalReplyOn) Parent() core.CommandStatic {
+	return NormalReply
+}
+
+func (normalReplyOn) Children() core.CommandsStatic {
+	return nil
+}
+
+func (normalReplyOn) Init() error {
+	return nil
+}
+
+func (normalReplyOn) Run(m *core.Message) (any, error, error) {
+	return AdvancedReplyOn.Run(m)
+}
+
+///////////////
+//           //
+// reply off //
+//           //
+///////////////
+
+var NormalReplyOff = normalReplyOff{}
+
+type normalReplyOff struct{}
+
+func (c normalReplyOff) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c normalReplyOff) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (normalReplyOff) Names() []string {
+	return AdvancedReplyOff.Names()
+}
+
+func (normalReplyOff) Description() string {
+	return AdvancedReplyOff.Description()
+}
+
+func (c normalReplyOff) UsageArgs() string {
+	return AdvancedReplyOff.UsageArgs()
+}
+
+func (normalReplyOff) Parent() core.CommandStatic {
+	return NormalReply
+}
+
+func (normalReplyOff) Children() core.CommandsStatic {
+	return nil
+}
+
+func (normalReplyOff) Init() error {
+	return nil
+}
+
+func (normalReplyOff) Run(m *core.Message) (any, error, error) {
+	return AdvancedReplyOff.Run(m)
 }
 
 //////////////
