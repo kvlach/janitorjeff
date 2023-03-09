@@ -44,8 +44,15 @@ func (sp *Speaker) Say(buf io.Reader, s *core.AudioState) error {
 }
 
 func (sp *Speaker) AuthorDeafened() (bool, error) {
+	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
+	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
 	vs, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
 	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("guild", sp.GuildID).
+			Str("user", sp.AuthorID).
+			Msg("failed to get voice state")
 		return false, err
 	}
 	return vs.SelfDeaf, nil
@@ -55,7 +62,16 @@ func (sp *Speaker) AuthorConnected() (bool, error) {
 	// FIXME: If the user is connected to a different channel then this will
 	// return true, we don't want this.
 
+	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
+	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
 	_, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
+	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("guild", sp.GuildID).
+			Str("user", sp.AuthorID).
+			Msg("failed to get voice state")
+	}
 	// if no error, then a voice state exists
 	return err == nil, nil
 }
