@@ -183,7 +183,7 @@ func (normalSubOnlyOn) Description() string {
 }
 
 func (normalSubOnlyOn) UsageArgs() string {
-	return ""
+	return AdvancedSubOnlyOn.UsageArgs()
 }
 
 func (normalSubOnlyOn) Parent() core.CommandStatic {
@@ -229,7 +229,7 @@ func (normalSubOnlyOff) Description() string {
 }
 
 func (normalSubOnlyOff) UsageArgs() string {
-	return ""
+	return AdvancedSubOnlyOff.UsageArgs()
 }
 
 func (normalSubOnlyOff) Parent() core.CommandStatic {
