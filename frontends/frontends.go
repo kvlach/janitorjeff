@@ -8,6 +8,11 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 )
 
+var Frontends = []core.Frontender{
+	discord.Frontend,
+	twitch.Frontend,
+}
+
 const (
 	Discord = discord.Type
 	Twitch  = twitch.Type

@@ -17,12 +17,18 @@ var (
 	EmbedErrColor = 0xB14D4D
 )
 
-func Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, token string) {
+type frontend struct {
+	Token string
+}
+
+var Frontend = &frontend{}
+
+func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	if err := dbInit(); err != nil {
 		log.Fatal().Err(err).Msg("failed to init discord db schema")
 	}
 
-	d, err := dg.New("Bot " + token)
+	d, err := dg.New("Bot " + f.Token)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create discord client")
 	}

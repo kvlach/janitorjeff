@@ -22,6 +22,14 @@ var (
 	ClientSecret string
 )
 
+type frontend struct {
+	Nick     string
+	OAuth    string
+	Channels []string
+}
+
+var Frontend = &frontend{}
+
 type Twitch struct {
 	client  *tirc.Client
 	message *tirc.PrivateMessage
@@ -38,16 +46,16 @@ func onPrivateMessage(m tirc.PrivateMessage) {
 	msg.Run()
 }
 
-func IRCInit(wgInit, wgStop *sync.WaitGroup, stop chan struct{}, nick string, oauth string, channels []string) {
+func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	if err := dbInit(); err != nil {
 		log.Fatal().Err(err).Msg("failed to init twitch db schema")
 	}
 
-	twitchIrcClient = tirc.NewClient(nick, oauth)
+	twitchIrcClient = tirc.NewClient(f.Nick, f.OAuth)
 
 	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
 
-	twitchIrcClient.Join(channels...)
+	twitchIrcClient.Join(f.Channels...)
 
 	log.Debug().Msg("connecting to twitch irc")
 	var err error
