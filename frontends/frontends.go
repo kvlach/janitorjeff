@@ -13,13 +13,6 @@ var Frontends = []core.Frontender{
 	twitch.Frontend,
 }
 
-const (
-	Discord = discord.Type
-	Twitch  = twitch.Type
-
-	All = Discord | Twitch
-)
-
 // This is used to send messages that are not direct replies, e.g. reminders
 func CreateContext(person, place int64, msgID string) (*core.Message, error) {
 	frontend, err := core.DB.ScopeFrontend(place)
@@ -30,9 +23,9 @@ func CreateContext(person, place int64, msgID string) (*core.Message, error) {
 	var client core.Messenger
 
 	switch frontend {
-	case Discord:
+	case int64(discord.Frontend.Type()):
 		client, err = discord.CreateClient(person, place, msgID)
-	case Twitch:
+	case int64(twitch.Frontend.Type()):
 		client, err = twitch.CreateClient(person, place)
 	default:
 		return nil, fmt.Errorf("frontend with id '%d' is not supported", frontend)
