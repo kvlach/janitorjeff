@@ -44,14 +44,14 @@ type Messenger interface {
 
 	Usage(usage string) any
 
-	// Sends a message to the appropriate scope, `resp` could be `nil` depending
-	// on the frontend.
+	// Send sends a message to the appropriate scope, resp could be nil
+	// depending on the frontend.
 	Send(msg any, usrErr error) (resp *Message, err error)
 
-	// Same as `Send` except the user is also pinged.
+	// Ping works the same as Send except the user is also pinged.
 	Ping(msg any, usrErr error) (resp *Message, err error)
 
-	// Either calls `Send` or `Ping` depending on the frontend. This is what
+	// Write either calls Send or Ping depending on the frontend. This is what
 	// should be used in most cases.
 	Write(msg any, usrErr error) (resp *Message, err error)
 }
