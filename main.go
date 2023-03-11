@@ -16,6 +16,7 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/commands"
 	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 
@@ -60,17 +61,18 @@ func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
 	// in case something is down
 
 	wgInit := new(sync.WaitGroup)
-	wgInit.Add(2)
-	wgStop.Add(2)
+	wgInit.Add(len(frontends.Frontends))
+	wgStop.Add(len(frontends.Frontends))
 
-	// Twitch IRC
-	twitchOauth := readVar("TWITCH_OAUTH")
-	channels := strings.Split(readVar("TWITCH_CHANNELS"), ",")
-	go twitch.IRCInit(wgInit, wgStop, stop, "JanitorJeff", twitchOauth, channels)
+	twitch.Frontend.Nick = "JanitorJeff"
+	twitch.Frontend.OAuth = readVar("TWITCH_OAUTH")
+	twitch.Frontend.Channels = strings.Split(readVar("TWITCH_CHANNELS"), ",")
 
-	// Discord
-	discordToken := readVar("DISCORD_TOKEN")
-	go discord.Init(wgInit, wgStop, stop, discordToken)
+	discord.Frontend.Token = readVar("DISCORD_TOKEN")
+
+	for _, f := range frontends.Frontends {
+		go f.Init(wgInit, wgStop, stop)
+	}
 
 	wgInit.Wait()
 }
