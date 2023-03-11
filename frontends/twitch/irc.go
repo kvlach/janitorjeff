@@ -54,6 +54,10 @@ func New(nick, oauth string, channels []string) {
 	}
 }
 
+func (f *frontend) Type() core.FrontendType {
+	return Type
+}
+
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	if err := dbInit(); err != nil {
 		log.Fatal().Err(err).Msg("failed to init twitch db schema")
