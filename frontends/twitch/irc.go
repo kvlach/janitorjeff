@@ -28,7 +28,7 @@ type frontend struct {
 	Channels []string
 }
 
-var Frontend = &frontend{}
+var Frontend *frontend
 
 type Twitch struct {
 	client  *tirc.Client
@@ -44,6 +44,14 @@ func onPrivateMessage(m tirc.PrivateMessage) {
 	}
 
 	msg.Run()
+}
+
+func New(nick, oauth string, channels []string) {
+	Frontend = &frontend{
+		Nick:     nick,
+		OAuth:    oauth,
+		Channels: channels,
+	}
 }
 
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
