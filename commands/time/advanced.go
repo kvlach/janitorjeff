@@ -10,7 +10,6 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/commands/nick"
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -121,8 +120,8 @@ func (advancedNow) Init() error {
 }
 
 func (c advancedNow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -239,8 +238,8 @@ func (c advancedConvert) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -332,8 +331,8 @@ func (c advancedTimestamp) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -492,8 +491,8 @@ func (advancedTimezoneShow) Init() error {
 }
 
 func (c advancedTimezoneShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -598,8 +597,8 @@ func (c advancedTimezoneSet) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -700,8 +699,8 @@ func (advancedTimezoneDelete) Init() error {
 }
 
 func (c advancedTimezoneDelete) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -951,8 +950,8 @@ func (c advancedRemindDelete) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -1050,8 +1049,8 @@ func (advancedRemindList) Init() error {
 }
 
 func (c advancedRemindList) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return nil, nil, nil

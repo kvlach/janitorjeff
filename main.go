@@ -64,13 +64,11 @@ func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
 	wgInit.Add(len(frontends.Frontends))
 	wgStop.Add(len(frontends.Frontends))
 
-	twitch.New(
-		"JanitorJeff",
-		readVar("TWITCH_OAUTH"),
-		strings.Split(readVar("TWITCH_CHANNELS"), ","),
-	)
+	twitch.Frontend.Nick = "JanitorJeff"
+	twitch.Frontend.OAuth = readVar("TWITCH_OAUTH")
+	twitch.Frontend.Channels = strings.Split(readVar("TWITCH_CHANNELS"), ",")
 
-	discord.New(readVar("DISCORD_TOKEN"))
+	discord.Frontend.Token = readVar("DISCORD_TOKEN")
 
 	for _, f := range frontends.Frontends {
 		go f.Init(wgInit, wgStop, stop)

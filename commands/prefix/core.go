@@ -7,7 +7,6 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/commands/custom-command"
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -96,8 +95,8 @@ func cmdAdd(t core.CommandType, m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return cmdAddDiscord(t, m)
 	default:
 		return cmdAddText(t, m)
@@ -205,8 +204,8 @@ func cmdDelete(t core.CommandType, m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return cmdDeleteDiscord(t, m)
 	default:
 		return cmdDeleteText(t, m)
@@ -304,8 +303,8 @@ func List(t core.CommandType, place int64) ([]core.Prefix, error) {
 }
 
 func cmdList(t core.CommandType, m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return cmdListDiscord(t, m)
 	default:
 		return cmdListText(t, m)
@@ -379,8 +378,8 @@ func Reset(place int64) error {
 }
 
 func cmdReset(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return cmdResetDiscord(m)
 	default:
 		return cmdResetText(m)

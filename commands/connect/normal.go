@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 
 	"github.com/nicklaw5/helix"
@@ -99,8 +99,8 @@ func (normalTwitch) Init() error {
 }
 
 func (c normalTwitch) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)

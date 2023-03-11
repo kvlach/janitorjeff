@@ -6,7 +6,7 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/commands/nick"
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -107,8 +107,8 @@ func (c advancedStart) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -182,8 +182,8 @@ func (c advancedStop) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -315,8 +315,8 @@ func (c advancedVoiceShow) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -411,8 +411,8 @@ func (c advancedVoiceSet) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -555,8 +555,8 @@ func (advancedSubOnlyOn) Init() error {
 }
 
 func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -637,8 +637,8 @@ func (advancedSubOnlyOff) Init() error {
 }
 
 func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -719,8 +719,8 @@ func (advancedSubOnlyShow) Init() error {
 }
 
 func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)

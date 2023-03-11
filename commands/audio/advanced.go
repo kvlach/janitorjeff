@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -110,8 +109,8 @@ func (c advancedPlay) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -200,8 +199,8 @@ func (advancedPause) Init() error {
 }
 
 func (c advancedPause) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -292,8 +291,8 @@ func (advancedResume) Init() error {
 }
 
 func (c advancedResume) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -385,8 +384,8 @@ func (advancedSkip) Init() error {
 }
 
 func (c advancedSkip) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -527,8 +526,8 @@ func (advancedLoopOn) Init() error {
 }
 
 func (c advancedLoopOn) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -618,8 +617,8 @@ func (advancedLoopOff) Init() error {
 }
 
 func (c advancedLoopOff) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -709,8 +708,8 @@ func (advancedQueue) Init() error {
 }
 
 func (c advancedQueue) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)

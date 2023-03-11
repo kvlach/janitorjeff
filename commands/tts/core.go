@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 
 	"github.com/janitorjeff/gosafe"
 	"github.com/rs/zerolog/log"
@@ -181,7 +181,7 @@ func Play(sp core.AudioSpeaker, voice, text string) error {
 // be sent to the specified speaker.
 func Start(sp core.AudioSpeaker, twitchUsername string) {
 	id := core.Hooks.Register(func(m *core.Message) {
-		if m.Frontend != frontends.Twitch || m.Here.Name() != twitchUsername {
+		if m.Frontend.Type() != twitch.Frontend.Type() || m.Here.Name() != twitchUsername {
 			return
 		}
 

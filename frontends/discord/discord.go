@@ -3,6 +3,8 @@ package discord
 import (
 	"sync"
 
+	"github.com/janitorjeff/jeff-bot/core"
+
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
@@ -21,12 +23,10 @@ type frontend struct {
 	Token string
 }
 
-var Frontend *frontend
+var Frontend = &frontend{}
 
-func New(token string) {
-	Frontend = &frontend{
-		Token: token,
-	}
+func (f *frontend) Type() core.FrontendType {
+	return Type
 }
 
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {

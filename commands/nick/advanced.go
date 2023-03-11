@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -141,8 +140,8 @@ func (c advancedShow) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(nick, usrErr)
 	default:
 		return c.text(nick, usrErr)
@@ -240,8 +239,8 @@ func (c advancedSet) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(nick, usrErr)
 	default:
 		return c.text(nick, usrErr)
@@ -334,8 +333,8 @@ func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(usrErr)
 	default:
 		return c.text(usrErr)
