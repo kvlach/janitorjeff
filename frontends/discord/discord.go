@@ -21,7 +21,13 @@ type frontend struct {
 	Token string
 }
 
-var Frontend = &frontend{}
+var Frontend *frontend
+
+func New(token string) {
+	Frontend = &frontend{
+		Token: token,
+	}
+}
 
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	if err := dbInit(); err != nil {
