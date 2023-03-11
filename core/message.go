@@ -127,8 +127,8 @@ type Here interface {
 
 type Message struct {
 	ID       string
-	Frontend int
 	Raw      string
+	Frontend Frontender
 	Author   Author
 	Here     Here
 	Client   Messenger

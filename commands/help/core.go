@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
@@ -130,8 +130,8 @@ func run(t core.CommandType, m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return runDiscord(t, m)
 	default:
 		return runText(t, m)

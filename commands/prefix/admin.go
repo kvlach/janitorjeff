@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 )
 
@@ -115,8 +114,8 @@ func (c adminAdd) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		prefix = discord.PlaceInBackticks(prefix)
 		collision = discord.PlaceInBackticks(collision)
 	default:
@@ -215,8 +214,8 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		prefix = discord.PlaceInBackticks(prefix)
 	default:
 		prefix = fmt.Sprintf("'%s'", prefix)
@@ -235,8 +234,8 @@ func (adminDelete) err(usrErr error, m *core.Message, prefix string) any {
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
 	case ErrOneLeft:
 		resetCmd := core.Format(AdminReset, m.Command.Prefix)
-		switch m.Frontend {
-		case frontends.Discord:
+		switch m.Frontend.Type() {
+		case discord.Frontend.Type():
 			resetCmd = discord.PlaceInBackticks(resetCmd)
 		default:
 			resetCmd = fmt.Sprintf("'%s'", resetCmd)

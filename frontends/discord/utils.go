@@ -243,8 +243,8 @@ func parse(m *dg.Message) *core.Message {
 
 	msg := &core.Message{
 		ID:       m.ID,
-		Frontend: Type,
 		Raw:      m.Content,
+		Frontend: Frontend,
 		Author:   author,
 		Here:     h,
 		Speaker:  sp,

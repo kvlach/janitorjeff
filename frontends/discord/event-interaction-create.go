@@ -111,8 +111,8 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 
 	m := &core.Message{
 		ID:       i.Data.ID,
-		Frontend: Type,
 		Raw:      "", // TODO
+		Frontend: Frontend,
 		Author:   author,
 		Here:     h,
 		Client:   i,

@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
+	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 	"github.com/rs/zerolog/log"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -83,7 +84,7 @@ func (advanced) Init() error {
 		// want to avoid the arrow in the response (@person -> response). The
 		// whole thing is a bit hacky, but what can you do, the people have
 		// asked for this.
-		if m.Frontend == frontends.Twitch {
+		if m.Frontend.Type() == twitch.Frontend.Type() {
 			rand.Seed(time.Now().UnixNano())
 			// need this to only happen 30% of the time
 			if num := rand.Intn(10); num < 3 {
@@ -157,8 +158,8 @@ func (c advancedTalk) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -283,8 +284,8 @@ func (advancedReplyShow) Init() error {
 }
 
 func (c advancedReplyShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -368,8 +369,8 @@ func (advancedReplyOn) Init() error {
 }
 
 func (c advancedReplyOn) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -450,8 +451,8 @@ func (advancedReplyOff) Init() error {
 }
 
 func (c advancedReplyOff) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -583,8 +584,8 @@ func (advancedIntervalShow) Init() error {
 }
 
 func (c advancedIntervalShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)
@@ -671,8 +672,8 @@ func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
 		return c.text(m)

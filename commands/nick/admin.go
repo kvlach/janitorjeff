@@ -3,7 +3,7 @@ package nick
 import (
 	"github.com/janitorjeff/jeff-bot/commands/mask"
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
+	"github.com/janitorjeff/jeff-bot/frontends/discord"
 )
 
 var Admin = admin{}
@@ -98,8 +98,8 @@ func (c adminShow) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return AdvancedShow.discord(nick, usrErr)
 	default:
 		return AdvancedShow.text(nick, usrErr)
@@ -172,8 +172,8 @@ func (c adminSet) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return AdvancedSet.discord(nick, usrErr)
 	default:
 		return AdvancedSet.text(nick, usrErr)
@@ -246,8 +246,8 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 		return nil, nil, err
 	}
 
-	switch m.Frontend {
-	case frontends.Discord:
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
 		return AdvancedDelete.discord(usrErr)
 	default:
 		return AdvancedDelete.text(usrErr)

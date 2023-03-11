@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 )
 
@@ -17,7 +16,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	if m.Frontend != frontends.Twitch {
+	if m.Frontend.Type() != twitch.Frontend.Type() {
 		return false
 	}
 	return m.Author.Mod()
@@ -100,8 +99,8 @@ func (advancedShow) Init() error {
 }
 
 func (c advancedShow) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Twitch:
+	switch m.Frontend.Type() {
+	case twitch.Frontend.Type():
 		return c.twitch(m)
 	default:
 		panic("this should never happen")
@@ -161,8 +160,8 @@ func (advancedEdit) Init() error {
 }
 
 func (c advancedEdit) Run(m *core.Message) (any, error, error) {
-	switch m.Frontend {
-	case frontends.Twitch:
+	switch m.Frontend.Type() {
+	case twitch.Frontend.Type():
 		return c.twitch(m)
 	default:
 		panic("this should never happen")
