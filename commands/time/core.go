@@ -529,7 +529,7 @@ func (u *upcoming) add(r reminder) {
 	go func() {
 		time.Sleep(r.When.Sub(time.Now()))
 
-		m, err := frontends.CreateContext(r.Person, r.Place, r.MsgID)
+		m, err := frontends.CreateMessage(r.Person, r.Place, r.MsgID)
 		if err != nil {
 			panic(err)
 		}

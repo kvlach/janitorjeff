@@ -68,3 +68,44 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	}
 	wgStop.Done()
 }
+
+func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.Message, error) {
+	channelID, err := core.DB.ScopeID(channel)
+	if err != nil {
+		return nil, err
+	}
+
+	guild, err := dbGetGuildFromChannel(channel)
+	if err != nil {
+		return nil, err
+	}
+
+	guildID, err := core.DB.ScopeID(guild)
+	if err != nil {
+		return nil, err
+	}
+
+	authorID, err := core.DB.ScopeID(author)
+	if err != nil {
+		return nil, err
+	}
+
+	// check if message id still exists (could have been deleted for example)
+	if _, err := Session.ChannelMessage(channelID, msgID); err != nil {
+		msgID = ""
+	}
+
+	d := &Message{
+		Message: &dg.Message{
+			ID:        msgID,
+			ChannelID: channelID,
+			GuildID:   guildID,
+			Author: &dg.User{
+				ID:  authorID,
+				Bot: false,
+			},
+		},
+	}
+
+	return d.Parse()
+}
