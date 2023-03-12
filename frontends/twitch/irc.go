@@ -89,7 +89,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	wgStop.Done()
 }
 
-func CreateClient(person, place int64) (*Twitch, error) {
+func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, error) {
 	personID, personName, err := dbGetChannel(person)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func CreateClient(person, place int64) (*Twitch, error) {
 		},
 	}
 
-	return t, nil
+	return t.Parse()
 }
 
 var twitchIrcClient *tirc.Client
