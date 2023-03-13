@@ -28,6 +28,10 @@ func (normal) UsageArgs() string {
 	return "[category]"
 }
 
+func (normal) Category() core.CommandCategory {
+	return Advanced.Category()
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

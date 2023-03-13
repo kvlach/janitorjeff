@@ -30,6 +30,10 @@ func (normal) UsageArgs() string {
 	return "[<user> | (zone)]"
 }
 
+func (normal) Category() core.CommandCategory {
+	return Advanced.Category()
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }
@@ -108,6 +112,10 @@ func (normalZone) Description() string {
 
 func (normalZone) UsageArgs() string {
 	return "[timezone]"
+}
+
+func (c normalZone) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (normalZone) Parent() core.CommandStatic {

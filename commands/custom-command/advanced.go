@@ -38,6 +38,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryModerators
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -109,6 +113,10 @@ func (advancedAdd) Description() string {
 
 func (advancedAdd) UsageArgs() string {
 	return "<trigger> <text>"
+}
+
+func (c advancedAdd) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedAdd) Parent() core.CommandStatic {
@@ -223,6 +231,10 @@ func (advancedEdit) UsageArgs() string {
 	return "<trigger> <text>"
 }
 
+func (c advancedEdit) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedEdit) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -331,6 +343,10 @@ func (advancedDelete) Description() string {
 
 func (advancedDelete) UsageArgs() string {
 	return "<trigger>"
+}
+
+func (c advancedDelete) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedDelete) Parent() core.CommandStatic {
@@ -442,6 +458,10 @@ func (advancedList) UsageArgs() string {
 	return ""
 }
 
+func (c advancedList) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedList) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -537,6 +557,10 @@ func (advancedHistory) Description() string {
 
 func (advancedHistory) UsageArgs() string {
 	return "<trigger>"
+}
+
+func (c advancedHistory) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedHistory) Parent() core.CommandStatic {

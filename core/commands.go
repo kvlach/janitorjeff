@@ -28,6 +28,14 @@ const (
 	All = Normal | Advanced | Admin
 )
 
+type CommandCategory string
+
+const (
+	CommandCategoryGames      = "Games"
+	CommandCategoryModerators = "Moderators"
+	CommandCategoryOther      = "Other"
+)
+
 // There's 2 parts to a command. The static part which includes things like the
 // description, the list of all the aliases, etc. and the runtime part which
 // includes things like the prefix used, the arguments passed, etc.
@@ -57,6 +65,11 @@ type CommandStatic interface {
 	// - [optional]
 	// - (literal-string) or (many | literals)
 	UsageArgs() string
+
+	// Category returns the general category the command belongs to. Mainly
+	// to make displaying all the commands easier and less overwhelming (as
+	// they are split up instead of having them all in a giant list).
+	Category() CommandCategory
 
 	// Parent returns a command's parent, returns nil if there is no parent.
 	Parent() CommandStatic

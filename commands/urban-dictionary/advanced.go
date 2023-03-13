@@ -33,6 +33,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -80,6 +84,10 @@ func (advancedSearch) Description() string {
 
 func (advancedSearch) UsageArgs() string {
 	return "<term...>"
+}
+
+func (c advancedSearch) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSearch) Parent() core.CommandStatic {
@@ -159,6 +167,10 @@ func (advancedRandom) Description() string {
 
 func (advancedRandom) UsageArgs() string {
 	return ""
+}
+
+func (c advancedRandom) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedRandom) Parent() core.CommandStatic {

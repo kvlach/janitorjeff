@@ -40,6 +40,10 @@ func (normal) UsageArgs() string {
 	return "<rounds>"
 }
 
+func (normal) Category() core.CommandCategory {
+	return core.CommandCategoryGames
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

@@ -36,6 +36,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryModerators
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -83,6 +87,10 @@ func (advancedShow) Description() string {
 
 func (advancedShow) UsageArgs() string {
 	return ""
+}
+
+func (c advancedShow) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedShow) Parent() core.CommandStatic {
@@ -144,6 +152,10 @@ func (advancedEdit) Description() string {
 
 func (advancedEdit) UsageArgs() string {
 	return "<title...>"
+}
+
+func (c advancedEdit) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedEdit) Parent() core.CommandStatic {

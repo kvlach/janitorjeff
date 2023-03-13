@@ -39,6 +39,10 @@ func (normal) UsageArgs() string {
 	return "<user>"
 }
 
+func (normal) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

@@ -37,6 +37,10 @@ func (normalTTS) UsageArgs() string {
 	return AdvancedStart.UsageArgs()
 }
 
+func (normalTTS) Category() core.CommandCategory {
+	return AdvancedStart.Category()
+}
+
 func (normalTTS) Parent() core.CommandStatic {
 	return nil
 }
@@ -82,6 +86,10 @@ func (normalVoice) Description() string {
 
 func (normalVoice) UsageArgs() string {
 	return "<user> [voice]"
+}
+
+func (normalVoice) Category() core.CommandCategory {
+	return AdvancedVoice.Category()
 }
 
 func (normalVoice) Parent() core.CommandStatic {
@@ -137,6 +145,10 @@ func (c normalSubOnly) UsageArgs() string {
 	return c.Children().UsageOptional()
 }
 
+func (normalSubOnly) Category() core.CommandCategory {
+	return AdvancedSubOnly.Category()
+}
+
 func (normalSubOnly) Parent() core.CommandStatic {
 	return nil
 }
@@ -186,6 +198,10 @@ func (normalSubOnlyOn) UsageArgs() string {
 	return AdvancedSubOnlyOn.UsageArgs()
 }
 
+func (c normalSubOnlyOn) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (normalSubOnlyOn) Parent() core.CommandStatic {
 	return NormalSubOnly
 }
@@ -230,6 +246,10 @@ func (normalSubOnlyOff) Description() string {
 
 func (normalSubOnlyOff) UsageArgs() string {
 	return AdvancedSubOnlyOff.UsageArgs()
+}
+
+func (c normalSubOnlyOff) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (normalSubOnlyOff) Parent() core.CommandStatic {

@@ -28,6 +28,10 @@ func (c normal) UsageArgs() string {
 	return c.Children().UsageOptional()
 }
 
+func (normal) Category() core.CommandCategory {
+	return Advanced.Category()
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }
@@ -75,6 +79,10 @@ func (normalReply) Description() string {
 
 func (c normalReply) UsageArgs() string {
 	return c.Children().UsageOptional()
+}
+
+func (c normalReply) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (normalReply) Parent() core.CommandStatic {
@@ -126,6 +134,10 @@ func (c normalReplyOn) UsageArgs() string {
 	return AdvancedReplyOn.UsageArgs()
 }
 
+func (c normalReplyOn) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (normalReplyOn) Parent() core.CommandStatic {
 	return NormalReply
 }
@@ -172,6 +184,10 @@ func (c normalReplyOff) UsageArgs() string {
 	return AdvancedReplyOff.UsageArgs()
 }
 
+func (c normalReplyOff) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (normalReplyOff) Parent() core.CommandStatic {
 	return NormalReply
 }
@@ -216,6 +232,10 @@ func (normalInterval) Description() string {
 
 func (normalInterval) UsageArgs() string {
 	return "[interval]"
+}
+
+func (c normalInterval) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (normalInterval) Parent() core.CommandStatic {

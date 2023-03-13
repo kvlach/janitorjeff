@@ -37,6 +37,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -88,6 +92,10 @@ func (advancedStart) Description() string {
 
 func (advancedStart) UsageArgs() string {
 	return "<twitch channel>"
+}
+
+func (c advancedStart) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedStart) Parent() core.CommandStatic {
@@ -163,6 +171,10 @@ func (advancedStop) Description() string {
 
 func (advancedStop) UsageArgs() string {
 	return "<twitch channel>"
+}
+
+func (c advancedStop) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedStop) Parent() core.CommandStatic {
@@ -249,6 +261,10 @@ func (c advancedVoice) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (c advancedVoice) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedVoice) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -296,6 +312,10 @@ func (advancedVoiceShow) Description() string {
 
 func (advancedVoiceShow) UsageArgs() string {
 	return "<user>"
+}
+
+func (c advancedVoiceShow) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedVoiceShow) Parent() core.CommandStatic {
@@ -392,6 +412,10 @@ func (advancedVoiceSet) Description() string {
 
 func (advancedVoiceSet) UsageArgs() string {
 	return "<user> <voice>"
+}
+
+func (c advancedVoiceSet) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedVoiceSet) Parent() core.CommandStatic {
@@ -492,6 +516,10 @@ func (c advancedSubOnly) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (c advancedSubOnly) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedSubOnly) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -540,6 +568,10 @@ func (advancedSubOnlyOn) Description() string {
 
 func (advancedSubOnlyOn) UsageArgs() string {
 	return ""
+}
+
+func (c advancedSubOnlyOn) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSubOnlyOn) Parent() core.CommandStatic {
@@ -624,6 +656,10 @@ func (advancedSubOnlyOff) UsageArgs() string {
 	return ""
 }
 
+func (c advancedSubOnlyOff) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedSubOnlyOff) Parent() core.CommandStatic {
 	return AdvancedSubOnly
 }
@@ -704,6 +740,10 @@ func (advancedSubOnlyShow) Description() string {
 
 func (advancedSubOnlyShow) UsageArgs() string {
 	return ""
+}
+
+func (c advancedSubOnlyShow) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSubOnlyShow) Parent() core.CommandStatic {
