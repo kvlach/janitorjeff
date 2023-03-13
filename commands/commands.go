@@ -182,13 +182,8 @@ func init() {
 
 	r.GET("/api/v1/commands", func(c *gin.Context) {
 		resp := Resp{
-			Prefix: "!",
-			Categories: []CategoryJSON{
-				{
-					Name:     "TheOnlyCategory",
-					Commands: []CommandJSON{},
-				},
-			},
+			Prefix:     "!",
+			Categories: []CategoryJSON{},
 		}
 
 		for _, cmd := range Commands {
@@ -202,11 +197,33 @@ func init() {
 				Example:     "Example.",
 			}
 
-			resp.Categories[0].Commands = append(resp.Categories[0].Commands, cmdJson)
+			exists := false
+			for _, cat := range resp.Categories {
+				if cat.Name == string(cmd.Category()) {
+					exists = true
+					break
+				}
+			}
+
+			if !exists {
+				resp.Categories = append(resp.Categories, CategoryJSON{
+					Name:     string(cmd.Category()),
+					Commands: []CommandJSON{},
+				})
+			}
+
+			index := 0
+			for i, cat := range resp.Categories {
+				if cat.Name == string(cmd.Category()) {
+					index = i
+				}
+			}
+
+			resp.Categories[index].Commands = append(resp.Categories[index].Commands, cmdJson)
 		}
 
-		//c.IndentedJSON(http.StatusOK, resp)
-		c.JSON(http.StatusOK, resp)
+		c.IndentedJSON(http.StatusOK, resp)
+		//c.JSON(http.StatusOK, resp)
 	})
 
 	//r.Run("localhost:" + "13420")
