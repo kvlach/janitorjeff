@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/janitorjeff/jeff-bot/commands/audio"
 	"github.com/janitorjeff/jeff-bot/commands/category"
@@ -24,6 +25,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/commands/youtube"
 	"github.com/janitorjeff/jeff-bot/core"
 
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
 
@@ -157,4 +159,55 @@ func Init() {
 			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
 		}
 	}
+}
+
+type CommandJSON struct {
+	Names       []string `json:"names"`
+	Description string   `json:"description"`
+	Example     string   `json:"example"`
+}
+
+type CategoryJSON struct {
+	Name     string        `json:"name"`
+	Commands []CommandJSON `json:"commands"`
+}
+
+type Resp struct {
+	Prefix     string         `json:"prefix"`
+	Categories []CategoryJSON `json:"categories"`
+}
+
+func init() {
+	r := gin.Default()
+
+	r.GET("/api/v1/commands", func(c *gin.Context) {
+		resp := Resp{
+			Prefix: "!",
+			Categories: []CategoryJSON{
+				{
+					Name:     "TheOnlyCategory",
+					Commands: []CommandJSON{},
+				},
+			},
+		}
+
+		for _, cmd := range Commands {
+			if cmd.Type() != core.Normal {
+				continue
+			}
+
+			cmdJson := CommandJSON{
+				Names:       cmd.Names(),
+				Description: cmd.Description(),
+				Example:     "Example.",
+			}
+
+			resp.Categories[0].Commands = append(resp.Categories[0].Commands, cmdJson)
+		}
+
+		//c.IndentedJSON(http.StatusOK, resp)
+		c.JSON(http.StatusOK, resp)
+	})
+
+	//r.Run("localhost:" + "13420")
 }
