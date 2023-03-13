@@ -36,6 +36,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -90,6 +94,10 @@ func (advancedPlay) Description() string {
 
 func (advancedPlay) UsageArgs() string {
 	return "<url> | <query...>"
+}
+
+func (c advancedPlay) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedPlay) Parent() core.CommandStatic {
@@ -186,6 +194,10 @@ func (advancedPause) UsageArgs() string {
 	return ""
 }
 
+func (c advancedPause) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedPause) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -276,6 +288,10 @@ func (advancedResume) Description() string {
 
 func (advancedResume) UsageArgs() string {
 	return ""
+}
+
+func (c advancedResume) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedResume) Parent() core.CommandStatic {
@@ -371,6 +387,10 @@ func (advancedSkip) UsageArgs() string {
 	return ""
 }
 
+func (c advancedSkip) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedSkip) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -462,6 +482,10 @@ func (c advancedLoop) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (c advancedLoop) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedLoop) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -511,6 +535,10 @@ func (advancedLoopOn) Description() string {
 
 func (advancedLoopOn) UsageArgs() string {
 	return ""
+}
+
+func (c advancedLoopOn) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedLoopOn) Parent() core.CommandStatic {
@@ -604,6 +632,10 @@ func (advancedLoopOff) UsageArgs() string {
 	return ""
 }
 
+func (c advancedLoopOff) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
 func (advancedLoopOff) Parent() core.CommandStatic {
 	return AdvancedLoop
 }
@@ -693,6 +725,10 @@ func (advancedQueue) Description() string {
 
 func (advancedQueue) UsageArgs() string {
 	return ""
+}
+
+func (c advancedQueue) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedQueue) Parent() core.CommandStatic {

@@ -36,6 +36,10 @@ func (normal) UsageArgs() string {
 	return "<query...>"
 }
 
+func (normal) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

@@ -36,6 +36,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -82,6 +86,10 @@ func (advancedSearch) Description() string {
 
 func (c advancedSearch) UsageArgs() string {
 	return c.Children().Usage()
+}
+
+func (c advancedSearch) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSearch) Parent() core.CommandStatic {
@@ -134,6 +142,10 @@ func (advancedSearchVideo) Description() string {
 
 func (advancedSearchVideo) UsageArgs() string {
 	return "<title>"
+}
+
+func (c advancedSearchVideo) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSearchVideo) Parent() core.CommandStatic {
@@ -224,6 +236,10 @@ func (advancedSearchChannel) Description() string {
 
 func (advancedSearchChannel) UsageArgs() string {
 	return "<channel...>"
+}
+
+func (c advancedSearchChannel) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSearchChannel) Parent() core.CommandStatic {

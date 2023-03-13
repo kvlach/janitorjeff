@@ -35,6 +35,10 @@ func (advanced) UsageArgs() string {
 	return "<query...>"
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }

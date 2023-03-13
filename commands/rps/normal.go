@@ -38,6 +38,10 @@ func (normal) UsageArgs() string {
 	return "(r[ock] | p[aper] | s[cissors])"
 }
 
+func (normal) Category() core.CommandCategory {
+	return core.CommandCategoryGames
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

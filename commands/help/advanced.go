@@ -28,6 +28,10 @@ func (advanced) UsageArgs() string {
 	return cmdUsageArgs
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }

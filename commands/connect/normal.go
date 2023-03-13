@@ -36,6 +36,10 @@ func (c normal) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (normal) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }
@@ -84,6 +88,10 @@ func (normalTwitch) Description() string {
 
 func (normalTwitch) UsageArgs() string {
 	return ""
+}
+
+func (c normalTwitch) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (normalTwitch) Parent() core.CommandStatic {

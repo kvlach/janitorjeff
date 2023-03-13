@@ -36,6 +36,10 @@ func (c advanced) UsageArgs() string {
 	return c.Children().Usage()
 }
 
+func (advanced) Category() core.CommandCategory {
+	return core.CommandCategoryOther
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -120,6 +124,10 @@ func (advancedShow) Description() string {
 
 func (advancedShow) UsageArgs() string {
 	return ""
+}
+
+func (c advancedShow) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedShow) Parent() core.CommandStatic {
@@ -215,6 +223,10 @@ func (advancedSet) Description() string {
 
 func (advancedSet) UsageArgs() string {
 	return "<nickname>"
+}
+
+func (c advancedSet) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedSet) Parent() core.CommandStatic {
@@ -313,6 +325,10 @@ func (advancedDelete) Description() string {
 
 func (advancedDelete) UsageArgs() string {
 	return ""
+}
+
+func (c advancedDelete) Category() core.CommandCategory {
+	return c.Parent().Category()
 }
 
 func (advancedDelete) Parent() core.CommandStatic {
