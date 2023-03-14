@@ -176,16 +176,15 @@ type CommandJSON struct {
 	Names       []string `json:"names"`
 	Description string   `json:"description"`
 	Example     string   `json:"example"`
-}
-
-type CategoryJSON struct {
-	Name     string        `json:"name"`
-	Commands []CommandJSON `json:"commands"`
+	Parent      int      `json:"parent"`
+	Children    []int    `json:"children"`
+	Category    string   `json:"category"`
 }
 
 type Resp struct {
-	Prefix     string         `json:"prefix"`
-	Categories []CategoryJSON `json:"categories"`
+	Prefix     string        `json:"prefix"`
+	Categories []string      `json:"categories"`
+	Commands   []CommandJSON `json:"commands"`
 }
 
 func init() {
@@ -194,48 +193,65 @@ func init() {
 	r.GET("/api/v1/commands", func(c *gin.Context) {
 		resp := Resp{
 			Prefix:     "!",
-			Categories: []CategoryJSON{},
+			Categories: []string{},
+			Commands:   []CommandJSON{},
 		}
 
-		for _, cmd := range Commands {
+		commandsIndex := map[core.CommandStatic]int{}
+
+		categories := map[core.CommandCategory]struct{}{}
+
+		Commands.Recurse(func(cmd core.CommandStatic) {
 			if cmd.Type() != core.Normal {
-				continue
+				return
 			}
 
-			cmdJson := CommandJSON{
+			cmdJSON := CommandJSON{
 				Names:       cmd.Names(),
 				Description: cmd.Description(),
 				Example:     "Example.",
+				Category:    string(cmd.Category()),
 			}
 
-			exists := false
-			for _, cat := range resp.Categories {
-				if cat.Name == string(cmd.Category()) {
-					exists = true
-					break
-				}
+			if cmd.Parent() == nil {
+				cmdJSON.Parent = -1
+			} else {
+				cmdJSON.Parent = commandsIndex[cmd.Parent()]
 			}
 
-			if !exists {
-				resp.Categories = append(resp.Categories, CategoryJSON{
-					Name:     string(cmd.Category()),
-					Commands: []CommandJSON{},
-				})
+			if cmd.Children() == nil {
+				cmdJSON.Children = []int{}
 			}
 
-			index := 0
-			for i, cat := range resp.Categories {
-				if cat.Name == string(cmd.Category()) {
-					index = i
-				}
+			commandsIndex[cmd] = len(resp.Commands)
+			resp.Commands = append(resp.Commands, cmdJSON)
+
+			categories[cmd.Category()] = struct{}{}
+		})
+
+		Commands.Recurse(func(cmd core.CommandStatic) {
+			if cmd.Type() != core.Normal {
+				return
 			}
 
-			resp.Categories[index].Commands = append(resp.Categories[index].Commands, cmdJson)
+			if cmd.Children() == nil {
+				return
+			}
+
+			index := commandsIndex[cmd]
+
+			for _, child := range cmd.Children() {
+				resp.Commands[index].Children = append(resp.Commands[index].Children, commandsIndex[child])
+			}
+		})
+
+		for cat, _ := range categories {
+			resp.Categories = append(resp.Categories, string(cat))
 		}
 
 		c.IndentedJSON(http.StatusOK, resp)
 		//c.JSON(http.StatusOK, resp)
 	})
 
-	//r.Run("localhost:" + "13420")
+	r.Run("localhost:" + "13420")
 }
