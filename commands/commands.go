@@ -110,6 +110,16 @@ func checkDifferentParentType(parent core.CommandStatic, children core.CommandsS
 	}
 }
 
+// checkDifferentParentType will check if all the parent's children are of the
+// same command type as the parent.
+func checkDifferentParentCategory(parent core.CommandStatic, children core.CommandsStatic) {
+	for _, child := range children {
+		if parent.Category() != child.Category() {
+			panic(fmt.Sprintf("child %v is of different category from parent %v", child.Names(), parent.Names()))
+		}
+	}
+}
+
 // checkWrongParentChild will check if a parent's children have set their parent
 // correctly.
 func checkWrongParentInChild(parent core.CommandStatic, children core.CommandsStatic) {
@@ -137,6 +147,7 @@ func recurse(cmd core.CommandStatic) {
 
 	checkNameCollisions(cmd.Children())
 	checkDifferentParentType(cmd, cmd.Children())
+	checkDifferentParentCategory(cmd, cmd.Children())
 	checkWrongParentInChild(cmd, cmd.Children())
 
 	for _, child := range cmd.Children() {
