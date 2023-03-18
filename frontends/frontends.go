@@ -1,8 +1,6 @@
 package frontends
 
 import (
-	"fmt"
-
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
@@ -22,13 +20,12 @@ func CreateMessage(person, place int64, msgID string) (*core.Message, error) {
 
 	var f core.Frontender
 
-	switch frontendType {
-	case int64(discord.Frontend.Type()):
-		f = discord.Frontend
-	case int64(twitch.Frontend.Type()):
-		f = twitch.Frontend
-	default:
-		return nil, fmt.Errorf("frontend with id '%d' is not supported", frontendType)
+	// This always matches something
+	for _, frontend := range Frontends {
+		if frontend.Type() == core.FrontendType(frontendType) {
+			f = frontend
+			break
+		}
 	}
 
 	return f.CreateMessage(person, place, msgID)
