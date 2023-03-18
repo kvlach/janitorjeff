@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
 
 	"github.com/rs/zerolog/log"
 	"github.com/tj/go-naturaldate"
@@ -529,7 +528,7 @@ func (u *upcoming) add(r reminder) {
 	go func() {
 		time.Sleep(r.When.Sub(time.Now()))
 
-		m, err := frontends.CreateMessage(r.Person, r.Place, r.MsgID)
+		m, err := core.Frontends.CreateMessage(r.Person, r.Place, r.MsgID)
 		if err != nil {
 			panic(err)
 		}
