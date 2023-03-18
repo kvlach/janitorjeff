@@ -93,6 +93,7 @@ func main() {
 	defer db.Close()
 	defer log.Debug().Msg("closing db")
 
+	core.Frontends = frontends.Frontends
 	core.Commands = &commands.Commands
 	core.DB = db
 	core.Port = readVar("PORT")
