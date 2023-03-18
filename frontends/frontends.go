@@ -1,6 +1,8 @@
 package frontends
 
 import (
+	"fmt"
+
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
@@ -18,15 +20,11 @@ func CreateMessage(person, place int64, msgID string) (*core.Message, error) {
 		return nil, err
 	}
 
-	var f core.Frontender
-
-	// This always matches something
-	for _, frontend := range Frontends {
-		if frontend.Type() == core.FrontendType(frontendType) {
-			f = frontend
-			break
+	for _, f := range Frontends {
+		if f.Type() == core.FrontendType(frontendType) {
+			return f.CreateMessage(person, place, msgID)
 		}
 	}
 
-	return f.CreateMessage(person, place, msgID)
+	return nil, fmt.Errorf("no frontend matched")
 }
