@@ -40,5 +40,5 @@ func (fs Frontenders) CreateMessage(person, place int64, msgID string) (*Message
 		}
 	}
 
-	return nil, fmt.Errorf("no frontend matched")
+	return nil, fmt.Errorf("frontend type %d couldn't be matched", frontendType)
 }
