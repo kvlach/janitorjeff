@@ -204,8 +204,8 @@ func (db *SQLDB) PlaceSettingsGenerate(table string, place int64) error {
 	return db.placeSettingsGenerate(table, place)
 }
 
-// PlaceSettingsGet returns the value of the col for the specified place.
-func (db *SQLDB) PlaceSettingsGet(table, col string, place int64) (any, error) {
+// PlaceSettingGet returns the value of the col for the specified place.
+func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 	// Make sure that the place settings are present
 	if err := db.PlaceSettingsGenerate(table, place); err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func (db *SQLDB) PlaceSettingsGet(table, col string, place int64) (any, error) {
 	return val, err
 }
 
-func (db *SQLDB) PlaceSettingsSet(table, col string, place int64, val any) error {
+func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error {
 	// Make sure that the place settings are present
 	if err := db.PlaceSettingsGenerate(table, place); err != nil {
 		return err
