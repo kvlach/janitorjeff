@@ -186,7 +186,7 @@ func (db *SQLDB) placeSettingsGenerate(table string, place int64) error {
 		Err(err).
 		Str("table", table).
 		Int64("place", place).
-		Msg("generated settings")
+		Msg("generated place settings")
 
 	return err
 }
@@ -204,7 +204,7 @@ func (db *SQLDB) PlaceSettingsGenerate(table string, place int64) error {
 	return db.placeSettingsGenerate(table, place)
 }
 
-// PlaceSettingGet returns the value of the col for the specified place.
+// PlaceSettingGet returns the value of col in table for the specified place.
 func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 	// Make sure that the place settings are present
 	if err := db.PlaceSettingsGenerate(table, place); err != nil {
@@ -236,6 +236,7 @@ func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 	return val, err
 }
 
+// PlaceSettingSet sets the value of col in table for the specified place.
 func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error {
 	// Make sure that the place settings are present
 	if err := db.PlaceSettingsGenerate(table, place); err != nil {
@@ -256,6 +257,133 @@ func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error 
 	log.Debug().
 		Err(err).
 		Str("table", table).
+		Int64("place", place).
+		Interface(col, val).
+		Msg("changed setting")
+
+	return err
+}
+
+func (db *SQLDB) personSettingsExist(table string, person, place int64) (bool, error) {
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var exists bool
+
+	query := fmt.Sprintf(`
+		SELECT EXISTS (
+			SELECT 1 FROM %s
+			WHERE person = ? and place = ?
+			LIMIT 1
+		)
+	`, table)
+
+	row := db.DB.QueryRow(query, place)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("person", person).
+		Int64("place", place).
+		Bool("exist", exists).
+		Msg("checked if person settings exist")
+
+	return exists, err
+}
+
+func (db *SQLDB) personSettingsGenerate(table string, person, place int64) error {
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	query := fmt.Sprintf(`
+		INSERT INTO %s (person, place)
+		VALUES (?, ?)
+	`, table)
+
+	_, err := db.DB.Exec(query, person, place)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("person", person).
+		Int64("place", place).
+		Msg("generated person settings")
+
+	return err
+}
+
+// PersonSettingsGenerate will check if settings for the specified person in the
+// specified place exist, and if not will generate them.
+func (db *SQLDB) PersonSettingsGenerate(table string, person, place int64) error {
+	exists, err := db.personSettingsExist(table, person, place)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	return db.personSettingsGenerate(table, person, place)
+}
+
+// PersonSettingGet returns the value of col in table for the specified person
+// in the specified place.
+func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, error) {
+	// Make sure that the person settings are present
+	if err := db.PersonSettingsGenerate(table, person, place); err != nil {
+		return nil, err
+	}
+
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
+	var val any
+
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM %s
+		WHERE person = ? and place = ?
+	`, col, table)
+
+	row := db.DB.QueryRow(query, person, place)
+
+	err := row.Scan(&val)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("person", person).
+		Int64("place", place).
+		Interface(col, val).
+		Msg("got value")
+
+	return val, err
+}
+
+// PlaceSettingSet sets the value of col in table for the specified person in
+// the specified place.
+func (db *SQLDB) PersonSettingSet(table, col string, person, place int64, val any) error {
+	// Make sure that the person settings are present
+	if err := db.PersonSettingsGenerate(table, person, place); err != nil {
+		return err
+	}
+
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET %s = ?
+		WHERE person = ? and place = ?
+	`, table, col)
+
+	_, err := db.DB.Exec(query, val, person, place)
+
+	log.Debug().
+		Err(err).
+		Str("table", table).
+		Int64("person", person).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("changed setting")
