@@ -143,6 +143,12 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	return prefixes, rows.Err()
 }
 
+////////////////////
+//                //
+// place settings //
+//                //
+////////////////////
+
 func (db *SQLDB) placeSettingsExist(table string, place int64) (bool, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -263,6 +269,12 @@ func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error 
 
 	return err
 }
+
+/////////////////////
+//                 //
+// person settings //
+//                 //
+/////////////////////
 
 func (db *SQLDB) personSettingsExist(table string, person, place int64) (bool, error) {
 	db.Lock.RLock()
