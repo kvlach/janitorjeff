@@ -34,7 +34,7 @@ func (fs Frontenders) CreateMessage(person, place int64, msgID string) (*Message
 		return nil, err
 	}
 
-	for _, f := range Frontends {
+	for _, f := range fs {
 		if f.Type() == FrontendType(frontendType) {
 			return f.CreateMessage(person, place, msgID)
 		}
