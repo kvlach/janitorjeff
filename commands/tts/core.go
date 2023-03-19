@@ -287,31 +287,16 @@ func PersonVoiceSet(person, place int64, voice string) error {
 	return dbPersonSettingsVoiceSet(person, place, voice)
 }
 
-// PlaceSettingsGenerate will check if the default settings have already been
-// generated for the specified place, and if not, will do so.
-func PlaceSettingsGenerate(place int64) error {
-	exists, err := dbPlaceSettingsExist(place)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	return dbPlaceSettingsGenerate(place)
-}
-
 // PlaceSubOnlyGet returns the sub-only state for the specified place.
 func PlaceSubOnlyGet(place int64) (bool, error) {
-	if err := PlaceSettingsGenerate(place); err != nil {
+	subonly, err := core.DB.PlaceSettingGet("CommandTTSPlaceSettings", "subonly", place)
+	if err != nil {
 		return false, err
 	}
-	return dbSubOnlyGet(place)
+	return subonly.(bool), nil
 }
 
 // PlaceSubOnlySet sets the sub-only state for the specified place.
 func PlaceSubOnlySet(place int64, state bool) error {
-	if err := PlaceSettingsGenerate(place); err != nil {
-		return err
-	}
-	return dbSubOnlySet(place, state)
+	return core.DB.PlaceSettingSet("CommandTTSPlaceSettings", "subonly", place, state)
 }
