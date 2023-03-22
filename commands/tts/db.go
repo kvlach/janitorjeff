@@ -7,7 +7,7 @@ import (
 )
 
 const dbSchema = `
-CREATE TABLE IF NOT EXISTS CommandTTSCustomUserVoices (
+CREATE TABLE IF NOT EXISTS CommandTTSPlaceSettings (
 	person INTEGER NOT NULL,
 	place INTEGER NOT NULL,
 	voice VARCHAR(255) NOT NULL,
@@ -17,8 +17,9 @@ CREATE TABLE IF NOT EXISTS CommandTTSCustomUserVoices (
 -- All settings must come with default values, as those are used when first
 -- adding a new entry.
 CREATE TABLE IF NOT EXISTS CommandTTSPlaceSettings (
-	place INTEGER NOT NULL UNIQUE,
-	subonly BOOLEAN NOT NULL DEFAULT FALSE
+	place INTEGER PRIMARY KEY,
+	subonly BOOLEAN NOT NULL DEFAULT FALSE,
+	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE	
 );
 `
 
