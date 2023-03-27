@@ -10,7 +10,7 @@ import (
 
 const dbShema = `
 CREATE TABLE IF NOT EXISTS CommandCommandCommands (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 
 	place INTEGER NOT NULL,
 	trigger VARCHAR(255) NOT NULL,
@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS CommandCommandCommands (
 	active BOOLEAN NOT NULL,
 
 	creator INTEGER NOT NULL,
-	created INTEGER NOT NULL,
+	created BIGINT NOT NULL,
 	deleter INTEGER,
-	deleted INTEGER,
+	deleted BIGINT,
 
 	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (creator) REFERENCES Scopes(id) ON DELETE CASCADE,
@@ -35,7 +35,7 @@ func _dbAdd(place, creator, timestamp int64, trigger, response string) error {
 		INSERT INTO CommandCommandCommands(
 			place, trigger, response, active, creator, created
 		)
-		VALUES (?, ?, ?, ?, ?, ?)`,
+		VALUES ($1, $2, $3, $4, $5, $6)`,
 		place, trigger, response, true, creator, timestamp)
 
 	log.Debug().
@@ -55,7 +55,7 @@ func dbAdd(place, creator int64, trigger, response string) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	timestamp := time.Now().UTC().UnixNano()
+	timestamp := time.Now().UTC().Unix()
 	return _dbAdd(place, creator, timestamp, trigger, response)
 }
 
@@ -64,8 +64,8 @@ func _dbDel(place, deleter, timestamp int64, trigger string) error {
 
 	_, err := db.DB.Exec(`
 		UPDATE CommandCommandCommands
-		SET active = ?, deleter = ?, deleted = ?
-		WHERE place = ? and trigger = ? and active = ?
+		SET active = $1, deleter = $2, deleted = $3
+		WHERE place = $4 and trigger = $5 and active = $6
 	`, false, deleter, timestamp, place, trigger, true)
 
 	log.Debug().
@@ -84,7 +84,7 @@ func dbDelete(place, deleter int64, trigger string) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	timestamp := time.Now().UTC().UnixNano()
+	timestamp := time.Now().UTC().Unix()
 	return _dbDel(place, deleter, timestamp, trigger)
 }
 
@@ -93,7 +93,7 @@ func dbEdit(place, editor int64, trigger, response string) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	timestamp := time.Now().UTC().UnixNano()
+	timestamp := time.Now().UTC().Unix()
 
 	err := _dbDel(place, editor, timestamp, trigger)
 	if err != nil {
@@ -125,7 +125,7 @@ func dbTriggerExists(place int64, trigger string) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandCommandCommands
-			WHERE trigger = ? and place = ? and active = ?
+			WHERE trigger = $1 and place = $2 and active = $3
 			LIMIT 1
 		)`, trigger, place, true)
 
@@ -149,7 +149,7 @@ func dbList(place int64) ([]string, error) {
 	rows, err := db.DB.Query(`
 		SELECT trigger
 		FROM CommandCommandCommands
-		WHERE place = ? and active = ?
+		WHERE place = $1 and active = $2
 	`, place, true)
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")
@@ -187,7 +187,7 @@ func dbGetResponse(place int64, trigger string) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT response
 		FROM CommandCommandCommands
-		WHERE place = ? and trigger = ? and active = ?
+		WHERE place = $1 and trigger = $2 and active = $3
 	`, place, trigger, true)
 
 	var response string
@@ -217,7 +217,7 @@ func _dbHistory(place int64, trigger string, active bool) ([]customCommand, erro
 	rows, err := db.DB.Query(`
 		SELECT response, creator, created, deleter, deleted
 		FROM CommandCommandCommands
-		WHERE place = ? and trigger = ? and active = ?
+		WHERE place = $1 and trigger = $2 and active = $3
 	`, place, trigger, active)
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to make query")

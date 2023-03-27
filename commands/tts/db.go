@@ -33,7 +33,7 @@ func dbPersonSettingsExist(person, place int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandTTSPersonSettings
-			WHERE person = ? and place = ?
+			WHERE person = $1 and place = $2
 			LIMIT 1
 		)`, person, place)
 
@@ -57,7 +57,7 @@ func dbPersonSettingsGenerate(person, place int64, voice string) error {
 
 	_, err := db.DB.Exec(`
 		INSERT INTO CommandTTSPersonSettings(person, place, voice)
-		VALUES (?, ?, ?)`, person, place, voice)
+		VALUES ($1, $2, $3)`, person, place, voice)
 
 	log.Debug().
 		Err(err).
@@ -77,7 +77,7 @@ func dbPersonSettingsVoiceGet(person, place int64) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT voice
 		FROM CommandTTSPersonSettings
-		WHERE person = ? and place = ?`, person, place)
+		WHERE person = $1 and place = $2`, person, place)
 
 	err := row.Scan(&voice)
 
@@ -98,8 +98,8 @@ func dbPersonSettingsVoiceSet(person, place int64, voice string) error {
 
 	_, err := db.DB.Exec(`
 		UPDATE CommandTTSPersonSettings
-		SET voice = ?
-		WHERE person = ? and place = ?
+		SET voice = $1
+		WHERE person = $2 and place = $3
 	`, voice, person, place)
 
 	log.Debug().

@@ -63,8 +63,9 @@ func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
 	}
 
 	_, err = tx.Exec(`
-		INSERT OR IGNORE INTO PlatformTwitchChannels(id, channel_id, channel_name)
-		VALUES (?, ?, ?)`, scope, channelID, channelName)
+		INSERT INTO PlatformTwitchChannels(id, channel_id, channel_name)
+		VALUES ($1, $2, $3)
+		ON CONFLICT DO NOTHING;`, scope, channelID, channelName)
 
 	if err != nil {
 		return -1, err
@@ -79,7 +80,7 @@ func dbGetChannelScope(channelID string) (int64, error) {
 	row := db.DB.QueryRow(`
 		SELECT id
 		FROM PlatformTwitchChannels
-		WHERE channel_id = ?`, channelID)
+		WHERE channel_id = $1`, channelID)
 
 	var id int64
 	err := row.Scan(&id)
@@ -94,7 +95,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 	row := db.DB.QueryRow(`
 		SELECT channel_id, channel_name
 		FROM PlatformTwitchChannels
-		WHERE id = ?`, scope)
+		WHERE id = $1`, scope)
 
 	var id, name string
 	err := row.Scan(&id, &name)
@@ -113,8 +114,8 @@ func dbSetUserAccessToken(accessToken, refreshToken, channelID string) error {
 
 	_, err := db.DB.Exec(`
 		UPDATE PlatformTwitchChannels
-		SET access_token = ?, refresh_token = ?
-		WHERE channel_id = ?`, accessToken, refreshToken, channelID)
+		SET access_token = $1, refresh_token = $2
+		WHERE channel_id = $3`, accessToken, refreshToken, channelID)
 
 	return err
 }
@@ -126,8 +127,8 @@ func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
 
 	_, err := db.DB.Exec(`
 		UPDATE PlatformTwitchChannels
-		SET access_token = ?, refresh_token = ?
-		WHERE access_token = ?`, accessToken, refreshToken, oldAcessToken)
+		SET access_token = $1, refresh_token = $2
+		WHERE access_token = $3`, accessToken, refreshToken, oldAcessToken)
 
 	return err
 }
@@ -137,7 +138,7 @@ func dbGetUserAccessToken(channelID string) (string, error) {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	row := db.DB.QueryRow("SELECT access_token FROM PlatformTwitchChannels WHERE channel_id = ?", channelID)
+	row := db.DB.QueryRow("SELECT access_token FROM PlatformTwitchChannels WHERE channel_id = $1", channelID)
 
 	var accessToken string
 	err := row.Scan(&accessToken)
@@ -152,7 +153,7 @@ func dbGetetUserRefreshToken(accessToken string) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT refresh_token
 		FROM PlatformTwitchChannels
-		WHERE access_token = ?`, accessToken)
+		WHERE access_token = $1`, accessToken)
 
 	var refreshToken string
 	err := row.Scan(&refreshToken)
