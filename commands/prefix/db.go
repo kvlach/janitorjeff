@@ -13,7 +13,7 @@ func dbAdd(prefix string, t core.CommandType, place int64) error {
 
 	_, err := db.DB.Exec(`
 		INSERT INTO CommandPrefixPrefixes(place, prefix, type)
-		VALUES (?, ?, ?)`, place, prefix, t)
+		VALUES ($1, $2, $3)`, place, prefix, t)
 
 	log.Debug().
 		Err(err).
@@ -32,7 +32,7 @@ func dbDelete(prefix string, place int64) error {
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE prefix = ? and place = ?`, prefix, place)
+		WHERE prefix = $1 and place = $2`, prefix, place)
 
 	log.Debug().
 		Err(err).
@@ -50,7 +50,7 @@ func dbReset(place int64) error {
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandPrefixPrefixes
-		WHERE place = ?`, place)
+		WHERE place = $1`, place)
 
 	log.Debug().
 		Err(err).

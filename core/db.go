@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,15 +13,13 @@ var DB *SQLDB
 
 const schema = `
 CREATE TABLE IF NOT EXISTS Scopes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 	frontend INTEGER NOT NULL,
 	original_id VARCHAR(255) NOT NULL
 );
--- Info about why this is here in discord's Scope() implementation
-INSERT OR IGNORE INTO Scopes VALUES(1,1,'');
 
 CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 	place INTEGER NOT NULL,
 	prefix VARCHAR(255) NOT NULL,
 	type INTEGER NOT NULL,
@@ -36,7 +34,7 @@ type SQLDB struct {
 }
 
 func Open(driver, source string) (*SQLDB, error) {
-	sqlDB, err := sql.Open(driver, fmt.Sprintf("file:%s?_foreign_keys=on", source))
+	sqlDB, err := sql.Open(driver, source)
 	if err != nil {
 		return nil, err
 	}
@@ -72,14 +70,15 @@ func (db *SQLDB) Init(schema string) error {
 	return tx.Commit()
 }
 
-func (_ *SQLDB) ScopeAdd(tx *sql.Tx, id string, frontend int) (int64, error) {
-	res, err := tx.Exec(`
+func (_ *SQLDB) ScopeAdd(tx *sql.Tx, frontendID string, frontend int) (int64, error) {
+	var id int64
+	err := tx.QueryRow(`
 		INSERT INTO Scopes(original_id, frontend)
-		VALUES (?, ?)`, id, frontend)
+		VALUES ($1, $2) RETURNING id;`, frontendID, frontend).Scan(&id)
 	if err != nil {
 		return -1, err
 	}
-	return res.LastInsertId()
+	return id, nil
 }
 
 // Returns the given scope's frontend specific ID
@@ -91,7 +90,7 @@ func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT original_id
 		FROM Scopes
-		WHERE id = ?
+		WHERE id = $1
 	`, scope)
 
 	err := row.Scan(&id)
@@ -108,7 +107,7 @@ func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 	row := db.DB.QueryRow(`
 		SELECT frontend
 		FROM Scopes
-		WHERE id = ?
+		WHERE id = $1
 	`, scope)
 
 	err := row.Scan(&id)
@@ -124,7 +123,7 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	rows, err := db.DB.Query(`
 		SELECT prefix, type
 		FROM CommandPrefixPrefixes
-		WHERE place = ?`, place)
+		WHERE place = $1`, place)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +139,14 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 		prefixes = append(prefixes, Prefix{Type: t, Prefix: prefix})
 	}
 
-	return prefixes, rows.Err()
+	err = rows.Err()
+
+	log.Debug().
+		Err(err).
+		Int64("place", place).
+		Interface("prefixes", prefixes)
+
+	return prefixes, err
 }
 
 ////////////////////
@@ -158,9 +164,9 @@ func (db *SQLDB) placeSettingsExist(table string, place int64) (bool, error) {
 	query := fmt.Sprintf(`
 		SELECT EXISTS (
 			SELECT 1 FROM %s
-			WHERE place = ?
+			WHERE place = $1
 			LIMIT 1
-		)
+		);
 	`, table)
 
 	row := db.DB.QueryRow(query, place)
@@ -183,7 +189,7 @@ func (db *SQLDB) placeSettingsGenerate(table string, place int64) error {
 
 	query := fmt.Sprintf(`
 		INSERT INTO %s (place)
-		VALUES (?)
+		VALUES ($1)
 	`, table)
 
 	_, err := db.DB.Exec(query, place)
@@ -225,7 +231,7 @@ func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 	query := fmt.Sprintf(`
 		SELECT %s
 		FROM %s
-		WHERE place = ?
+		WHERE place = $1
 	`, col, table)
 
 	row := db.DB.QueryRow(query, place)
@@ -254,8 +260,8 @@ func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error 
 
 	query := fmt.Sprintf(`
 		UPDATE %s
-		SET %s = ?
-		WHERE place = ?
+		SET %s = $1
+		WHERE place = $2
 	`, table, col)
 
 	_, err := db.DB.Exec(query, val, place)
@@ -285,7 +291,7 @@ func (db *SQLDB) personSettingsExist(table string, person, place int64) (bool, e
 	query := fmt.Sprintf(`
 		SELECT EXISTS (
 			SELECT 1 FROM %s
-			WHERE person = ? and place = ?
+			WHERE person = $1 and place = $2
 			LIMIT 1
 		)
 	`, table)
@@ -311,7 +317,7 @@ func (db *SQLDB) personSettingsGenerate(table string, person, place int64) error
 
 	query := fmt.Sprintf(`
 		INSERT INTO %s (person, place)
-		VALUES (?, ?)
+		VALUES ($1, $2)
 	`, table)
 
 	_, err := db.DB.Exec(query, person, place)
@@ -355,7 +361,7 @@ func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, 
 	query := fmt.Sprintf(`
 		SELECT %s
 		FROM %s
-		WHERE person = ? and place = ?
+		WHERE person = $1 and place = $2
 	`, col, table)
 
 	row := db.DB.QueryRow(query, person, place)
@@ -386,8 +392,8 @@ func (db *SQLDB) PersonSettingSet(table, col string, person, place int64, val an
 
 	query := fmt.Sprintf(`
 		UPDATE %s
-		SET %s = ?
-		WHERE person = ? and place = ?
+		SET %s = $1
+		WHERE person = $2 and place = $3
 	`, table, col)
 
 	_, err := db.DB.Exec(query, val, person, place)

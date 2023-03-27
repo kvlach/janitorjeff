@@ -47,7 +47,7 @@ type reminder struct {
 
 const dbSchema = `
 CREATE TABLE IF NOT EXISTS CommandTimePeople (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 	person INTEGER NOT NULL,
 	place INTEGER NOT NULL ,
 	timezone VARCHAR(255) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS CommandTimePeople (
 );
 
 CREATE TABLE IF NOT EXISTS CommandTimeReminders (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 	person INTEGER NOT NULL,
 	place INTEGER NOT NULL,
 	time INTEGER NOT NULL,
@@ -75,7 +75,7 @@ func dbPersonAdd(person, place int64, timezone string) error {
 
 	_, err := db.DB.Exec(`
 	INSERT INTO CommandTimePeople(person, place, timezone)
-	VALUES (?, ?, ?)`, person, place, timezone)
+	VALUES ($1, $2, $3)`, person, place, timezone)
 
 	log.Debug().
 		Err(err).
@@ -94,8 +94,8 @@ func dbPersonUpdate(person, place int64, timezone string) error {
 
 	_, err := db.DB.Exec(`
 	UPDATE CommandTimePeople
-	SET timezone = ?
-	WHERE person = ? and place = ?
+	SET timezone = $1
+	WHERE person = $2 and place = $3
 	`, timezone, person, place)
 
 	log.Debug().
@@ -118,7 +118,7 @@ func dbPersonExists(person, place int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandTimePeople
-			WHERE person = ? and place = ?
+			WHERE person = $1 and place = $2
 			LIMIT 1
 		)`, person, place)
 
@@ -141,7 +141,7 @@ func dbPersonDelete(person, place int64) error {
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandTimePeople
-		WHERE person = ? and place = ?`, person, place)
+		WHERE person = $1 and place = $2`, person, place)
 
 	log.Debug().
 		Err(err).
@@ -162,7 +162,7 @@ func dbPersonTimezone(person, place int64) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT timezone
 		FROM CommandTimePeople
-		WHERE person = ? and place = ?`, person, place)
+		WHERE person = $1 and place = $2`, person, place)
 
 	err := row.Scan(&tz)
 
@@ -183,7 +183,7 @@ func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
 
 	res, err := db.DB.Exec(`
 	INSERT INTO CommandTimeReminders(person, place, time, what, msg_id)
-	VALUES (?, ?, ?, ?, ?)`, person, place, when, what, msgID)
+	VALUES ($1, $2, $3, $4, $5)`, person, place, when, what, msgID)
 
 	log.Debug().
 		Err(err).
@@ -231,7 +231,7 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what, msg_id
 		FROM CommandTimeReminders
-		WHERE person = ? and place = ?
+		WHERE person = $1 and place = $2
 	`, person, place)
 	if err != nil {
 		return nil, err
@@ -263,7 +263,7 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what, msg_id
 		FROM CommandTimeReminders
-		WHERE time - ? < 300
+		WHERE time - $1 < 300
 	`, nowSeconds)
 	if err != nil {
 		return nil, err
@@ -293,7 +293,7 @@ func dbRemindDelete(id int64) error {
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandTimeReminders
-		WHERE id = ?`, id)
+		WHERE id = $1`, id)
 
 	log.Debug().
 		Err(err).
@@ -313,7 +313,7 @@ func dbRemindExists(id, person int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandTimeReminders
-			WHERE id = ? and person = ?
+			WHERE id = $1 and person = $2
 			LIMIT 1
 		)`, id, person)
 

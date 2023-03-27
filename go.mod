@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/janitorjeff/gosafe v0.0.0-20221201085303-bf1022fefa84
 	github.com/joho/godotenv v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.15
+	github.com/lib/pq v1.10.7
 	github.com/nicklaw5/helix v1.25.0
 	github.com/rivo/uniseg v0.4.2
 	github.com/rs/zerolog v1.28.0

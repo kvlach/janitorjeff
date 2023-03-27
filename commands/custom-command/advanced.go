@@ -3,7 +3,6 @@ package custom_command
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
@@ -589,8 +588,7 @@ func (c advancedHistory) Run(m *core.Message) (any, error, error) {
 }
 
 func formatTime(timestamp int64) string {
-	seconds := timestamp / int64(time.Second) // nanoseconds to seconds
-	return fmt.Sprintf("<t:%d:D>", seconds)
+	return fmt.Sprintf("<t:%d:D>", timestamp)
 }
 
 func formatCreate(timestamp int64, response string) string {

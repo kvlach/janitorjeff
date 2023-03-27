@@ -25,7 +25,7 @@ func dbPersonAdd(person, place int64, nick string) error {
 
 	_, err := db.DB.Exec(`
 	INSERT INTO CommandNickNicknames(person, place, nick)
-	VALUES (?, ?, ?)`, person, place, nick)
+	VALUES ($1, $2, $3)`, person, place, nick)
 
 	log.Debug().
 		Err(err).
@@ -44,8 +44,8 @@ func dbPersonUpdate(person, place int64, nick string) error {
 
 	_, err := db.DB.Exec(`
 		UPDATE CommandNickNicknames
-		SET nick = ?
-		WHERE person = ? and place = ?
+		SET nick = $1
+		WHERE person = $2 and place = $3
 	`, nick, person, place)
 
 	log.Debug().
@@ -68,7 +68,7 @@ func dbPersonExists(person, place int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandNickNicknames
-			WHERE person = ? and place = ?
+			WHERE person = $1 and place = $2
 			LIMIT 1
 		)`, person, place)
 
@@ -94,7 +94,7 @@ func dbNickExists(nick string, place int64) (bool, error) {
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM CommandNickNicknames
-			WHERE nick = ? and place = ?
+			WHERE nick = $1 and place = $2
 			LIMIT 1
 		)`, nick, place)
 
@@ -117,7 +117,7 @@ func dbPersonDelete(person, place int64) error {
 
 	_, err := db.DB.Exec(`
 		DELETE FROM CommandNickNicknames
-		WHERE person = ? and place = ?`, person, place)
+		WHERE person = $1 and place = $2`, person, place)
 
 	log.Debug().
 		Err(err).
@@ -138,7 +138,7 @@ func dbPersonNick(person, place int64) (string, error) {
 	row := db.DB.QueryRow(`
 		SELECT nick
 		FROM CommandNickNicknames
-		WHERE person = ? and place = ?`, person, place)
+		WHERE person = $1 and place = $2`, person, place)
 
 	err := row.Scan(&nick)
 
@@ -162,7 +162,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 	row := db.DB.QueryRow(`
 		SELECT person
 		FROM CommandNickNicknames
-		WHERE nick = ? and place = ?`, nick, place)
+		WHERE nick = $1 and place = $2`, nick, place)
 
 	err := row.Scan(&person)
 

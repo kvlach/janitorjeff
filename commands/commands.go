@@ -167,7 +167,7 @@ func init() {
 func Init() {
 	for _, cmd := range Commands {
 		if err := cmd.Init(); err != nil {
-			log.Fatal().Err(err).Msgf("failed to init command %v", cmd)
+			log.Fatal().Err(err).Msgf("failed to init command %v", core.Format(cmd, "!"))
 		}
 	}
 }
