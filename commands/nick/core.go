@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/janitorjeff/jeff-bot/core"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -11,24 +13,71 @@ var (
 	ErrNickExists     = errors.New("Nickname is already in use either by you or someone else.")
 )
 
+func dbNickExists(nick string, place int64) (bool, error) {
+	db := core.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	var exists bool
+
+	row := db.DB.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM settings_person
+			WHERE cmd_nick_nick = $1 and place = $2
+			LIMIT 1
+		)`, nick, place)
+
+	err := row.Scan(&exists)
+
+	log.Debug().
+		Err(err).
+		Str("nick", nick).
+		Int64("place", place).
+		Bool("exists", exists).
+		Msg("checked db to see if nick exists")
+
+	return exists, err
+}
+
+func dbGetPerson(nick string, place int64) (int64, error) {
+	db := core.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	var person int64
+
+	row := db.DB.QueryRow(`
+		SELECT person
+		FROM settings_person
+		WHERE cmd_nick_nick = $1 and place = $2`, nick, place)
+
+	err := row.Scan(&person)
+
+	log.Debug().
+		Err(err).
+		Str("nick", nick).
+		Int64("place", place).
+		Int64("person", person).
+		Msg("got nick for person")
+
+	return person, err
+}
+
 // Show returns the person's nickname in the specified place. If no nickname
 // has been set then returns an ErrPersonNotFound error.
 func Show(person, place int64) (string, error, error) {
-	exists, err := dbPersonExists(person, place)
+	nick, err := core.DB.SettingPersonGet("cmd_nick_nick", person, place)
 	if err != nil {
 		return "", nil, err
 	}
-	if !exists {
+	if nick == nil {
 		return "", ErrPersonNotFound, nil
 	}
-
-	nick, err := dbPersonNick(person, place)
-	return nick, nil, err
+	return nick.(string), nil, nil
 }
 
-// Set sets the person's nickname in the specified place. If the person has set
-// their nickname already then it updates it. If the nickname already exists in
-// that place then it returns an ErrNickExists error.
+// Set sets the person's nickname in the specified place. If the nickname
+// already exists in that place then it returns an ErrNickExists error.
 func Set(nick string, person, place int64) (error, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
@@ -37,29 +86,13 @@ func Set(nick string, person, place int64) (error, error) {
 	if nickExists {
 		return ErrNickExists, nil
 	}
-
-	personExists, err := dbPersonExists(person, place)
-	if err != nil {
-		return nil, err
-	}
-
-	if personExists {
-		return nil, dbPersonUpdate(person, place, nick)
-	}
-	return nil, dbPersonAdd(person, place, nick)
+	return nil, core.DB.SettingPersonSet("cmd_nick_nick", person, place, nick)
 }
 
 // Delete deletes the person's nickname in the specified place. If no nickname
 // has been set then returns an ErrPersonNotFound error.
-func Delete(person, place int64) (error, error) {
-	exists, err := dbPersonExists(person, place)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return ErrPersonNotFound, nil
-	}
-	return nil, dbPersonDelete(person, place)
+func Delete(person, place int64) error {
+	return core.DB.SettingPersonSet("cmd_nick_nick", person, place, nil)
 }
 
 // Tries to find a person from the given string. If "me" is passed the author

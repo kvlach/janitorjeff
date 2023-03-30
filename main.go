@@ -86,7 +86,7 @@ func main() {
 	}
 
 	log.Debug().Msg("opening db")
-	db, err := core.Open("postgres", "user=jeff dbname=jeff sslmode=disable")
+	db, err := core.Open("postgres", "user=jeff dbname=jeff password=jeff sslmode=disable")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open DB")
 	}

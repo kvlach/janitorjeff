@@ -55,7 +55,7 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
-	return core.DB.Init(dbSchema)
+	return nil
 }
 
 func (advanced) Run(m *core.Message) (any, error, error) {

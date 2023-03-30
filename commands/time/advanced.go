@@ -72,7 +72,7 @@ func (advanced) Init() error {
 		}
 	}()
 
-	return core.DB.Init(dbSchema)
+	return nil
 }
 
 func (advanced) Run(m *core.Message) (any, error, error) {
@@ -524,7 +524,7 @@ func (c advancedTimezoneShow) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	tz, usrErr, err := c.core(m)
+	tz, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -532,41 +532,34 @@ func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, error,
 	tz = discord.PlaceInBackticks(tz)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, tz),
+		Description: c.fmt(tz),
 	}
 
-	return embed, usrErr, nil
+	return embed, nil, nil
 }
 
 func (c advancedTimezoneShow) text(m *core.Message) (string, error, error) {
-	tz, usrErr, err := c.core(m)
+	tz, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	tz = fmt.Sprintf("'%s'", tz)
-	return c.err(usrErr, tz), usrErr, nil
+	return c.fmt(tz), nil, nil
 }
 
-func (advancedTimezoneShow) err(usrErr error, tz string) string {
-	switch usrErr {
-	case nil:
-		return fmt.Sprintf("Your timezone is: %s", tz)
-	case errTimezoneNotSet:
-		return "Your timezone was not found."
-	default:
-		return fmt.Sprint(usrErr)
-	}
+func (advancedTimezoneShow) fmt(tz string) string {
+	return fmt.Sprintf("Your timezone is: %s", tz)
 }
 
-func (advancedTimezoneShow) core(m *core.Message) (string, error, error) {
+func (advancedTimezoneShow) core(m *core.Message) (string, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
 	return TimezoneShow(author, here)
@@ -740,48 +733,37 @@ func (c advancedTimezoneDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedTimezoneDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := c.core(m)
+	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, m),
+		Description: c.fmt(m),
 	}
-
-	return embed, usrErr, nil
+	return embed, nil, nil
 }
 
 func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
-	usrErr, err := c.core(m)
+	err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr, m), usrErr, nil
+	return c.fmt(m), nil, nil
 }
 
-func (advancedTimezoneDelete) err(usrErr error, m *core.Message) string {
-	switch usrErr {
-	case nil:
-		return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention())
-	case errTimezoneNotSet:
-		return fmt.Sprintf("Can't delete, user %s hasn't set their timezone.", m.Author.Mention())
-	default:
-		return fmt.Sprint(usrErr)
-	}
+func (advancedTimezoneDelete) fmt(m *core.Message) string {
+	return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention())
 }
 
-func (advancedTimezoneDelete) core(m *core.Message) (error, error) {
+func (advancedTimezoneDelete) core(m *core.Message) error {
 	author, err := m.Author.Scope()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	return TimezoneDelete(author, here)
 }
 

@@ -57,7 +57,7 @@ func (advanced) Children() core.CommandsStatic {
 
 func (c advanced) Init() error {
 	core.Hooks.Register(c.writeCustomCommand)
-	return core.DB.Init(dbShema)
+	return nil
 }
 
 func (advanced) writeCustomCommand(m *core.Message) {

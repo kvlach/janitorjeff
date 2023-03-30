@@ -6,21 +6,6 @@ import (
 	tirc "github.com/gempir/go-twitch-irc/v2"
 )
 
-const dbSchema = `
-CREATE TABLE IF NOT EXISTS PlatformTwitchChannels (
-	id INTEGER PRIMARY KEY,
-	channel_id VARCHAR(255) NOT NULL UNIQUE,
-	channel_name VARCHAR(255) NOT NULL,
-	access_token VARCHAR(255),
-	refresh_token VARCHAR(255),
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-`
-
-func dbInit() error {
-	return core.DB.Init(dbSchema)
-}
-
 func dbAddChannelSimple(uid, uname string) (int64, error) {
 	u := tirc.User{
 		ID:   uid,
@@ -63,7 +48,7 @@ func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO PlatformTwitchChannels(id, channel_id, channel_name)
+		INSERT INTO frontend_twitch_channels(id, channel_id, channel_name)
 		VALUES ($1, $2, $3)
 		ON CONFLICT DO NOTHING;`, scope, channelID, channelName)
 
@@ -79,7 +64,7 @@ func dbGetChannelScope(channelID string) (int64, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT id
-		FROM PlatformTwitchChannels
+		FROM frontend_twitch_channels
 		WHERE channel_id = $1`, channelID)
 
 	var id int64
@@ -94,7 +79,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT channel_id, channel_name
-		FROM PlatformTwitchChannels
+		FROM frontend_twitch_channels
 		WHERE id = $1`, scope)
 
 	var id, name string
@@ -113,7 +98,7 @@ func dbSetUserAccessToken(accessToken, refreshToken, channelID string) error {
 	// }
 
 	_, err := db.DB.Exec(`
-		UPDATE PlatformTwitchChannels
+		UPDATE frontend_twitch_channels
 		SET access_token = $1, refresh_token = $2
 		WHERE channel_id = $3`, accessToken, refreshToken, channelID)
 
@@ -126,7 +111,7 @@ func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		UPDATE PlatformTwitchChannels
+		UPDATE frontend_twitch_channels
 		SET access_token = $1, refresh_token = $2
 		WHERE access_token = $3`, accessToken, refreshToken, oldAcessToken)
 
@@ -138,7 +123,7 @@ func dbGetUserAccessToken(channelID string) (string, error) {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	row := db.DB.QueryRow("SELECT access_token FROM PlatformTwitchChannels WHERE channel_id = $1", channelID)
+	row := db.DB.QueryRow("SELECT access_token FROM frontend_twitch_channels WHERE channel_id = $1", channelID)
 
 	var accessToken string
 	err := row.Scan(&accessToken)
@@ -152,7 +137,7 @@ func dbGetetUserRefreshToken(accessToken string) (string, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT refresh_token
-		FROM PlatformTwitchChannels
+		FROM frontend_twitch_channels
 		WHERE access_token = $1`, accessToken)
 
 	var refreshToken string

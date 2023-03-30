@@ -8,32 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const dbSchema = `
-CREATE TABLE IF NOT EXISTS PlatformDiscordGuilds (
-	id INTEGER PRIMARY KEY,
-	guild VARCHAR(255) NOT NULL UNIQUE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS PlatformDiscordChannels (
-	id INTEGER PRIMARY KEY,
-	channel VARCHAR(255) NOT NULL UNIQUE,
-	guild INTEGER NOT NULL,
-	FOREIGN KEY (guild) REFERENCES PlatformDiscordGuilds(id) ON DELETE CASCADE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS PlatformDiscordUsers (
-	id INTEGER PRIMARY KEY,
-	uid VARCHAR(255) NOT NULL UNIQUE,
-	FOREIGN KEY (id) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-`
-
-func dbInit() error {
-	return core.DB.Init(dbSchema)
-}
-
 func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	scope, err := core.DB.ScopeAdd(tx, guildID, Type)
 	if err != nil {
@@ -41,7 +15,7 @@ func dbAddGuildScope(tx *sql.Tx, guildID string) (int64, error) {
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO PlatformDiscordGuilds (id, guild)
+		INSERT INTO frontend_discord_guilds (scope, guild)
 		VALUES ($1, $2)
 		ON CONFLICT DO NOTHING;`, scope, guildID)
 
@@ -59,7 +33,7 @@ func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, e
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO PlatformDiscordChannels(id, channel, guild)
+		INSERT INTO frontend_discord_channels (scope, channel, guild)
 		VALUES ($1, $2, $3)
 		ON CONFLICT DO NOTHING;`, scope, channelID, guildScope)
 
@@ -72,31 +46,31 @@ func dbAddChannelScope(tx *sql.Tx, channelID string, guildScope int64) (int64, e
 
 func dbGetGuildScope(guildID string) (int64, error) {
 	row := core.DB.DB.QueryRow(`
-		SELECT id
-		FROM PlatformDiscordGuilds
+		SELECT scope
+		FROM frontend_discord_guilds
 		WHERE guild = $1`, guildID)
 
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	var scope int64
+	err := row.Scan(&scope)
+	return scope, err
 }
 
 func dbGetChannelScope(channelID string) (int64, error) {
 	row := core.DB.DB.QueryRow(`
-		SELECT id
-		FROM PlatformDiscordChannels
+		SELECT scope
+		FROM frontend_discord_channels
 		WHERE channel = $1`, channelID)
 
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	var scope int64
+	err := row.Scan(&scope)
+	return scope, err
 }
 
 func dbGetGuildFromChannel(channelScope int64) (int64, error) {
 	row := core.DB.DB.QueryRow(`
 		SELECT guild
-		FROM PlatformDiscordChannels
-		WHERE id = $1`, channelScope)
+		FROM frontend_discord_channels
+		WHERE scope = $1`, channelScope)
 
 	var guildScope int64
 	err := row.Scan(&guildScope)
@@ -110,7 +84,7 @@ func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO PlatformDiscordUsers(id, uid)
+		INSERT INTO frontend_discord_users(scope, uid)
 		VALUES ($1, $2)`, scope, userID)
 
 	log.Debug().
@@ -124,8 +98,8 @@ func dbAddUserScope(tx *sql.Tx, userID string) (int64, error) {
 
 func dbGetUserScope(userID string) (int64, error) {
 	row := core.DB.DB.QueryRow(`
-		SELECT id
-		FROM PlatformDiscordUsers
+		SELECT scope
+		FROM frontend_discord_users
 		WHERE uid = $1`, userID)
 
 	var id int64

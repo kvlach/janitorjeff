@@ -51,10 +51,6 @@ func (f *frontend) Type() core.FrontendType {
 }
 
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
-	if err := dbInit(); err != nil {
-		log.Fatal().Err(err).Msg("failed to init twitch db schema")
-	}
-
 	twitchIrcClient = tirc.NewClient(f.Nick, f.OAuth)
 
 	twitchIrcClient.OnPrivateMessage(onPrivateMessage)

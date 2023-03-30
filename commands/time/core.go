@@ -39,151 +39,16 @@ type reminder struct {
 //          //
 //////////////
 
-// A place is specified for timezones, even though it's not necessary (someone's
-// timezone isn't going to change if they call the command from a different
-// place), in order to avoid situations in which someone's approximate location
-// can be given away just by checking the timezone they set in a different
-// place.
-
-const dbSchema = `
-CREATE TABLE IF NOT EXISTS CommandTimePeople (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-	person INTEGER NOT NULL,
-	place INTEGER NOT NULL ,
-	timezone VARCHAR(255) NOT NULL,
-	UNIQUE(person, place),
-	FOREIGN KEY (person) REFERENCES Scopes(id) ON DELETE CASCADE,
-	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS CommandTimeReminders (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-	person INTEGER NOT NULL,
-	place INTEGER NOT NULL,
-	time INTEGER NOT NULL,
-	what VARCHAR(255) NOT NULL,
-	msg_id VARCHAR(255) NOT NULL,
-	FOREIGN KEY (person) REFERENCES Scopes(id) ON DELETE CASCADE,
-	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-`
-
-func dbPersonAdd(person, place int64, timezone string) error {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
-	INSERT INTO CommandTimePeople(person, place, timezone)
-	VALUES ($1, $2, $3)`, person, place, timezone)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Str("timezone", timezone).
-		Msg("added person timezone in db")
-
-	return err
-}
-
-func dbPersonUpdate(person, place int64, timezone string) error {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
-	UPDATE CommandTimePeople
-	SET timezone = $1
-	WHERE person = $2 and place = $3
-	`, timezone, person, place)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Str("timezone", timezone).
-		Msg("updated timezone")
-
-	return err
-}
-
-func dbPersonExists(person, place int64) (bool, error) {
-	db := core.DB
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
-	var exists bool
-
-	row := db.DB.QueryRow(`
-		SELECT EXISTS (
-			SELECT 1 FROM CommandTimePeople
-			WHERE person = $1 and place = $2
-			LIMIT 1
-		)`, person, place)
-
-	err := row.Scan(&exists)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Bool("exists", exists).
-		Msg("checked db to see if person exists")
-
-	return exists, err
-}
-
-func dbPersonDelete(person, place int64) error {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
-		DELETE FROM CommandTimePeople
-		WHERE person = $1 and place = $2`, person, place)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Msg("deleted person from db")
-
-	return err
-}
-
-func dbPersonTimezone(person, place int64) (string, error) {
-	db := core.DB
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
-	var tz string
-
-	row := db.DB.QueryRow(`
-		SELECT timezone
-		FROM CommandTimePeople
-		WHERE person = $1 and place = $2`, person, place)
-
-	err := row.Scan(&tz)
-
-	log.Debug().
-		Err(err).
-		Int64("person", person).
-		Int64("place", place).
-		Str("timezone", tz).
-		Msg("got timezone from db")
-
-	return tz, err
-}
-
 func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	res, err := db.DB.Exec(`
-	INSERT INTO CommandTimeReminders(person, place, time, what, msg_id)
-	VALUES ($1, $2, $3, $4, $5)`, person, place, when, what, msgID)
+	var id int64
+	err := db.DB.QueryRow(`
+	INSERT INTO cmd_time_reminders(person, place, time, what, msg_id)
+	VALUES ($1, $2, $3, $4, $5)
+	RETURNING id;`, person, place, when, what, msgID).Scan(&id)
 
 	log.Debug().
 		Err(err).
@@ -197,8 +62,7 @@ func dbRemindAdd(person, place, when int64, what, msgID string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-
-	return res.LastInsertId()
+	return id, nil
 }
 
 func scanReminders(rows *sql.Rows) ([]reminder, error) {
@@ -230,7 +94,7 @@ func dbRemindList(person, place int64) ([]reminder, error) {
 
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what, msg_id
-		FROM CommandTimeReminders
+		FROM cmd_time_reminders
 		WHERE person = $1 and place = $2
 	`, person, place)
 	if err != nil {
@@ -262,7 +126,7 @@ func dbRemindUpcoming(nowSeconds int64) ([]reminder, error) {
 
 	rows, err := db.DB.Query(`
 		SELECT id, person, place, time, what, msg_id
-		FROM CommandTimeReminders
+		FROM cmd_time_reminders
 		WHERE time - $1 < 300
 	`, nowSeconds)
 	if err != nil {
@@ -292,7 +156,7 @@ func dbRemindDelete(id int64) error {
 	defer db.Lock.Unlock()
 
 	_, err := db.DB.Exec(`
-		DELETE FROM CommandTimeReminders
+		DELETE FROM cmd_time_reminders
 		WHERE id = $1`, id)
 
 	log.Debug().
@@ -312,7 +176,7 @@ func dbRemindExists(id, person int64) (bool, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM CommandTimeReminders
+			SELECT 1 FROM cmd_time_reminders
 			WHERE id = $1 and person = $2
 			LIMIT 1
 		)`, id, person)
@@ -338,21 +202,12 @@ func dbRemindExists(id, person int64) (bool, error) {
 func Now(person, place int64) (time.Time, error, error) {
 	now := time.Now().UTC()
 
-	exists, err := dbPersonExists(person, place)
+	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
 	if err != nil {
 		return now, nil, err
 	}
 
-	if !exists {
-		return now, errTimezoneNotSet, nil
-	}
-
-	tz, err := dbPersonTimezone(person, place)
-	if err != nil {
-		return now, nil, err
-	}
-
-	loc, err := time.LoadLocation(tz)
+	loc, err := time.LoadLocation(tz.(string))
 	if err != nil {
 		return now, nil, err
 	}
@@ -381,14 +236,8 @@ func Convert(target, tz string) (string, error, error) {
 }
 
 func Time(when string, person, place int64) (time.Time, error, error) {
-	tz, err := dbPersonTimezone(person, place)
-	var loc *time.Location
-	if err == nil {
-		loc, err = time.LoadLocation(tz)
-	} else {
-		loc, err = time.LoadLocation("UTC")
-	}
-
+	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
+	loc, err := time.LoadLocation(tz.(string))
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -411,21 +260,12 @@ func Timestamp(when string, person, place int64) (time.Time, error, error) {
 	return t, nil, nil
 }
 
-func TimezoneShow(person, place int64) (string, error, error) {
-	exists, err := dbPersonExists(person, place)
+func TimezoneShow(person, place int64) (string, error) {
+	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
-	if !exists {
-		return "", errTimezoneNotSet, nil
-	}
-
-	tz, err := dbPersonTimezone(person, place)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return tz, nil, nil
+	return tz.(string), nil
 }
 
 func TimezoneSet(tz string, person, place int64) (string, error, error) {
@@ -433,29 +273,12 @@ func TimezoneSet(tz string, person, place int64) (string, error, error) {
 	if err != nil {
 		return tz, errTimezone, nil
 	}
-
 	tz = loc.String()
-
-	exists, err := dbPersonExists(person, place)
-	if err != nil {
-		return tz, nil, err
-	}
-
-	if exists {
-		return tz, nil, dbPersonUpdate(person, place, tz)
-	}
-	return tz, nil, dbPersonAdd(person, place, tz)
+	return tz, nil, core.DB.SettingPersonSet("cmd_time_tz", person, place, tz)
 }
 
-func TimezoneDelete(person, place int64) (error, error) {
-	exists, err := dbPersonExists(person, place)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return errTimezoneNotSet, nil
-	}
-	return nil, dbPersonDelete(person, place)
+func TimezoneDelete(person, place int64) error {
+	return core.DB.SettingPersonSet("cmd_time_tz", person, place, "UTC")
 }
 
 func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {

@@ -104,7 +104,7 @@ func (advanced) Init() error {
 			return
 		}
 	})
-	return core.DB.Init(dbSchema)
+	return nil
 }
 
 func (c advanced) Run(m *core.Message) (any, error, error) {

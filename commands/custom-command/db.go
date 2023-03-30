@@ -8,31 +8,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const dbShema = `
-CREATE TABLE IF NOT EXISTS CommandCommandCommands (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-
-	place INTEGER NOT NULL,
-	trigger VARCHAR(255) NOT NULL,
-	response VARCHAR(255) NOT NULL,
-	active BOOLEAN NOT NULL,
-
-	creator INTEGER NOT NULL,
-	created BIGINT NOT NULL,
-	deleter INTEGER,
-	deleted BIGINT,
-
-	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE,
-	FOREIGN KEY (creator) REFERENCES Scopes(id) ON DELETE CASCADE,
-	FOREIGN KEY (deleter) REFERENCES Scopes(id) ON DELETE CASCADE
-)
-`
-
 func _dbAdd(place, creator, timestamp int64, trigger, response string) error {
 	db := core.DB
 
 	_, err := db.DB.Exec(`
-		INSERT INTO CommandCommandCommands(
+		INSERT INTO cmd_customcommand_commands(
 			place, trigger, response, active, creator, created
 		)
 		VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -63,7 +43,7 @@ func _dbDel(place, deleter, timestamp int64, trigger string) error {
 	db := core.DB
 
 	_, err := db.DB.Exec(`
-		UPDATE CommandCommandCommands
+		UPDATE cmd_customcommand_commands
 		SET active = $1, deleter = $2, deleted = $3
 		WHERE place = $4 and trigger = $5 and active = $6
 	`, false, deleter, timestamp, place, trigger, true)
@@ -124,7 +104,7 @@ func dbTriggerExists(place int64, trigger string) (bool, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM CommandCommandCommands
+			SELECT 1 FROM cmd_customcommand_commands
 			WHERE trigger = $1 and place = $2 and active = $3
 			LIMIT 1
 		)`, trigger, place, true)
@@ -148,7 +128,7 @@ func dbList(place int64) ([]string, error) {
 
 	rows, err := db.DB.Query(`
 		SELECT trigger
-		FROM CommandCommandCommands
+		FROM cmd_customcommand_commands
 		WHERE place = $1 and active = $2
 	`, place, true)
 	if err != nil {
@@ -186,7 +166,7 @@ func dbGetResponse(place int64, trigger string) (string, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT response
-		FROM CommandCommandCommands
+		FROM cmd_customcommand_commands
 		WHERE place = $1 and trigger = $2 and active = $3
 	`, place, trigger, true)
 
@@ -216,7 +196,7 @@ func _dbHistory(place int64, trigger string, active bool) ([]customCommand, erro
 
 	rows, err := db.DB.Query(`
 		SELECT response, creator, created, deleter, deleted
-		FROM CommandCommandCommands
+		FROM cmd_customcommand_commands
 		WHERE place = $1 and trigger = $2 and active = $3
 	`, place, trigger, active)
 	if err != nil {
