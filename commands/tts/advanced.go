@@ -379,7 +379,7 @@ func (advancedVoiceShow) core(m *core.Message) (string, error) {
 		return "", err
 	}
 
-	return PersonVoiceGet(person, here)
+	return VoiceGet(person, here)
 }
 
 ///////////////
@@ -481,7 +481,7 @@ func (advancedVoiceSet) core(m *core.Message) (string, error) {
 		return "", err
 	}
 
-	return voice, PersonVoiceSet(person, here, voice)
+	return voice, VoiceSet(person, here, voice)
 }
 
 /////////////
@@ -623,7 +623,7 @@ func (advancedSubOnlyOn) core(m *core.Message) error {
 	if err != nil {
 		return err
 	}
-	return PlaceSubOnlySet(here, true)
+	return SubOnlySet(here, true)
 }
 
 /////////////////
@@ -709,7 +709,7 @@ func (advancedSubOnlyOff) core(m *core.Message) error {
 	if err != nil {
 		return err
 	}
-	return PlaceSubOnlySet(here, false)
+	return SubOnlySet(here, false)
 }
 
 //////////////////
@@ -799,5 +799,5 @@ func (advancedSubOnlyShow) core(m *core.Message) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return PlaceSubOnlyGet(here)
+	return SubOnlyGet(here)
 }

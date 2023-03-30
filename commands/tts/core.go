@@ -182,7 +182,7 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		subonly, err := PlaceSubOnlyGet(here)
+		subonly, err := SubOnlyGet(here)
 		if err != nil {
 			return
 		}
@@ -227,7 +227,7 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		voice, err := PersonVoiceGet(author, here)
+		voice, err := VoiceGet(author, here)
 		if err != nil {
 			return
 		}
@@ -249,9 +249,9 @@ func Stop(twitchUsername string) error {
 	return nil
 }
 
-// PersonVoiceGet returns the person's voice in this place. If no voice has
+// VoiceGet returns the person's voice in this place. If no voice has
 // been set then it picks a random one and saves it.
-func PersonVoiceGet(person, place int64) (string, error) {
+func VoiceGet(person, place int64) (string, error) {
 	voice, err := core.DB.SettingPersonGet("cmd_tts_voice", person, place)
 	if err != nil {
 		return "", err
@@ -259,8 +259,8 @@ func PersonVoiceGet(person, place int64) (string, error) {
 	return voice.(string), nil
 }
 
-// PersonVoiceSet sets the user voice.
-func PersonVoiceSet(person, place int64, voice string) error {
+// VoiceSet sets the user voice.
+func VoiceSet(person, place int64, voice string) error {
 	exists := false
 	for _, v := range Voices {
 		if v == voice {
@@ -274,8 +274,8 @@ func PersonVoiceSet(person, place int64, voice string) error {
 	return core.DB.SettingPersonSet("cmd_tts_voice", person, place, voice)
 }
 
-// PlaceSubOnlyGet returns the sub-only state for the specified place.
-func PlaceSubOnlyGet(place int64) (bool, error) {
+// SubOnlyGet returns the sub-only state for the specified place.
+func SubOnlyGet(place int64) (bool, error) {
 	subonly, err := core.DB.SettingPlaceGet("cmd_tts_subonly", place)
 	if err != nil {
 		return false, err
@@ -283,7 +283,7 @@ func PlaceSubOnlyGet(place int64) (bool, error) {
 	return subonly.(bool), nil
 }
 
-// PlaceSubOnlySet sets the sub-only state for the specified place.
-func PlaceSubOnlySet(place int64, state bool) error {
+// SubOnlySet sets the sub-only state for the specified place.
+func SubOnlySet(place int64, state bool) error {
 	return core.DB.SettingPlaceSet("cmd_tts_subonly", place, state)
 }
