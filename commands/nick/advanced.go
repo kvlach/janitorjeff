@@ -54,7 +54,7 @@ func (advanced) Children() core.CommandsStatic {
 
 func (c advanced) Init() error {
 	c.discordAppCommand()
-	return core.DB.Init(dbSchema)
+	return nil
 }
 
 func (advanced) discordAppCommand() {
@@ -344,51 +344,42 @@ func (advancedDelete) Init() error {
 }
 
 func (c advancedDelete) Run(m *core.Message) (any, error, error) {
-	usrErr, err := c.core(m)
+	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
-		return c.discord(usrErr)
+		return c.discord()
 	default:
-		return c.text(usrErr)
+		return c.text()
 	}
 }
 
-func (c advancedDelete) discord(usrErr error) (*dg.MessageEmbed, error, error) {
+func (c advancedDelete) discord() (*dg.MessageEmbed, error, error) {
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr),
+		Description: c.fmt(),
 	}
-	return embed, usrErr, nil
+	return embed, nil, nil
 }
 
-func (c advancedDelete) text(usrErr error) (string, error, error) {
-	return c.err(usrErr), usrErr, nil
+func (c advancedDelete) text() (string, error, error) {
+	return c.fmt(), nil, nil
 }
 
-func (advancedDelete) err(usrErr error) string {
-	switch usrErr {
-	case nil:
-		return "Deleted your nickname."
-	case ErrPersonNotFound:
-		return "Can't delete, you haven't set a nickname here."
-	default:
-		return fmt.Sprint(usrErr)
-	}
+func (advancedDelete) fmt() string {
+	return "Deleted your nickname."
 }
 
-func (advancedDelete) core(m *core.Message) (error, error) {
+func (advancedDelete) core(m *core.Message) error {
 	author, err := m.Author.Scope()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	return Delete(author, here)
 }

@@ -30,10 +30,6 @@ func (f *frontend) Type() core.FrontendType {
 }
 
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
-	if err := dbInit(); err != nil {
-		log.Fatal().Err(err).Msg("failed to init discord db schema")
-	}
-
 	d, err := dg.New("Bot " + f.Token)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create discord client")

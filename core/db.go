@@ -3,6 +3,7 @@ package core
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"sync"
 
 	_ "github.com/lib/pq"
@@ -10,23 +11,6 @@ import (
 )
 
 var DB *SQLDB
-
-const schema = `
-CREATE TABLE IF NOT EXISTS Scopes (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-	frontend INTEGER NOT NULL,
-	original_id VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS CommandPrefixPrefixes (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-	place INTEGER NOT NULL,
-	prefix VARCHAR(255) NOT NULL,
-	type INTEGER NOT NULL,
-	UNIQUE(place, prefix),
-	FOREIGN KEY (place) REFERENCES Scopes(id) ON DELETE CASCADE
-);
-`
 
 type SQLDB struct {
 	Lock sync.RWMutex
@@ -39,8 +23,13 @@ func Open(driver, source string) (*SQLDB, error) {
 		return nil, err
 	}
 
+	schema, err := ioutil.ReadFile("schema.sql")
+	if err != nil {
+		return nil, err
+	}
+
 	db := &SQLDB{DB: sqlDB}
-	if err := db.Init(schema); err != nil {
+	if err := db.Init(string(schema)); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +62,7 @@ func (db *SQLDB) Init(schema string) error {
 func (_ *SQLDB) ScopeAdd(tx *sql.Tx, frontendID string, frontend int) (int64, error) {
 	var id int64
 	err := tx.QueryRow(`
-		INSERT INTO Scopes(original_id, frontend)
+		INSERT INTO scopes(frontend_id, frontend_type)
 		VALUES ($1, $2) RETURNING id;`, frontendID, frontend).Scan(&id)
 	if err != nil {
 		return -1, err
@@ -88,8 +77,8 @@ func (db *SQLDB) ScopeID(scope int64) (string, error) {
 
 	var id string
 	row := db.DB.QueryRow(`
-		SELECT original_id
-		FROM Scopes
+		SELECT frontend_id
+		FROM scopes
 		WHERE id = $1
 	`, scope)
 
@@ -105,8 +94,8 @@ func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 
 	var id int64
 	row := db.DB.QueryRow(`
-		SELECT frontend
-		FROM Scopes
+		SELECT frontend_type
+		FROM scopes
 		WHERE id = $1
 	`, scope)
 
@@ -122,7 +111,7 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 
 	rows, err := db.DB.Query(`
 		SELECT prefix, type
-		FROM CommandPrefixPrefixes
+		FROM prefixes
 		WHERE place = $1`, place)
 	if err != nil {
 		return nil, err
@@ -155,27 +144,24 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 //                //
 ////////////////////
 
-func (db *SQLDB) placeSettingsExist(table string, place int64) (bool, error) {
+func (db *SQLDB) settingsPlaceExist(place int64) (bool, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	var exists bool
 
-	query := fmt.Sprintf(`
+	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM %s
+			SELECT 1 FROM settings_place
 			WHERE place = $1
 			LIMIT 1
 		);
-	`, table)
-
-	row := db.DB.QueryRow(query, place)
+	`, place)
 
 	err := row.Scan(&exists)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("place", place).
 		Bool("exist", exists).
 		Msg("checked if place settings exist")
@@ -183,43 +169,40 @@ func (db *SQLDB) placeSettingsExist(table string, place int64) (bool, error) {
 	return exists, err
 }
 
-func (db *SQLDB) placeSettingsGenerate(table string, place int64) error {
+func (db *SQLDB) settingsPlaceGenerate(place int64) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	query := fmt.Sprintf(`
-		INSERT INTO %s (place)
+	_, err := db.DB.Exec(`
+		INSERT INTO settings_place (place)
 		VALUES ($1)
-	`, table)
-
-	_, err := db.DB.Exec(query, place)
+	`, place)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("place", place).
 		Msg("generated place settings")
 
 	return err
 }
 
-// PlaceSettingsGenerate will check if settings for the specified place exist
+// SettingsPlaceGenerate will check if settings for the specified place exist
 // and if not will generate them.
-func (db *SQLDB) PlaceSettingsGenerate(table string, place int64) error {
-	exists, err := db.placeSettingsExist(table, place)
+func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
+	exists, err := db.settingsPlaceExist(place)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return nil
 	}
-	return db.placeSettingsGenerate(table, place)
+	return db.settingsPlaceGenerate(place)
 }
 
-// PlaceSettingGet returns the value of col in table for the specified place.
-func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
+// SettingPlaceGet returns the value of col in table for the specified place.
+func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
 	// Make sure that the place settings are present
-	if err := db.PlaceSettingsGenerate(table, place); err != nil {
+	if err := db.SettingsPlaceGenerate(place); err != nil {
 		return nil, err
 	}
 
@@ -230,9 +213,9 @@ func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 
 	query := fmt.Sprintf(`
 		SELECT %s
-		FROM %s
+		FROM settings_place
 		WHERE place = $1
-	`, col, table)
+	`, col)
 
 	row := db.DB.QueryRow(query, place)
 
@@ -240,7 +223,6 @@ func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
@@ -248,10 +230,10 @@ func (db *SQLDB) PlaceSettingGet(table, col string, place int64) (any, error) {
 	return val, err
 }
 
-// PlaceSettingSet sets the value of col in table for the specified place.
-func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error {
+// SettingPlaceSet sets the value of col in table for the specified place.
+func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
-	if err := db.PlaceSettingsGenerate(table, place); err != nil {
+	if err := db.SettingsPlaceGenerate(place); err != nil {
 		return err
 	}
 
@@ -259,16 +241,15 @@ func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error 
 	defer db.Lock.Unlock()
 
 	query := fmt.Sprintf(`
-		UPDATE %s
+		UPDATE settings_place
 		SET %s = $1
 		WHERE place = $2
-	`, table, col)
+	`, col)
 
 	_, err := db.DB.Exec(query, val, place)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("changed setting")
@@ -282,27 +263,24 @@ func (db *SQLDB) PlaceSettingSet(table, col string, place int64, val any) error 
 //                 //
 /////////////////////
 
-func (db *SQLDB) personSettingsExist(table string, person, place int64) (bool, error) {
+func (db *SQLDB) settingsPersonExist(person, place int64) (bool, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	var exists bool
 
-	query := fmt.Sprintf(`
+	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM %s
+			SELECT 1 FROM settings_person
 			WHERE person = $1 and place = $2
 			LIMIT 1
 		)
-	`, table)
-
-	row := db.DB.QueryRow(query, place)
+	`, person, place)
 
 	err := row.Scan(&exists)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("person", person).
 		Int64("place", place).
 		Bool("exist", exists).
@@ -311,20 +289,17 @@ func (db *SQLDB) personSettingsExist(table string, person, place int64) (bool, e
 	return exists, err
 }
 
-func (db *SQLDB) personSettingsGenerate(table string, person, place int64) error {
+func (db *SQLDB) settingsPersonGenerate(person, place int64) error {
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	query := fmt.Sprintf(`
-		INSERT INTO %s (person, place)
+	_, err := db.DB.Exec(`
+		INSERT INTO settings_person (person, place)
 		VALUES ($1, $2)
-	`, table)
-
-	_, err := db.DB.Exec(query, person, place)
+	`, person, place)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("person", person).
 		Int64("place", place).
 		Msg("generated person settings")
@@ -332,24 +307,24 @@ func (db *SQLDB) personSettingsGenerate(table string, person, place int64) error
 	return err
 }
 
-// PersonSettingsGenerate will check if settings for the specified person in the
+// SettingsPersonGenerate will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
-func (db *SQLDB) PersonSettingsGenerate(table string, person, place int64) error {
-	exists, err := db.personSettingsExist(table, person, place)
+func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
+	exists, err := db.settingsPersonExist(person, place)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return nil
 	}
-	return db.personSettingsGenerate(table, person, place)
+	return db.settingsPersonGenerate(person, place)
 }
 
-// PersonSettingGet returns the value of col in table for the specified person
+// SettingPersonGet returns the value of col in table for the specified person
 // in the specified place.
-func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, error) {
+func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) {
 	// Make sure that the person settings are present
-	if err := db.PersonSettingsGenerate(table, person, place); err != nil {
+	if err := db.SettingsPersonGenerate(person, place); err != nil {
 		return nil, err
 	}
 
@@ -360,9 +335,9 @@ func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, 
 
 	query := fmt.Sprintf(`
 		SELECT %s
-		FROM %s
+		FROM settings_person
 		WHERE person = $1 and place = $2
-	`, col, table)
+	`, col)
 
 	row := db.DB.QueryRow(query, person, place)
 
@@ -370,7 +345,6 @@ func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, 
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("person", person).
 		Int64("place", place).
 		Interface(col, val).
@@ -381,9 +355,9 @@ func (db *SQLDB) PersonSettingGet(table, col string, person, place int64) (any, 
 
 // PlaceSettingSet sets the value of col in table for the specified person in
 // the specified place.
-func (db *SQLDB) PersonSettingSet(table, col string, person, place int64, val any) error {
+func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
-	if err := db.PersonSettingsGenerate(table, person, place); err != nil {
+	if err := db.SettingsPersonGenerate(person, place); err != nil {
 		return err
 	}
 
@@ -391,16 +365,15 @@ func (db *SQLDB) PersonSettingSet(table, col string, person, place int64, val an
 	defer db.Lock.Unlock()
 
 	query := fmt.Sprintf(`
-		UPDATE %s
+		UPDATE settings_person
 		SET %s = $1
 		WHERE person = $2 and place = $3
-	`, table, col)
+	`, col)
 
 	_, err := db.DB.Exec(query, val, person, place)
 
 	log.Debug().
 		Err(err).
-		Str("table", table).
 		Int64("person", person).
 		Int64("place", place).
 		Interface(col, val).

@@ -6,11 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
@@ -148,12 +146,6 @@ func TTS(voice, text string) ([]byte, error) {
 	return decoded, nil
 }
 
-// RandomVoice returns a random voice ID.
-func RandomVoice() string {
-	rand.Seed(time.Now().UnixNano())
-	return Voices[rand.Intn(len(Voices))]
-}
-
 // Play will, if necessary join the appropriate voice channel, and start playing
 // the TTS specified by text.
 func Play(sp core.AudioSpeaker, voice, text string) error {
@@ -257,39 +249,34 @@ func Stop(twitchUsername string) error {
 	return nil
 }
 
-// PersonSettingsGenerate will check if settings for the specified person in
-// the specified place exist, and if not will generate them.
-func PersonSettingsGenerate(person, place int64) error {
-	exists, err := dbPersonSettingsExist(person, place)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	return dbPersonSettingsGenerate(person, place, RandomVoice())
-}
-
 // PersonVoiceGet returns the person's voice in this place. If no voice has
 // been set then it picks a random one and saves it.
 func PersonVoiceGet(person, place int64) (string, error) {
-	if err := PersonSettingsGenerate(person, place); err != nil {
+	voice, err := core.DB.SettingPersonGet("cmd_tts_voice", person, place)
+	if err != nil {
 		return "", err
 	}
-	return dbPersonSettingsVoiceGet(person, place)
+	return voice.(string), nil
 }
 
 // PersonVoiceSet sets the user voice.
 func PersonVoiceSet(person, place int64, voice string) error {
-	if err := PersonSettingsGenerate(person, place); err != nil {
-		return err
+	exists := false
+	for _, v := range Voices {
+		if v == voice {
+			exists = true
+			break
+		}
 	}
-	return dbPersonSettingsVoiceSet(person, place, voice)
+	if !exists {
+		return errors.New("invalid voice")
+	}
+	return core.DB.SettingPersonSet("cmd_tts_voice", person, place, voice)
 }
 
 // PlaceSubOnlyGet returns the sub-only state for the specified place.
 func PlaceSubOnlyGet(place int64) (bool, error) {
-	subonly, err := core.DB.PlaceSettingGet("CommandTTSPlaceSettings", "subonly", place)
+	subonly, err := core.DB.SettingPlaceGet("cmd_tts_subonly", place)
 	if err != nil {
 		return false, err
 	}
@@ -298,5 +285,5 @@ func PlaceSubOnlyGet(place int64) (bool, error) {
 
 // PlaceSubOnlySet sets the sub-only state for the specified place.
 func PlaceSubOnlySet(place int64, state bool) error {
-	return core.DB.PlaceSettingSet("CommandTTSPlaceSettings", "subonly", place, state)
+	return core.DB.SettingPlaceSet("cmd_tts_subonly", place, state)
 }

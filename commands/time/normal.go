@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/janitorjeff/jeff-bot/core"
+	"github.com/rs/zerolog/log"
 )
 
 var Normal = normal{}
@@ -73,6 +74,7 @@ func (normal) addReminder(m *core.Message) {
 
 	resp, usrErr, err := AdvancedRemindAdd.Run(m)
 	if err != nil {
+		log.Debug().Err(err).Msg("failed to create reminder")
 		return
 	}
 	m.Write(resp, usrErr)

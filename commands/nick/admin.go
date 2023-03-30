@@ -1,6 +1,8 @@
 package nick
 
 import (
+	"fmt"
+
 	"github.com/janitorjeff/jeff-bot/commands/mask"
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
@@ -261,12 +263,15 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	if usrErr != nil {
+		return fmt.Sprint(usrErr), usrErr, nil
+	}
 
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
-		return AdvancedDelete.discord(usrErr)
+		return AdvancedDelete.discord()
 	default:
-		return AdvancedDelete.text(usrErr)
+		return AdvancedDelete.text()
 	}
 }
 
@@ -281,5 +286,5 @@ func (adminDelete) core(m *core.Message) (error, error) {
 		return usrErr, err
 	}
 
-	return Delete(t.Person, t.Place)
+	return nil, Delete(t.Person, t.Place)
 }
