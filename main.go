@@ -21,6 +21,7 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -92,6 +93,11 @@ func main() {
 	}
 	defer db.Close()
 	defer log.Debug().Msg("closing db")
+
+	log.Debug().Msg("connecting to redis")
+	core.RDB = redis.NewClient(&redis.Options{
+		Addr: readVar("REDIS_ADDR"),
+	})
 
 	core.Frontends = frontends.Frontends
 	core.Commands = &commands.Commands

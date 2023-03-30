@@ -1,16 +1,23 @@
 package core
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"sync"
 
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
-var DB *SQLDB
+var (
+	DB  *SQLDB
+	RDB *redis.Client
+)
+
+var ctx = context.Background()
 
 type SQLDB struct {
 	Lock sync.RWMutex
@@ -189,14 +196,32 @@ func (db *SQLDB) settingsPlaceGenerate(place int64) error {
 // SettingsPlaceGenerate will check if settings for the specified place exist
 // and if not will generate them.
 func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
+	rdbKey := fmt.Sprintf("settings_place_%d", place)
+
+	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
+		log.Debug().Msg("CACHE: place settings already generated")
+		return nil
+	}
+
 	exists, err := db.settingsPlaceExist(place)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return nil
+		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
+		log.Debug().
+			Err(err).
+			Msg("place settings already exist in db, adding to cache")
+		return err
 	}
-	return db.settingsPlaceGenerate(place)
+
+	err = db.settingsPlaceGenerate(place)
+	if err != nil {
+		return err
+	}
+	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
+	log.Debug().Err(err).Msg("generated place settings in db, adding to cache")
+	return err
 }
 
 // SettingPlaceGet returns the value of col in table for the specified place.
@@ -310,14 +335,32 @@ func (db *SQLDB) settingsPersonGenerate(person, place int64) error {
 // SettingsPersonGenerate will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
 func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
+	rdbKey := fmt.Sprintf("settings_person_%d_%d", person, place)
+
+	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
+		log.Debug().Msg("CACHE: person settings already generated")
+		return nil
+	}
+
 	exists, err := db.settingsPersonExist(person, place)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return nil
+		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
+		log.Debug().
+			Err(err).
+			Msg("person settings already exist in db, adding to cache")
+		return err
 	}
-	return db.settingsPersonGenerate(person, place)
+
+	err = db.settingsPersonGenerate(person, place)
+	if err != nil {
+		return err
+	}
+	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
+	log.Debug().Err(err).Msg("generated person settings in db, adding to cache")
+	return err
 }
 
 // SettingPersonGet returns the value of col in table for the specified person
