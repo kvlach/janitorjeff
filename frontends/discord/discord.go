@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"context"
 	"sync"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -8,6 +9,8 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
+
+var ctx = context.Background()
 
 const Type = 1 << 0
 

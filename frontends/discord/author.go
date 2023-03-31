@@ -1,14 +1,34 @@
 package discord
 
 import (
+	"github.com/janitorjeff/jeff-bot/core"
+
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 )
+
+func getAuthorScope(authorID string) (int64, error) {
+	slog := log.With().Str("uid", authorID).Logger()
+	rdbKey := "frontend_discord_scope_author_" + authorID
+
+	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
+	if err != redis.Nil {
+		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
+		return scope, nil
+	}
+
+	scope, err = dbGetPersonScope(authorID)
+	if err != nil {
+		return -1, err
+	}
+	err = core.RDB.Set(ctx, rdbKey, scope, 0).Err()
+	slog.Debug().Err(err).Int64("scope", scope).Msg("CACHE: cached scope")
+	return scope, err
+}
 
 // Implement the core.Author interface for normal messages
 type AuthorMessage struct {
-	// cache scope
-	scope int64
-
 	GuildID string
 	Author  *dg.User
 	Member  *dg.Member
@@ -47,22 +67,11 @@ func (a *AuthorMessage) Subscriber() bool {
 }
 
 func (a *AuthorMessage) Scope() (int64, error) {
-	if a.scope != 0 {
-		return a.scope, nil
-	}
-	author, err := getPersonScope(a.ID())
-	if err != nil {
-		return -1, err
-	}
-	a.scope = author
-	return author, nil
+	return getAuthorScope(a.ID())
 }
 
 // Implement the core.Author interface for interactions
 type AuthorInteraction struct {
-	//cache scope
-	scope int64
-
 	GuildID string
 	Member  *dg.Member
 	User    *dg.User
@@ -113,13 +122,5 @@ func (a *AuthorInteraction) Subscriber() bool {
 }
 
 func (a *AuthorInteraction) Scope() (int64, error) {
-	if a.scope != 0 {
-		return a.scope, nil
-	}
-	author, err := getPersonScope(a.ID())
-	if err != nil {
-		return -1, err
-	}
-	a.scope = author
-	return author, nil
+	return getAuthorScope(a.ID())
 }
