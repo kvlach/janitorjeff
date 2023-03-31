@@ -211,7 +211,7 @@ func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
 		log.Debug().
 			Err(err).
-			Msg("place settings already exist in db, adding to cache")
+			Msg("CACHE: place settings already exist in db, caching")
 		return err
 	}
 
@@ -220,7 +220,7 @@ func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
 		return err
 	}
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
-	log.Debug().Err(err).Msg("generated place settings in db, adding to cache")
+	log.Debug().Err(err).Msg("CACHE: generated place settings in db, caching")
 	return err
 }
 
@@ -350,7 +350,7 @@ func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
 		log.Debug().
 			Err(err).
-			Msg("person settings already exist in db, adding to cache")
+			Msg("CACHE: person settings already exist in db, caching")
 		return err
 	}
 
@@ -359,7 +359,7 @@ func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
 		return err
 	}
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
-	log.Debug().Err(err).Msg("generated person settings in db, adding to cache")
+	log.Debug().Err(err).Msg("CACHE: generated person settings in db, caching")
 	return err
 }
 
