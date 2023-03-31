@@ -70,7 +70,7 @@ func (d *MessageCreate) PlaceID(s string) (string, error) {
 }
 
 func (d *MessageCreate) Person(id string) (int64, error) {
-	return getPersonScope(id)
+	return dbGetPersonScope(id)
 }
 
 func (d *MessageCreate) PlaceExact(id string) (int64, error) {

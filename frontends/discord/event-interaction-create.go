@@ -136,7 +136,7 @@ func (i *InteractionCreate) PlaceID(s string) (string, error) {
 }
 
 func (i *InteractionCreate) Person(id string) (int64, error) {
-	return getPersonScope(id)
+	return dbGetPersonScope(id)
 }
 
 func (i *InteractionCreate) PlaceExact(id string) (int64, error) {

@@ -130,7 +130,7 @@ func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string) (int64, 
 	return channelScope, tx.Commit()
 }
 
-func getPersonScope(id string) (int64, error) {
+func dbGetPersonScope(id string) (int64, error) {
 	// doesn't check if the ID is valid, that job is handled by the PersonID
 	// function
 	scope, err := dbGetUserScope(id)

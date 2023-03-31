@@ -34,7 +34,7 @@ func (d *Message) PlaceID(s string) (string, error) {
 }
 
 func (d *Message) Person(id string) (int64, error) {
-	return getPersonScope(id)
+	return dbGetPersonScope(id)
 }
 
 func (d *Message) PlaceExact(id string) (int64, error) {
