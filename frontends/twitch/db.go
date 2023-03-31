@@ -48,7 +48,7 @@ func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO frontend_twitch_channels(id, channel_id, channel_name)
+		INSERT INTO frontend_twitch_channels(scope, channel_id, channel_name)
 		VALUES ($1, $2, $3)
 		ON CONFLICT DO NOTHING;`, scope, channelID, channelName)
 
@@ -63,7 +63,7 @@ func dbGetChannelScope(channelID string) (int64, error) {
 	db := core.DB
 
 	row := db.DB.QueryRow(`
-		SELECT id
+		SELECT scope
 		FROM frontend_twitch_channels
 		WHERE channel_id = $1`, channelID)
 
@@ -80,7 +80,7 @@ func dbGetChannel(scope int64) (string, string, error) {
 	row := db.DB.QueryRow(`
 		SELECT channel_id, channel_name
 		FROM frontend_twitch_channels
-		WHERE id = $1`, scope)
+		WHERE scope = $1`, scope)
 
 	var id, name string
 	err := row.Scan(&id, &name)
