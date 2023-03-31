@@ -115,11 +115,11 @@ func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string) (int64, 
 	// in case the passed id is an arbitrary guild, which means that we can't
 	// deduce a specific channel
 	if channelID == "" {
-		return guildScope, nil
+		return guildScope, tx.Commit()
 	}
 
 	if guildID != "" {
-		return guildScope, nil
+		return guildScope, tx.Commit()
 	}
 
 	channelScope, err := dbAddChannelScope(tx, channelID, guildScope)
