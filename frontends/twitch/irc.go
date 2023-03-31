@@ -1,6 +1,7 @@
 package twitch
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -14,6 +15,8 @@ import (
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )
+
+var ctx = context.Background()
 
 const Type = 1 << 1
 
