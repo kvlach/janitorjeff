@@ -36,7 +36,7 @@ func init() {
 
 	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
 		fName := runtime.FuncForPC(pc).Name()
-		return fmt.Sprintf("%s:%d | %s", file, line, path.Base(fName))
+		return fmt.Sprintf("%s", path.Base(fName))
 	}
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
