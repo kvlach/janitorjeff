@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine AS build-env
+FROM golang:1.20-alpine AS build-env
 RUN apk add -U --force-refresh --no-cache --purge --clean-protected -l -u gcc musl-dev
 WORKDIR /go/src/github.com/janitorjeff/jeff-bot
 COPY . .
