@@ -29,7 +29,7 @@ services:
       - "7000"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --port 7000
 
 volumes:
   db-data:
