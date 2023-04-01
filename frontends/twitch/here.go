@@ -21,7 +21,7 @@ func (h Here) Name() string {
 }
 
 func (h Here) Scope() (int64, error) {
-	slog := log.With().Str("author", h.ID()).Logger()
+	slog := log.With().Str("here", h.ID()).Logger()
 	rdbKey := "frontend_twitch_scope_" + h.ID()
 
 	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
