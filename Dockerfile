@@ -5,7 +5,7 @@ COPY . .
 RUN go build -o /go/bin/jeff
 
 FROM alpine:latest
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata ffmpeg yt-dlp
 WORKDIR /app
 COPY --from=build-env /go/bin/jeff ./
 COPY schema.sql .
