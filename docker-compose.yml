@@ -37,9 +37,9 @@ services:
     ports:
       - "6000"
     environment:
-      - POSTGRES_USER=jeff
-      - POSTGRES_PASSWORD=jeff
-      - POSTGRES_DB=jeff
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=dbname
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     command: -p 6000
