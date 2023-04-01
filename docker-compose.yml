@@ -39,7 +39,7 @@ services:
       - POSTGRES_PASSWORD=jeff
       - POSTGRES_DB=jeff
     volumes:
-      - ./db-data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     command: -p 6000
 
   redis:
@@ -51,4 +51,4 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf --port 7000
 
 volumes:
-  db-data:
+  postgres-data:
