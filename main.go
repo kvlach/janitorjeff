@@ -87,7 +87,16 @@ func main() {
 	}
 
 	log.Debug().Msg("opening db")
-	db, err := core.Open("postgres", "user=jeff dbname=jeff password=jeff sslmode=disable")
+	dbConn := fmt.Sprintf(
+		"user=%s password=%s dbname=%s host=%s port=%s sslmode=%s",
+		readVar("POSTGRES_USER"),
+		readVar("POSTGRES_PASSWORD"),
+		readVar("POSTGRES_DB"),
+		readVar("POSTGRES_HOST"),
+		readVar("POSTGRES_PORT"),
+		readVar("POSTGRES_SSLMODE"),
+	)
+	db, err := core.Open("postgres", dbConn)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open DB")
 	}
