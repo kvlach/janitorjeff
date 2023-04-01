@@ -7,6 +7,5 @@ RUN go build -o /go/bin/jeff
 FROM alpine:latest
 WORKDIR /app
 COPY --from=build-env /go/bin/jeff ./
-COPY data data/
 COPY schema.sql .
 ENTRYPOINT ["./jeff", "-debug"]
