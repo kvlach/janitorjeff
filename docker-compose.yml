@@ -8,6 +8,25 @@ services:
     depends_on:
       - postgres
       - redis
+    environment:
+      - DOMAIN=localhost
+      - PORT=5000
+      - DISCORD_TOKEN=token
+      - MIN_GOD_INTERVAL_SECONDS=600
+      - OPENAI_KEY=api-key
+      - POSTGRES_DB=dbname
+      - POSTGRES_HOST=host
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_PORT=port
+      - POSTGRES_SSLMODE=disable
+      - POSTGRES_USER=user
+      - REDIS_ADDR=host:port
+      - TIKTOK_SESSION_ID=session-id
+      - TWITCH_CHANNELS=comma,seperated,list,of,channel,names
+      - TWITCH_CLIENT_ID=cliend-id
+      - TWITCH_CLIENT_SECRET=client-secret
+      - TWITCH_OAUTH=oauth-token
+      - YOUTUBE=token
     volumes:
       - ./data:/app/data
 

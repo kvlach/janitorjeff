@@ -7,7 +7,6 @@ require (
 	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/gin-gonic/gin v1.9.0
 	github.com/janitorjeff/gosafe v0.0.0-20221201085303-bf1022fefa84
-	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.7
 	github.com/nicklaw5/helix v1.25.0
 	github.com/redis/go-redis/v9 v9.0.0-rc.4
