@@ -20,13 +20,10 @@ import (
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 	"github.com/janitorjeff/jeff-bot/frontends/twitch"
 
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
-
-var myEnv map[string]string
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -49,7 +46,7 @@ func init() {
 }
 
 func readVar(name string) string {
-	v, ok := myEnv[name]
+	v, ok := os.LookupEnv(name)
 	if !ok {
 		log.Fatal().Msgf("no $%s given", name)
 	}
@@ -79,13 +76,6 @@ func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
 }
 
 func main() {
-	// OTHER
-	var err error
-	myEnv, err = godotenv.Read("data/secrets.env")
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to read enviromental variables")
-	}
-
 	log.Debug().Msg("opening db")
 	dbConn := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%s sslmode=%s",
