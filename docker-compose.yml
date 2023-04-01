@@ -34,7 +34,7 @@ services:
   postgres:
     image: postgres
     restart: unless-stopped
-    ports:
+    expose:
       - "6000"
     environment:
       - POSTGRES_USER=user
@@ -47,7 +47,7 @@ services:
   redis:
     image: redis
     restart: unless-stopped
-    ports:
+    expose:
       - "7000"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
