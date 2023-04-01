@@ -3,7 +3,7 @@ module github.com/janitorjeff/jeff-bot
 go 1.18
 
 require (
-	github.com/bwmarrin/discordgo v0.26.1
+	github.com/bwmarrin/discordgo v0.27.1
 	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/gin-gonic/gin v1.9.0
 	github.com/janitorjeff/gosafe v0.0.0-20221201085303-bf1022fefa84
