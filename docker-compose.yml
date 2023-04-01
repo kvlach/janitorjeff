@@ -3,6 +3,7 @@ version: '3'
 services:
   jeff:
     image: ghcr.io/janitorjeff/jeff-bot:main
+    restart: unless-stopped
     ports:
       - "5000:5000"
     depends_on:
@@ -32,6 +33,7 @@ services:
 
   postgres:
     image: postgres
+    restart: unless-stopped
     ports:
       - "6000"
     environment:
@@ -44,6 +46,7 @@ services:
 
   redis:
     image: redis
+    restart: unless-stopped
     ports:
       - "7000"
     volumes:
