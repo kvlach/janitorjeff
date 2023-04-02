@@ -3,7 +3,7 @@ package twitch
 import (
 	"github.com/janitorjeff/jeff-bot/core"
 
-	tirc "github.com/gempir/go-twitch-irc/v2"
+	tirc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
