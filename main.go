@@ -127,7 +127,7 @@ func main() {
 
 	commands.Init()
 
-	go http.ListenAndServe("localhost:"+core.Port, nil)
+	go http.ListenAndServe(":"+core.Port, nil)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
