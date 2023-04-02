@@ -188,9 +188,7 @@ type Resp struct {
 }
 
 func init() {
-	r := gin.Default()
-
-	r.GET("/api/v1/commands", func(c *gin.Context) {
+	core.Gin.GET("/api/v1/commands", func(c *gin.Context) {
 		resp := Resp{
 			Prefix:     "!",
 			Categories: []string{},
@@ -252,6 +250,4 @@ func init() {
 		c.IndentedJSON(http.StatusOK, resp)
 		//c.JSON(http.StatusOK, resp)
 	})
-
-	//r.Run("localhost:" + "13420")
 }
