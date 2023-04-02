@@ -78,6 +78,7 @@ func (advanced) Init() error {
 
 		resp, err := Talk(m.Raw)
 		if err != nil {
+			log.Debug().Err(err).Msg("failed to communicate with god")
 			return
 		}
 
