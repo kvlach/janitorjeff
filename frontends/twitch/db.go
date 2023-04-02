@@ -3,7 +3,7 @@ package twitch
 import (
 	"github.com/janitorjeff/jeff-bot/core"
 
-	tirc "github.com/gempir/go-twitch-irc/v2"
+	tirc "github.com/gempir/go-twitch-irc/v4"
 )
 
 func dbAddChannelSimple(uid, uname string) (int64, error) {

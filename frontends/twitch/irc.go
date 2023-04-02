@@ -11,7 +11,7 @@ import (
 
 	"github.com/janitorjeff/jeff-bot/core"
 
-	tirc "github.com/gempir/go-twitch-irc/v2"
+	tirc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )
