@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"path"
@@ -127,7 +126,7 @@ func main() {
 
 	commands.Init()
 
-	go http.ListenAndServe(":"+core.Port, nil)
+	go core.Gin.Run(":" + core.Port)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)

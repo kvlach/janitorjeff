@@ -1,6 +1,10 @@
 package core
 
-import "time"
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
 
 var (
 	Domain          string
@@ -9,4 +13,6 @@ var (
 	YouTubeKey      string
 	OpenAIKey       string
 	MinGodInterval  time.Duration
+
+	Gin = gin.Default()
 )

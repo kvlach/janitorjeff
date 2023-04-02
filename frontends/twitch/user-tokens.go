@@ -1,11 +1,11 @@
 package twitch
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/janitorjeff/jeff-bot/core"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )
@@ -18,67 +18,65 @@ func NewState() (string, error) {
 
 func init() {
 	callback := "/twitch/callback"
-	success := "/twitch/success"
-	failure := "/twitch/failure"
 
-	fail := func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, failure, 400)
+	fail := func(c *gin.Context) {
+		c.String(http.StatusUnauthorized, "Something went wrong...")
 	}
 
-	http.HandleFunc(callback, func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
+	core.Gin.GET(callback, func(c *gin.Context) {
+		q := c.Request.URL.Query()
 
 		statesQuery, ok := q["state"]
 		if !ok || len(statesQuery) == 0 {
-			fail(w, r)
+			fail(c)
 			return
 		}
 		state := statesQuery[0]
 
 		if !states.In(state) {
 			log.Debug().Str("state", state).Msg("got unexpected state")
-			fail(w, r)
+			fail(c)
 			return
 		}
 		states.Delete(state)
 
 		codes, ok := q["code"]
 		if !ok || len(codes) == 0 {
-			fail(w, r)
+			fail(c)
 			return
 		}
 		code := codes[0]
 
-		c, err := helix.NewClient(&helix.Options{
+		client, err := helix.NewClient(&helix.Options{
 			ClientID:     ClientID,
 			ClientSecret: ClientSecret,
 			RedirectURI:  "https://" + core.Domain + callback,
 		})
 		if err != nil {
 			log.Debug().Err(err).Send()
-			fail(w, r)
+			fail(c)
 			return
 		}
 
-		resp, err := c.RequestUserAccessToken(code)
+		resp, err := client.RequestUserAccessToken(code)
 		if err != nil {
 			log.Debug().Err(err).Send()
-			fail(w, r)
+			fail(c)
 			return
 		}
 
 		accessToken := resp.Data.AccessToken
 		refreshToken := resp.Data.RefreshToken
 
-		isValid, res, err := c.ValidateToken(accessToken)
+		isValid, res, err := client.ValidateToken(accessToken)
 		if err != nil {
 			log.Debug().Err(err).Send()
-			fail(w, r)
+			fail(c)
 			return
 		}
 		if !isValid {
 			log.Debug().Msg("token invalid")
-			fail(w, r)
+			fail(c)
 			return
 		}
 
@@ -87,18 +85,10 @@ func init() {
 		err = dbSetUserAccessToken(accessToken, refreshToken, userID)
 		if err != nil {
 			log.Debug().Err(err).Send()
-			fail(w, r)
+			fail(c)
 			return
 		}
 
-		http.Redirect(w, r, success, 301)
-	})
-
-	http.HandleFunc(success, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Success!!!")
-	})
-
-	http.HandleFunc(failure, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Something went wrong...")
+		c.String(http.StatusOK, "Success!!!")
 	})
 }
