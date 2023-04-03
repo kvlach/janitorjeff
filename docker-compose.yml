@@ -10,7 +10,7 @@ services:
       - postgres
       - redis
     environment:
-      - DOMAIN=localhost
+      - VIRTUAL_HOST=localhost
       - PORT=5000
       - DISCORD_TOKEN=token
       - MIN_GOD_INTERVAL_SECONDS=600

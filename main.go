@@ -101,7 +101,7 @@ func main() {
 	core.Commands = &commands.Commands
 	core.DB = db
 	core.Port = readVar("PORT")
-	core.Domain = readVar("DOMAIN")
+	core.VirtualHost = readVar("VIRTUAL_HOST")
 	core.YouTubeKey = readVar("YOUTUBE")
 	core.TikTokSessionID = readVar("TIKTOK_SESSION_ID")
 	core.OpenAIKey = readVar("OPENAI_KEY")
@@ -126,7 +126,7 @@ func main() {
 
 	commands.Init()
 
-	core.Gin.SetTrustedProxies([]string{core.Domain})
+	core.Gin.SetTrustedProxies([]string{core.VirtualHost})
 	go core.Gin.Run(":" + core.Port)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")

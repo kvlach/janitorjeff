@@ -50,7 +50,7 @@ func init() {
 		client, err := helix.NewClient(&helix.Options{
 			ClientID:     ClientID,
 			ClientSecret: ClientSecret,
-			RedirectURI:  "https://" + core.Domain + callback,
+			RedirectURI:  "https://" + core.VirtualHost + callback,
 		})
 		if err != nil {
 			log.Debug().Err(err).Send()
