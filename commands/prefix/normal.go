@@ -32,6 +32,10 @@ func (normal) Category() core.CommandCategory {
 	return Advanced.Category()
 }
 
+func (normal) Examples() []string {
+	return nil
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }
@@ -86,6 +90,10 @@ func (c normalAdd) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (normalAdd) Examples() []string {
+	return nil
+}
+
 func (normalAdd) Parent() core.CommandStatic {
 	return Normal
 }
@@ -136,6 +144,10 @@ func (c normalDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (normalDelete) Examples() []string {
+	return nil
+}
+
 func (normalDelete) Parent() core.CommandStatic {
 	return Normal
 }
@@ -184,6 +196,10 @@ func (normalReset) UsageArgs() string {
 
 func (c normalReset) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (normalReset) Examples() []string {
+	return nil
 }
 
 func (normalReset) Parent() core.CommandStatic {

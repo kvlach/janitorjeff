@@ -40,6 +40,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -98,6 +102,10 @@ func (advancedPlay) UsageArgs() string {
 
 func (c advancedPlay) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedPlay) Examples() []string {
+	return nil
 }
 
 func (advancedPlay) Parent() core.CommandStatic {
@@ -198,6 +206,10 @@ func (c advancedPause) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedPause) Examples() []string {
+	return nil
+}
+
 func (advancedPause) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -292,6 +304,10 @@ func (advancedResume) UsageArgs() string {
 
 func (c advancedResume) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedResume) Examples() []string {
+	return nil
 }
 
 func (advancedResume) Parent() core.CommandStatic {
@@ -391,6 +407,10 @@ func (c advancedSkip) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedSkip) Examples() []string {
+	return nil
+}
+
 func (advancedSkip) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -486,6 +506,10 @@ func (c advancedLoop) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedLoop) Examples() []string {
+	return nil
+}
+
 func (advancedLoop) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -539,6 +563,10 @@ func (advancedLoopOn) UsageArgs() string {
 
 func (c advancedLoopOn) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedLoopOn) Examples() []string {
+	return nil
 }
 
 func (advancedLoopOn) Parent() core.CommandStatic {
@@ -636,6 +664,10 @@ func (c advancedLoopOff) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedLoopOff) Examples() []string {
+	return nil
+}
+
 func (advancedLoopOff) Parent() core.CommandStatic {
 	return AdvancedLoop
 }
@@ -729,6 +761,10 @@ func (advancedQueue) UsageArgs() string {
 
 func (c advancedQueue) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedQueue) Examples() []string {
+	return nil
 }
 
 func (advancedQueue) Parent() core.CommandStatic {

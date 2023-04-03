@@ -40,6 +40,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -128,6 +132,10 @@ func (advancedShow) UsageArgs() string {
 
 func (c advancedShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedShow) Examples() []string {
+	return nil
 }
 
 func (advancedShow) Parent() core.CommandStatic {
@@ -227,6 +235,10 @@ func (advancedSet) UsageArgs() string {
 
 func (c advancedSet) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedSet) Examples() []string {
+	return nil
 }
 
 func (advancedSet) Parent() core.CommandStatic {
@@ -329,6 +341,10 @@ func (advancedDelete) UsageArgs() string {
 
 func (c advancedDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedDelete) Examples() []string {
+	return nil
 }
 
 func (advancedDelete) Parent() core.CommandStatic {

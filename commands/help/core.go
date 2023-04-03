@@ -29,10 +29,10 @@ const (
 
 var errCommandNotFound = errors.New("Command could not be found.")
 
-func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, error) {
+func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, []string, error) {
 	cmdStatic, index, err := core.Commands.Match(t, m, args)
 	if err != nil {
-		return nil, nil, errCommandNotFound
+		return nil, nil, nil, errCommandNotFound
 	}
 
 	cmd := &core.Command{
@@ -61,7 +61,7 @@ func runCore(t core.CommandType, m *core.Message, args []string, prefix string) 
 		Str("name", cmdName).
 		Msg("filtered out command aliases")
 
-	return cmd, aliases, nil
+	return cmd, aliases, cmdStatic.Examples(), nil
 }
 
 func renderText(cmd *core.Command, aliases []string) string {
@@ -79,11 +79,24 @@ func renderText(cmd *core.Command, aliases []string) string {
 	return help.String()
 }
 
-func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
+func renderDiscord(cmd *core.Command, aliases []string, examples []string) *dg.MessageEmbed {
 	var desc strings.Builder
 
 	if cmd.Description() != "" {
 		fmt.Fprintf(&desc, "*%s*", cmd.Description())
+	}
+
+	if len(examples) > 0 {
+		base := fmt.Sprintf("%s%s ", cmd.Prefix, strings.Join(cmd.Path, " "))
+		for i := range examples {
+			if len(examples[i]) == 0 {
+				// trim space that is present so no arg follows
+				examples[i] = fmt.Sprintf("- `%s`", base[:len(base)-1])
+			} else {
+				examples[i] = fmt.Sprintf("- `%s%s`", base, examples[i])
+			}
+		}
+		fmt.Fprintf(&desc, "\n\nExamples:\n%s", strings.Join(examples, "\n"))
 	}
 
 	if len(aliases) > 0 {
@@ -110,15 +123,15 @@ func renderDiscord(cmd *core.Command, aliases []string) *dg.MessageEmbed {
 }
 
 func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
-	cmd, aliases, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
+	cmd, aliases, examples, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}, usrErr, nil
 	}
-	return renderDiscord(cmd, aliases), nil, nil
+	return renderDiscord(cmd, aliases, examples), nil, nil
 }
 
 func runText(t core.CommandType, m *core.Message) (string, error, error) {
-	cmd, aliases, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
+	cmd, aliases, _, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if usrErr != nil {
 		return fmt.Sprint(usrErr), usrErr, nil
 	}

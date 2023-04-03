@@ -44,6 +44,10 @@ func (normal) Category() core.CommandCategory {
 	return core.CommandCategoryGames
 }
 
+func (normal) Examples() []string {
+	return nil
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

@@ -41,6 +41,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryModerators
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -116,6 +120,10 @@ func (advancedAdd) UsageArgs() string {
 
 func (c advancedAdd) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedAdd) Examples() []string {
+	return nil
 }
 
 func (advancedAdd) Parent() core.CommandStatic {
@@ -234,6 +242,10 @@ func (c advancedEdit) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedEdit) Examples() []string {
+	return nil
+}
+
 func (advancedEdit) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -346,6 +358,10 @@ func (advancedDelete) UsageArgs() string {
 
 func (c advancedDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedDelete) Examples() []string {
+	return nil
 }
 
 func (advancedDelete) Parent() core.CommandStatic {
@@ -461,6 +477,10 @@ func (c advancedList) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedList) Examples() []string {
+	return nil
+}
+
 func (advancedList) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -560,6 +580,10 @@ func (advancedHistory) UsageArgs() string {
 
 func (c advancedHistory) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedHistory) Examples() []string {
+	return nil
 }
 
 func (advancedHistory) Parent() core.CommandStatic {
