@@ -25,6 +25,9 @@ func (h Here) Scope() (int64, error) {
 	rdbKey := "frontend_twitch_scope_" + h.ID()
 
 	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
+	if err != nil && err != redis.Nil {
+		return -1, err
+	}
 	if err != redis.Nil {
 		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
 		return scope, nil

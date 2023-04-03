@@ -26,6 +26,9 @@ func (h *Here) ScopeExact() (int64, error) {
 	rdbKey := "frontend_discord_scope_here_exact_" + h.ID()
 
 	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
+	if err != nil && err != redis.Nil {
+		return -1, err
+	}
 	if err != redis.Nil {
 		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
 		return scope, nil
@@ -45,6 +48,9 @@ func (h *Here) ScopeLogical() (int64, error) {
 	rdbKey := "frontend_discord_scope_here_logical_" + h.ID()
 
 	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
+	if err != nil && err != redis.Nil {
+		return -1, err
+	}
 	if err != redis.Nil {
 		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
 		return scope, nil
