@@ -8,14 +8,10 @@ import (
 	"sync"
 
 	_ "github.com/lib/pq"
-	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
-var (
-	DB  *SQLDB
-	RDB *redis.Client
-)
+var DB *SQLDB
 
 var ctx = context.Background()
 

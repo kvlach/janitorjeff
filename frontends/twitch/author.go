@@ -4,8 +4,6 @@ import (
 	"github.com/janitorjeff/jeff-bot/core"
 
 	tirc "github.com/gempir/go-twitch-irc/v4"
-	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog/log"
 )
 
 // Author implements both the core.Author and core.Here interfaces since users
@@ -56,25 +54,11 @@ func (a Author) Subscriber() bool {
 }
 
 func (a Author) Scope() (int64, error) {
-	slog := log.With().Str("author", a.ID()).Logger()
 	rdbKey := "frontend_twitch_scope_" + a.ID()
 
-	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
-	if err != nil && err != redis.Nil {
-		return -1, err
-	}
-	if err != redis.Nil {
-		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
-		return scope, nil
-	}
-
-	scope, err = dbAddChannel(a.ID(), a.User, nil)
-	if err != nil {
-		return -1, err
-	}
-	err = core.RDB.Set(ctx, rdbKey, scope, 0).Err()
-	slog.Debug().Err(err).Int64("scope", scope).Msg("CACHE: cached scope")
-	return scope, err
+	return core.CacheScope(rdbKey, func() (int64, error) {
+		return dbAddChannel(a.ID(), a.User, nil)
+	})
 }
 
 func (a Author) ScopeExact() (int64, error) {
