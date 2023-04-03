@@ -126,6 +126,7 @@ func main() {
 
 	commands.Init()
 
+	core.Gin.SetTrustedProxies([]string{core.Domain})
 	go core.Gin.Run(":" + core.Port)
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
