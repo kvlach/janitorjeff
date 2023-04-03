@@ -187,67 +187,71 @@ type Resp struct {
 	Commands   []CommandJSON `json:"commands"`
 }
 
+func ToJSON(t core.CommandType) Resp {
+	resp := Resp{
+		Prefix:     "!",
+		Categories: []string{},
+		Commands:   []CommandJSON{},
+	}
+
+	commandsIndex := map[core.CommandStatic]int{}
+
+	categories := map[core.CommandCategory]struct{}{}
+
+	Commands.Recurse(func(cmd core.CommandStatic) {
+		if cmd.Type() != t {
+			return
+		}
+
+		cmdJSON := CommandJSON{
+			Names:       cmd.Names(),
+			Description: cmd.Description(),
+			Example:     "Example.",
+			Category:    string(cmd.Category()),
+		}
+
+		if cmd.Parent() == nil {
+			cmdJSON.Parent = -1
+		} else {
+			cmdJSON.Parent = commandsIndex[cmd.Parent()]
+		}
+
+		if cmd.Children() == nil {
+			cmdJSON.Children = []int{}
+		}
+
+		commandsIndex[cmd] = len(resp.Commands)
+		resp.Commands = append(resp.Commands, cmdJSON)
+
+		categories[cmd.Category()] = struct{}{}
+	})
+
+	Commands.Recurse(func(cmd core.CommandStatic) {
+		if cmd.Type() != core.Normal {
+			return
+		}
+
+		if cmd.Children() == nil {
+			return
+		}
+
+		index := commandsIndex[cmd]
+
+		for _, child := range cmd.Children() {
+			resp.Commands[index].Children = append(resp.Commands[index].Children, commandsIndex[child])
+		}
+	})
+
+	for cat, _ := range categories {
+		resp.Categories = append(resp.Categories, string(cat))
+	}
+
+	return resp
+}
+
 func init() {
 	core.Gin.GET("/api/v1/commands", func(c *gin.Context) {
-		resp := Resp{
-			Prefix:     "!",
-			Categories: []string{},
-			Commands:   []CommandJSON{},
-		}
-
-		commandsIndex := map[core.CommandStatic]int{}
-
-		categories := map[core.CommandCategory]struct{}{}
-
-		Commands.Recurse(func(cmd core.CommandStatic) {
-			if cmd.Type() != core.Normal {
-				return
-			}
-
-			cmdJSON := CommandJSON{
-				Names:       cmd.Names(),
-				Description: cmd.Description(),
-				Example:     "Example.",
-				Category:    string(cmd.Category()),
-			}
-
-			if cmd.Parent() == nil {
-				cmdJSON.Parent = -1
-			} else {
-				cmdJSON.Parent = commandsIndex[cmd.Parent()]
-			}
-
-			if cmd.Children() == nil {
-				cmdJSON.Children = []int{}
-			}
-
-			commandsIndex[cmd] = len(resp.Commands)
-			resp.Commands = append(resp.Commands, cmdJSON)
-
-			categories[cmd.Category()] = struct{}{}
-		})
-
-		Commands.Recurse(func(cmd core.CommandStatic) {
-			if cmd.Type() != core.Normal {
-				return
-			}
-
-			if cmd.Children() == nil {
-				return
-			}
-
-			index := commandsIndex[cmd]
-
-			for _, child := range cmd.Children() {
-				resp.Commands[index].Children = append(resp.Commands[index].Children, commandsIndex[child])
-			}
-		})
-
-		for cat, _ := range categories {
-			resp.Categories = append(resp.Categories, string(cat))
-		}
-
-		c.IndentedJSON(http.StatusOK, resp)
+		c.IndentedJSON(http.StatusOK, ToJSON(core.Normal))
 		//c.JSON(http.StatusOK, resp)
 	})
 }
