@@ -2,9 +2,6 @@ package twitch
 
 import (
 	"github.com/janitorjeff/jeff-bot/core"
-
-	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog/log"
 )
 
 type Here struct {
@@ -21,25 +18,11 @@ func (h Here) Name() string {
 }
 
 func (h Here) Scope() (int64, error) {
-	slog := log.With().Str("here", h.ID()).Logger()
 	rdbKey := "frontend_twitch_scope_" + h.ID()
 
-	scope, err := core.RDB.Get(ctx, rdbKey).Int64()
-	if err != nil && err != redis.Nil {
-		return -1, err
-	}
-	if err != redis.Nil {
-		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
-		return scope, nil
-	}
-
-	scope, err = dbAddChannelSimple(h.ID(), h.Name())
-	if err != nil {
-		return -1, err
-	}
-	err = core.RDB.Set(ctx, rdbKey, scope, 0).Err()
-	slog.Debug().Err(err).Int64("scope", scope).Msg("CACHE: cached scope")
-	return scope, err
+	return core.CacheScope(rdbKey, func() (int64, error) {
+		return dbAddChannelSimple(h.ID(), h.Name())
+	})
 }
 
 func (h Here) ScopeExact() (int64, error) {
