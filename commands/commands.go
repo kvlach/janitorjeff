@@ -227,7 +227,7 @@ func ToJSON(t core.CommandType) Resp {
 	})
 
 	Commands.Recurse(func(cmd core.CommandStatic) {
-		if cmd.Type() != core.Normal {
+		if cmd.Type() != t {
 			return
 		}
 
@@ -251,7 +251,16 @@ func ToJSON(t core.CommandType) Resp {
 
 func init() {
 	core.Gin.GET("/api/v1/commands", func(c *gin.Context) {
-		c.IndentedJSON(http.StatusOK, ToJSON(core.Normal))
-		//c.JSON(http.StatusOK, resp)
+		var t core.CommandType
+		switch c.DefaultQuery("type", "normal") {
+		case "normal":
+			t = core.Normal
+		case "advanced":
+			t = core.Advanced
+		default:
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
+			return
+		}
+		c.JSON(http.StatusOK, ToJSON(t))
 	})
 }
