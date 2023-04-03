@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	Domain          string
+	VirtualHost     string
 	Port            string
 	TikTokSessionID string
 	YouTubeKey      string
