@@ -47,6 +47,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -150,6 +154,10 @@ func (c advancedTalk) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedTalk) Examples() []string {
+	return nil
+}
+
 func (advancedTalk) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -234,6 +242,10 @@ func (c advancedReply) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedReply) Examples() []string {
+	return nil
+}
+
 func (advancedReply) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -286,6 +298,10 @@ func (advancedReplyShow) UsageArgs() string {
 
 func (c advancedReplyShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedReplyShow) Examples() []string {
+	return nil
 }
 
 func (advancedReplyShow) Parent() core.CommandStatic {
@@ -377,6 +393,10 @@ func (c advancedReplyOn) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedReplyOn) Examples() []string {
+	return nil
+}
+
 func (advancedReplyOn) Parent() core.CommandStatic {
 	return AdvancedReply
 }
@@ -461,6 +481,10 @@ func (advancedReplyOff) UsageArgs() string {
 
 func (c advancedReplyOff) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedReplyOff) Examples() []string {
+	return nil
 }
 
 func (advancedReplyOff) Parent() core.CommandStatic {
@@ -551,6 +575,10 @@ func (c advancedInterval) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedInterval) Examples() []string {
+	return nil
+}
+
 func (advancedInterval) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -602,6 +630,10 @@ func (c advancedIntervalShow) UsageArgs() string {
 
 func (c advancedIntervalShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedIntervalShow) Examples() []string {
+	return nil
 }
 
 func (advancedIntervalShow) Parent() core.CommandStatic {
@@ -690,6 +722,10 @@ func (c advancedIntervalSet) UsageArgs() string {
 
 func (c advancedIntervalSet) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedIntervalSet) Examples() []string {
+	return nil
 }
 
 func (advancedIntervalSet) Parent() core.CommandStatic {

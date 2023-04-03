@@ -35,6 +35,10 @@ func (normal) Category() core.CommandCategory {
 	return Advanced.Category()
 }
 
+func (normal) Examples() []string {
+	return nil
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }
@@ -118,6 +122,10 @@ func (normalZone) UsageArgs() string {
 
 func (c normalZone) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (normalZone) Examples() []string {
+	return nil
 }
 
 func (normalZone) Parent() core.CommandStatic {

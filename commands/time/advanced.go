@@ -50,6 +50,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -113,6 +117,10 @@ func (advancedNow) UsageArgs() string {
 
 func (c advancedNow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedNow) Examples() []string {
+	return nil
 }
 
 func (advancedNow) Parent() core.CommandStatic {
@@ -233,6 +241,10 @@ func (c advancedConvert) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedConvert) Examples() []string {
+	return nil
+}
+
 func (advancedConvert) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -328,6 +340,10 @@ func (advancedTimestamp) UsageArgs() string {
 
 func (c advancedTimestamp) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedTimestamp) Examples() []string {
+	return nil
 }
 
 func (advancedTimestamp) Parent() core.CommandStatic {
@@ -448,6 +464,10 @@ func (c advancedTimezone) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedTimezone) Examples() []string {
+	return nil
+}
+
 func (advancedTimezone) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -500,6 +520,10 @@ func (advancedTimezoneShow) UsageArgs() string {
 
 func (c advancedTimezoneShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedTimezoneShow) Examples() []string {
+	return nil
 }
 
 func (advancedTimezoneShow) Parent() core.CommandStatic {
@@ -599,6 +623,10 @@ func (advancedTimezoneSet) UsageArgs() string {
 
 func (c advancedTimezoneSet) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedTimezoneSet) Examples() []string {
+	return nil
 }
 
 func (advancedTimezoneSet) Parent() core.CommandStatic {
@@ -711,6 +739,10 @@ func (c advancedTimezoneDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedTimezoneDelete) Examples() []string {
+	return nil
+}
+
 func (advancedTimezoneDelete) Parent() core.CommandStatic {
 	return AdvancedTimezone
 }
@@ -803,6 +835,10 @@ func (c advancedRemind) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedRemind) Examples() []string {
+	return nil
+}
+
 func (advancedRemind) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -855,6 +891,10 @@ func (advancedRemindAdd) UsageArgs() string {
 
 func (c advancedRemindAdd) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedRemindAdd) Examples() []string {
+	return nil
 }
 
 func (advancedRemindAdd) Parent() core.CommandStatic {
@@ -957,6 +997,10 @@ func (advancedRemindDelete) UsageArgs() string {
 
 func (c advancedRemindDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedRemindDelete) Examples() []string {
+	return nil
 }
 
 func (advancedRemindDelete) Parent() core.CommandStatic {
@@ -1064,6 +1108,10 @@ func (advancedRemindList) UsageArgs() string {
 
 func (c advancedRemindList) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedRemindList) Examples() []string {
+	return nil
 }
 
 func (advancedRemindList) Parent() core.CommandStatic {

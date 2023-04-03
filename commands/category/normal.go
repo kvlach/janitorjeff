@@ -32,6 +32,10 @@ func (normal) Category() core.CommandCategory {
 	return Advanced.Category()
 }
 
+func (normal) Examples() []string {
+	return append([]string{""}, AdvancedEdit.Examples()...)
+}
+
 func (normal) Parent() core.CommandStatic {
 	return nil
 }

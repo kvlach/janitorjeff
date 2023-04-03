@@ -39,6 +39,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }

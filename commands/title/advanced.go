@@ -40,6 +40,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryModerators
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -91,6 +95,10 @@ func (advancedShow) UsageArgs() string {
 
 func (c advancedShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedShow) Examples() []string {
+	return nil
 }
 
 func (advancedShow) Parent() core.CommandStatic {
@@ -156,6 +164,10 @@ func (advancedEdit) UsageArgs() string {
 
 func (c advancedEdit) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedEdit) Examples() []string {
+	return nil
 }
 
 func (advancedEdit) Parent() core.CommandStatic {

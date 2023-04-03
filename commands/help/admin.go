@@ -32,6 +32,10 @@ func (admin) Category() core.CommandCategory {
 	return Advanced.Category()
 }
 
+func (admin) Examples() []string {
+	return nil
+}
+
 func (admin) Parent() core.CommandStatic {
 	return nil
 }

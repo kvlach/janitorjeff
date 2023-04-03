@@ -37,6 +37,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -88,6 +92,10 @@ func (advancedSearch) UsageArgs() string {
 
 func (c advancedSearch) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedSearch) Examples() []string {
+	return nil
 }
 
 func (advancedSearch) Parent() core.CommandStatic {
@@ -171,6 +179,10 @@ func (advancedRandom) UsageArgs() string {
 
 func (c advancedRandom) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedRandom) Examples() []string {
+	return nil
 }
 
 func (advancedRandom) Parent() core.CommandStatic {

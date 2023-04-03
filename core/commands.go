@@ -71,6 +71,11 @@ type CommandStatic interface {
 	// they are split up instead of having them all in a giant list).
 	Category() CommandCategory
 
+	// Example returns a list of strings with example usages of the command.
+	// Only the arguments passed should be included, not the prefix and the
+	// chain of command names.
+	Examples() []string
+
 	// Parent returns a command's parent, returns nil if there is no parent.
 	Parent() CommandStatic
 

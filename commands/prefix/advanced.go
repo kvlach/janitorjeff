@@ -34,6 +34,10 @@ func (advanced) Category() core.CommandCategory {
 	return core.CommandCategoryModerators
 }
 
+func (advanced) Examples() []string {
+	return nil
+}
+
 func (advanced) Parent() core.CommandStatic {
 	return nil
 }
@@ -103,6 +107,10 @@ func (c advancedAdd) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedAdd) Examples() []string {
+	return nil
+}
+
 func (advancedAdd) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -151,6 +159,10 @@ func (advancedDelete) UsageArgs() string {
 
 func (c advancedDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedDelete) Examples() []string {
+	return nil
 }
 
 func (advancedDelete) Parent() core.CommandStatic {
@@ -203,6 +215,10 @@ func (c advancedList) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (advancedList) Examples() []string {
+	return nil
+}
+
 func (advancedList) Parent() core.CommandStatic {
 	return Advanced
 }
@@ -253,6 +269,10 @@ func (advancedReset) UsageArgs() string {
 
 func (c advancedReset) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (advancedReset) Examples() []string {
+	return nil
 }
 
 func (advancedReset) Parent() core.CommandStatic {

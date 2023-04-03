@@ -39,6 +39,10 @@ func (admin) Category() core.CommandCategory {
 	return core.CommandCategoryOther
 }
 
+func (admin) Examples() []string {
+	return nil
+}
+
 func (admin) Parent() core.CommandStatic {
 	return nil
 }
@@ -91,6 +95,10 @@ func (adminShow) UsageArgs() string {
 
 func (c adminShow) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (adminShow) Examples() []string {
+	return nil
 }
 
 func (adminShow) Parent() core.CommandStatic {
@@ -186,6 +194,10 @@ func (c adminSet) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
+func (adminSet) Examples() []string {
+	return nil
+}
+
 func (adminSet) Parent() core.CommandStatic {
 	return Admin
 }
@@ -272,6 +284,10 @@ func (adminDelete) UsageArgs() string {
 
 func (c adminDelete) Category() core.CommandCategory {
 	return c.Parent().Category()
+}
+
+func (adminDelete) Examples() []string {
+	return nil
 }
 
 func (adminDelete) Parent() core.CommandStatic {
