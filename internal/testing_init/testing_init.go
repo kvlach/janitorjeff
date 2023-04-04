@@ -1,0 +1,17 @@
+package testing_init
+
+import (
+	"os"
+	"path"
+	"runtime"
+)
+
+// Thanks https://stackoverflow.com/a/70050794
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..", "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}

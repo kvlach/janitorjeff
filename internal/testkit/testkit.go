@@ -1,52 +1,91 @@
 package testkit
 
 import (
+	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
 	"github.com/janitorjeff/jeff-bot/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 type TestDB struct {
-	name string
-	db   *core.SQLDB
+	*core.SQLDB
 }
 
-func NewTestDB(name string) *TestDB {
-	name = fmt.Sprintf("%d-%s", time.Now().UnixNano(), name)
-
-	db, err := core.Open("sqlite3", name)
+func NewTestDB() *TestDB {
+	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable")
 	if err != nil {
-		log.Fatalf("failed to open DB: %v\n", err)
+		log.Fatalf("failed to connect: %v\n", err)
 	}
 
-	globals := &core.GlobalVars{
-		DB: db,
+	if _, err := conn.Exec("CREATE DATABASE test_db"); err != nil {
+		log.Fatalf("failed to create test database: %v\n", err)
 	}
-	core.GlobalsInit(globals)
 
-	tdb := &TestDB{
-		name: name,
-		db:   db,
+	if _, err := conn.Exec("CREATE USER test_user WITH PASSWORD 'test_pass'"); err != nil {
+		log.Fatalf("failed to set test database password: %v\n", err)
 	}
-	return tdb
+
+	if _, err = conn.Exec("GRANT ALL PRIVILEGES ON DATABASE test_db TO test_user"); err != nil {
+		log.Fatalf("failed to give prvileges to test_user: %v\n", err)
+	}
+
+	conn.Close()
+
+	conn, err = sql.Open("postgres", "user=postgres password=postgres dbname=test_db sslmode=disable")
+	if _, err := conn.Exec("GRANT ALL ON SCHEMA PUBLIC TO test_user;"); err != nil {
+		log.Fatalf("failed to grant all on schema public: %v\n", err)
+	}
+	conn.Close()
+
+	sqlDB, err := sql.Open("postgres", "user=test_user password=test_pass dbname=test_db sslmode=disable")
+	if err != nil {
+		log.Fatalf("failed to connect to test_db: %v\n", err)
+	}
+
+	schema, err := ioutil.ReadFile("schema.sql")
+	if err != nil {
+		log.Fatalf("failed to read schema file: %v\n", err)
+	}
+
+	db := &core.SQLDB{DB: sqlDB}
+	if err := db.Init(string(schema)); err != nil {
+		log.Fatalf("failed to init schema: %v\n", err)
+	}
+	core.RDB = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	core.DB = db
+	return &TestDB{db}
 }
 
 func (tdb *TestDB) Delete() {
-	err := os.Remove(tdb.name)
+	if err := tdb.DB.Close(); err != nil {
+		log.Fatalf("failed to close testing DB: %v\n", err)
+	}
+
+	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable")
 	if err != nil {
+		log.Fatalf("failed to connect: %v\n", err)
+	}
+	defer conn.Close()
+
+	if _, err := conn.Exec("DROP DATABASE test_db"); err != nil {
 		log.Fatalf("failed to delete DB: %v\n", err)
 	}
-}
 
-func (tdb *TestDB) Schema(schema string) error {
-	return tdb.db.Init(schema)
+	if _, err := conn.Exec("DROP USER test_user"); err != nil {
+		log.Fatalf("failed to delete DB: %v\n", err)
+	}
 }
 
 type TestMessage struct {
@@ -87,7 +126,7 @@ func (tm *TestMessage) DiscordRandom() *TestMessage {
 		},
 	}
 
-	msgTmp := discord.MessageCreate{Session: nil, Message: dgMsg}
+	msgTmp := discord.MessageCreate{Message: dgMsg}
 
 	msg, err := msgTmp.Parse()
 	if err != nil {

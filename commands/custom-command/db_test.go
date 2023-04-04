@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	_ "github.com/janitorjeff/jeff-bot/internal/testing_init"
 	"github.com/janitorjeff/jeff-bot/internal/testkit"
 	"github.com/rs/zerolog"
 )
@@ -90,22 +91,17 @@ func TestDBHistory(t *testing.T) {
 func TestMain(m *testing.M) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	tdb := testkit.NewTestDB("test.db")
-
-	if err := tdb.Schema(dbShema); err != nil {
-		log.Fatalf("failed to init schema: %v", err)
-	}
-
+	tdb := testkit.NewTestDB()
 	msg := testkit.NewTestMessage().DiscordRandom()
 
 	var err error
 
-	testScope, err = msg.HereLogical()
+	testScope, err = msg.Here.ScopeLogical()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	testAuthor, err = msg.Author()
+	testAuthor, err = msg.Author.Scope()
 	if err != nil {
 		log.Fatalln(err)
 	}
