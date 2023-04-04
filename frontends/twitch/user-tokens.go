@@ -82,7 +82,13 @@ func init() {
 
 		userID := res.Data.UserID
 
-		err = dbSetUserAccessToken(accessToken, refreshToken, userID)
+		scope, err := dbAddChannelSimple(userID, res.Data.Login)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Internal error")
+			return
+		}
+
+		err = dbSetUserAccessToken(scope, accessToken, refreshToken)
 		if err != nil {
 			log.Debug().Err(err).Send()
 			fail(c)
