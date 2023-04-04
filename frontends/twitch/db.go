@@ -87,20 +87,15 @@ func dbGetChannel(scope int64) (string, string, error) {
 	return id, name, err
 }
 
-func dbSetUserAccessToken(accessToken, refreshToken, channelID string) error {
+func dbSetUserAccessToken(scope int64, accessToken, refreshToken string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	// _, err := twitchChannelAddChannel(Channel, channelID, channelID, channelName)
-	// if err != nil {
-	// 	return err
-	// }
-
 	_, err := db.DB.Exec(`
 		UPDATE frontend_twitch_channels
 		SET access_token = $1, refresh_token = $2
-		WHERE channel_id = $3`, accessToken, refreshToken, channelID)
+		WHERE scope = $3`, accessToken, refreshToken, scope)
 
 	return err
 }
