@@ -1,4 +1,4 @@
-name: Go package
+name: Run Tests
 
 on: [push]
 
@@ -8,8 +8,7 @@ env:
   REDIS_ADDR: localhost:6379
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     services:
