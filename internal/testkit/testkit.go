@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/janitorjeff/jeff-bot/core"
@@ -20,8 +21,22 @@ type TestDB struct {
 	*core.SQLDB
 }
 
+func readVar(name string) string {
+	v, ok := os.LookupEnv(name)
+	if !ok {
+		log.Fatalf("no $%s given", name)
+	}
+	return v
+}
+
+var dbAddr string
+
+func init() {
+	dbAddr = fmt.Sprintf(" host=%s port=%s", readVar("POSTGRES_HOST"), readVar("POSTGRES_PORT"))
+}
+
 func NewTestDB() *TestDB {
-	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable")
+	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable"+dbAddr)
 	if err != nil {
 		log.Fatalf("failed to connect: %v\n", err)
 	}
@@ -40,13 +55,13 @@ func NewTestDB() *TestDB {
 
 	conn.Close()
 
-	conn, err = sql.Open("postgres", "user=postgres password=postgres dbname=test_db sslmode=disable")
+	conn, err = sql.Open("postgres", "user=postgres password=postgres dbname=test_db sslmode=disable"+dbAddr)
 	if _, err := conn.Exec("GRANT ALL ON SCHEMA PUBLIC TO test_user;"); err != nil {
 		log.Fatalf("failed to grant all on schema public: %v\n", err)
 	}
 	conn.Close()
 
-	sqlDB, err := sql.Open("postgres", "user=test_user password=test_pass dbname=test_db sslmode=disable")
+	sqlDB, err := sql.Open("postgres", "user=test_user password=test_pass dbname=test_db sslmode=disable"+dbAddr)
 	if err != nil {
 		log.Fatalf("failed to connect to test_db: %v\n", err)
 	}
@@ -61,7 +76,7 @@ func NewTestDB() *TestDB {
 		log.Fatalf("failed to init schema: %v\n", err)
 	}
 	core.RDB = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: readVar("REDIS_ADDR"),
 	})
 
 	core.DB = db
@@ -73,7 +88,7 @@ func (tdb *TestDB) Delete() {
 		log.Fatalf("failed to close testing DB: %v\n", err)
 	}
 
-	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable")
+	conn, err := sql.Open("postgres", "user=postgres password=postgres sslmode=disable"+dbAddr)
 	if err != nil {
 		log.Fatalf("failed to connect: %v\n", err)
 	}
