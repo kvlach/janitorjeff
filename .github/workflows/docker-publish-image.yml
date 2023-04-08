@@ -1,8 +1,13 @@
 name: Create and publish a Docker image
 
+# Only run after the tests have been completed, in main
 on:
-  push:
-    branches: ['main']
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches:
+      - main
+    types:
+      - completed
 
 env:
   REGISTRY: ghcr.io
@@ -10,6 +15,8 @@ env:
 
 jobs:
   build-and-push-image:
+    # make sure the tests run successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
