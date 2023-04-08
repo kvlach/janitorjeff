@@ -92,6 +92,10 @@ func List(place int64) ([]string, error) {
 	return dbList(place)
 }
 
+func Show(place int64, trigger string) (string, error) {
+	return dbGetResponse(place, trigger)
+}
+
 func History(place int64, trigger string) ([]customCommand, error) {
 	// We don't check to see if the trigger exists since this command may be
 	// used to view the history of a deleted trigger

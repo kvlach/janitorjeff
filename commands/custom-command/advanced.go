@@ -76,7 +76,7 @@ func (advanced) writeCustomCommand(m *core.Message) {
 		return
 	}
 
-	resp, err := dbGetResponse(here, fields[0])
+	resp, err := Show(here, fields[0])
 	if err != nil {
 		return
 	}
