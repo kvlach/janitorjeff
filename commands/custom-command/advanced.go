@@ -181,9 +181,9 @@ func (advancedAdd) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been added.", trigger)
-	case errTriggerExists:
+	case ErrTriggerExists:
 		return fmt.Sprintf("Custom command %s already exists.", trigger)
-	case errBuiltinCommand:
+	case ErrBuiltinCommand:
 		return fmt.Sprintf("Command %s already exists as a built-in command.", trigger)
 	default:
 		return "Something went wrong..."
@@ -301,7 +301,7 @@ func (advancedEdit) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
-	case errTriggerNotFound:
+	case ErrTriggerNotFound:
 		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
@@ -419,7 +419,7 @@ func (advancedDelete) err(usrErr error, trigger string) string {
 	switch usrErr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been deleted.", trigger)
-	case errTriggerNotFound:
+	case ErrTriggerNotFound:
 		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
