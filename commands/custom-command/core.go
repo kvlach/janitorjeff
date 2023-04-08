@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	errTriggerExists   = errors.New("trigger already exists")
-	errBuiltinCommand  = errors.New("trigger collides with a built-in command")
-	errTriggerNotFound = errors.New("trigger was not found")
+	ErrTriggerExists   = errors.New("trigger already exists")
+	ErrBuiltinCommand  = errors.New("trigger collides with a built-in command")
+	ErrTriggerNotFound = errors.New("trigger was not found")
 )
 
 // Check if a string corresponds to a command name. Doesn't check sub-commands.
@@ -52,7 +52,7 @@ func Add(place, creator int64, trigger, response string) (error, error) {
 		return nil, err
 	}
 	if exists {
-		return errTriggerExists, nil
+		return ErrTriggerExists, nil
 	}
 
 	builtin, err := isBuiltin(place, trigger)
@@ -60,7 +60,7 @@ func Add(place, creator int64, trigger, response string) (error, error) {
 		return nil, err
 	}
 	if builtin {
-		return errBuiltinCommand, nil
+		return ErrBuiltinCommand, nil
 	}
 
 	return nil, dbAdd(place, creator, trigger, response)
@@ -72,7 +72,7 @@ func Edit(place, editor int64, trigger, response string) (error, error) {
 		return nil, err
 	}
 	if !exists {
-		return errTriggerNotFound, nil
+		return ErrTriggerNotFound, nil
 	}
 	return nil, dbEdit(place, editor, trigger, response)
 }
@@ -83,7 +83,7 @@ func Delete(place, deleter int64, trigger string) (error, error) {
 		return nil, err
 	}
 	if !exists {
-		return errTriggerNotFound, nil
+		return ErrTriggerNotFound, nil
 	}
 	return nil, dbDelete(place, deleter, trigger)
 }
