@@ -49,9 +49,9 @@ var categories = []int{
 }
 
 var (
-	game       = createGame()
-	movies     = readMovies()
-	fakeMovies = readFakeMovies()
+	game       *pb
+	movies     []movie
+	fakeMovies []string
 )
 
 // don't want to quote reply since it always quotes the original command call

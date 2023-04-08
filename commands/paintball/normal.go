@@ -57,6 +57,9 @@ func (normal) Children() core.CommandsStatic {
 }
 
 func (normal) Init() error {
+	game = createGame()
+	movies = readMovies()
+	fakeMovies = readFakeMovies()
 	return nil
 }
 
