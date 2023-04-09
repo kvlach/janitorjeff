@@ -297,7 +297,7 @@ func (m *Message) CommandRun() (*Message, error) {
 
 func (m *Message) Hooks() {
 	for _, h := range Hooks.Get() {
-		h.run(m)
+		h.Run(m)
 	}
 }
 

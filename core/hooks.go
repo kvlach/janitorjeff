@@ -9,8 +9,8 @@ import (
 var Hooks = hooks{}
 
 type hook struct {
-	id  int
-	run func(m *Message)
+	ID  int
+	Run func(m *Message)
 }
 
 type hooks struct {
@@ -31,8 +31,8 @@ func (hs *hooks) Register(f func(*Message)) int {
 
 	hs.total++
 	h := hook{
-		id:  hs.total,
-		run: f,
+		ID:  hs.total,
+		Run: f,
 	}
 	hs.hooks = append(hs.hooks, h)
 
@@ -46,7 +46,7 @@ func (hs *hooks) Delete(id int) {
 	defer hs.lock.Unlock()
 
 	for i, h := range hs.hooks {
-		if h.id == id {
+		if h.ID == id {
 			hs.hooks = append(hs.hooks[:i], hs.hooks[i+1:]...)
 			return
 		}
