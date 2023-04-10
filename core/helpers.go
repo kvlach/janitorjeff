@@ -145,10 +145,14 @@ func Split(text string, lenCnt func(string) int, lenLim int) []string {
 	return parts
 }
 
-// Returns true if the provided string is a valid url.
+// IsValidURL returns true if the provided string is a valid URL with an http
+// or https scheme and a host.
 func IsValidURL(rawURL string) bool {
 	u, err := url.Parse(rawURL)
 	if err != nil {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
 		return false
 	}
 	if u.Host == "" {
