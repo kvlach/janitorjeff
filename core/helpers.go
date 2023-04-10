@@ -100,14 +100,13 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 }
 
 func splitGraphemeClusters(text string, lenCnt func(string) int, lenLim int, parts []string) []string {
-	parts = append(parts, "")
 	gr := uniseg.NewGraphemes(text)
 
 	for gr.Next() {
 		partLen := lenCnt(parts[len(parts)-1])
 		runes := string(gr.Runes())
 
-		if lenLim > partLen+len(runes) {
+		if lenLim >= partLen+len(runes) {
 			parts[len(parts)-1] += runes
 		} else {
 			parts = append(parts, runes)
