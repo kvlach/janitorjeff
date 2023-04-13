@@ -64,8 +64,9 @@ var Commands = core.CommandsStatic{
 
 	search.Advanced,
 
-	time.Normal,
 	time.Advanced,
+	time.NormalTime,
+	time.NormalTimezone,
 
 	title.Normal,
 	title.Advanced,

@@ -7,54 +7,58 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Normal = normal{}
+//////////
+//      //
+// time //
+//      //
+//////////
 
-type normal struct{}
+var NormalTime = normalTime{}
 
-func (normal) Type() core.CommandType {
+type normalTime struct{}
+
+func (normalTime) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
+func (normalTime) Permitted(*core.Message) bool {
 	return true
 }
 
-func (normal) Names() []string {
+func (normalTime) Names() []string {
 	return Advanced.Names()
 }
 
-func (normal) Description() string {
+func (normalTime) Description() string {
 	return "Time stuff and things."
 }
 
-func (normal) UsageArgs() string {
-	return "[<user> | (zone)]"
+func (normalTime) UsageArgs() string {
+	return "[user]"
 }
 
-func (normal) Category() core.CommandCategory {
+func (normalTime) Category() core.CommandCategory {
 	return Advanced.Category()
 }
 
-func (normal) Examples() []string {
+func (normalTime) Examples() []string {
 	return nil
 }
 
-func (normal) Parent() core.CommandStatic {
+func (normalTime) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normal) Children() core.CommandsStatic {
-	return core.CommandsStatic{
-		NormalZone,
-	}
+func (normalTime) Children() core.CommandsStatic {
+	return nil
 }
 
-func (c normal) Init() error {
+func (c normalTime) Init() error {
 	core.Hooks.Register(c.addReminder)
 	return nil
 }
 
-func (normal) addReminder(m *core.Message) {
+func (normalTime) addReminder(m *core.Message) {
 	re := regexp.MustCompile(`^remind\s+me\s+to\s+` + `(?P<cmd>.+(in|on)\s+.+)`)
 
 	if !re.MatchString(m.Raw) {
@@ -84,63 +88,64 @@ func (normal) addReminder(m *core.Message) {
 	m.Write(resp, usrErr)
 }
 
-func (normal) Run(m *core.Message) (any, error, error) {
+func (normalTime) Run(m *core.Message) (any, error, error) {
 	return AdvancedNow.Run(m)
 }
 
-//////////
-//      //
-// zone //
-//      //
-//////////
+//////////////
+//          //
+// timezone //
+//          //
+//////////////
 
-var NormalZone = normalZone{}
+var NormalTimezone = normalTimezone{}
 
-type normalZone struct{}
+type normalTimezone struct{}
 
-func (c normalZone) Type() core.CommandType {
-	return c.Parent().Type()
+func (c normalTimezone) Type() core.CommandType {
+	return core.Normal
 }
 
-func (c normalZone) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+func (c normalTimezone) Permitted(m *core.Message) bool {
+	return AdvancedTimezone.Permitted(m)
 }
 
-func (normalZone) Names() []string {
+func (normalTimezone) Names() []string {
 	return []string{
-		"zone",
+		"timezone",
+		"tz",
 	}
 }
 
-func (normalZone) Description() string {
+func (normalTimezone) Description() string {
 	return "Set or view your own timezone."
 }
 
-func (normalZone) UsageArgs() string {
+func (normalTimezone) UsageArgs() string {
 	return "[timezone]"
 }
 
-func (c normalZone) Category() core.CommandCategory {
-	return c.Parent().Category()
+func (c normalTimezone) Category() core.CommandCategory {
+	return AdvancedTimezone.Category()
 }
 
-func (normalZone) Examples() []string {
+func (normalTimezone) Examples() []string {
 	return nil
 }
 
-func (normalZone) Parent() core.CommandStatic {
-	return Normal
-}
-
-func (normalZone) Children() core.CommandsStatic {
+func (normalTimezone) Parent() core.CommandStatic {
 	return nil
 }
 
-func (normalZone) Init() error {
+func (normalTimezone) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalZone) Run(m *core.Message) (any, error, error) {
+func (normalTimezone) Init() error {
+	return nil
+}
+
+func (normalTimezone) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedTimezoneShow.Run(m)
 	}
