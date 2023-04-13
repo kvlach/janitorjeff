@@ -3,7 +3,7 @@ package twitch
 import (
 	"net/http"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicklaw5/helix"

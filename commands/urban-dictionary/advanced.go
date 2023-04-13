@@ -1,8 +1,8 @@
 package urban_dictionary
 
 import (
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 )

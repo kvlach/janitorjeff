@@ -3,9 +3,9 @@ package nick
 import (
 	"fmt"
 
-	"github.com/janitorjeff/jeff-bot/commands/mask"
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/mask"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 )
 
 var Admin = admin{}

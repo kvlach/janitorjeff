@@ -1,7 +1,7 @@
 package help
 
 import (
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 var Admin = admin{}

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	tirc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix"

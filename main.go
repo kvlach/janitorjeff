@@ -13,11 +13,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/janitorjeff/jeff-bot/commands"
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
-	"github.com/janitorjeff/jeff-bot/frontends/twitch"
+	"git.sr.ht/~slowtyper/janitorjeff/commands"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"

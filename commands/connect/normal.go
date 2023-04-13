@@ -3,9 +3,9 @@ package connect
 import (
 	"fmt"
 
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/discord"
-	"github.com/janitorjeff/jeff-bot/frontends/twitch"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
 	"github.com/nicklaw5/helix"
 )

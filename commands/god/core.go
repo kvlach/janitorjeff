@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	gogpt "github.com/sashabaranov/go-gpt3"
 )

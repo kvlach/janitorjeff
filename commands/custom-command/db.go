@@ -3,7 +3,7 @@ package custom_command
 import (
 	"time"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/rs/zerolog/log"
 )
