@@ -1,6 +1,6 @@
 # JanitorJeff
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/janitorjeff/jeff-bot.svg)](https://pkg.go.dev/github.com/janitorjeff/jeff-bot)
+[![Go Documentation](https://godocs.io/git.sr.ht/~slowtyper/janitorjeff?status.svg)](https://godocs.io/git.sr.ht/~slowtyper/janitorjeff)
 
 A general purpose, cross-platform bot.
 
