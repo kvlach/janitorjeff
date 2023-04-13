@@ -1,0 +1,20 @@
+image: alpine/edge
+packages:
+  - go
+  - postgresql15
+  - redis
+  - tzdata
+sources:
+  - https://git.sr.ht/~slowtyper/janitorjeff
+tasks:
+  - setup: |
+      cd janitorjeff
+      go mod download
+      sudo rc-service postgresql start
+      redis-server redis.conf --daemonize yes
+  - test: |
+      export POSTGRES_HOST=localhost
+      export POSTGRES_PORT=5432
+      export REDIS_ADDR=localhost:6379
+      cd janitorjeff
+      go test -cover ./...
