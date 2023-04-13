@@ -3,7 +3,7 @@ package time
 import (
 	"regexp"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"github.com/rs/zerolog/log"
 )
 

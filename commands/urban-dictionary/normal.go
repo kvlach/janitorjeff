@@ -1,7 +1,7 @@
 package urban_dictionary
 
 import (
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 var Normal = normal{}

@@ -3,7 +3,7 @@ package core_test
 import (
 	"testing"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 func TestHooks(t *testing.T) {

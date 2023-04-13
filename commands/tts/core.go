@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/twitch"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
 	"github.com/janitorjeff/gosafe"
 	"github.com/rs/zerolog/log"

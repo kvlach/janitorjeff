@@ -3,8 +3,8 @@ package title
 import (
 	"fmt"
 
-	"github.com/janitorjeff/jeff-bot/core"
-	"github.com/janitorjeff/jeff-bot/frontends/twitch"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 )
 
 var Advanced = advanced{}

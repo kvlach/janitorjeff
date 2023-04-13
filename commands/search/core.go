@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 type Match struct {

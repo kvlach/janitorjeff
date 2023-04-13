@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/janitorjeff/jeff-bot/commands/youtube"
-	"github.com/janitorjeff/jeff-bot/core"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/youtube"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/janitorjeff/gosafe"
 )
