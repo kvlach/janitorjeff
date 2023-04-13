@@ -449,6 +449,7 @@ func (advancedTimezone) Names() []string {
 	return []string{
 		"timezone",
 		"zone",
+		"tz",
 	}
 }
 
