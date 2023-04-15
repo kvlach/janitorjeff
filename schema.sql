@@ -4,13 +4,13 @@
 --      --
 ----------
 
-CREATE TABLE IF NOT EXISTS scopes (
+CREATE TABLE scopes (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	frontend_type INTEGER NOT NULL,
 	frontend_id VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS prefixes (
+CREATE TABLE prefixes (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	place BIGINT NOT NULL,
 	prefix VARCHAR(20) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS prefixes (
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS settings_place (
+CREATE TABLE settings_place (
 	place BIGINT PRIMARY KEY,
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE,
 
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS settings_place (
 	cmd_god_reply_last INTEGER NOT NULL DEFAULT 0 -- unix timestamp of last reply
 );
 
-CREATE TABLE IF NOT EXISTS settings_person (
+CREATE TABLE settings_person (
 	person BIGINT NOT NULL,
 	place BIGINT NOT NULL,
 	UNIQUE(person, place),
@@ -98,8 +98,8 @@ CREATE TABLE IF NOT EXISTS settings_person (
 	])[floor(random() * 41 + 1)]
 );
 
-CREATE INDEX IF NOT EXISTS settings_person_index_person_place ON settings_person (person, place);
-CREATE INDEX IF NOT EXISTS settings_person_index_nick ON settings_person (cmd_nick_nick);
+CREATE INDEX settings_person_index_person_place ON settings_person (person, place);
+CREATE INDEX settings_person_index_nick ON settings_person (cmd_nick_nick);
 
 -----------------------
 --                   --
@@ -107,13 +107,13 @@ CREATE INDEX IF NOT EXISTS settings_person_index_nick ON settings_person (cmd_ni
 --                   --
 -----------------------
 
-CREATE TABLE IF NOT EXISTS frontend_discord_guilds (
+CREATE TABLE frontend_discord_guilds (
 	scope BIGINT PRIMARY KEY,
 	guild VARCHAR(20) NOT NULL UNIQUE,
 	FOREIGN KEY (scope) REFERENCES scopes(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS frontend_discord_channels (
+CREATE TABLE frontend_discord_channels (
 	scope BIGINT PRIMARY KEY,
 	channel VARCHAR(20) NOT NULL UNIQUE,
 	guild BIGINT NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS frontend_discord_channels (
 	FOREIGN KEY (guild) REFERENCES frontend_discord_guilds(scope) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS frontend_discord_users (
+CREATE TABLE frontend_discord_users (
 	scope BIGINT PRIMARY KEY,
 	uid VARCHAR(20) NOT NULL UNIQUE,
 	FOREIGN KEY (scope) REFERENCES scopes(id) ON DELETE CASCADE
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS frontend_discord_users (
 --                  --
 ----------------------
 
-CREATE TABLE IF NOT EXISTS frontend_twitch_channels (
+CREATE TABLE frontend_twitch_channels (
 	scope BIGINT PRIMARY KEY,
 	channel_id VARCHAR(255) NOT NULL UNIQUE,
 	channel_name VARCHAR(255) NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS frontend_twitch_channels (
 --                          --
 ------------------------------
 
-CREATE TABLE IF NOT EXISTS cmd_customcommand_commands (
+CREATE TABLE cmd_customcommand_commands (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 
 	place BIGINT NOT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS cmd_customcommand_commands (
 --               --
 -------------------
 
-CREATE TABLE IF NOT EXISTS cmd_time_reminders (
+CREATE TABLE cmd_time_reminders (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
 	person BIGINT NOT NULL,
 	place BIGINT NOT NULL,

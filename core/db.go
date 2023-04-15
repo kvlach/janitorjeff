@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"sync"
 
 	_ "github.com/lib/pq"
@@ -25,18 +24,7 @@ func Open(driver, source string) (*SQLDB, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	schema, err := ioutil.ReadFile("schema.sql")
-	if err != nil {
-		return nil, err
-	}
-
-	db := &SQLDB{DB: sqlDB}
-	if err := db.Init(string(schema)); err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	return &SQLDB{DB: sqlDB}, nil
 }
 
 func (db *SQLDB) Close() error {
