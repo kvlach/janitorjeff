@@ -12,21 +12,24 @@ services:
     environment:
       - VIRTUAL_HOST=localhost
       - PORT=5000
-      - DISCORD_TOKEN=token
-      - MIN_GOD_INTERVAL_SECONDS=600
-      - OPENAI_KEY=api-key
-      - POSTGRES_DB=dbname
-      - POSTGRES_HOST=host
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_PORT=port
+      # DB
+      - POSTGRES_USER=jeff_user
+      - POSTGRES_PASSWORD=jeff_pass
+      - POSTGRES_DB=jeff_db
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=6000
       - POSTGRES_SSLMODE=disable
-      - POSTGRES_USER=user
-      - REDIS_ADDR=host:port
-      - TIKTOK_SESSION_ID=session-id
+      - REDIS_ADDR=redis:7000
+      # Frontends
+      - DISCORD_TOKEN=token
       - TWITCH_CHANNELS=comma,seperated,list,of,channel,names
       - TWITCH_CLIENT_ID=cliend-id
       - TWITCH_CLIENT_SECRET=client-secret
       - TWITCH_OAUTH=oauth-token
+      # Commands
+      - MIN_GOD_INTERVAL_SECONDS=600
+      - OPENAI_KEY=api-key
+      - TIKTOK_SESSION_ID=session-id
       - YOUTUBE=token
     volumes:
       - ./data:/app/data
@@ -37,9 +40,9 @@ services:
     expose:
       - "6000"
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=dbname
+      - POSTGRES_USER=jeff_user
+      - POSTGRES_PASSWORD=jeff_pass
+      - POSTGRES_DB=jeff_db
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
