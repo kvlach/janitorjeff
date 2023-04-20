@@ -55,9 +55,7 @@ contents:
 
 export VIRTUAL_HOST=localhost
 export PORT=5000
-export DISCORD_TOKEN=token
-export MIN_GOD_INTERVAL_SECONDS=600
-export OPENAI_KEY=api-key
+# DB
 export POSTGRES_USER=jeff_user
 export POSTGRES_PASSWORD=jeff_pass
 export POSTGRES_DB=jeff_db
@@ -65,11 +63,16 @@ export POSTGRES_HOST=localhost
 export POSTGRES_PORT=5432
 export POSTGRES_SSLMODE=disable
 export REDIS_ADDR=localhost:6379
-export TIKTOK_SESSION_ID=session-id
+# Frontends
+export DISCORD_TOKEN=token
 export TWITCH_CHANNELS=comma,seperated,list,of,channel,names
 export TWITCH_CLIENT_ID=cliend-id
 export TWITCH_CLIENT_SECRET=client-secret
 export TWITCH_OAUTH=oauth-token
+# Commands
+export MIN_GOD_INTERVAL_SECONDS=600
+export OPENAI_KEY=api-key
+export TIKTOK_SESSION_ID=session-id
 export YOUTUBE=token
 ```
 
