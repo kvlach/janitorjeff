@@ -354,7 +354,7 @@ func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg
 	// manually set the guild id here
 	resp.GuildID = m.GuildID
 
-	replies.Set(m.ID, resp.ID)
+	core.RDB.Set(ctx, rdbMessageReplyToKeyPrefix+m.ID, resp.ID, 0)
 
 	return resp, nil
 }
