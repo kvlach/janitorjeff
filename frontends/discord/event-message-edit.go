@@ -6,10 +6,9 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	dg "github.com/bwmarrin/discordgo"
-	"github.com/janitorjeff/gosafe"
 )
 
-var replies = gosafe.Map[string, string]{}
+const rdbMessageReplyToKeyPrefix = "frontend_discord_reply_"
 
 type MessageEdit struct {
 	Message *dg.MessageUpdate
@@ -81,19 +80,21 @@ func (d *MessageEdit) Usage(usage string) any {
 }
 
 func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {
+	rdbKey := rdbMessageReplyToKeyPrefix + d.Message.ID
+
 	switch t := msg.(type) {
 	case string:
 		text := msg.(string)
-		id, ok := replies.Get(d.Message.ID)
-		if !ok {
+		id, err := core.RDB.Get(ctx, rdbKey).Result()
+		if err != nil {
 			return sendText(d.Message.Message, text, ping)
 		}
 		return editText(d.Message.Message, id, text)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
-		id, ok := replies.Get(d.Message.ID)
-		if !ok {
+		id, err := core.RDB.Get(ctx, rdbKey).Result()
+		if err != nil {
 			return sendEmbed(d.Message.Message, embed, usrErr, ping)
 		}
 		return editEmbed(d.Message.Message, embed, usrErr, id)
