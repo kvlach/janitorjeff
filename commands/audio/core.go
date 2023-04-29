@@ -9,7 +9,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/commands/youtube"
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
-	"github.com/janitorjeff/gosafe"
+	"git.sr.ht/~slowtyper/gosafe"
 )
 
 var (

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/janitorjeff/gosafe"
+	"git.sr.ht/~slowtyper/gosafe"
 	"github.com/rivo/uniseg"
 )
 
