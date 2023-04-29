@@ -3,10 +3,10 @@ module git.sr.ht/~slowtyper/janitorjeff
 go 1.18
 
 require (
+	git.sr.ht/~slowtyper/gosafe v0.0.0-20230429173855-569f44c7f026
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/janitorjeff/gosafe v0.0.0-20221201085303-bf1022fefa84
 	github.com/lib/pq v1.10.7
 	github.com/nicklaw5/helix v1.25.0
 	github.com/redis/go-redis/v9 v9.0.0-rc.4

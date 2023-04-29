@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/janitorjeff/gosafe"
+	"git.sr.ht/~slowtyper/gosafe"
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
 )

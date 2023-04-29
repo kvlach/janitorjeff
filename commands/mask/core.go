@@ -5,7 +5,7 @@ import (
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
-	"github.com/janitorjeff/gosafe"
+	"git.sr.ht/~slowtyper/gosafe"
 )
 
 var errMaskNotSet = errors.New("No mask has been set.")

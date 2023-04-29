@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/janitorjeff/gosafe"
+	"git.sr.ht/~slowtyper/gosafe"
 )
 
 const (
