@@ -61,7 +61,7 @@ func (_ *SQLDB) ScopeAdd(tx *sql.Tx, frontendID string, frontend int) (int64, er
 	return id, nil
 }
 
-// Returns the given scope's frontend specific ID
+// ScopeID returns the given scope's frontend specific ID
 func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -78,7 +78,7 @@ func (db *SQLDB) ScopeID(scope int64) (string, error) {
 	return id, err
 }
 
-// Returns then given scope's frontend id
+// ScopeFrontend returns the given scope's frontend id
 func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -95,7 +95,7 @@ func (db *SQLDB) ScopeFrontend(scope int64) (int64, error) {
 	return id, err
 }
 
-// Returns the list of all prefixes for a specific scope.
+// PrefixList returns the list of all prefixes for a specific scope.
 func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
@@ -394,7 +394,7 @@ func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) 
 	return val, err
 }
 
-// PlaceSettingSet sets the value of col in table for the specified person in
+// SettingPersonSet sets the value of col in table for the specified person in
 // the specified place.
 func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
