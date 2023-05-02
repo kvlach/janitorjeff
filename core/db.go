@@ -135,13 +135,10 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 //                //
 ////////////////////
 
-func (db *SQLDB) settingsPlaceExist(place int64) (bool, error) {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
+func settingsPlaceExist(tx *sql.Tx, place int64) (bool, error) {
 	var exists bool
 
-	row := db.DB.QueryRow(`
+	row := tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_place
 			WHERE place = $1
@@ -160,11 +157,8 @@ func (db *SQLDB) settingsPlaceExist(place int64) (bool, error) {
 	return exists, err
 }
 
-func (db *SQLDB) settingsPlaceGenerate(place int64) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
+func settingsPlaceGenerate(tx *sql.Tx, place int64) error {
+	_, err := tx.Exec(`
 		INSERT INTO settings_place (place)
 		VALUES ($1)
 	`, place)
@@ -179,7 +173,7 @@ func (db *SQLDB) settingsPlaceGenerate(place int64) error {
 
 // SettingsPlaceGenerate will check if settings for the specified place exist
 // and if not will generate them.
-func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
+func SettingsPlaceGenerate(tx *sql.Tx, place int64) error {
 	rdbKey := fmt.Sprintf("settings_place_%d", place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
@@ -187,7 +181,7 @@ func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
 		return nil
 	}
 
-	exists, err := db.settingsPlaceExist(place)
+	exists, err := settingsPlaceExist(tx, place)
 	if err != nil {
 		return err
 	}
@@ -199,7 +193,7 @@ func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
 		return err
 	}
 
-	err = db.settingsPlaceGenerate(place)
+	err = settingsPlaceGenerate(tx, place)
 	if err != nil {
 		return err
 	}
@@ -210,15 +204,23 @@ func (db *SQLDB) SettingsPlaceGenerate(place int64) error {
 
 // SettingPlaceGet returns the value of col in table for the specified place.
 func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
-	// Make sure that the place settings are present
-	if err := db.SettingsPlaceGenerate(place); err != nil {
-		return nil, err
-	}
-
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
-	var val any
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer func(tx *sql.Tx) {
+		if err := tx.Rollback(); err != nil {
+			log.Debug().Err(err).Msg("failed to rollback transaction")
+		}
+	}(tx)
+
+	// Make sure that the place settings are present
+	if err := SettingsPlaceGenerate(tx, place); err != nil {
+		return nil, err
+	}
 
 	query := fmt.Sprintf(`
 		SELECT %s
@@ -228,26 +230,38 @@ func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
 
 	row := db.DB.QueryRow(query, place)
 
-	err := row.Scan(&val)
-
+	var val any
+	err = row.Scan(&val)
 	log.Debug().
 		Err(err).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
-
-	return val, err
+	if err != nil {
+		return nil, err
+	}
+	return val, tx.Commit()
 }
 
 // SettingPlaceSet sets the value of col in table for the specified place.
 func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
-	// Make sure that the place settings are present
-	if err := db.SettingsPlaceGenerate(place); err != nil {
-		return err
-	}
-
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func(tx *sql.Tx) {
+		if err := tx.Rollback(); err != nil {
+			log.Debug().Err(err).Msg("failed to commit transaction")
+		}
+	}(tx)
+
+	// Make sure that the place settings are present
+	if err := SettingsPlaceGenerate(tx, place); err != nil {
+		return err
+	}
 
 	query := fmt.Sprintf(`
 		UPDATE settings_place
@@ -255,7 +269,7 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		WHERE place = $2
 	`, col)
 
-	_, err := db.DB.Exec(query, val, place)
+	_, err = db.DB.Exec(query, val, place)
 
 	log.Debug().
 		Err(err).
