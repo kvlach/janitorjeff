@@ -89,8 +89,12 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open DB")
 	}
-	defer db.Close()
-	defer log.Debug().Msg("closing db")
+	defer func(db *core.SQLDB) {
+		log.Debug().Msg("closing db")
+		if err := db.Close(); err != nil {
+			log.Warn().Err(err).Msg("couldn't close database")
+		}
+	}(db)
 
 	log.Debug().Msg("connecting to redis")
 	core.RDB = redis.NewClient(&redis.Options{
@@ -126,8 +130,14 @@ func main() {
 
 	commands.Init()
 
-	core.Gin.SetTrustedProxies([]string{core.VirtualHost})
-	go core.Gin.Run(":" + core.Port)
+	if err = core.Gin.SetTrustedProxies([]string{core.VirtualHost}); err != nil {
+		log.Warn().Err(err).Msg("failed to set trusted proxies for gin")
+	}
+	go func() {
+		if err := core.Gin.Run(":" + core.Port); err != nil {
+			log.Fatal().Err(err).Msg("gin failed while running")
+		}
+	}()
 
 	log.Info().Msg("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
