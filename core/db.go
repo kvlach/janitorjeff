@@ -228,7 +228,7 @@ func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
 		WHERE place = $1
 	`, col)
 
-	row := db.DB.QueryRow(query, place)
+	row := tx.QueryRow(query, place)
 
 	var val any
 	err = row.Scan(&val)
@@ -269,7 +269,7 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		WHERE place = $2
 	`, col)
 
-	_, err = db.DB.Exec(query, val, place)
+	_, err = tx.Exec(query, val, place)
 
 	log.Debug().
 		Err(err).
