@@ -254,7 +254,7 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 	}
 	defer func(tx *sql.Tx) {
 		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to commit transaction")
+			log.Debug().Err(err).Msg("failed to rollback transaction")
 		}
 	}(tx)
 
@@ -268,7 +268,6 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		SET %s = $1
 		WHERE place = $2
 	`, col)
-
 	_, err = tx.Exec(query, val, place)
 
 	log.Debug().
