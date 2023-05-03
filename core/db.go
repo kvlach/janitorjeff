@@ -276,7 +276,10 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		Interface(col, val).
 		Msg("changed setting")
 
-	return err
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 /////////////////////
