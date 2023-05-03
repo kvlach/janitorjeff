@@ -288,13 +288,10 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 //                 //
 /////////////////////
 
-func (db *SQLDB) settingsPersonExist(person, place int64) (bool, error) {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
+func settingsPersonExist(tx *sql.Tx, person, place int64) (bool, error) {
 	var exists bool
 
-	row := db.DB.QueryRow(`
+	row := tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_person
 			WHERE person = $1 and place = $2
@@ -314,11 +311,8 @@ func (db *SQLDB) settingsPersonExist(person, place int64) (bool, error) {
 	return exists, err
 }
 
-func (db *SQLDB) settingsPersonGenerate(person, place int64) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	_, err := db.DB.Exec(`
+func settingsPersonGenerate(tx *sql.Tx, person, place int64) error {
+	_, err := tx.Exec(`
 		INSERT INTO settings_person (person, place)
 		VALUES ($1, $2)
 	`, person, place)
@@ -334,7 +328,7 @@ func (db *SQLDB) settingsPersonGenerate(person, place int64) error {
 
 // SettingsPersonGenerate will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
-func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
+func SettingsPersonGenerate(tx *sql.Tx, person, place int64) error {
 	rdbKey := fmt.Sprintf("settings_person_%d_%d", person, place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
@@ -342,7 +336,7 @@ func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
 		return nil
 	}
 
-	exists, err := db.settingsPersonExist(person, place)
+	exists, err := settingsPersonExist(tx, person, place)
 	if err != nil {
 		return err
 	}
@@ -354,7 +348,7 @@ func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
 		return err
 	}
 
-	err = db.settingsPersonGenerate(person, place)
+	err = settingsPersonGenerate(tx, person, place)
 	if err != nil {
 		return err
 	}
@@ -366,25 +360,33 @@ func (db *SQLDB) SettingsPersonGenerate(person, place int64) error {
 // SettingPersonGet returns the value of col in table for the specified person
 // in the specified place.
 func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) {
-	// Make sure that the person settings are present
-	if err := db.SettingsPersonGenerate(person, place); err != nil {
-		return nil, err
-	}
-
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
-	var val any
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer func(tx *sql.Tx) {
+		if err := tx.Rollback(); err != nil {
+			log.Debug().Err(err).Msg("failed to rollback transaction")
+		}
+	}(tx)
+
+	// Make sure that the person settings are present
+	if err := SettingsPersonGenerate(tx, person, place); err != nil {
+		return nil, err
+	}
 
 	query := fmt.Sprintf(`
 		SELECT %s
 		FROM settings_person
 		WHERE person = $1 and place = $2
 	`, col)
+	row := tx.QueryRow(query, person, place)
 
-	row := db.DB.QueryRow(query, person, place)
-
-	err := row.Scan(&val)
+	var val any
+	err = row.Scan(&val)
 
 	log.Debug().
 		Err(err).
@@ -393,27 +395,39 @@ func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) 
 		Interface(col, val).
 		Msg("got value")
 
-	return val, err
+	if err != nil {
+		return nil, err
+	}
+	return val, tx.Commit()
 }
 
 // SettingPersonSet sets the value of col in table for the specified person in
 // the specified place.
 func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) error {
-	// Make sure that the person settings are present
-	if err := db.SettingsPersonGenerate(person, place); err != nil {
-		return err
-	}
-
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func(tx *sql.Tx) {
+		if err := tx.Rollback(); err != nil {
+			log.Debug().Err(err).Msg("failed to rollback transaction")
+		}
+	}(tx)
+
+	// Make sure that the person settings are present
+	if err := SettingsPersonGenerate(tx, person, place); err != nil {
+		return err
+	}
 
 	query := fmt.Sprintf(`
 		UPDATE settings_person
 		SET %s = $1
 		WHERE person = $2 and place = $3
 	`, col)
-
-	_, err := db.DB.Exec(query, val, person, place)
+	_, err = tx.Exec(query, val, person, place)
 
 	log.Debug().
 		Err(err).
@@ -422,5 +436,8 @@ func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) erro
 		Interface(col, val).
 		Msg("changed setting")
 
-	return err
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
