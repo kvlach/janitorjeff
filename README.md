@@ -21,7 +21,7 @@ CREATE DATABASE jeff_db;
 CREATE USER jeff_user WITH ENCRYPTED PASSWORD 'jeff_pass';
 GRANT ALL PRIVILEGES ON DATABASE jeff_db TO jeff_user;
 \c jeff_db postgres
-# You are now connected to database "jeff_db" as user "postgres".
+-- You are now connected to database "jeff_db" as user "postgres".
 GRANT ALL ON SCHEMA public TO jeff_user;
 ```
 
