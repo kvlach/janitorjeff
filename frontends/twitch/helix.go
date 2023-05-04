@@ -324,13 +324,13 @@ func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, 
 	}
 }
 
-func (h *Helix) GetGameName(channel_id string) (string, error) {
-	ch, err := h.GetChannelInfo(channel_id)
+func (h *Helix) GetGameName(channelId string) (string, error) {
+	ch, err := h.GetChannelInfo(channelId)
 	return ch.GameName, err
 }
 
-func (h *Helix) GetTitle(channel_id string) (string, error) {
-	ch, err := h.GetChannelInfo(channel_id)
+func (h *Helix) GetTitle(channelId string) (string, error) {
+	ch, err := h.GetChannelInfo(channelId)
 	return ch.Title, err
 }
 
