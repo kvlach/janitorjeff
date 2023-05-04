@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	ErrExpiredRefreshToken = errors.New("The user will need to reconnect the bot to twitch.")
-	ErrRetry               = errors.New("Refresh the access token and try again.")
-	ErrNoResults           = errors.New("Couldn't find what you were looking for.")
-	ErrUserTokenRequired   = errors.New("This channel's broadcaster must connect their twitch account to the bot.")
+	ErrExpiredRefreshToken = errors.New("the user will need to reconnect the bot to twitch")
+	ErrRetry               = errors.New("refresh the access token and try again")
+	ErrNoResults           = errors.New("couldn't find what you were looking for")
+	ErrUserTokenRequired   = errors.New("this channel's broadcaster must connect their twitch account to the bot")
 )
 
 var appAccessToken = gosafe.Value[string]{}
