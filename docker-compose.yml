@@ -2,7 +2,7 @@ version: '3'
 
 services:
   jeff:
-    image: ghcr.io/janitorjeff/jeff-bot:main
+    image: slowtyper/janitorjeff:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
