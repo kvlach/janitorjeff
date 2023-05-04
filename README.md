@@ -65,6 +65,7 @@ export POSTGRES_SSLMODE=disable
 export REDIS_ADDR=localhost:6379
 # Frontends
 export DISCORD_TOKEN=token
+export DISCORD_ADMINS=comma,seperated,list,of,user,ids
 export TWITCH_CHANNELS=comma,seperated,list,of,channel,names
 export TWITCH_CLIENT_ID=cliend-id
 export TWITCH_CLIENT_SECRET=client-secret
