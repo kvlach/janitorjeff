@@ -1,0 +1,24 @@
+image: alpine/edge
+secrets:
+  - 7c3617b9-8236-41a2-a3f7-809c9ab0847b
+  - 0261877e-1642-4d78-baed-9228c4627a8a
+packages:
+  - docker
+sources:
+  - https://git.sr.ht/~slowtyper/janitorjeff
+tasks:
+  - setup: |
+      sudo service docker start
+  - build: |
+      cd janitorjeff
+      sudo docker build -t jeff .
+  - publish: |
+      set +x
+      username="$(cat ~/docker_username)"
+      password="$(cat ~/docker_password)"
+      sudo docker login -u "$username" -p "$password"
+      unset username
+      unset password
+      set -x
+      sudo docker tag jeff slowtyper/janitorjeff:latest
+      sudo docker push slowtyper/janitorjeff:latest
