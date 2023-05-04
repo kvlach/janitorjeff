@@ -304,7 +304,7 @@ func (h *Helix) SearchGame(gameName string) (helix.Game, error) {
 
 func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, error) {
 	resp, err := h.c.GetChannelInformation(&helix.GetChannelInformationParams{
-		BroadcasterID: broadcasterID,
+		BroadcasterIDs: []string{broadcasterID},
 	})
 
 	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Channels))
