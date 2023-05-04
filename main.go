@@ -120,7 +120,7 @@ func main() {
 	core.Prefixes.Add(core.Normal, "!")
 	core.Prefixes.Add(core.Advanced, "$")
 
-	discord.Admins = []string{"155662023743635456"}
+	discord.Admins = strings.Split(readVar("DISCORD_ADMINS"), ",")
 	twitch.ClientID = readVar("TWITCH_CLIENT_ID")
 	twitch.ClientSecret = readVar("TWITCH_CLIENT_SECRET")
 

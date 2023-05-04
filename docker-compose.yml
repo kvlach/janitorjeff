@@ -22,6 +22,7 @@ services:
       - REDIS_ADDR=redis:7000
       # Frontends
       - DISCORD_TOKEN=token
+      - DISCORD_ADMINS=comma,seperated,list,of,user,ids
       - TWITCH_CHANNELS=comma,seperated,list,of,channel,names
       - TWITCH_CLIENT_ID=cliend-id
       - TWITCH_CLIENT_SECRET=client-secret
