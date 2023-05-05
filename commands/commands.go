@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/streak"
 	"net/http"
 
 	"git.sr.ht/~slowtyper/janitorjeff/commands/audio"
@@ -63,6 +64,8 @@ var Commands = core.CommandsStatic{
 	rps.Normal,
 
 	search.Advanced,
+
+	streak.Advanced,
 
 	time.Advanced,
 	time.NormalTime,
