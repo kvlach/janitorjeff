@@ -54,36 +54,19 @@ func init() {
 			return
 		}
 
-		var onlineEvent helix.EventSubStreamOnlineEvent
-		err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
-		log.Debug().Msgf("got online webhook for channel: %s\n", onlineEvent.BroadcasterUserName)
+		switch t := vals.Subscription.Type; t {
+		case "stream.online":
+			var onlineEvent helix.EventSubStreamOnlineEvent
+			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
+			log.Debug().Msgf("got online webhook for channel: %s\n", onlineEvent.BroadcasterUserName)
+		case "stream.offline":
+			var offlineEvent helix.EventSubStreamOfflineEvent
+			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&offlineEvent)
+			log.Debug().Msgf("got offline webhook for channel: %s\n", offlineEvent.BroadcasterUserName)
+		default:
+			log.Debug().Msgf("unhandled event type '%s'", t)
+		}
+
 		c.String(http.StatusOK, "ok")
 	})
-}
-
-func sub() {
-	client, err := helix.NewClient(&helix.Options{
-		ClientID:       ClientID,
-		AppAccessToken: appAccessToken.Get(),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	resp, err := client.CreateEventSubSubscription(&helix.EventSubSubscription{
-		Type:    helix.EventSubTypeStreamOnline,
-		Version: "1",
-		Condition: helix.EventSubCondition{
-			BroadcasterUserID: "709767271",
-		},
-		Transport: helix.EventSubTransport{
-			Method:   "webhook",
-			Callback: "https://" + core.VirtualHost + CallbackEventSub,
-			Secret:   secret,
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%#v\n", resp)
 }

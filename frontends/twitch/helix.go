@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"git.sr.ht/~slowtyper/janitorjeff/core"
+
 	"git.sr.ht/~slowtyper/gosafe"
 	"github.com/nicklaw5/helix"
 	"github.com/rs/zerolog/log"
@@ -386,4 +388,33 @@ func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
 	}
 	usrErr, err := h.EditChannelInfo(channelID, title, g.ID)
 	return g.Name, usrErr, err
+}
+
+func (h *Helix) CreateSubscription(broadcasterID, t string) error {
+	resp, err := h.c.CreateEventSubSubscription(&helix.EventSubSubscription{
+		Type:    t,
+		Version: "1",
+		Condition: helix.EventSubCondition{
+			BroadcasterUserID: broadcasterID,
+		},
+		Transport: helix.EventSubTransport{
+			Method:   "webhook",
+			Callback: "https://" + core.VirtualHost + CallbackEventSub,
+			Secret:   secret,
+		},
+	})
+
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.EventSubSubscriptions))
+
+	switch err {
+	case nil:
+		return nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return err
+		}
+		return h.CreateSubscription(broadcasterID, t)
+	default:
+		return err
+	}
 }
