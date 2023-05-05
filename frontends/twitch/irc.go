@@ -76,6 +76,8 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 		panic(err)
 	}
 
+	sub()
+
 	wgInit.Done()
 	<-stop
 
