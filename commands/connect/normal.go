@@ -135,7 +135,14 @@ func (c normalTwitch) text(m *core.Message) (string, error, error) {
 
 func (normalTwitch) core(m *core.Message) (string, error) {
 	clientID := twitch.ClientID
-	redirectURI := fmt.Sprintf("https://%s/twitch/callback", core.VirtualHost)
+
+	callback := "/twitch/callback"
+	var redirectURI string
+	if core.VirtualHost == "localhost" {
+		redirectURI = "http://" + core.VirtualHost + ":" + core.Port + callback
+	} else {
+		redirectURI = "https://" + core.VirtualHost + callback
+	}
 
 	c, err := helix.NewClient(&helix.Options{
 		ClientID:    clientID,
