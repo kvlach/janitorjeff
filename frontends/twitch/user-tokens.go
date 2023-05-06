@@ -47,10 +47,17 @@ func init() {
 		}
 		code := codes[0]
 
+		var redirectURI string
+		if core.VirtualHost == "localhost" {
+			redirectURI = "http://" + core.VirtualHost + ":" + core.Port + callback
+		} else {
+			redirectURI = "https://" + core.VirtualHost + callback
+		}
+
 		client, err := helix.NewClient(&helix.Options{
 			ClientID:     ClientID,
 			ClientSecret: ClientSecret,
-			RedirectURI:  "https://" + core.VirtualHost + callback,
+			RedirectURI:  redirectURI,
 		})
 		if err != nil {
 			log.Debug().Err(err).Send()
