@@ -156,6 +156,7 @@ func (normalTwitch) core(m *core.Message) (string, error) {
 		"channel:manage:broadcast",
 		"channel:moderate",
 		"moderation:read",
+		"channel:read:redemptions",
 	}
 
 	state, err := twitch.NewState()

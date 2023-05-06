@@ -63,6 +63,13 @@ func init() {
 			var offlineEvent helix.EventSubStreamOfflineEvent
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&offlineEvent)
 			log.Debug().Msgf("got offline webhook for channel: %s\n", offlineEvent.BroadcasterUserName)
+		case "channel.channel_points_custom_reward_redemption.add":
+			var redeem helix.EventSubChannelPointsCustomRewardRedemptionEvent
+			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&redeem)
+			log.Debug().
+				Str("broadcaster", redeem.BroadcasterUserName).
+				Str("redeemer", redeem.UserName).
+				Msg("got channel redeem event")
 		default:
 			log.Debug().Msgf("unhandled event type '%s'", t)
 		}

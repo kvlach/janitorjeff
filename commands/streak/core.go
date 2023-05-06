@@ -41,9 +41,25 @@ func On(h *twitch.Helix, place int64, broadcasterID string) error {
 		return err
 	}
 
+	redeemsSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
+	if err != nil {
+		return err
+	}
+	if err := twitch.AddEventSubSubscriptionID(tx, redeemsSubID); err != nil {
+		return err
+	}
+
 	_, err = tx.Exec(`
-		INSERT INTO cmd_streak_twitch_events(place, event_online, event_offline)
-		VALUES ($1, $2, $3)`, place, onlineSubID, offlineSubID)
+		INSERT INTO cmd_streak_twitch_events(place, event_online, event_offline, event_redeem)
+		VALUES ($1, $2, $3, $4)`, place, onlineSubID, offlineSubID, redeemsSubID)
+
+	log.Debug().
+		Err(err).
+		Str("online", onlineSubID).
+		Str("offline", offlineSubID).
+		Str("redeem", redeemsSubID).
+		Msg("saved subscription ids")
+
 	if err != nil {
 		return err
 	}
@@ -66,11 +82,19 @@ func Off(h *twitch.Helix, place int64) error {
 		}
 	}(tx)
 
-	var onlineSubID, offlineSubID string
+	var onlineSubID, offlineSubID, redeemsSubID string
 	err = tx.QueryRow(`
-		SELECT event_online, event_offline
+		SELECT event_online, event_offline, event_redeem
 		FROM cmd_streak_twitch_events
-		WHERE place = $1`, place).Scan(&onlineSubID, &offlineSubID)
+		WHERE place = $1`, place).Scan(&onlineSubID, &offlineSubID, &redeemsSubID)
+
+	log.Debug().
+		Err(err).
+		Str("online", onlineSubID).
+		Str("offline", offlineSubID).
+		Str("redeem", redeemsSubID).
+		Msg("got subscription ids")
+
 	if err != nil {
 		return err
 	}
@@ -86,6 +110,13 @@ func Off(h *twitch.Helix, place int64) error {
 		return err
 	}
 	if err := twitch.DeleteEventSubSubscriptionID(tx, offlineSubID); err != nil {
+		return err
+	}
+
+	if err := h.DeleteSubscription(redeemsSubID); err != nil {
+		return err
+	}
+	if err := twitch.DeleteEventSubSubscriptionID(tx, redeemsSubID); err != nil {
 		return err
 	}
 
