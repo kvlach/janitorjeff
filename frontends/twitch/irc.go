@@ -133,6 +133,17 @@ func (t *Twitch) Helix() (*Helix, error) {
 	return &Helix{h}, nil
 }
 
+func (t *Twitch) HelixApp() (*Helix, error) {
+	h, err := helix.NewClient(&helix.Options{
+		ClientID: ClientID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	h.SetAppAccessToken(appAccessToken.Get())
+	return &Helix{h}, nil
+}
+
 ///////////////
 //           //
 // Messenger //
