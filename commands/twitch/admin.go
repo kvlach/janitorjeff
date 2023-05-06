@@ -1,9 +1,12 @@
 package twitch
 
 import (
+	"errors"
+	"strings"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
-	"strings"
+	"github.com/rs/zerolog/log"
 )
 
 var Admin = admin{}
@@ -106,6 +109,7 @@ func (adminEventSub) Parent() core.CommandStatic {
 func (adminEventSub) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdminEventSubList,
+		AdminEventSubDelete,
 	}
 }
 
@@ -185,4 +189,77 @@ func (adminEventSubList) Run(m *core.Message) (any, error, error) {
 	}
 
 	return strings.Join(fmted, " | "), nil, nil
+}
+
+////////////
+//        //
+// delete //
+//        //
+////////////
+
+var AdminEventSubDelete = adminEventSubDelete{}
+
+type adminEventSubDelete struct{}
+
+func (c adminEventSubDelete) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c adminEventSubDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (adminEventSubDelete) Names() []string {
+	return core.AliasesDelete
+}
+
+func (adminEventSubDelete) Description() string {
+	return "Delete a subscription."
+}
+
+func (adminEventSubDelete) UsageArgs() string {
+	return "<subscription-id...>"
+}
+
+func (c adminEventSubDelete) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (adminEventSubDelete) Examples() []string {
+	return nil
+}
+
+func (adminEventSubDelete) Parent() core.CommandStatic {
+	return AdminEventSub
+}
+
+func (adminEventSubDelete) Children() core.CommandsStatic {
+	return nil
+}
+
+func (adminEventSubDelete) Init() error {
+	return nil
+}
+
+func (adminEventSubDelete) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	h, err := m.Client.(*twitch.Twitch).HelixApp()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, subid := range m.Command.Args {
+		if err := h.DeleteSubscription(subid); err != nil {
+			log.Debug().Err(err).Str("id", subid).Msg("failed to delete subscription")
+			return "Failed to delete subscription with ID: " + subid, errors.New("failed to delete subscription"), nil
+		}
+
+	}
+	if len(m.Command.Args) == 1 {
+		return "Deleted subscription.", nil, nil
+	}
+	return "Deleted subscriptions.", nil, nil
 }
