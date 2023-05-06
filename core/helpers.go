@@ -12,7 +12,8 @@ import (
 	"github.com/rivo/uniseg"
 )
 
-// OAuth state parameter
+// States provides some helpful functionality for dealing with the OAuth state
+// parameter.
 type States struct {
 	gosafe.Slice[string]
 }
@@ -52,8 +53,8 @@ func (s *States) Generate() (string, error) {
 	return s.generate()
 }
 
-// Create a new state and add it to the list of states for 1 minute after which
-// it is removed.
+// New create a new state and add it to the list of states for 1 minute after
+// which it is removed.
 func (s *States) New() (string, error) {
 	state, err := s.Generate()
 	if err != nil {
@@ -74,8 +75,8 @@ func OnlyOneBitSet(n int) bool {
 	return n&(n-1) == 0
 }
 
-// Monitor incoming messages until `check` is true or until timeout. If nothing
-// is matched then the returned object will be nil.
+// Await monitors incoming messages until check is true or until timeout. If
+// nothing is matched then the returned object will be nil.
 func Await(timeout time.Duration, check func(*Message) bool) *Message {
 	var m *Message
 
@@ -116,7 +117,7 @@ func splitGraphemeClusters(text string, lenCnt func(string) int, lenLim int, par
 	return parts
 }
 
-// Splits a message into submessages. Tries to not split words unless it
+// Split splits a message into sub-messages. Tries to not split words unless it
 // absolutely has to in which case it splits based on grapheme clusters.
 func Split(text string, lenCnt func(string) int, lenLim int) []string {
 	parts := []string{""}
@@ -144,7 +145,7 @@ func Split(text string, lenCnt func(string) int, lenLim int) []string {
 	return parts
 }
 
-// IsValidURL returns true if the provided string is a valid URL with an http
+// IsValidURL returns true if the provided string is a valid URL with a http
 // or https scheme and a host.
 func IsValidURL(rawURL string) bool {
 	u, err := url.Parse(rawURL)
