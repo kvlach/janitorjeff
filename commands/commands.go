@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/streak"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/twitch"
 	"net/http"
 
 	"git.sr.ht/~slowtyper/janitorjeff/commands/audio"
@@ -78,6 +79,8 @@ var Commands = core.CommandsStatic{
 	tts.NormalTTS,
 	tts.NormalVoice,
 	tts.NormalSubOnly,
+
+	twitch.Admin,
 
 	urban_dictionary.Normal,
 	urban_dictionary.Advanced,
