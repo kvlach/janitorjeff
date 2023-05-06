@@ -29,6 +29,11 @@ func (a Author) Mention() string {
 }
 
 func (a Author) BotAdmin() bool {
+	for _, admin := range Admins {
+		if a.ID() == admin {
+			return true
+		}
+	}
 	return false
 }
 

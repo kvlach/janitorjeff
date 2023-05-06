@@ -21,6 +21,7 @@ var ctx = context.Background()
 const Type = 1 << 1
 
 var (
+	Admins       []string
 	ClientID     string
 	ClientSecret string
 )
