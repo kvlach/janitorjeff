@@ -390,7 +390,7 @@ func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
 	return g.Name, usrErr, err
 }
 
-func (h *Helix) CreateSubscription(broadcasterID, t string) error {
+func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {
 	resp, err := h.c.CreateEventSubSubscription(&helix.EventSubSubscription{
 		Type:    t,
 		Version: "1",
@@ -408,12 +408,33 @@ func (h *Helix) CreateSubscription(broadcasterID, t string) error {
 
 	switch err {
 	case nil:
+		return resp.Data.EventSubSubscriptions[0].ID, nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return "", err
+		}
+		return h.CreateSubscription(broadcasterID, t)
+	default:
+		return "", err
+	}
+}
+
+func (h *Helix) DeleteSubscription(subID string) error {
+	resp, err := h.c.RemoveEventSubSubscription(subID)
+	if err != nil {
+		return err
+	}
+
+	err = checkErrors(err, resp.ResponseCommon, 1)
+
+	switch err {
+	case nil:
 		return nil
 	case ErrRetry:
 		if err := h.refreshToken(); err != nil {
 			return err
 		}
-		return h.CreateSubscription(broadcasterID, t)
+		return h.DeleteSubscription(subID)
 	default:
 		return err
 	}

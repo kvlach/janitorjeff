@@ -123,7 +123,13 @@ func (advancedOn) core(m *core.Message) error {
 	if err != nil {
 		return err
 	}
-	return On(h, m.Here.ID())
+
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+
+	return On(h, here, m.Here.ID())
 }
 
 /////////
@@ -176,6 +182,23 @@ func (advancedOff) Init() error {
 	return nil
 }
 
-func (advancedOff) Run(m *core.Message) (resp any, usrErr error, err error) {
-	return nil, nil, nil
+func (c advancedOff) Run(m *core.Message) (resp any, usrErr error, err error) {
+	if err := c.core(m); err != nil {
+		return nil, nil, err
+	}
+	return "Streak tracking has been turned off.", nil, nil
+}
+
+func (advancedOff) core(m *core.Message) error {
+	h, err := m.Client.(*twitch.Twitch).Helix()
+	if err != nil {
+		return err
+	}
+
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+
+	return Off(h, here)
 }
