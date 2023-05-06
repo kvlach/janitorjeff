@@ -408,7 +408,9 @@ func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {
 
 	switch err {
 	case nil:
-		return resp.Data.EventSubSubscriptions[0].ID, nil
+		id := resp.Data.EventSubSubscriptions[0].ID
+		log.Debug().Str("type", t).Str("id", id).Msg("created subscription")
+		return id, nil
 	case ErrRetry:
 		if err := h.refreshToken(); err != nil {
 			return "", err
@@ -437,5 +439,26 @@ func (h *Helix) DeleteSubscription(subID string) error {
 		return h.DeleteSubscription(subID)
 	default:
 		return err
+	}
+}
+
+func (h *Helix) ListSubscriptions() ([]helix.EventSubSubscription, error) {
+	resp, err := h.c.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.EventSubSubscriptions))
+
+	switch err {
+	case nil:
+		return resp.Data.EventSubSubscriptions, nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return nil, err
+		}
+		return h.ListSubscriptions()
+	default:
+		return nil, err
 	}
 }
