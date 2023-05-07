@@ -119,7 +119,7 @@ func (c advancedOn) Run(m *core.Message) (resp any, usrErr error, err error) {
 }
 
 func (advancedOn) core(m *core.Message) error {
-	h, err := m.Client.(*twitch.Twitch).HelixApp()
+	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (c advancedOff) Run(m *core.Message) (resp any, usrErr error, err error) {
 }
 
 func (advancedOff) core(m *core.Message) error {
-	h, err := m.Client.(*twitch.Twitch).HelixApp()
+	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return err
 	}

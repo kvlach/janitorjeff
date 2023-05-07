@@ -116,6 +116,17 @@ func (f *frontend) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
+func (f *frontend) Helix() (*Helix, error) {
+	h, err := helix.NewClient(&helix.Options{
+		ClientID:       ClientID,
+		AppAccessToken: appAccessToken.Get(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Helix{h}, nil
+}
+
 var twitchIrcClient *tirc.Client
 
 func (t *Twitch) Helix() (*Helix, error) {
@@ -133,17 +144,6 @@ func (t *Twitch) Helix() (*Helix, error) {
 		h.SetAppAccessToken(appAccessToken.Get())
 	}
 
-	return &Helix{h}, nil
-}
-
-func (t *Twitch) HelixApp() (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
-		ClientID: ClientID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	h.SetAppAccessToken(appAccessToken.Get())
 	return &Helix{h}, nil
 }
 
