@@ -75,10 +75,6 @@ func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *MessageEdit) Usage(usage string) any {
-	return getUsage(usage)
-}
-
 func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	rdbKey := rdbMessageReplyToKeyPrefix + d.Message.ID
 

@@ -147,10 +147,6 @@ func (i *InteractionCreate) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
 }
 
-func (i *InteractionCreate) Usage(usage string) any {
-	return getUsage(usage)
-}
-
 func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

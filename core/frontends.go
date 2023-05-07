@@ -21,6 +21,9 @@ type Frontender interface {
 	// CreateMessage returns a Message object based on the given arguments.
 	// Used to send messages that are not direct replies, e.g. reminders.
 	CreateMessage(person, place int64, msgID string) (*Message, error)
+
+	// Usage returns the passed usage formatted appropriately for the frontend.
+	Usage(usage string) any
 }
 
 type Frontenders []Frontender
