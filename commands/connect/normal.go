@@ -7,7 +7,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
-	"github.com/nicklaw5/helix"
+	"github.com/nicklaw5/helix/v2"
 )
 
 var Normal = normal{}
