@@ -8,7 +8,7 @@ require (
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/lib/pq v1.10.7
-	github.com/nicklaw5/helix v1.25.0
+	github.com/nicklaw5/helix/v2 v2.22.1
 	github.com/redis/go-redis/v9 v9.0.0-rc.4
 	github.com/rivo/uniseg v0.4.2
 	github.com/rs/zerolog v1.28.0
@@ -30,7 +30,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
-	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect

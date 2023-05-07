@@ -6,7 +6,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nicklaw5/helix"
+	"github.com/nicklaw5/helix/v2"
 	"github.com/rs/zerolog/log"
 )
 
