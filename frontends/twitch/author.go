@@ -65,11 +65,3 @@ func (a Author) Scope() (int64, error) {
 		return dbAddChannel(a.ID(), a.User, nil)
 	})
 }
-
-func (a Author) ScopeExact() (int64, error) {
-	return a.Scope()
-}
-
-func (a Author) ScopeLogical() (int64, error) {
-	return a.Scope()
-}
