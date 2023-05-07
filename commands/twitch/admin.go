@@ -172,7 +172,7 @@ func (adminEventSubList) Init() error {
 }
 
 func (adminEventSubList) Run(m *core.Message) (any, error, error) {
-	h, err := m.Client.(*twitch.Twitch).HelixApp()
+	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -246,7 +246,7 @@ func (adminEventSubDelete) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	h, err := m.Client.(*twitch.Twitch).HelixApp()
+	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
 	}
