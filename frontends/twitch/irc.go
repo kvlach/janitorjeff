@@ -43,8 +43,7 @@ func onPrivateMessage(m tirc.PrivateMessage) {
 		log.Debug().Err(err).Send()
 		return
 	}
-
-	msg.Run()
+	core.EventMessage <- msg
 }
 
 func (f *frontend) Type() core.FrontendType {

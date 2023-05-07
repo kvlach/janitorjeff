@@ -172,7 +172,7 @@ func Play(sp core.AudioSpeaker, voice, text string) error {
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
 func Start(sp core.AudioSpeaker, twitchUsername string) {
-	id := core.Hooks.Register(func(m *core.Message) {
+	id := core.EventMessageHooks.Register(func(m *core.Message) {
 		if m.Frontend.Type() != twitch.Frontend.Type() || m.Here.Name() != twitchUsername {
 			return
 		}
@@ -244,7 +244,7 @@ func Stop(twitchUsername string) error {
 	if !ok {
 		return ErrHookNotFound
 	}
-	core.Hooks.Delete(id)
+	core.EventMessageHooks.Delete(id)
 	Hooks.Delete(twitchUsername)
 	return nil
 }

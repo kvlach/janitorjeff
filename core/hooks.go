@@ -5,17 +5,16 @@ import (
 )
 
 // Hooks are a list of functions that are applied one-by-one to incoming
-// messages. All operations are thread safe.
-var Hooks = hooks{}
+// events. All operations are thread safe.
 
-type hook struct {
+type hook[T any] struct {
 	ID  int
-	Run func(m *Message)
+	Run func(T)
 }
 
-type hooks struct {
+type hooks[T any] struct {
 	lock  sync.RWMutex
-	hooks []hook
+	hooks []hook[T]
 
 	// Keeps track of the number of hooks added, is incremented every time a
 	// new hook is added, does not get decreased if a hook is removed. Used as
@@ -25,12 +24,12 @@ type hooks struct {
 
 // Register returns the hook's id which can be used to delete the hook by
 // calling the Delete method.
-func (hs *hooks) Register(f func(*Message)) int {
+func (hs *hooks[T]) Register(f func(T)) int {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
 
 	hs.total++
-	h := hook{
+	h := hook[T]{
 		ID:  hs.total,
 		Run: f,
 	}
@@ -41,7 +40,7 @@ func (hs *hooks) Register(f func(*Message)) int {
 
 // Delete will delete the hook with the given id. If the hook doesn't exist then
 // nothing happens.
-func (hs *hooks) Delete(id int) {
+func (hs *hooks[T]) Delete(id int) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
 
@@ -53,10 +52,11 @@ func (hs *hooks) Delete(id int) {
 	}
 }
 
-// Get returns the list of hooks.
-func (hs *hooks) Get() []hook {
+func (hs *hooks[T]) Run(arg T) {
 	hs.lock.RLock()
 	defer hs.lock.RUnlock()
 
-	return hs.hooks
+	for _, h := range hs.hooks {
+		h.Run(arg)
+	}
 }

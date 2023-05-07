@@ -295,18 +295,6 @@ func (m *Message) CommandRun() (*Message, error) {
 	return m.Write(resp, usrErr)
 }
 
-func (m *Message) Hooks() {
-	for _, h := range Hooks.Get() {
-		h.Run(m)
-	}
-}
-
-func (m *Message) Run() {
-	m.Hooks()
-	_, err := m.CommandRun()
-	log.Debug().Err(err).Send()
-}
-
 func (m *Message) Usage() any {
 	return m.Client.Usage(m.Command.Usage())
 }

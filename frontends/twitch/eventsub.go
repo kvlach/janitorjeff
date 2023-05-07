@@ -70,6 +70,9 @@ func init() {
 				Str("broadcaster", redeem.BroadcasterUserName).
 				Str("redeemer", redeem.UserName).
 				Msg("got channel redeem event")
+
+			core.EventRedeemClaim <- redeem.Reward.ID
+
 		default:
 			log.Debug().Msgf("unhandled event type '%s'", t)
 		}

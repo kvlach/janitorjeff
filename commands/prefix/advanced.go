@@ -52,7 +52,7 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (c advanced) Init() error {
-	core.Hooks.Register(c.emergencyReset)
+	core.EventMessageHooks.Register(c.emergencyReset)
 	return nil
 }
 
