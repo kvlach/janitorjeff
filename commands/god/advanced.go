@@ -64,7 +64,7 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
-	core.Hooks.Register(func(m *core.Message) {
+	core.EventMessageHooks.Register(func(m *core.Message) {
 		here, err := m.Here.ScopeLogical()
 		if err != nil {
 			return

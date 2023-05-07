@@ -82,7 +82,7 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 
 	found := make(chan bool)
 
-	id := Hooks.Register(func(candidate *Message) {
+	id := EventMessageHooks.Register(func(candidate *Message) {
 		if check(candidate) {
 			m = candidate
 			found <- true
@@ -96,7 +96,7 @@ func Await(timeout time.Duration, check func(*Message) bool) *Message {
 		break
 	}
 
-	Hooks.Delete(id)
+	EventMessageHooks.Delete(id)
 	return m
 }
 

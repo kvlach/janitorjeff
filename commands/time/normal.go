@@ -54,7 +54,7 @@ func (normalTime) Children() core.CommandsStatic {
 }
 
 func (c normalTime) Init() error {
-	core.Hooks.Register(c.addReminder)
+	core.EventMessageHooks.Register(c.addReminder)
 	return nil
 }
 

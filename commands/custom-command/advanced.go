@@ -60,7 +60,7 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (c advanced) Init() error {
-	core.Hooks.Register(c.writeCustomCommand)
+	core.EventMessageHooks.Register(c.writeCustomCommand)
 	return nil
 }
 
