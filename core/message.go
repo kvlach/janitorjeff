@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// There's 2 types of erros. One type concerns the developer (something
+// There's 2 types of errors. One type concerns the developer (something
 // unexpected happened during execution) the other concerns the user (the user
 // did something incorrectly). The user facing error is returned in order to
 // allow special handling of error messages (for example using a different
