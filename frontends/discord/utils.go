@@ -154,13 +154,6 @@ func dbGetPersonScope(id string) (int64, error) {
 	return scope, tx.Commit()
 }
 
-func getUsage(usage string) *dg.MessageEmbed {
-	embed := &dg.MessageEmbed{
-		Title: fmt.Sprintf("Usage: `%s`", usage),
-	}
-	return embed
-}
-
 func getPersonID(s, guildID, authorID string) (string, error) {
 	// expected inputs are either the id itself or a mention which looks like
 	// this: <@id>

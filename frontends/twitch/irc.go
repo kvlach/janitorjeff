@@ -112,6 +112,10 @@ func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, 
 	return t.Parse()
 }
 
+func (f *frontend) Usage(usage string) any {
+	return fmt.Sprintf("Usage: %s", usage)
+}
+
 var twitchIrcClient *tirc.Client
 
 func (t *Twitch) Helix() (*Helix, error) {
@@ -242,10 +246,6 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 		return -1, err
 	}
 	return dbAddChannel(id, t.message.User, h)
-}
-
-func (t *Twitch) Usage(usage string) any {
-	return fmt.Sprintf("Usage: %s", usage)
 }
 
 func (t *Twitch) send(msg any, mention string) (*core.Message, error) {

@@ -42,8 +42,6 @@ type Messenger interface {
 	PlaceExact(id string) (place int64, err error)
 	PlaceLogical(id string) (place int64, err error)
 
-	Usage(usage string) any
-
 	// Send sends a message to the appropriate scope, resp could be nil
 	// depending on the frontend.
 	Send(msg any, usrErr error) (resp *Message, err error)
@@ -296,5 +294,5 @@ func (m *Message) CommandRun() (*Message, error) {
 }
 
 func (m *Message) Usage() any {
-	return m.Client.Usage(m.Command.Usage())
+	return m.Frontend.Usage(m.Command.Usage())
 }

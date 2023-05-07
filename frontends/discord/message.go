@@ -45,10 +45,6 @@ func (d *Message) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *Message) Usage(usage string) any {
-	return getUsage(usage)
-}
-
 func (d *Message) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

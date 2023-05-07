@@ -2,6 +2,7 @@ package discord
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -107,4 +108,11 @@ func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.Mes
 	}
 
 	return d.Parse()
+}
+
+func (f *frontend) Usage(usage string) any {
+	embed := &dg.MessageEmbed{
+		Title: fmt.Sprintf("Usage: `%s`", usage),
+	}
+	return embed
 }

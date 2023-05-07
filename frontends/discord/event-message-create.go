@@ -80,10 +80,6 @@ func (d *MessageCreate) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *MessageCreate) Usage(usage string) any {
-	return getUsage(usage)
-}
-
 func (d *MessageCreate) send(msg any, usrErr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
