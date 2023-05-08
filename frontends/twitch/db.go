@@ -3,23 +3,17 @@ package twitch
 import (
 	"database/sql"
 	"git.sr.ht/~slowtyper/janitorjeff/core"
-
-	tirc "github.com/gempir/go-twitch-irc/v4"
 )
 
 func dbAddChannelSimple(uid, uname string) (int64, error) {
-	u := tirc.User{
-		ID:   uid,
-		Name: uname,
-	}
-	return dbAddChannel(uid, u, nil)
+	return dbAddChannel(uid, uid, uname, nil)
 }
 
-func dbAddChannel(id string, u tirc.User, h *Helix) (int64, error) {
+func dbAddChannel(id string, uid, uname string, h *Helix) (int64, error) {
 	var channelID, channelName string
-	if id == u.ID {
-		channelID = u.ID
-		channelName = u.Name
+	if id == uid {
+		channelID = uid
+		channelName = uname
 	} else if u, err := h.GetUser(id); err == nil {
 		channelID = id
 		channelName = u.Login

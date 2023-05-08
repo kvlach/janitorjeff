@@ -9,6 +9,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 var Advanced = advanced{}
@@ -256,7 +257,12 @@ func (c advancedVoice) Type() core.CommandType {
 }
 
 func (c advancedVoice) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m) && m.Author.Mod()
+	mod, err := m.Author.Mod()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check if author is mod")
+		return false
+	}
+	return c.Parent().Permitted(m) && mod
 }
 
 func (advancedVoice) Names() []string {
@@ -523,7 +529,12 @@ func (c advancedSubOnly) Type() core.CommandType {
 }
 
 func (c advancedSubOnly) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m) && m.Author.Mod()
+	mod, err := m.Author.Mod()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check if author is mod")
+		return false
+	}
+	return c.Parent().Permitted(m) && mod
 }
 
 func (advancedSubOnly) Names() []string {

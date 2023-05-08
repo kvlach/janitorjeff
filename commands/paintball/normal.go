@@ -9,6 +9,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 var Normal = normal{}
@@ -134,10 +135,15 @@ func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, e
 
 		answer := awaitAnswer(here, answers)
 		var name string
+		var err error
 		if answer == nil {
 			name = ""
 		} else {
-			name = answer.Author.DisplayName()
+			name, err = answer.Author.DisplayName()
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get author display name")
+				return nil, nil, err
+			}
 			game.Point(here, answer.Author)
 		}
 

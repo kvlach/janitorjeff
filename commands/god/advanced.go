@@ -26,7 +26,12 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.Author.Mod()
+	mod, err := m.Author.Mod()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check if author is mod")
+		return false
+	}
+	return mod
 }
 
 func (advanced) Names() []string {
@@ -97,7 +102,12 @@ func (advanced) Init() error {
 			rand.Seed(time.Now().UnixNano())
 			// need this to only happen 30% of the time
 			if num := rand.Intn(10); num < 3 {
-				resp = "@" + m.Author.DisplayName() + " " + resp
+				display, err := m.Author.DisplayName()
+				if err != nil {
+					log.Error().Err(err).Msg("failed to get author display name")
+					return
+				}
+				resp = "@" + display + " " + resp
 			}
 			m.Client.Send(resp, nil)
 		} else {

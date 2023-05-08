@@ -155,7 +155,11 @@ func (t *Twitch) Helix() (*Helix, error) {
 
 func (t *Twitch) Parse() (*core.Message, error) {
 	author := Author{
-		User: t.message.User,
+		id:          t.message.User.ID,
+		username:    t.message.User.Name,
+		displayName: t.message.User.DisplayName,
+		badges:      t.message.User.Badges,
+		roomID:      t.message.RoomID,
 	}
 
 	here := Here{
@@ -229,7 +233,7 @@ func (t *Twitch) Person(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message.User, h)
+	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
 }
 
 func (t *Twitch) PlaceExact(id string) (int64, error) {
@@ -237,7 +241,7 @@ func (t *Twitch) PlaceExact(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message.User, h)
+	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
 }
 
 func (t *Twitch) PlaceLogical(id string) (int64, error) {
@@ -245,7 +249,7 @@ func (t *Twitch) PlaceLogical(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return dbAddChannel(id, t.message.User, h)
+	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
 }
 
 func (t *Twitch) send(msg any, mention string) (*core.Message, error) {

@@ -17,6 +17,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 // designed for discord, not with cross-platform in mind
@@ -111,13 +112,19 @@ func (pb *pb) Point(place int64, player core.Author) {
 	// Discord mention use's the users's ID, which means that it is static and
 	// so an ok way to keep track of score
 
+	mention, err := player.Mention()
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to get user mention")
+		return
+	}
+
 	for _, s := range pb.active[place] {
-		if s.player == player.Mention() {
+		if s.player == mention {
 			s.points += 1
 			return
 		}
 	}
-	pb.active[place] = append(pb.active[place], &score{player.Mention(), 1})
+	pb.active[place] = append(pb.active[place], &score{mention, 1})
 }
 
 func (pb *pb) Scores(place int64) []*score {

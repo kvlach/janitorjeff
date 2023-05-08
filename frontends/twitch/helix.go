@@ -462,3 +462,22 @@ func (h *Helix) ListSubscriptions() ([]helix.EventSubSubscription, error) {
 		return nil, err
 	}
 }
+
+func (h *Helix) IsMod(broadcasterID, userID string) (bool, error) {
+	resp, err := h.c.GetModerators(&helix.GetModeratorsParams{
+		BroadcasterID: broadcasterID,
+		UserIDs:       []string{userID},
+	})
+
+	switch err := checkErrors(err, resp.ResponseCommon, 1); err {
+	case nil:
+		return len(resp.Data.Moderators) > 1, nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return false, err
+		}
+		return h.IsMod(broadcasterID, userID)
+	default:
+		return false, err
+	}
+}
