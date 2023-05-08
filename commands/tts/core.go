@@ -186,7 +186,17 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 		if err != nil {
 			return
 		}
-		if subonly && !(m.Author.Subscriber() || m.Author.Mod()) {
+		sub, err := m.Author.Subscriber()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to check if author is a subscriber")
+			return
+		}
+		mod, err := m.Author.Mod()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to check if author is a mod")
+			return
+		}
+		if subonly && !(sub || mod) {
 			log.Debug().Msg("author is neither a sub nor a mod, skipping")
 			return
 		}

@@ -13,6 +13,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -173,7 +174,12 @@ func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet st
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
-		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", m.Author.Mention(), cmdTzSet)
+		mention, err := m.Author.Mention()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get author mention")
+			return ""
+		}
+		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", mention, cmdTzSet)
 	case errPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
@@ -682,7 +688,12 @@ func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
 func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string {
 	switch usrErr {
 	case nil:
-		return fmt.Sprintf("Added %s with timezone %s", m.Author.Mention(), tz)
+		mention, err := m.Author.Mention()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get author mention")
+			return ""
+		}
+		return fmt.Sprintf("Added %s with timezone %s", mention, tz)
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
@@ -785,7 +796,12 @@ func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
 }
 
 func (advancedTimezoneDelete) fmt(m *core.Message) string {
-	return fmt.Sprintf("Deleted timezone for user %s", m.Author.Mention())
+	mention, err := m.Author.Mention()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get author mention")
+		return ""
+	}
+	return fmt.Sprintf("Deleted timezone for user %s", mention)
 }
 
 func (advancedTimezoneDelete) core(m *core.Message) error {

@@ -8,6 +8,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 var Advanced = advanced{}
@@ -19,7 +20,12 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	return m.Author.Mod()
+	mod, err := m.Author.Mod()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check if author is mod")
+		return false
+	}
+	return mod
 }
 
 func (advanced) Names() []string {

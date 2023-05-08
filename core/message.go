@@ -58,36 +58,36 @@ type Messenger interface {
 type Author interface {
 	// ID returns the author's ID, this should be a unique, static, identifier
 	// in that frontend.
-	ID() string
+	ID() (string, error)
 
 	// Name returns the author's username.
-	Name() string
+	Name() (string, error)
 
 	// DisplayName return's the author's display name. If only usernames exist
 	// for that frontend then returns the username.
-	DisplayName() string
+	DisplayName() (string, error)
 
 	// Mention return's a string that mention's the author. This should ideally
 	// ping them in some way.
-	Mention() string
+	Mention() (string, error)
 
 	// BotAdmin returns true if the author is a bot admin. Otherwise returns
 	// false.
-	BotAdmin() bool
+	BotAdmin() (bool, error)
 
 	// Admin checks if the author is considered an admin. Should return true
 	// only if the author has basically every permission.
-	Admin() bool
+	Admin() (bool, error)
 
 	// Mod checks if the author is considered a moderator. General rule of thumb
 	// is that if the author can ban people, then they are mods.
-	Mod() bool
+	Mod() (bool, error)
 
 	// Subscriber returns true if the author is considered a subscriber. General
 	// rule of thumb is that if they are paying money in some way, then they are
 	// a subscriber. If no such thing exists for the specific frontend, then it
 	// should always return false.
-	Subscriber() bool
+	Subscriber() (bool, error)
 
 	// Scope return's the author's scope. If it doesn't exist it will create it
 	// and add it to the database.
@@ -276,7 +276,11 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 
-	if m.Command.Type() == Admin && m.Author.BotAdmin() == false {
+	admin, err := m.Author.BotAdmin()
+	if err != nil {
+		return nil, err
+	}
+	if m.Command.Type() == Admin && admin == false {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 

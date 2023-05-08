@@ -5,6 +5,8 @@ import (
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
+
+	"github.com/rs/zerolog/log"
 )
 
 var Advanced = advanced{}
@@ -19,7 +21,12 @@ func (advanced) Permitted(m *core.Message) bool {
 	if m.Frontend.Type() != twitch.Frontend.Type() {
 		return false
 	}
-	return m.Author.Mod()
+	mod, err := m.Author.Mod()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check if author is mod")
+		return false
+	}
+	return mod
 }
 
 func (advanced) Names() []string {
