@@ -136,9 +136,7 @@ type Tx struct {
 	place  bool
 }
 
-// Begin starts a new transaction and locks the database.
 func (db *SQLDB) Begin() (*Tx, error) {
-	db.Lock.Lock()
 	tx, err := db.DB.Begin()
 	if err != nil {
 		return nil, err
@@ -281,6 +279,9 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 }
 
 func (db *SQLDB) PlaceGet(col string, place int64) (any, error) {
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
@@ -294,6 +295,9 @@ func (db *SQLDB) PlaceGet(col string, place int64) (any, error) {
 }
 
 func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -438,6 +442,9 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 }
 
 func (db *SQLDB) PersonGet(col string, person, place int64) (any, error) {
+	db.Lock.RLock()
+	defer db.Lock.RUnlock()
+
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
@@ -451,6 +458,9 @@ func (db *SQLDB) PersonGet(col string, person, place int64) (any, error) {
 }
 
 func (db *SQLDB) PersonSet(col string, person, place int64, val any) error {
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
 	tx, err := db.Begin()
 	if err != nil {
 		return err

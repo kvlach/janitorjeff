@@ -130,6 +130,9 @@ func Reset(person, place int64) error {
 }
 
 func Appearance(person, place int64) error {
+	core.DB.Lock.Lock()
+	defer core.DB.Lock.Unlock()
+
 	tx, err := core.DB.Begin()
 	if err != nil {
 		return err
