@@ -186,5 +186,7 @@ func EventIDGet(place int64) (core.UUID, error) {
 	if err != nil {
 		return core.UUID{}, err
 	}
-	return id.(core.UUID), nil
+	var uuid core.UUID
+	copy(uuid[:], id.([]uint8))
+	return uuid, nil
 }
