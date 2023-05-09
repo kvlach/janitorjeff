@@ -2,6 +2,7 @@ package core
 
 import (
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -10,18 +11,55 @@ var (
 	EventMessage      = make(chan *Message)
 	EventMessageHooks = hooks[*Message]{}
 
-	EventRedeemClaim      = make(chan string)
-	EventRedeemClaimHooks = hooks[string]{}
+	EventRedeemClaim      = make(chan *RedeemClaim)
+	EventRedeemClaimHooks = hooks[*RedeemClaim]{}
 
-	EventStreamOnline      = make(chan struct{})
-	EventStreamOnlineHooks = hooks[struct{}]{}
+	EventStreamOnline      = make(chan *StreamOnline)
+	EventStreamOnlineHooks = hooks[*StreamOnline]{}
 
-	EventStreamOffline      = make(chan struct{})
-	EventStreamOfflineHooks = hooks[struct{}]{}
+	EventStreamOffline      = make(chan *StreamOffline)
+	EventStreamOfflineHooks = hooks[*StreamOffline]{}
 )
+
+type RedeemClaim struct {
+	ID     string
+	Author Author
+	Here   Here
+}
+
+type StreamOnline struct {
+	When time.Time
+	Here Here
+}
+
+type StreamOffline struct {
+	When time.Time
+	Here Here
+}
 
 func init() {
 	go Events()
+}
+
+func Events() {
+	for {
+		select {
+		case m := <-EventMessage:
+			EventMessageHooks.Run(m)
+			if _, err := m.CommandRun(); err != nil {
+				log.Debug().Err(err).Send()
+			}
+
+		case redeem := <-EventRedeemClaim:
+			EventRedeemClaimHooks.Run(redeem)
+
+		case on := <-EventStreamOnline:
+			EventStreamOnlineHooks.Run(on)
+
+		case off := <-EventStreamOffline:
+			EventStreamOfflineHooks.Run(off)
+		}
+	}
 }
 
 type hook[T any] struct {
@@ -77,26 +115,5 @@ func (hs *hooks[T]) Run(arg T) {
 
 	for _, h := range hs.hooks {
 		h.Run(arg)
-	}
-}
-
-func Events() {
-	for {
-		select {
-		case m := <-EventMessage:
-			EventMessageHooks.Run(m)
-			if _, err := m.CommandRun(); err != nil {
-				log.Debug().Err(err).Send()
-			}
-
-		case redeemUUID := <-EventRedeemClaim:
-			EventRedeemClaimHooks.Run(redeemUUID)
-
-		case <-EventStreamOnline:
-			EventStreamOnlineHooks.Run(struct{}{})
-
-		case <-EventStreamOffline:
-			EventStreamOfflineHooks.Run(struct{}{})
-		}
 	}
 }
