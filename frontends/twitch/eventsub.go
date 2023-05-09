@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
@@ -59,10 +60,35 @@ func init() {
 			var onlineEvent helix.EventSubStreamOnlineEvent
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
 			log.Debug().Msgf("got online webhook for channel: %s\n", onlineEvent.BroadcasterUserName)
+
+			h := Here{
+				RoomID:   onlineEvent.BroadcasterUserID,
+				RoomName: onlineEvent.BroadcasterUserLogin,
+			}
+
+			on := &core.StreamOnline{
+				When: onlineEvent.StartedAt.Time,
+				Here: h,
+			}
+
+			core.EventStreamOnline <- on
+
 		case "stream.offline":
 			var offlineEvent helix.EventSubStreamOfflineEvent
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&offlineEvent)
 			log.Debug().Msgf("got offline webhook for channel: %s\n", offlineEvent.BroadcasterUserName)
+
+			h := Here{
+				RoomID:   offlineEvent.BroadcasterUserID,
+				RoomName: offlineEvent.BroadcasterUserLogin,
+			}
+
+			off := &core.StreamOffline{
+				When: time.Now().UTC(),
+				Here: h,
+			}
+			core.EventStreamOffline <- off
+
 		case "channel.channel_points_custom_reward_redemption.add":
 			var redeem helix.EventSubChannelPointsCustomRewardRedemptionEvent
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&redeem)
@@ -71,7 +97,25 @@ func init() {
 				Str("redeemer", redeem.UserName).
 				Msg("got channel redeem event")
 
-			core.EventRedeemClaim <- redeem.Reward.ID
+			a := Author{
+				id:          redeem.UserID,
+				username:    redeem.UserLogin,
+				displayName: redeem.UserName,
+				roomID:      redeem.BroadcasterUserID,
+			}
+
+			h := Here{
+				RoomID:   redeem.BroadcasterUserID,
+				RoomName: redeem.BroadcasterUserName,
+			}
+
+			r := &core.RedeemClaim{
+				ID:     redeem.Reward.ID,
+				Author: a,
+				Here:   h,
+			}
+
+			core.EventRedeemClaim <- r
 
 		default:
 			log.Debug().Msgf("unhandled event type '%s'", t)

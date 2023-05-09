@@ -2,6 +2,8 @@ package streak
 
 import (
 	"database/sql"
+	"errors"
+	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
@@ -121,4 +123,65 @@ func Off(h *twitch.Helix, place int64) error {
 	}
 
 	return tx.Commit()
+}
+
+func Reset(person, place int64) error {
+	return core.DB.PersonSet("cmd_streak_num", person, place, 0)
+}
+
+func Appearance(person, place int64) error {
+	tx, err := core.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	online, err := tx.PlaceGet("cmd_streak_online", place)
+	if err != nil {
+		return err
+	}
+	offline, err := tx.PlaceGet("cmd_streak_offline", place)
+	if err != nil {
+		return err
+	}
+	diff := time.Unix(online.(int64), 0).Sub(time.Unix(offline.(int64), 0))
+	// Don't increment the streak if the stream went down and up within a 30-min
+	// period as in that case it was probably caused by technical difficulties,
+	// and it's not a "different" stream.
+	if diff < 30*time.Minute {
+		return nil
+	}
+
+	streak, err := tx.PersonGet("cmd_streak_num", person, place)
+	if err != nil {
+		return err
+	}
+	err = tx.PersonSet("cmd_streak_num", person, place, streak.(int)+1)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func Online(place int64, when time.Time) error {
+	return core.DB.PlaceSet("cmd_streak_online", place, when.UTC().Unix())
+}
+
+func Offline(place int64, when time.Time) error {
+	return core.DB.PlaceSet("cmd_streak_offline", place, when.UTC().Unix())
+}
+
+func EventIDSet(place int64, id string) error {
+	return core.DB.PlaceSet("cmd_streak_redeem", place, id)
+}
+func EventIDGet(place int64) (string, error) {
+	id, err := core.DB.PlaceGet("cmd_streak_redeem", place)
+	if id == nil {
+		return "", errors.New("event id not set")
+	}
+	if err != nil {
+		return "", err
+	}
+	return id.(string), nil
 }

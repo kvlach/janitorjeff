@@ -23,6 +23,10 @@ CREATE TABLE settings_place (
 	place BIGINT PRIMARY KEY,
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE,
 
+	cmd_streak_online BIGINT NOT NULL DEFAULT 0,  -- unix timestamp of when the stream was last online
+    cmd_streak_offline BIGINT NOT NULL DEFAULT 0,  -- unix timestamp of when the stream was last offline
+    cmd_streak_redeem UUID, -- the streak tracking redeem id
+
 	cmd_tts_subonly BOOLEAN NOT NULL DEFAULT FALSE,
 
 	cmd_god_reply_on BOOL NOT NULL DEFAULT FALSE,
@@ -39,6 +43,8 @@ CREATE TABLE settings_person (
 
 	cmd_nick_nick VARCHAR(255),
 	UNIQUE(place, cmd_nick_nick),
+
+	cmd_streak_num INT NOT NULL DEFAULT 0,
 
 	cmd_time_tz VARCHAR(255) NOT NULL DEFAULT 'UTC',
 
