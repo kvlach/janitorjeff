@@ -107,7 +107,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		if r.ID != id {
+		if r.ID != id.String() {
 			return
 		}
 
