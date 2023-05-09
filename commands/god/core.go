@@ -32,20 +32,20 @@ func Talk(prompt string) (string, error) {
 // ReplyOnGet returns whether auto-replying is on or off (true or false) in the
 // specified place.
 func ReplyOnGet(place int64) (bool, error) {
-	ret, err := core.DB.SettingPlaceGet("cmd_god_reply_on", place)
+	ret, err := core.DB.PlaceGet("cmd_god_reply_on", place)
 	return ret.(bool), err
 }
 
 // ReplyOnSet will set the value that determines whether auto-replying is on or
 // off (true or false) in the specified place.
 func ReplyOnSet(place int64, on bool) error {
-	return core.DB.SettingPlaceSet("cmd_god_reply_on", place, on)
+	return core.DB.PlaceSet("cmd_god_reply_on", place, on)
 }
 
 // ReplyIntervalGet returns the duration object of the interval that is
 // required for auto-replies in the specified place.
 func ReplyIntervalGet(place int64) (time.Duration, error) {
-	interval, err := core.DB.SettingPlaceGet("cmd_god_reply_interval", place)
+	interval, err := core.DB.PlaceGet("cmd_god_reply_interval", place)
 	if err != nil {
 		return time.Second, err
 	}
@@ -58,13 +58,13 @@ func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
 	if core.MinGodInterval > dur {
 		return ErrIntervalTooShort, nil
 	}
-	return nil, core.DB.SettingPlaceSet("cmd_god_reply_interval", place, int(dur.Seconds()))
+	return nil, core.DB.PlaceSet("cmd_god_reply_interval", place, int(dur.Seconds()))
 }
 
 // ReplyLastGet returns a time object of the when the last reply happened
 // in the specified place.
 func ReplyLastGet(place int64) (time.Time, error) {
-	last, err := core.DB.SettingPlaceGet("cmd_god_reply_last", place)
+	last, err := core.DB.PlaceGet("cmd_god_reply_last", place)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -75,7 +75,7 @@ func ReplyLastGet(place int64) (time.Time, error) {
 // The passed when is set to UTC before extracting the timestamp.
 func ReplyLastSet(place int64, when time.Time) error {
 	timestamp := when.UTC().Unix()
-	return core.DB.SettingPlaceSet("cmd_god_reply_last", place, timestamp)
+	return core.DB.PlaceSet("cmd_god_reply_last", place, timestamp)
 }
 
 // ShouldReply returns true if the required interval has passed since the last

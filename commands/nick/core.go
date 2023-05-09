@@ -66,7 +66,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 // Show returns the person's nickname in the specified place. If no nickname
 // has been set then returns an ErrPersonNotFound error.
 func Show(person, place int64) (string, error, error) {
-	nick, err := core.DB.SettingPersonGet("cmd_nick_nick", person, place)
+	nick, err := core.DB.PersonGet("cmd_nick_nick", person, place)
 	if err != nil {
 		return "", nil, err
 	}
@@ -86,13 +86,13 @@ func Set(nick string, person, place int64) (error, error) {
 	if nickExists {
 		return ErrNickExists, nil
 	}
-	return nil, core.DB.SettingPersonSet("cmd_nick_nick", person, place, nick)
+	return nil, core.DB.PersonSet("cmd_nick_nick", person, place, nick)
 }
 
 // Delete deletes the person's nickname in the specified place. If no nickname
 // has been set then returns an ErrPersonNotFound error.
 func Delete(person, place int64) error {
-	return core.DB.SettingPersonSet("cmd_nick_nick", person, place, nil)
+	return core.DB.PersonSet("cmd_nick_nick", person, place, nil)
 }
 
 // Tries to find a person from the given string. If "me" is passed the author

@@ -129,16 +129,41 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	return prefixes, err
 }
 
+type Tx struct {
+	tx     *sql.Tx
+	db     *SQLDB
+	person bool
+	place  bool
+}
+
+// Begin starts a new transaction and locks the database.
+func (db *SQLDB) Begin() (*Tx, error) {
+	db.Lock.Lock()
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return &Tx{tx: tx, db: db}, nil
+}
+
+func (tx *Tx) Commit() error {
+	return tx.tx.Commit()
+}
+
+func (tx *Tx) Rollback() error {
+	return tx.tx.Rollback()
+}
+
 ////////////////////
 //                //
 // place settings //
 //                //
 ////////////////////
 
-func settingsPlaceExist(tx *sql.Tx, place int64) (bool, error) {
+func (tx *Tx) placeExists(place int64) (bool, error) {
 	var exists bool
 
-	row := tx.QueryRow(`
+	row := tx.tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_place
 			WHERE place = $1
@@ -157,8 +182,8 @@ func settingsPlaceExist(tx *sql.Tx, place int64) (bool, error) {
 	return exists, err
 }
 
-func settingsPlaceGenerate(tx *sql.Tx, place int64) error {
-	_, err := tx.Exec(`
+func (tx *Tx) placeGenerate(place int64) error {
+	_, err := tx.tx.Exec(`
 		INSERT INTO settings_place (place)
 		VALUES ($1)
 	`, place)
@@ -171,9 +196,14 @@ func settingsPlaceGenerate(tx *sql.Tx, place int64) error {
 	return err
 }
 
-// SettingsPlaceGenerate will check if settings for the specified place exist
-// and if not will generate them.
-func SettingsPlaceGenerate(tx *sql.Tx, place int64) error {
+// placeCache will check if settings for the specified place exist  and if not
+// will generate them.
+func (tx *Tx) placeCache(place int64) error {
+	if tx.place {
+		log.Debug().Msg("already generated place settings in transaction, skipping")
+		return nil
+	}
+
 	rdbKey := fmt.Sprintf("settings_place_%d", place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
@@ -181,7 +211,7 @@ func SettingsPlaceGenerate(tx *sql.Tx, place int64) error {
 		return nil
 	}
 
-	exists, err := settingsPlaceExist(tx, place)
+	exists, err := tx.placeExists(place)
 	if err != nil {
 		return err
 	}
@@ -193,32 +223,21 @@ func SettingsPlaceGenerate(tx *sql.Tx, place int64) error {
 		return err
 	}
 
-	err = settingsPlaceGenerate(tx, place)
+	err = tx.placeGenerate(place)
 	if err != nil {
 		return err
 	}
+	tx.place = true
+
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	log.Debug().Err(err).Msg("CACHE: generated place settings in db, caching")
 	return err
 }
 
-// SettingPlaceGet returns the value of col in table for the specified place.
-func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return false, err
-	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
-
+// PlaceGet returns the value of col in table for the specified place.
+func (tx *Tx) PlaceGet(col string, place int64) (any, error) {
 	// Make sure that the place settings are present
-	if err := SettingsPlaceGenerate(tx, place); err != nil {
+	if err := tx.placeCache(place); err != nil {
 		return nil, err
 	}
 
@@ -228,38 +247,20 @@ func (db *SQLDB) SettingPlaceGet(col string, place int64) (any, error) {
 		WHERE place = $1
 	`, col)
 
-	row := tx.QueryRow(query, place)
-
 	var val any
-	err = row.Scan(&val)
+	err := tx.tx.QueryRow(query, place).Scan(&val)
 	log.Debug().
 		Err(err).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
-	if err != nil {
-		return nil, err
-	}
-	return val, tx.Commit()
+	return val, err
 }
 
-// SettingPlaceSet sets the value of col in table for the specified place.
-func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
-
+// PlaceSet sets the value of col in table for the specified place.
+func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
-	if err := SettingsPlaceGenerate(tx, place); err != nil {
+	if err := tx.placeCache(place); err != nil {
 		return err
 	}
 
@@ -268,7 +269,7 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		SET %s = $1
 		WHERE place = $2
 	`, col)
-	_, err = tx.Exec(query, val, place)
+	_, err := tx.tx.Exec(query, val, place)
 
 	log.Debug().
 		Err(err).
@@ -276,6 +277,29 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 		Interface(col, val).
 		Msg("changed setting")
 
+	return err
+}
+
+func (db *SQLDB) PlaceGet(col string, place int64) (any, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	val, err := tx.PlaceGet(col, place)
+	if err != nil {
+		return nil, err
+	}
+	return val, tx.Commit()
+}
+
+func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = tx.PlaceSet(col, place, val)
 	if err != nil {
 		return err
 	}
@@ -288,18 +312,16 @@ func (db *SQLDB) SettingPlaceSet(col string, place int64, val any) error {
 //                 //
 /////////////////////
 
-func settingsPersonExist(tx *sql.Tx, person, place int64) (bool, error) {
+func (tx *Tx) personExists(person, place int64) (bool, error) {
 	var exists bool
 
-	row := tx.QueryRow(`
+	err := tx.tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_person
 			WHERE person = $1 and place = $2
 			LIMIT 1
 		)
-	`, person, place)
-
-	err := row.Scan(&exists)
+	`, person, place).Scan(&exists)
 
 	log.Debug().
 		Err(err).
@@ -311,8 +333,8 @@ func settingsPersonExist(tx *sql.Tx, person, place int64) (bool, error) {
 	return exists, err
 }
 
-func settingsPersonGenerate(tx *sql.Tx, person, place int64) error {
-	_, err := tx.Exec(`
+func (tx *Tx) personGenerate(person, place int64) error {
+	_, err := tx.tx.Exec(`
 		INSERT INTO settings_person (person, place)
 		VALUES ($1, $2)
 	`, person, place)
@@ -326,9 +348,14 @@ func settingsPersonGenerate(tx *sql.Tx, person, place int64) error {
 	return err
 }
 
-// SettingsPersonGenerate will check if settings for the specified person in the
+// personCache will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
-func SettingsPersonGenerate(tx *sql.Tx, person, place int64) error {
+func (tx *Tx) personCache(person, place int64) error {
+	if tx.person {
+		log.Debug().Msg("already generated person settings in transaction, skipping")
+		return nil
+	}
+
 	rdbKey := fmt.Sprintf("settings_person_%d_%d", person, place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
@@ -336,7 +363,7 @@ func SettingsPersonGenerate(tx *sql.Tx, person, place int64) error {
 		return nil
 	}
 
-	exists, err := settingsPersonExist(tx, person, place)
+	exists, err := tx.personExists(person, place)
 	if err != nil {
 		return err
 	}
@@ -348,33 +375,22 @@ func SettingsPersonGenerate(tx *sql.Tx, person, place int64) error {
 		return err
 	}
 
-	err = settingsPersonGenerate(tx, person, place)
+	err = tx.personGenerate(person, place)
 	if err != nil {
 		return err
 	}
+	tx.person = true
+
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	log.Debug().Err(err).Msg("CACHE: generated person settings in db, caching")
 	return err
 }
 
-// SettingPersonGet returns the value of col in table for the specified person
+// PersonGet returns the value of col in table for the specified person
 // in the specified place.
-func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return false, err
-	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
-
+func (tx *Tx) PersonGet(col string, person, place int64) (any, error) {
 	// Make sure that the person settings are present
-	if err := SettingsPersonGenerate(tx, person, place); err != nil {
+	if err := tx.personCache(person, place); err != nil {
 		return nil, err
 	}
 
@@ -383,42 +399,24 @@ func (db *SQLDB) SettingPersonGet(col string, person, place int64) (any, error) 
 		FROM settings_person
 		WHERE person = $1 and place = $2
 	`, col)
-	row := tx.QueryRow(query, person, place)
+	row := tx.tx.QueryRow(query, person, place)
 
 	var val any
-	err = row.Scan(&val)
-
+	err := row.Scan(&val)
 	log.Debug().
 		Err(err).
 		Int64("person", person).
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
-
-	if err != nil {
-		return nil, err
-	}
-	return val, tx.Commit()
+	return val, err
 }
 
-// SettingPersonSet sets the value of col in table for the specified person in
+// PersonSet sets the value of col in table for the specified person in
 // the specified place.
-func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
-
+func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
-	if err := SettingsPersonGenerate(tx, person, place); err != nil {
+	if err := tx.personCache(person, place); err != nil {
 		return err
 	}
 
@@ -427,7 +425,7 @@ func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) erro
 		SET %s = $1
 		WHERE person = $2 and place = $3
 	`, col)
-	_, err = tx.Exec(query, val, person, place)
+	_, err := tx.tx.Exec(query, val, person, place)
 
 	log.Debug().
 		Err(err).
@@ -436,6 +434,29 @@ func (db *SQLDB) SettingPersonSet(col string, person, place int64, val any) erro
 		Interface(col, val).
 		Msg("changed setting")
 
+	return err
+}
+
+func (db *SQLDB) PersonGet(col string, person, place int64) (any, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	val, err := tx.PersonGet(col, person, place)
+	if err != nil {
+		return nil, err
+	}
+	return val, tx.Commit()
+}
+
+func (db *SQLDB) PersonSet(col string, person, place int64, val any) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = tx.PersonSet(col, person, place, val)
 	if err != nil {
 		return err
 	}
