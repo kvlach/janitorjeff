@@ -202,7 +202,7 @@ func dbRemindExists(id, person int64) (bool, error) {
 func Now(person, place int64) (time.Time, error, error) {
 	now := time.Now().UTC()
 
-	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
+	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
 	if err != nil {
 		return now, nil, err
 	}
@@ -236,7 +236,7 @@ func Convert(target, tz string) (string, error, error) {
 }
 
 func Time(when string, person, place int64) (time.Time, error, error) {
-	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
+	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
 	loc, err := time.LoadLocation(tz.(string))
 	if err != nil {
 		return time.Time{}, nil, err
@@ -261,7 +261,7 @@ func Timestamp(when string, person, place int64) (time.Time, error, error) {
 }
 
 func TimezoneShow(person, place int64) (string, error) {
-	tz, err := core.DB.SettingPersonGet("cmd_time_tz", person, place)
+	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
 	if err != nil {
 		return "", err
 	}
@@ -274,11 +274,11 @@ func TimezoneSet(tz string, person, place int64) (string, error, error) {
 		return tz, errTimezone, nil
 	}
 	tz = loc.String()
-	return tz, nil, core.DB.SettingPersonSet("cmd_time_tz", person, place, tz)
+	return tz, nil, core.DB.PersonSet("cmd_time_tz", person, place, tz)
 }
 
 func TimezoneDelete(person, place int64) error {
-	return core.DB.SettingPersonSet("cmd_time_tz", person, place, "UTC")
+	return core.DB.PersonSet("cmd_time_tz", person, place, "UTC")
 }
 
 func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
