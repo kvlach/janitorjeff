@@ -178,13 +178,13 @@ func Offline(place int64, when time.Time) error {
 func EventIDSet(place int64, id string) error {
 	return core.DB.PlaceSet("cmd_streak_redeem", place, id)
 }
-func EventIDGet(place int64) (string, error) {
+func EventIDGet(place int64) (core.UUID, error) {
 	id, err := core.DB.PlaceGet("cmd_streak_redeem", place)
 	if id == nil {
-		return "", errors.New("event id not set")
+		return core.UUID{}, errors.New("event id not set")
 	}
 	if err != nil {
-		return "", err
+		return core.UUID{}, err
 	}
-	return id.(string), nil
+	return id.(core.UUID), nil
 }
