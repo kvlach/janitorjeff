@@ -13,6 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var ErrRedeemNotSet = errors.New("the streak redeem has not been set")
+
 func On(h *twitch.Helix, place int64, broadcasterID string) error {
 	db := core.DB
 	db.Lock.Lock()
@@ -176,20 +178,22 @@ func Offline(place int64, when time.Time) error {
 	return core.DB.PlaceSet("cmd_streak_offline", place, when.UTC().Unix())
 }
 
-func EventIDSet(place int64, id string) error {
+func RedeemSet(place int64, id string) error {
 	u, err := uuid.Parse(id)
 	if err != nil {
 		return err
 	}
 	return core.DB.PlaceSet("cmd_streak_redeem", place, u)
 }
-func EventIDGet(place int64) (uuid.UUID, error) {
+
+func RedeemGet(place int64) (uuid.UUID, error, error) {
 	id, err := core.DB.PlaceGet("cmd_streak_redeem", place)
-	if id == nil {
-		return uuid.UUID{}, errors.New("event id not set")
-	}
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, nil, err
 	}
-	return uuid.FromBytes(id.([]uint8))
+	if id == nil {
+		return uuid.UUID{}, ErrRedeemNotSet, nil
+	}
+	u, err := uuid.Parse(string(id.([]uint8)))
+	return u, nil, err
 }
