@@ -1,9 +1,11 @@
 package streak
 
 import (
+	"fmt"
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -57,7 +59,7 @@ func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedOn,
 		AdvancedOff,
-		AdvancedSet,
+		AdvancedRedeem,
 	}
 }
 
@@ -101,9 +103,9 @@ func (advanced) Init() error {
 			return
 		}
 
-		id, err := EventIDGet(place)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get event id")
+		id, usrErr, err := RedeemGet(place)
+		if usrErr != nil || err != nil {
+			log.Error().Err(err).Interface("usrErr", usrErr).Msg("failed to get event id")
 			return
 		}
 
@@ -268,59 +270,195 @@ func (advancedOff) core(m *core.Message) error {
 	return Off(h, here)
 }
 
-/////////
-//     //
-// set //
-//     //
-/////////
+////////////
+//        //
+// redeem //
+//        //
+////////////
 
-var AdvancedSet = advancedSet{}
+var AdvancedRedeem = advancedRedeem{}
 
-type advancedSet struct{}
+type advancedRedeem struct{}
 
-func (c advancedSet) Type() core.CommandType {
+func (c advancedRedeem) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSet) Permitted(m *core.Message) bool {
+func (c advancedRedeem) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedSet) Names() []string {
+func (advancedRedeem) Names() []string {
+	return []string{
+		"redeem",
+	}
+}
+
+func (advancedRedeem) Description() string {
+	return "Control which redeem triggers the streak."
+}
+
+func (c advancedRedeem) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedRedeem) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedRedeem) Examples() []string {
+	return nil
+}
+
+func (advancedRedeem) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedRedeem) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedRedeemShow,
+		AdvancedRedeemSet,
+	}
+}
+
+func (advancedRedeem) Init() error {
+	return nil
+}
+
+func (advancedRedeem) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+/////////////////
+//             //
+// redeem show //
+//             //
+/////////////////
+
+var AdvancedRedeemShow = advancedRedeemShow{}
+
+type advancedRedeemShow struct{}
+
+func (c advancedRedeemShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedRedeemShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedRedeemShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedRedeemShow) Description() string {
+	return "Show what the current redeem is set to."
+}
+
+func (advancedRedeemShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedRedeemShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedRedeemShow) Examples() []string {
+	return nil
+}
+
+func (advancedRedeemShow) Parent() core.CommandStatic {
+	return AdvancedRedeem
+}
+
+func (advancedRedeemShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedRedeemShow) Init() error {
+	return nil
+}
+
+func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
+	u, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return c.fmt(u, usrErr), usrErr, nil
+}
+
+func (advancedRedeemShow) fmt(u uuid.UUID, usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "The streak tracking redeem is set to: " + u.String()
+	case ErrRedeemNotSet:
+		return "The streak tracking redeem has not been set."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, error, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return uuid.UUID{}, nil, err
+	}
+	return RedeemGet(here)
+}
+
+////////////////
+//            //
+// redeem set //
+//            //
+////////////////
+
+var AdvancedRedeemSet = advancedRedeemSet{}
+
+type advancedRedeemSet struct{}
+
+func (c advancedRedeemSet) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedRedeemSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedRedeemSet) Names() []string {
 	return []string{
 		"set",
 	}
 }
 
-func (advancedSet) Description() string {
+func (advancedRedeemSet) Description() string {
 	return "Set the ID of the."
 }
 
-func (advancedSet) UsageArgs() string {
+func (advancedRedeemSet) UsageArgs() string {
 	return "<id>"
 }
 
-func (c advancedSet) Category() core.CommandCategory {
+func (c advancedRedeemSet) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedSet) Examples() []string {
+func (advancedRedeemSet) Examples() []string {
 	return nil
 }
 
-func (advancedSet) Parent() core.CommandStatic {
-	return Advanced
+func (advancedRedeemSet) Parent() core.CommandStatic {
+	return AdvancedRedeem
 }
 
-func (advancedSet) Children() core.CommandsStatic {
+func (advancedRedeemSet) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedSet) Init() error {
+func (advancedRedeemSet) Init() error {
 	return nil
 }
 
-func (c advancedSet) Run(m *core.Message) (any, error, error) {
+func (c advancedRedeemSet) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
@@ -332,10 +470,10 @@ func (c advancedSet) Run(m *core.Message) (any, error, error) {
 	return "Set the streak redeem.", nil, nil
 }
 
-func (advancedSet) core(m *core.Message) error {
+func (advancedRedeemSet) core(m *core.Message) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
 	}
-	return EventIDSet(here, m.Command.Args[0])
+	return RedeemSet(here, m.Command.Args[0])
 }
