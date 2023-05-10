@@ -155,6 +155,9 @@ func Appearance(person, place int64) error {
 	// period as in that case it was probably caused by technical difficulties,
 	// and it's not a "different" stream.
 	if diff < 30*time.Minute {
+		log.Debug().
+			Interface("diff", diff).
+			Msg("stream online again within grace period")
 		return nil
 	}
 
@@ -162,7 +165,7 @@ func Appearance(person, place int64) error {
 	if err != nil {
 		return err
 	}
-	err = tx.PersonSet("cmd_streak_num", person, place, streak.(int)+1)
+	err = tx.PersonSet("cmd_streak_num", person, place, streak.(int64)+1)
 	if err != nil {
 		return err
 	}
