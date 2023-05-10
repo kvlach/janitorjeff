@@ -108,6 +108,10 @@ func (advanced) Init() error {
 		}
 
 		if r.ID != id.String() {
+			log.Debug().
+				Str("got", r.ID).
+				Str("expected", id.String()).
+				Msg("redeem id doesn't match")
 			return
 		}
 
