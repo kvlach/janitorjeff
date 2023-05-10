@@ -8,6 +8,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
+	"github.com/google/uuid"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/rs/zerolog/log"
 )
@@ -176,17 +177,19 @@ func Offline(place int64, when time.Time) error {
 }
 
 func EventIDSet(place int64, id string) error {
-	return core.DB.PlaceSet("cmd_streak_redeem", place, id)
+	u, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+	return core.DB.PlaceSet("cmd_streak_redeem", place, u)
 }
-func EventIDGet(place int64) (core.UUID, error) {
+func EventIDGet(place int64) (uuid.UUID, error) {
 	id, err := core.DB.PlaceGet("cmd_streak_redeem", place)
 	if id == nil {
-		return core.UUID{}, errors.New("event id not set")
+		return uuid.UUID{}, errors.New("event id not set")
 	}
 	if err != nil {
-		return core.UUID{}, err
+		return uuid.UUID{}, err
 	}
-	var uuid core.UUID
-	copy(uuid[:], id.([]uint8))
-	return uuid, nil
+	return uuid.FromBytes(id.([]uint8))
 }
