@@ -117,8 +117,34 @@ func (advanced) Init() error {
 			return
 		}
 
-		if err := Appearance(person, place); err != nil {
+		streak, err := Appearance(person, place)
+		if err != nil {
 			log.Error().Err(err).Msg("failed to update user streak")
+			return
+		}
+
+		m, err := core.Frontends.CreateMessage(person, place, "")
+		if err != nil {
+			log.Error().Err(err).Msg("failed to create message object")
+			return
+		}
+
+		display, err := r.Author.DisplayName()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get display name")
+			return
+		}
+
+		var times string
+		if streak == 1 {
+			times = "time"
+		} else {
+			times = "times"
+		}
+
+		resp := fmt.Sprintf("%s has paid their taxes %d %s in a row!", display, streak, times)
+		if _, err := m.Client.Send(resp, nil); err != nil {
+			log.Error().Err(err).Msg("failed to send streak message")
 		}
 	})
 	return nil
