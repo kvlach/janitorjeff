@@ -13,7 +13,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var ErrRedeemNotSet = errors.New("the streak redeem has not been set")
+var (
+	ErrRedeemNotSet = errors.New("the streak redeem has not been set")
+	ErrIgnore       = errors.New("stream online within grace period, do nothing")
+)
 
 func On(h *twitch.Helix, place int64, broadcasterID string) error {
 	db := core.DB
@@ -132,23 +135,23 @@ func Reset(person, place int64) error {
 	return core.DB.PersonSet("cmd_streak_num", person, place, 0)
 }
 
-func Appearance(person, place int64) error {
+func Appearance(person, place int64) (int64, error) {
 	core.DB.Lock.Lock()
 	defer core.DB.Lock.Unlock()
 
 	tx, err := core.DB.Begin()
 	if err != nil {
-		return err
+		return -1, err
 	}
 	defer tx.Rollback()
 
 	online, err := tx.PlaceGet("cmd_streak_online", place)
 	if err != nil {
-		return err
+		return -1, err
 	}
 	offline, err := tx.PlaceGet("cmd_streak_offline", place)
 	if err != nil {
-		return err
+		return -1, err
 	}
 	diff := time.Unix(online.(int64), 0).Sub(time.Unix(offline.(int64), 0))
 	// Don't increment the streak if the stream went down and up within a 30-min
@@ -158,19 +161,19 @@ func Appearance(person, place int64) error {
 		log.Debug().
 			Interface("diff", diff).
 			Msg("stream online again within grace period")
-		return nil
+		return -1, ErrIgnore
 	}
 
 	streak, err := tx.PersonGet("cmd_streak_num", person, place)
 	if err != nil {
-		return err
+		return -1, err
 	}
 	err = tx.PersonSet("cmd_streak_num", person, place, streak.(int64)+1)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	return tx.Commit()
+	return streak.(int64) + 1, tx.Commit()
 }
 
 func Online(place int64, when time.Time) error {
