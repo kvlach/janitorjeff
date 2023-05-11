@@ -203,3 +203,11 @@ func RedeemGet(place int64) (uuid.UUID, error, error) {
 	u, err := uuid.Parse(string(id.([]uint8)))
 	return u, nil, err
 }
+
+func Get(person, place int64) (int64, error) {
+	streak, err := core.DB.PersonGet("cmd_streak_num", person, place)
+	if err != nil {
+		return 0, err
+	}
+	return streak.(int64), nil
+}
