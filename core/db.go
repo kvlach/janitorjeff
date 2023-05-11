@@ -237,6 +237,8 @@ func (tx *Tx) PlaceGet(col string, place int64) (any, error) {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return nil, err
+	} else {
+		tx.place = true
 	}
 
 	query := fmt.Sprintf(`
@@ -260,6 +262,8 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return err
+	} else {
+		tx.place = true
 	}
 
 	query := fmt.Sprintf(`
@@ -396,6 +400,8 @@ func (tx *Tx) PersonGet(col string, person, place int64) (any, error) {
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return nil, err
+	} else {
+		tx.person = true
 	}
 
 	query := fmt.Sprintf(`
@@ -422,6 +428,8 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return err
+	} else {
+		tx.person = true
 	}
 
 	query := fmt.Sprintf(`
