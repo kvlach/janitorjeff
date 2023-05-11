@@ -59,6 +59,7 @@ func (advanced) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedOn,
 		AdvancedOff,
+		AdvancedShow,
 		AdvancedRedeem,
 	}
 }
@@ -294,6 +295,76 @@ func (advancedOff) core(m *core.Message) error {
 	}
 
 	return Off(h, here)
+}
+
+//////////
+//      //
+// show //
+//      //
+//////////
+
+var AdvancedShow = advancedShow{}
+
+type advancedShow struct{}
+
+func (c advancedShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedShow) Description() string {
+	return "Show the current streak."
+}
+
+func (advancedShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedShow) Examples() []string {
+	return nil
+}
+
+func (advancedShow) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedShow) Init() error {
+	return nil
+}
+
+func (c advancedShow) Run(m *core.Message) (any, error, error) {
+	streak, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return fmt.Sprintf("Current streak is: %d", streak), nil, nil
+}
+
+func (advancedShow) core(m *core.Message) (int64, error) {
+	author, err := m.Author.Scope()
+	if err != nil {
+		return 0, err
+	}
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return 0, err
+	}
+	return Get(author, here)
 }
 
 ////////////
