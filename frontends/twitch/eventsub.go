@@ -111,6 +111,7 @@ func init() {
 
 			r := &core.RedeemClaim{
 				ID:     redeem.Reward.ID,
+				When:   redeem.RedeemedAt.Time,
 				Author: a,
 				Here:   h,
 			}

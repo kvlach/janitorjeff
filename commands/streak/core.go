@@ -131,11 +131,7 @@ func Off(h *twitch.Helix, place int64) error {
 	return tx.Commit()
 }
 
-func Reset(person, place int64) error {
-	return core.DB.PersonSet("cmd_streak_num", person, place, 0)
-}
-
-func Appearance(person, place int64) (int64, error) {
+func Appearance(person, place int64, when time.Time) (int64, error) {
 	core.DB.Lock.Lock()
 	defer core.DB.Lock.Unlock()
 
@@ -145,25 +141,46 @@ func Appearance(person, place int64) (int64, error) {
 	}
 	defer tx.Rollback()
 
-	online, err := tx.PlaceGet("cmd_streak_online", place)
+	prev, err := tx.PersonGet("cmd_streak_last", person, place)
+	if err != nil {
+		return 0, err
+	}
+	online, err := tx.PlaceGet("cmd_streak_online_norm", place)
 	if err != nil {
 		return -1, err
 	}
-	offline, err := tx.PlaceGet("cmd_streak_offline", place)
+	offline, err := tx.PlaceGet("cmd_streak_offline_norm", place)
 	if err != nil {
-		return -1, err
-	}
-	diff := time.Unix(online.(int64), 0).Sub(time.Unix(offline.(int64), 0))
-	// Don't increment the streak if the stream went down and up within a 30-min
-	// period as in that case it was probably caused by technical difficulties,
-	// and it's not a "different" stream.
-	if diff < 30*time.Minute {
-		log.Debug().
-			Interface("diff", diff).
-			Msg("stream online again within grace period")
-		return -1, ErrIgnore
+		return 0, err
 	}
 
+	// This will get triggered in the following scenario:
+	//
+	//     online -> offline -> online -> redeem
+	//
+	// In which case the streak counter gets reset to 0 as the person didn't
+	// show up in the previous stream
+	if offline.(int64) > prev.(int64) {
+		err = tx.PersonSet("cmd_streak_num", person, place, 0)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	// This will get triggered in the following scenario:
+	//
+	//     online -> redeem -> offline -> online (within grace) -> redeem
+	//
+	// In which case the streak doesn't get incremented as this is considered
+	// one stream.
+	if prev.(int64) >= online.(int64) {
+		return 0, ErrIgnore
+	}
+
+	err = tx.PersonSet("cmd_streak_last", person, place, when.UTC().Unix())
+	if err != nil {
+		return 0, err
+	}
 	streak, err := tx.PersonGet("cmd_streak_num", person, place)
 	if err != nil {
 		return -1, err
@@ -172,16 +189,55 @@ func Appearance(person, place int64) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-
 	return streak.(int64) + 1, tx.Commit()
 }
 
-func Online(place int64, when time.Time) error {
-	return core.DB.PlaceSet("cmd_streak_online", place, when.UTC().Unix())
+// Online will save the timestamp of when the stream went online. It tries to
+// filter shaky connections by giving a grace period of the stream going offline
+// and online again (event multiple times), in which case the streams are viewed
+// as one.
+func Online(place int64, when time.Time, grace time.Duration) error {
+	// There are 2 kinds of values, actual and normalized. Actual keeps track of
+	// online/offline events as they come in, without any filtering, normalized
+	// makes sure that more than the specified grace period has passed between
+	// the stream going down and up again.
+
+	core.DB.Lock.Lock()
+	defer core.DB.Lock.Unlock()
+
+	tx, err := core.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	err = tx.PlaceSet("cmd_streak_online_actual", place, when.UTC().Unix())
+	if err != nil {
+		return err
+	}
+
+	offline, err := tx.PlaceGet("cmd_streak_offline_actual", place)
+	if err != nil {
+		return err
+	}
+
+	diff := when.Sub(time.Unix(offline.(int64), 0))
+	if diff <= grace {
+		log.Debug().
+			Str("diff", diff.String()).
+			Msg("stream online again within grace period")
+		return ErrIgnore
+	}
+
+	err = tx.PlaceSet("cmd_streak_offline_norm", place, offline.(int64))
+	if err != nil {
+		return err
+	}
+	return tx.PlaceSet("cmd_streak_online_norm", place, when.UTC().Unix())
 }
 
 func Offline(place int64, when time.Time) error {
-	return core.DB.PlaceSet("cmd_streak_offline", place, when.UTC().Unix())
+	return core.DB.PlaceSet("cmd_streak_offline_actual", place, when.UTC().Unix())
 }
 
 func RedeemSet(place int64, id string) error {
