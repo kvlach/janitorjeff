@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicklaw5/helix/v2"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,6 +27,8 @@ const (
 	CallbackEventSub = "/twitch/eventsub"
 	secret           = "secretword"
 )
+
+var ctx = context.Background()
 
 func init() {
 	core.Gin.POST(CallbackEventSub, func(c *gin.Context) {
@@ -52,6 +56,36 @@ func init() {
 		// if there's a challenge in the request, respond with only the challenge to verify your eventsub.
 		if vals.Challenge != "" {
 			c.String(http.StatusOK, vals.Challenge)
+			return
+		}
+
+		timestamp := c.GetHeader("Twitch-Eventsub-Message-Timestamp")
+		when, err := time.Parse("2006-01-02T15:04:05.999999999Z", timestamp)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("timestamp", timestamp).
+				Msg("failed to parse timestamp")
+			return
+		}
+		if time.Now().Sub(when) > 10*time.Minute {
+			log.Error().Msg("message older than 10 minutes, skipping")
+			return
+		}
+
+		id := c.GetHeader("Twitch-Eventsub-Message-Id")
+		rdbKey := "frontend_twitch_eventsub_" + id
+
+		if err := core.RDB.Get(ctx, rdbKey).Err(); err != redis.Nil {
+			log.Debug().
+				Str("id", id).
+				Msg("message id has already been processed, skipping")
+			return
+		}
+
+		log.Debug().Str("id", id).Msg("caching eventsub message id")
+		if err := core.RDB.Set(ctx, rdbKey, nil, 10*time.Minute).Err(); err != nil {
+			log.Error().Err(err).Str("id", id).Msg("failed to cache event id")
 			return
 		}
 
