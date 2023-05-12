@@ -2,8 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"git.sr.ht/~slowtyper/janitorjeff/commands/streak"
-	"git.sr.ht/~slowtyper/janitorjeff/commands/twitch"
 	"net/http"
 
 	"git.sr.ht/~slowtyper/janitorjeff/commands/audio"
@@ -19,9 +17,11 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/commands/prefix"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/rps"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/search"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/streak"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/time"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/title"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/tts"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/twitch"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/urban-dictionary"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/wikipedia"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/youtube"
@@ -67,6 +67,7 @@ var Commands = core.CommandsStatic{
 	search.Advanced,
 
 	streak.Advanced,
+	streak.Normal,
 
 	time.Advanced,
 	time.NormalTime,
