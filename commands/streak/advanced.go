@@ -2,9 +2,10 @@ package streak
 
 import (
 	"fmt"
+	"time"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
-
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
@@ -71,7 +72,7 @@ func (advanced) Init() error {
 			log.Error().Err(err).Msg("failed to get place scope")
 			return
 		}
-		err = Online(here, on.When)
+		err = Online(here, on.When, 30*time.Minute)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to save stream's online status")
 			return
@@ -118,7 +119,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		streak, err := Appearance(person, place)
+		streak, err := Appearance(person, place, r.When)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to update user streak")
 			return
