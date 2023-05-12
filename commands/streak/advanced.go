@@ -62,6 +62,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedOff,
 		AdvancedShow,
 		AdvancedRedeem,
+		AdvancedGrace,
 	}
 }
 
@@ -72,7 +73,7 @@ func (advanced) Init() error {
 			log.Error().Err(err).Msg("failed to get place scope")
 			return
 		}
-		err = Online(here, on.When, 30*time.Minute)
+		err = Online(here, on.When)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to save stream's online status")
 			return
@@ -574,4 +575,204 @@ func (advancedRedeemSet) core(m *core.Message) error {
 		return err
 	}
 	return RedeemSet(here, m.Command.Args[0])
+}
+
+///////////
+//       //
+// grace //
+//       //
+///////////
+
+var AdvancedGrace = advancedGrace{}
+
+type advancedGrace struct{}
+
+func (c advancedGrace) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedGrace) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedGrace) Names() []string {
+	return []string{
+		"grace",
+	}
+}
+
+func (advancedGrace) Description() string {
+	return "Control the grace period."
+}
+
+func (c advancedGrace) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedGrace) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedGrace) Examples() []string {
+	return nil
+}
+
+func (advancedGrace) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedGrace) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedGraceShow,
+		AdvancedGraceSet,
+	}
+}
+
+func (advancedGrace) Init() error {
+	return nil
+}
+
+func (advancedGrace) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+////////////////
+//            //
+// grace show //
+//            //
+////////////////
+
+var AdvancedGraceShow = advancedGraceShow{}
+
+type advancedGraceShow struct{}
+
+func (c advancedGraceShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedGraceShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedGraceShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedGraceShow) Description() string {
+	return "Show the current grace period."
+}
+
+func (advancedGraceShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedGraceShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedGraceShow) Examples() []string {
+	return nil
+}
+
+func (advancedGraceShow) Parent() core.CommandStatic {
+	return AdvancedGrace
+}
+
+func (advancedGraceShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedGraceShow) Init() error {
+	return nil
+}
+
+func (c advancedGraceShow) Run(m *core.Message) (any, error, error) {
+	grace, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return "The grace period is set to: " + grace.String(), nil, nil
+}
+
+func (advancedGraceShow) core(m *core.Message) (time.Duration, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return 0, err
+	}
+	return GraceGet(here)
+}
+
+///////////////
+//           //
+// grace set //
+//           //
+///////////////
+
+var AdvancedGraceSet = advancedGraceSet{}
+
+type advancedGraceSet struct{}
+
+func (c advancedGraceSet) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedGraceSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedGraceSet) Names() []string {
+	return []string{
+		"set",
+	}
+}
+
+func (advancedGraceSet) Description() string {
+	return "Set the grace period."
+}
+
+func (advancedGraceSet) UsageArgs() string {
+	return "<duration>"
+}
+
+func (c advancedGraceSet) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedGraceSet) Examples() []string {
+	return nil
+}
+
+func (advancedGraceSet) Parent() core.CommandStatic {
+	return AdvancedGrace
+}
+
+func (advancedGraceSet) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedGraceSet) Init() error {
+	return nil
+}
+
+func (c advancedGraceSet) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return "Updated grace period.", nil, nil
+}
+
+func (advancedGraceSet) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	grace, err := time.ParseDuration(m.Command.Args[0])
+	if err != nil {
+		return err
+	}
+	return GraceSet(here, grace)
 }
