@@ -196,7 +196,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 // filter shaky connections by giving a grace period of the stream going offline
 // and online again (event multiple times), in which case the streams are viewed
 // as one.
-func Online(place int64, when time.Time, grace time.Duration) error {
+func Online(place int64, when time.Time) error {
 	// There are 2 kinds of values, actual and normalized. Actual keeps track of
 	// online/offline events as they come in, without any filtering, normalized
 	// makes sure that more than the specified grace period has passed between
@@ -221,8 +221,13 @@ func Online(place int64, when time.Time, grace time.Duration) error {
 		return err
 	}
 
+	grace, err := tx.PlaceGet("cmd_streak_grace", place)
+	if err != nil {
+		return err
+	}
+
 	diff := when.Sub(time.Unix(offline.(int64), 0))
-	if diff <= grace {
+	if diff <= time.Duration(grace.(int64))*time.Second {
 		log.Debug().
 			Str("diff", diff.String()).
 			Msg("stream online again within grace period")
@@ -266,4 +271,16 @@ func Get(person, place int64) (int64, error) {
 		return 0, err
 	}
 	return streak.(int64), nil
+}
+
+func GraceGet(place int64) (time.Duration, error) {
+	grace, err := core.DB.PlaceGet("cmd_streak_grace", place)
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(grace.(int64)) * time.Second, nil
+}
+
+func GraceSet(place int64, grace time.Duration) error {
+	return core.DB.PlaceSet("cmd_streak_grace", place, int(grace.Seconds()))
 }
