@@ -1,6 +1,7 @@
 package streak
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
+
+var ErrInvalidDuration = errors.New("provided duration could not be parsed")
 
 var Advanced = advanced{}
 
@@ -758,21 +761,32 @@ func (c advancedGraceSet) Run(m *core.Message) (any, error, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
-	err := c.core(m)
+	grace, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return "Updated grace period.", nil, nil
+	return c.fmt(grace, urr), urr, nil
 }
 
-func (advancedGraceSet) core(m *core.Message) error {
+func (advancedGraceSet) fmt(grace time.Duration, urr error) string {
+	switch urr {
+	case nil:
+		return "The grace period is now set to: " + grace.String()
+	case ErrInvalidDuration:
+		return "Can't understand duration, use the following format: 1h30m10s (sets the grace period to 1 hour, 30 minutes and, 10 seconds) or more simply 10m (sets it to 10 minutes)"
+	default:
+		return fmt.Sprint(urr)
+	}
+}
+
+func (advancedGraceSet) core(m *core.Message) (time.Duration, error, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
 	grace, err := time.ParseDuration(m.Command.Args[0])
 	if err != nil {
-		return err
+		return 0, ErrInvalidDuration, nil
 	}
-	return GraceSet(here, grace)
+	return grace, nil, GraceSet(here, grace)
 }
