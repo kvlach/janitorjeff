@@ -527,9 +527,7 @@ func (c advancedRedeemSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedRedeemSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedRedeemSet) Description() string {
@@ -724,9 +722,7 @@ func (c advancedGraceSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedGraceSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedGraceSet) Description() string {

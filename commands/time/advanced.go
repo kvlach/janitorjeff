@@ -615,9 +615,7 @@ func (c advancedTimezoneSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedTimezoneSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedTimezoneSet) Description() string {

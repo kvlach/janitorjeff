@@ -717,9 +717,7 @@ func (c advancedIntervalSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedIntervalSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedIntervalSet) Description() string {

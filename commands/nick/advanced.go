@@ -220,9 +220,7 @@ func (c advancedSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedSet) Description() string {

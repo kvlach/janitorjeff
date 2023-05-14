@@ -427,9 +427,7 @@ func (c advancedVoiceSet) Permitted(m *core.Message) bool {
 }
 
 func (advancedVoiceSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (advancedVoiceSet) Description() string {
