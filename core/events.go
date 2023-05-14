@@ -43,18 +43,22 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
+			log.Debug().Msg("received message event")
 			EventMessageHooks.Run(m)
 			if _, err := m.CommandRun(); err != nil {
 				log.Debug().Err(err).Send()
 			}
 
 		case redeem := <-EventRedeemClaim:
+			log.Debug().Msg("received redeem claim event")
 			EventRedeemClaimHooks.Run(redeem)
 
 		case on := <-EventStreamOnline:
+			log.Debug().Msg("received stream online event")
 			EventStreamOnlineHooks.Run(on)
 
 		case off := <-EventStreamOffline:
+			log.Debug().Msg("received stream offline event")
 			EventStreamOfflineHooks.Run(off)
 		}
 	}
