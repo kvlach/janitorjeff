@@ -38,11 +38,8 @@ type StreamOffline struct {
 	Here Here
 }
 
-func init() {
-	go Events()
-}
-
-func Events() {
+// EventLoop starts an infinite loop which handles all the events
+func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:

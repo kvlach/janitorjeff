@@ -44,6 +44,11 @@ func init() {
 	}
 }
 
+func init() {
+	log.Debug().Msg("starting event loop")
+	go core.EventLoop()
+}
+
 func readVar(name string) string {
 	v, ok := os.LookupEnv(name)
 	if !ok {
