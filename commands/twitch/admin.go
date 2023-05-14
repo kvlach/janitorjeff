@@ -171,7 +171,7 @@ func (adminEventSubList) Init() error {
 	return nil
 }
 
-func (adminEventSubList) Run(m *core.Message) (any, error, error) {
+func (adminEventSubList) Run(*core.Message) (any, error, error) {
 	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
