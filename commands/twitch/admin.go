@@ -121,11 +121,11 @@ func (adminEventSub) Run(m *core.Message) (any, error, error) {
 	return m.Usage(), nil, nil
 }
 
-//////////
-//      //
-// list //
-//      //
-//////////
+///////////////////
+//               //
+// eventsub list //
+//               //
+///////////////////
 
 var AdminEventSubList = adminEventSubList{}
 
@@ -191,11 +191,11 @@ func (adminEventSubList) Run(m *core.Message) (any, error, error) {
 	return strings.Join(fmted, " | "), nil, nil
 }
 
-////////////
-//        //
-// delete //
-//        //
-////////////
+/////////////////////
+//                 //
+// eventsub delete //
+//                 //
+/////////////////////
 
 var AdminEventSubDelete = adminEventSubDelete{}
 
