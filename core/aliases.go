@@ -32,6 +32,7 @@ var AliasesShow = []string{
 	"get",
 	"status",
 	"state",
+	"current",
 	"?",
 }
 
