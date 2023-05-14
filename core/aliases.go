@@ -36,6 +36,10 @@ var AliasesShow = []string{
 	"?",
 }
 
+var AliasesSet = []string{
+	"set",
+}
+
 var AliasesSearch = []string{
 	"search",
 	"find",

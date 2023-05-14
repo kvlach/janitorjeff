@@ -177,9 +177,7 @@ func (c adminSet) Permitted(m *core.Message) bool {
 }
 
 func (c adminSet) Names() []string {
-	return []string{
-		"set",
-	}
+	return core.AliasesSet
 }
 
 func (adminSet) Description() string {
