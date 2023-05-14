@@ -210,22 +210,34 @@ func (advancedOn) Init() error {
 	return nil
 }
 
-func (c advancedOn) Run(m *core.Message) (resp any, usrErr error, err error) {
-	if err := c.core(m); err != nil {
+func (c advancedOn) Run(m *core.Message) (any, error, error) {
+	urr, err := c.core(m)
+	if err != nil {
 		return nil, nil, err
 	}
-	return "Streak tracking has been turned on.", nil, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedOn) core(m *core.Message) error {
+func (advancedOn) fmt(urr error) string {
+	switch urr {
+	case nil:
+		return "Streak tracking has been turned on."
+	case ErrAlreadyOn:
+		return "Can't turn streak tracking on, already on."
+	default:
+		return fmt.Sprint(urr)
+	}
+}
+
+func (advancedOn) core(m *core.Message) (error, error) {
 	h, err := twitch.Frontend.Helix()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return On(h, here, m.Here.ID())

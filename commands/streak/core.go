@@ -16,16 +16,17 @@ import (
 var (
 	ErrRedeemNotSet = errors.New("the streak redeem has not been set")
 	ErrIgnore       = errors.New("stream online within grace period, do nothing")
+	ErrAlreadyOn    = errors.New("streak tracking has already been turned on for this place")
 )
 
-func On(h *twitch.Helix, place int64, broadcasterID string) error {
+func On(h *twitch.Helix, place int64, broadcasterID string) (error, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
 	tx, err := db.DB.Begin()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func(tx *sql.Tx) {
 		if err := tx.Rollback(); err != nil {
@@ -33,28 +34,38 @@ func On(h *twitch.Helix, place int64, broadcasterID string) error {
 		}
 	}(tx)
 
+	var exists bool
+	err = tx.QueryRow(`
+		SELECT EXISTS (
+		    SELECT 1 FROM cmd_streak_twitch_events
+		    WHERE place = $1
+		)`, place).Scan(&exists)
+	if exists {
+		return ErrAlreadyOn, nil
+	}
+
 	onlineSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOnline)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := twitch.AddEventSubSubscriptionID(tx, onlineSubID); err != nil {
-		return err
+		return nil, err
 	}
 
 	offlineSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOffline)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := twitch.AddEventSubSubscriptionID(tx, offlineSubID); err != nil {
-		return err
+		return nil, err
 	}
 
 	redeemsSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := twitch.AddEventSubSubscriptionID(tx, redeemsSubID); err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = tx.Exec(`
@@ -69,10 +80,10 @@ func On(h *twitch.Helix, place int64, broadcasterID string) error {
 		Msg("saved subscription ids")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return tx.Commit()
+	return nil, tx.Commit()
 }
 
 func Off(h *twitch.Helix, place int64) error {
