@@ -481,3 +481,22 @@ func (h *Helix) IsMod(broadcasterID, userID string) (bool, error) {
 		return false, err
 	}
 }
+
+func (h *Helix) IsSub(broadcasterID, userID string) (bool, error) {
+	resp, err := h.c.CheckUserSubscription(&helix.UserSubscriptionsParams{
+		BroadcasterID: broadcasterID,
+		UserID:        userID,
+	})
+
+	switch err := checkErrors(err, resp.ResponseCommon, 1); err {
+	case nil:
+		return len(resp.Data.UserSubscriptions) > 1, nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return false, err
+		}
+		return h.IsSub(broadcasterID, userID)
+	default:
+		return false, err
+	}
+}
