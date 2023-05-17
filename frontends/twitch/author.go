@@ -147,14 +147,26 @@ func (a Author) Mod() (bool, error) {
 }
 
 func (a Author) Subscriber() (bool, error) {
-	if a.badges == nil {
-		// TODO
+	if a.badges != nil {
+		if _, ok := a.badges["subscriber"]; ok {
+			return true, nil
+		}
+		_, ok := a.badges["founder"]
+		return ok, nil
 	}
-	if _, ok := a.badges["subscriber"]; ok {
-		return true, nil
+
+	if a.roomID == "" {
+		return false, errors.New("no broadcaster id provided, can't figure out sub status")
 	}
-	_, ok := a.badges["founder"]
-	return ok, nil
+	h, err := Frontend.Helix()
+	if err != nil {
+		return false, err
+	}
+	uid, err := a.ID()
+	if err != nil {
+		return false, err
+	}
+	return h.IsSub(a.roomID, uid)
 }
 
 func (a Author) Scope() (int64, error) {
