@@ -1,6 +1,8 @@
 package discord
 
 import (
+	"errors"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -14,7 +16,7 @@ func getAuthorScope(authorID string) (int64, error) {
 	})
 }
 
-// Implement the core.Author interface for normal messages
+// AuthorMessage implements the core.Author interface
 type AuthorMessage struct {
 	GuildID string
 	Author  *dg.User
@@ -22,31 +24,93 @@ type AuthorMessage struct {
 }
 
 func (a *AuthorMessage) ID() (string, error) {
-	return a.Author.ID, nil
+	if a.Author != nil && a.Author.ID != "" {
+		return a.Author.ID, nil
+	}
+	if a.Member != nil && a.Member.User != nil && a.Member.User.ID != "" {
+		return a.Member.User.ID, nil
+	}
+	return "", errors.New("can't figure out author id")
 }
 
 func (a *AuthorMessage) Name() (string, error) {
-	return a.Author.Username, nil
+	if a.Author != nil && a.Author.Username != "" {
+		return a.Author.Username, nil
+	}
+	if a.Member != nil && a.Member.User != nil && a.Member.User.Username != "" {
+		return a.Member.User.Username, nil
+	}
+	id, err := a.ID()
+	if err != nil {
+		return "", err
+	}
+	user, err := Session.User(id)
+	if err != nil {
+		return "", err
+	}
+	a.Author = user
+	return user.Username, nil
 }
 
 func (a *AuthorMessage) DisplayName() (string, error) {
-	return getDisplayName(a.Member, a.Author), nil
+	var mem *dg.Member
+
+	aid, err := a.ID()
+	if err != nil {
+		return "", err
+	}
+
+	if a.Member != nil {
+		mem = a.Member
+	} else {
+		if a.GuildID == "" {
+			return "", errors.New("need guild id")
+		}
+		mem, err = Session.GuildMember(a.GuildID, aid)
+		a.Member = mem
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// Return the display name if it exists, otherwise return the username
+	if mem.Nick != "" {
+		return a.Member.Nick, nil
+	} else {
+		return a.Name()
+	}
 }
 
 func (a *AuthorMessage) Mention() (string, error) {
-	return a.Author.Mention(), nil
+	id, err := a.ID()
+	if err != nil {
+		return "", err
+	}
+	return "<@" + id + ">", nil
 }
 
 func (a *AuthorMessage) BotAdmin() (bool, error) {
-	return isBotAdmin(a.Author.ID), nil
+	id, err := a.ID()
+	if err != nil {
+		return false, err
+	}
+	return isBotAdmin(id), nil
 }
 
 func (a *AuthorMessage) Admin() (bool, error) {
-	return isAdmin(a.GuildID, a.Author.ID), nil
+	aid, err := a.ID()
+	if err != nil {
+		return false, err
+	}
+	return isAdmin(a.GuildID, aid), nil
 }
 
 func (a *AuthorMessage) Mod() (bool, error) {
-	return isMod(a.GuildID, a.Author.ID), nil
+	aid, err := a.ID()
+	if err != nil {
+		return false, err
+	}
+	return isMod(a.GuildID, aid), nil
 }
 
 func (a *AuthorMessage) Subscriber() (bool, error) {
