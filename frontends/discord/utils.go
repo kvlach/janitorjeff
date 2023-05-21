@@ -288,18 +288,6 @@ func isMod(guildID string, userID string) bool {
 	return has
 }
 
-func getDisplayName(member *dg.Member, author *dg.User) string {
-	var displayName string
-
-	if member == nil || member.Nick == "" {
-		displayName = author.Username
-	} else {
-		displayName = member.Nick
-	}
-
-	return displayName
-}
-
 func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
 	// TODO: Consider adding an option which allows one of these 3 values
 	// - no reply + no ping, just an embed
