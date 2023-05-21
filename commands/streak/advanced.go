@@ -158,7 +158,7 @@ func (advanced) Init() error {
 }
 
 func (advanced) Run(m *core.Message) (resp any, usrErr error, err error) {
-	return m.Usage(), nil, nil
+	return m.Usage(), core.ErrMissingArgs, nil
 }
 
 ////////
