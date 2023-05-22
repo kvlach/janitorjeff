@@ -66,6 +66,7 @@ var Commands = core.CommandsStatic{
 
 	search.Advanced,
 
+	streak.Admin,
 	streak.Advanced,
 	streak.Normal,
 

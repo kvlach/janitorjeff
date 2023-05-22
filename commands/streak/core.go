@@ -284,6 +284,10 @@ func Get(person, place int64) (int64, error) {
 	return streak.(int64), nil
 }
 
+func Set(person, place int64, streak int) error {
+	return core.DB.PersonSet("cmd_streak_num", person, place, streak)
+}
+
 func GraceGet(place int64) (time.Duration, error) {
 	grace, err := core.DB.PlaceGet("cmd_streak_grace", place)
 	if err != nil {
