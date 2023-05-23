@@ -249,7 +249,11 @@ func Online(place int64, when time.Time) error {
 	if err != nil {
 		return err
 	}
-	return tx.PlaceSet("cmd_streak_online_norm", place, when.UTC().Unix())
+	err = tx.PlaceSet("cmd_streak_online_norm", place, when.UTC().Unix())
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func Offline(place int64, when time.Time) error {
