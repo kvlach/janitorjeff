@@ -242,6 +242,10 @@ func Online(place int64, when time.Time) error {
 		log.Debug().
 			Str("diff", diff.String()).
 			Msg("stream online again within grace period")
+		// in order to save the cmd_streak_online_actual value
+		if err := tx.Commit(); err != nil {
+			return err
+		}
 		return ErrIgnore
 	}
 
