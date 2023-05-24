@@ -145,6 +145,7 @@ func (db *SQLDB) Begin() (*Tx, error) {
 }
 
 func (tx *Tx) Commit() error {
+	log.Debug().Msg("commiting transaction")
 	return tx.tx.Commit()
 }
 
