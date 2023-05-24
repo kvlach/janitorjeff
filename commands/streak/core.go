@@ -160,7 +160,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	offline, err := tx.PlaceGet("cmd_streak_offline_norm", place)
+	offlinePrev, err := tx.PlaceGet("cmd_streak_offline_norm_prev", place)
 	if err != nil {
 		return 0, err
 	}
@@ -171,7 +171,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	//
 	// In which case the streak counter gets reset to 0 as the person didn't
 	// show up in the previous stream
-	if offline.(int64) > prev.(int64) {
+	if offlinePrev.(int64) > prev.(int64) {
 		err = tx.PersonSet("cmd_streak_num", person, place, 0)
 		if err != nil {
 			return 0, err
@@ -249,6 +249,14 @@ func Online(place int64, when time.Time) error {
 		return ErrIgnore
 	}
 
+	offlinePrev, err := tx.PlaceGet("cmd_streak_offline_norm", place)
+	if err != nil {
+		return err
+	}
+	err = tx.PlaceSet("cmd_streak_offline_norm_prev", place, offlinePrev.(int64))
+	if err != nil {
+		return err
+	}
 	err = tx.PlaceSet("cmd_streak_offline_norm", place, offline.(int64))
 	if err != nil {
 		return err

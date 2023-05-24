@@ -27,6 +27,7 @@ CREATE TABLE settings_place (
 	cmd_streak_online_norm BIGINT NOT NULL DEFAULT 0,
     cmd_streak_offline_actual BIGINT NOT NULL DEFAULT 0,
     cmd_streak_offline_norm BIGINT NOT NULL DEFAULT 0,
+    cmd_streak_offline_norm_prev BIGINT NOT NULL DEFAULT 0,
     cmd_streak_grace INT NOT NULL DEFAULT 1800, -- in seconds
     cmd_streak_redeem UUID, -- the streak tracking redeem id
 
