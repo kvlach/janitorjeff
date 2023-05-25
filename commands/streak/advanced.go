@@ -71,32 +71,6 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
-	core.EventStreamOnlineHooks.Register(func(on *core.StreamOnline) {
-		here, err := on.Here.ScopeLogical()
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get place scope")
-			return
-		}
-		err = Online(here, on.When)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to save stream's online status")
-			return
-		}
-	})
-
-	core.EventStreamOfflineHooks.Register(func(off *core.StreamOffline) {
-		here, err := off.Here.ScopeLogical()
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get place scope")
-			return
-		}
-		err = Offline(here, off.When)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to save stream's offline status")
-			return
-		}
-	})
-
 	core.EventRedeemClaimHooks.Register(func(r *core.RedeemClaim) {
 		person, err := r.Author.Scope()
 		if err != nil {
