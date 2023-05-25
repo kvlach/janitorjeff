@@ -23,13 +23,14 @@ CREATE TABLE settings_place (
 	place BIGINT PRIMARY KEY,
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE,
 
-    cmd_streak_online_actual BIGINT NOT NULL DEFAULT 0,
-	cmd_streak_online_norm BIGINT NOT NULL DEFAULT 0,
-    cmd_streak_offline_actual BIGINT NOT NULL DEFAULT 0,
-    cmd_streak_offline_norm BIGINT NOT NULL DEFAULT 0,
-    cmd_streak_offline_norm_prev BIGINT NOT NULL DEFAULT 0,
-    cmd_streak_grace INT NOT NULL DEFAULT 1800, -- in seconds
-    cmd_streak_redeem UUID, -- the streak tracking redeem id
+	stream_online_actual BIGINT NOT NULL DEFAULT 0,
+	stream_online_norm BIGINT NOT NULL DEFAULT 0,
+	stream_offline_actual BIGINT NOT NULL DEFAULT 0,
+	stream_offline_norm BIGINT NOT NULL DEFAULT 0,
+	stream_offline_norm_prev BIGINT NOT NULL DEFAULT 0,
+	stream_grace INT NOT NULL DEFAULT 1800, -- in seconds
+
+	cmd_streak_redeem UUID, -- the streak tracking redeem id
 
 	cmd_tts_subonly BOOLEAN NOT NULL DEFAULT FALSE,
 

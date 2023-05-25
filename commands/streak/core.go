@@ -156,11 +156,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	online, err := tx.PlaceGet("cmd_streak_online_norm", place)
-	if err != nil {
-		return -1, err
-	}
-	offlinePrev, err := tx.PlaceGet("cmd_streak_offline_norm_prev", place)
+	offlinePrev, err := tx.PlaceGet("stream_offline_norm_prev", place)
 	if err != nil {
 		return 0, err
 	}
@@ -176,6 +172,11 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 		if err != nil {
 			return 0, err
 		}
+	}
+
+	online, err := tx.PlaceGet("stream_online_norm", place)
+	if err != nil {
+		return -1, err
 	}
 
 	// This will get triggered in the following scenario:
@@ -201,75 +202,6 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 		return -1, err
 	}
 	return streak.(int64) + 1, tx.Commit()
-}
-
-// Online will save the timestamp of when the stream went online. It tries to
-// filter shaky connections by giving a grace period of the stream going offline
-// and online again (event multiple times), in which case the streams are viewed
-// as one.
-func Online(place int64, when time.Time) error {
-	// There are 2 kinds of values, actual and normalized. Actual keeps track of
-	// online/offline events as they come in, without any filtering, normalized
-	// makes sure that more than the specified grace period has passed between
-	// the stream going down and up again.
-
-	core.DB.Lock.Lock()
-	defer core.DB.Lock.Unlock()
-
-	tx, err := core.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	err = tx.PlaceSet("cmd_streak_online_actual", place, when.UTC().Unix())
-	if err != nil {
-		return err
-	}
-
-	offline, err := tx.PlaceGet("cmd_streak_offline_actual", place)
-	if err != nil {
-		return err
-	}
-
-	grace, err := tx.PlaceGet("cmd_streak_grace", place)
-	if err != nil {
-		return err
-	}
-
-	diff := when.Sub(time.Unix(offline.(int64), 0))
-	if diff <= time.Duration(grace.(int64))*time.Second {
-		log.Debug().
-			Str("diff", diff.String()).
-			Msg("stream online again within grace period")
-		// in order to save the cmd_streak_online_actual value
-		if err := tx.Commit(); err != nil {
-			return err
-		}
-		return ErrIgnore
-	}
-
-	offlinePrev, err := tx.PlaceGet("cmd_streak_offline_norm", place)
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("cmd_streak_offline_norm_prev", place, offlinePrev.(int64))
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("cmd_streak_offline_norm", place, offline.(int64))
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("cmd_streak_online_norm", place, when.UTC().Unix())
-	if err != nil {
-		return err
-	}
-	return tx.Commit()
-}
-
-func Offline(place int64, when time.Time) error {
-	return core.DB.PlaceSet("cmd_streak_offline_actual", place, when.UTC().Unix())
 }
 
 func RedeemSet(place int64, id string) error {
@@ -305,7 +237,7 @@ func Set(person, place int64, streak int) error {
 }
 
 func GraceGet(place int64) (time.Duration, error) {
-	grace, err := core.DB.PlaceGet("cmd_streak_grace", place)
+	grace, err := core.DB.PlaceGet("stream_grace", place)
 	if err != nil {
 		return 0, err
 	}
@@ -313,5 +245,5 @@ func GraceGet(place int64) (time.Duration, error) {
 }
 
 func GraceSet(place int64, grace time.Duration) error {
-	return core.DB.PlaceSet("cmd_streak_grace", place, int(grace.Seconds()))
+	return core.DB.PlaceSet("stream_grace", place, int(grace.Seconds()))
 }
