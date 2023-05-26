@@ -43,7 +43,7 @@ func stream(sp core.AudioSpeaker, p *Playing, place int64) {
 			// Audio only format might not exist in which case we grab the
 			// whole thing and let ffmpeg extract the audio
 			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
-			core.AudioFFmpegCommandPipe(sp, ytdl, p.State)
+			core.AudioProcessCommand(sp, ytdl, p.State)
 			if p.State.Get() != core.AudioLoop {
 				p.Queue.DeleteStable(0)
 			}
