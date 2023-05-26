@@ -59,9 +59,9 @@ type AudioSpeaker interface {
 	AuthorConnected() (bool, error)
 }
 
-// AudioFFmpegBufferPipe will pipe audio coming from a buffer into ffmpeg and
+// AudioProcessBuffer will pipe audio coming from a buffer into ffmpeg and
 // transform into audio that the speaker can transmit.
-func AudioFFmpegBufferPipe(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) error {
+func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) error {
 	ffmpeg := exec.Command(
 		"ffmpeg",
 		"-i", "-",
@@ -89,9 +89,9 @@ func AudioFFmpegBufferPipe(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState)
 	return nil
 }
 
-// AudioFFmpegCommandPipe works exactly like FFmpegBufferPipe except it accepts
+// AudioProcessCommand works exactly like AudioProcessBuffer except it accepts
 // a command instead of a buffer. Provided just for convenience.
-func AudioFFmpegCommandPipe(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
+func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
 	pipe, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -100,5 +100,5 @@ func AudioFFmpegCommandPipe(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) erro
 		return err
 	}
 	defer cmd.Process.Kill()
-	return AudioFFmpegBufferPipe(sp, pipe, st)
+	return AudioProcessBuffer(sp, pipe, st)
 }
