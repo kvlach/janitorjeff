@@ -116,14 +116,13 @@ func (advanced) Init() error {
 			return
 		}
 
-		var times string
+		var resp string
 		if streak == 1 {
-			times = "time"
+			resp = fmt.Sprintf("%s has paid their taxes once!", display)
 		} else {
-			times = "times"
+			resp = fmt.Sprintf("%s has paid their taxes %d times in a row!", display, streak)
 		}
 
-		resp := fmt.Sprintf("%s has paid their taxes %d %s in a row!", display, streak, times)
 		if _, err := m.Client.Send(resp, nil); err != nil {
 			log.Error().Err(err).Msg("failed to send streak message")
 		}
