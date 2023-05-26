@@ -17,7 +17,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Hooks = gosafe.Map[string, int]{}
+type Message struct {
+	Voice string
+	Text  string
+}
+
+type Entry struct {
+	HookID int
+	State  *core.AudioState
+	Queue  *gosafe.Slice[Message]
+}
+
+var Hooks = gosafe.Map[string, *Entry]{}
 
 var (
 	ErrHookNotFound   = errors.New("Wasn't monitoring, what are you even trynna do??")
@@ -148,24 +159,63 @@ func TTS(voice, text string) ([]byte, error) {
 
 // Play will, if necessary join the appropriate voice channel, and start playing
 // the TTS specified by text.
-func Play(sp core.AudioSpeaker, voice, text string) error {
-	audio, err := TTS(voice, text)
-	if err != nil {
-		return err
+func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, twitchUsername string) {
+	for {
+		switch st.Get() {
+		case core.AudioPlay:
+			if q.Len() == 0 {
+				continue
+			}
+
+			msg := q.Get(0)
+			q.DeleteStable(0)
+
+			con, err := sp.AuthorConnected()
+			log.Debug().
+				Err(err).
+				Bool("connected", con).
+				Msg("checked if author is still connected")
+
+			if err != nil {
+				continue
+			}
+			if !con {
+				Stop(twitchUsername)
+				return
+			}
+
+			deaf, err := sp.AuthorDeafened()
+
+			log.Debug().
+				Err(err).
+				Bool("deaf", deaf).
+				Msg("checked if author is deafened")
+
+			if err != nil || deaf {
+				continue
+			}
+			audio, err := TTS(msg.Voice, msg.Text)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get tts audio")
+				continue
+			}
+
+			err = sp.Join()
+			if err != nil {
+				log.Error().Err(err).Msg("failed to join speaker")
+				continue
+			}
+
+			state := &core.AudioState{}
+			state.Set(core.AudioPlay)
+
+			buf := ioutil.NopCloser(bytes.NewReader(audio))
+			core.AudioProcessBuffer(sp, buf, state)
+		case core.AudioStop:
+			log.Debug().Msg("exiting loop")
+			return
+		}
 	}
-
-	err = sp.Join()
-	if err != nil {
-		return err
-	}
-
-	state := &core.AudioState{}
-	state.Set(core.AudioPlay)
-
-	buf := ioutil.NopCloser(bytes.NewReader(audio))
-	core.AudioFFmpegBufferPipe(sp, buf, state)
-
-	return nil
 }
 
 // Start will create a hook and will monitor all incoming messages, if they
@@ -201,31 +251,6 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		con, err := sp.AuthorConnected()
-		log.Debug().
-			Err(err).
-			Bool("connected", con).
-			Msg("checked if author is still connected")
-
-		if err != nil {
-			return
-		}
-		if !con {
-			Stop(twitchUsername)
-			return
-		}
-
-		deaf, err := sp.AuthorDeafened()
-
-		log.Debug().
-			Err(err).
-			Bool("deaf", deaf).
-			Msg("checked if author is deafened")
-
-		if err != nil || deaf {
-			return
-		}
-
 		for _, arg := range strings.Fields(m.Raw) {
 			if core.IsValidURL(arg) {
 				return
@@ -242,19 +267,42 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return
 		}
 
-		Play(sp, voice, m.Raw)
+		entry, ok := Hooks.Get(twitchUsername)
+		if !ok {
+			log.Error().
+				Str("username", twitchUsername).
+				Msg("failed to get entry")
+			return
+		}
+		msg := Message{
+			Voice: voice,
+			Text:  m.Raw,
+		}
+		log.Debug().Interface("msg", msg).Msg("appending message to queue")
+		entry.Queue.Append(msg)
 	})
-	Hooks.Set(twitchUsername, id)
+
+	st := &core.AudioState{}
+	st.Set(core.AudioPlay)
+
+	entry := &Entry{
+		HookID: id,
+		State:  st,
+		Queue:  &gosafe.Slice[Message]{},
+	}
+	Hooks.Set(twitchUsername, entry)
+	go Play(sp, entry.Queue, entry.State, twitchUsername)
 }
 
 // Stop will delete the hook created by Start. Returns ErrHookNotFound if the
 // hook doesn't exist.
 func Stop(twitchUsername string) error {
-	id, ok := Hooks.Get(twitchUsername)
+	entry, ok := Hooks.Get(twitchUsername)
 	if !ok {
 		return ErrHookNotFound
 	}
-	core.EventMessageHooks.Delete(id)
+	entry.State.Set(core.AudioStop)
+	core.EventMessageHooks.Delete(entry.HookID)
 	Hooks.Delete(twitchUsername)
 	return nil
 }
