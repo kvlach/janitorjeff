@@ -85,39 +85,43 @@ func (advanced) Init() error {
 			return
 		}
 
-		resp, err := Talk(m.Raw)
-		if err != nil {
-			log.Debug().Err(err).Msg("failed to communicate with god")
-			return
-		}
-
-		// Make it so that on twitch it sometimes mentions and other times
-		// doesn't the person it's replying to. This can make it seem more
-		// natural as opposed to just a dry response by the bot, which is also
-		// why m.Write isn't used when we the person is mentioned, since we
-		// want to avoid the arrow in the response (@person -> response). The
-		// whole thing is a bit hacky, but what can you do, the people have
-		// asked for this.
-		if m.Frontend.Type() == twitch.Frontend.Type() {
-			rand.Seed(time.Now().UnixNano())
-			// need this to only happen 30% of the time
-			if num := rand.Intn(10); num < 3 {
-				display, err := m.Author.DisplayName()
-				if err != nil {
-					log.Error().Err(err).Msg("failed to get author display name")
-					return
-				}
-				resp = "@" + display + " " + resp
+		// GPT takes a couple of seconds to produce a response which in turn
+		// makes the whole bot lag
+		go func() {
+			resp, err := Talk(m.Raw)
+			if err != nil {
+				log.Debug().Err(err).Msg("failed to communicate with god")
+				return
 			}
-			m.Client.Send(resp, nil)
-		} else {
-			m.Write(resp, nil)
-		}
 
-		if err := ReplyLastSet(here, time.Now()); err != nil {
-			log.Debug().Err(err).Msg("error while trying to set reply")
-			return
-		}
+			// Make it so that on twitch it sometimes mentions and other times
+			// doesn't the person it's replying to. This can make it seem more
+			// natural as opposed to just a dry response by the bot, which is also
+			// why m.Write isn't used when we the person is mentioned, since we
+			// want to avoid the arrow in the response (@person -> response). The
+			// whole thing is a bit hacky, but what can you do, the people have
+			// asked for this.
+			if m.Frontend.Type() == twitch.Frontend.Type() {
+				rand.Seed(time.Now().UnixNano())
+				// need this to only happen 30% of the time
+				if num := rand.Intn(10); num < 3 {
+					display, err := m.Author.DisplayName()
+					if err != nil {
+						log.Error().Err(err).Msg("failed to get author display name")
+						return
+					}
+					resp = "@" + display + " " + resp
+				}
+				m.Client.Send(resp, nil)
+			} else {
+				m.Write(resp, nil)
+			}
+
+			if err := ReplyLastSet(here, time.Now()); err != nil {
+				log.Debug().Err(err).Msg("error while trying to set reply")
+				return
+			}
+		}()
 	})
 	return nil
 }
