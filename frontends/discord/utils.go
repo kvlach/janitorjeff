@@ -61,6 +61,7 @@ func getPlaceExactScope(id string, hereChannelID, hereGuildID string) (int64, er
 	if err != nil {
 		return -1, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	guild, err := getGuildScope(tx, guildID)
@@ -94,6 +95,7 @@ func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string) (int64, 
 	if err != nil {
 		return -1, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	if channelScope, err := dbGetChannelScope(channelID); err == nil {
@@ -144,6 +146,7 @@ func dbGetPersonScope(id string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	scope, err = dbAddUserScope(tx, id)

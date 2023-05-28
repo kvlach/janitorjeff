@@ -41,6 +41,7 @@ func (db *SQLDB) Init(schema string) error {
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %v", err)
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	if _, err := tx.Exec(schema); err != nil {
@@ -291,6 +292,7 @@ func (db *SQLDB) PlaceGet(col string, place int64) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 	val, err := tx.PlaceGet(col, place)
 	if err != nil {
@@ -307,6 +309,7 @@ func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
 	if err != nil {
 		return err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 	err = tx.PlaceSet(col, place, val)
 	if err != nil {
@@ -458,6 +461,7 @@ func (db *SQLDB) PersonGet(col string, person, place int64) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 	val, err := tx.PersonGet(col, person, place)
 	if err != nil {
@@ -474,6 +478,7 @@ func (db *SQLDB) PersonSet(col string, person, place int64, val any) error {
 	if err != nil {
 		return err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 	err = tx.PersonSet(col, person, place, val)
 	if err != nil {

@@ -1,7 +1,6 @@
 package streak
 
 import (
-	"database/sql"
 	"errors"
 	"time"
 
@@ -28,11 +27,8 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (error, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
+	//goland:noinspection GoUnhandledErrorResult
+	defer tx.Rollback()
 
 	var exists bool
 	err = tx.QueryRow(`
@@ -95,11 +91,8 @@ func Off(h *twitch.Helix, place int64) error {
 	if err != nil {
 		return err
 	}
-	defer func(tx *sql.Tx) {
-		if err := tx.Rollback(); err != nil {
-			log.Debug().Err(err).Msg("failed to rollback transaction")
-		}
-	}(tx)
+	//goland:noinspection GoUnhandledErrorResult
+	defer tx.Rollback()
 
 	var onlineSubID, offlineSubID, redeemsSubID string
 	err = tx.QueryRow(`
@@ -150,6 +143,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	prev, err := tx.PersonGet("cmd_streak_last", person, place)

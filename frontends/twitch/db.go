@@ -35,6 +35,7 @@ func dbAddChannel(id string, uid, uname string, h *Helix) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	scope, err = db.ScopeAdd(tx, channelID, Type)
