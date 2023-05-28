@@ -15,31 +15,28 @@ import (
 // allow special handling of error messages (for example using a different
 // embed color in discord).
 
-// The frontend abstraction layer, a frontend needs to implement this in order
-// to be added.
+// Messenger is the abstraction layer for message events.
 type Messenger interface {
 	Parse() (*Message, error)
 
-	// Returns the ID of the passed string. The returned ID must be valid.
-	// Generally used for verifying an ID's validity and extracting IDs from
-	// mentions.
+	// PlaceID returns the ID of the passed string. The returned ID must be
+	// valid. Generally used for verifying an ID's validity and extracting IDs
+	// from mentions.
 	PlaceID(s string) (id string, err error)
+
+	// PersonID returns the ID of the passed string. The returned ID must be
+	// valid. Generally used for verifying an ID's validity and extracting IDs
+	// from mentions.
 	PersonID(s, placeID string) (id string, err error)
 
-	// Gets the target's scope. If it doesn't exist it will create it and add
-	// it to the database.
+	// Person returns the target's scope. If it doesn't exist it will create it
+	// and add it to the database.
 	Person(id string) (person int64, err error)
 
-	// There exist 2 types of place scopes that are used, the exact place and
-	// the logical place. The logical is the area where things are generally
-	// expected to work. For example: if a user adds a custom command in a
-	// server they would probably expect it to work in the entire server and not
-	// just in the specific channel that they added it in. If on the other hand
-	// someone adds a custom command in a discord DM message, then no guild
-	// exists and thus the channel's scope would have to be used. On the other
-	// hand `PlaceExact` returns exactly the scope of the id passed and does not
-	// account for context.
+	// PlaceExact returns the exact scope of the specified ID.
 	PlaceExact(id string) (place int64, err error)
+
+	// PlaceLogical returns the logical scope of the specified ID.
 	PlaceLogical(id string) (place int64, err error)
 
 	// Send sends a message to the appropriate scope, resp could be nil
@@ -78,7 +75,7 @@ type Author interface {
 	// ping them in some way.
 	Mention() (string, error)
 
-	// BotAdmin returns true if the author is a bot admin. Otherwise returns
+	// BotAdmin returns true if the author is a bot admin, otherwise returns
 	// false.
 	BotAdmin() (bool, error)
 
@@ -146,8 +143,8 @@ func (m *Message) Fields() []string {
 	return strings.Fields(m.Raw)
 }
 
-// Split text into fields that include all trailing whitespace. For example:
-// "example of    text" will be split into ["example ", "of    ", "text"]
+// FieldsSpace splits text into fields that include all trailing whitespace. For
+// example: "example of    text" will be split into ["example ", "of    ", "text"]
 func (m *Message) FieldsSpace() []string {
 	text := strings.TrimSpace(m.Raw)
 	re := regexp.MustCompile(`\S+\s*`)
@@ -161,8 +158,8 @@ func (m *Message) FieldsSpace() []string {
 	return fields
 }
 
-// Return the arguments including the whitespace between them. Skip over first
-// n args. Pass 0 to not skip any.
+// RawArgs returns the arguments including the whitespace between them. Skips
+// over first n args. Pass 0 to not skip any.
 func (m *Message) RawArgs(n int) string {
 	if 0 > n {
 		panic("unexpected n")
@@ -186,7 +183,7 @@ func (m *Message) Write(msg any, usrErr error) (*Message, error) {
 	return m.Client.Write(msg, usrErr)
 }
 
-// Returns the logical here's prefixes and also whether or not they were taken
+// Prefixes returns the logical here's prefixes and also whether they were taken
 // from the database (if not then that means the default ones were used).
 func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.Here.ScopeLogical()
