@@ -111,3 +111,7 @@ func (d *MessageEdit) Ping(msg any, usrErr error) (*core.Message, error) {
 func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
 }
+
+func (d *MessageEdit) Natural(msg any, usrErr error) (*core.Message, error) {
+	return d.Send(msg, usrErr)
+}

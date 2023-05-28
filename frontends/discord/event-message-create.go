@@ -103,3 +103,7 @@ func (d *MessageCreate) Ping(msg any, usrErr error) (*core.Message, error) {
 func (d *MessageCreate) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
 }
+
+func (d *MessageCreate) Natural(msg any, usrErr error) (*core.Message, error) {
+	return d.Send(msg, usrErr)
+}
