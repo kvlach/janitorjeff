@@ -97,7 +97,7 @@ func (advanced) Init() error {
 			// Make it so that on twitch it sometimes mentions and other times
 			// doesn't the person it's replying to. This can make it seem more
 			// natural as opposed to just a dry response by the bot, which is also
-			// why m.Write isn't used when we the person is mentioned, since we
+			// why m.Write isn't used when the person is mentioned, since we
 			// want to avoid the arrow in the response (@person -> response). The
 			// whole thing is a bit hacky, but what can you do, the people have
 			// asked for this.
