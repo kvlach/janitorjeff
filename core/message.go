@@ -238,7 +238,7 @@ func (m *Message) CommandParse() (*Message, error) {
 	args := m.Fields()
 
 	if len(args) == 0 {
-		return nil, fmt.Errorf("Empty message")
+		return nil, fmt.Errorf("empty message")
 	}
 
 	rootCmdName := args[0]
