@@ -6,11 +6,14 @@ import (
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
-
+	"github.com/google/uuid"
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
-var ErrIntervalTooShort = errors.New("The given interval is too short.")
+var (
+	ErrIntervalTooShort = errors.New("The given interval is too short.")
+	ErrRedeemNotSet     = errors.New("the streak redeem has not been set")
+)
 
 // Talk returns GPT3's response to a prompt.
 func Talk(prompt string) (string, error) {
@@ -91,4 +94,24 @@ func ShouldReply(place int64) (bool, error) {
 	}
 	diff := time.Now().UTC().Sub(last)
 	return diff > interval, nil
+}
+
+func RedeemSet(place int64, id string) error {
+	u, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+	return core.DB.PlaceSet("cmd_god_redeem", place, u)
+}
+
+func RedeemGet(place int64) (uuid.UUID, error, error) {
+	id, err := core.DB.PlaceGet("cmd_god_redeem", place)
+	if err != nil {
+		return uuid.UUID{}, nil, err
+	}
+	if id == nil {
+		return uuid.UUID{}, ErrRedeemNotSet, nil
+	}
+	u, err := uuid.Parse(string(id.([]uint8)))
+	return u, nil, err
 }
