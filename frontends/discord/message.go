@@ -68,3 +68,7 @@ func (d *Message) Ping(msg any, usrErr error) (*core.Message, error) {
 func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
 	return d.Send(msg, usrErr)
 }
+
+func (d *Message) Natural(msg any, usrErr error) (*core.Message, error) {
+	return d.Send(msg, usrErr)
+}

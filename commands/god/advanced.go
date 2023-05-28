@@ -3,14 +3,11 @@ package god
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
-
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -96,27 +93,9 @@ func (advanced) Init() error {
 				return
 			}
 
-			// Make it so that on twitch it sometimes mentions and other times
-			// doesn't the person it's replying to. This can make it seem more
-			// natural as opposed to just a dry response by the bot, which is also
-			// why m.Write isn't used when the person is mentioned, since we
-			// want to avoid the arrow in the response (@person -> response). The
-			// whole thing is a bit hacky, but what can you do, the people have
-			// asked for this.
-			if m.Frontend.Type() == twitch.Frontend.Type() {
-				rand.Seed(time.Now().UnixNano())
-				// need this to only happen 30% of the time
-				if num := rand.Intn(10); num < 3 {
-					display, err := m.Author.DisplayName()
-					if err != nil {
-						log.Error().Err(err).Msg("failed to get author display name")
-						return
-					}
-					resp = "@" + display + " " + resp
-				}
-				m.Client.Send(resp, nil)
-			} else {
-				m.Write(resp, nil)
+			if _, err := m.Client.Natural(resp, nil); err != nil {
+				log.Error().Err(err).Msg("failed to send message")
+				return
 			}
 
 			if err := ReplyLastSet(here, time.Now()); err != nil {
@@ -172,7 +151,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		if _, err = m.Write(resp, nil); err != nil {
+		if _, err = m.Client.Natural(resp, nil); err != nil {
 			slog.Error().Err(err).Msg("failed to write message")
 			return
 		}

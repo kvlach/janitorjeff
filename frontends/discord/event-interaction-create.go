@@ -188,6 +188,10 @@ func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) 
 	return i.send(msg, usrErr)
 }
 
+func (i *InteractionCreate) Natural(msg any, usrErr error) (*core.Message, error) {
+	return i.send(msg, usrErr)
+}
+
 /////////////
 //         //
 // Speaker //

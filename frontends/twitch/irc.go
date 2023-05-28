@@ -3,9 +3,11 @@ package twitch
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"unicode/utf8"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -293,6 +295,16 @@ func (t *Twitch) Ping(msg any, _ error) (*core.Message, error) {
 
 func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
 	return t.Ping(msg, usrErr)
+}
+
+func (t *Twitch) Natural(msg any, _ error) (*core.Message, error) {
+	var mention string
+	rand.Seed(time.Now().UnixNano())
+	// need this to only happen 30% of the time
+	if num := rand.Intn(10); num < 3 {
+		mention = t.message.User.DisplayName
+	}
+	return t.send(msg, mention)
 }
 
 /////////////

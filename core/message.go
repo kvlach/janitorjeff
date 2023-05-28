@@ -52,6 +52,13 @@ type Messenger interface {
 	// Write either calls Send or Ping depending on the frontend. This is what
 	// should be used in most cases.
 	Write(msg any, usrErr error) (resp *Message, err error)
+
+	// Natural will try to emulate a response as if an actual human had written
+	// it. Often the bot uses markers to distinguish its responses (for example,
+	// on Twitch it replies with the following format: @person -> <resp>), which
+	// are not natural looking. To add to the effect, randomness may be used to
+	// only sometimes mention the person.
+	Natural(msg any, usrErr error) (resp *Message, err error)
 }
 
 // Author is the interface used to abstract a frontend's message author.
