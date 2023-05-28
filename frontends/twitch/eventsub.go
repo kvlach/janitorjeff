@@ -145,6 +145,7 @@ func init() {
 
 			r := &core.RedeemClaim{
 				ID:     redeem.Reward.ID,
+				Input:  redeem.UserInput,
 				When:   redeem.RedeemedAt.Time,
 				Author: a,
 				Here:   h,

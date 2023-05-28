@@ -23,6 +23,7 @@ var (
 
 type RedeemClaim struct {
 	ID     string
+	Input  string
 	When   time.Time
 	Author Author
 	Here   Here

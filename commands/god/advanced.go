@@ -10,9 +10,10 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
-	"github.com/rs/zerolog/log"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 var ErrInvalidInterval = errors.New("Expected an integer number as the interval.")
@@ -65,6 +66,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedTalk,
 		AdvancedReply,
 		AdvancedInterval,
+		AdvancedRedeem,
 	}
 }
 
@@ -123,6 +125,59 @@ func (advanced) Init() error {
 			}
 		}()
 	})
+
+	core.EventRedeemClaimHooks.Register(func(rc *core.RedeemClaim) {
+		here, err := rc.Here.ScopeLogical()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get logical here")
+		}
+
+		slog := log.With().Int64("place", here).Logger()
+
+		rid, urr, err := RedeemGet(here)
+		if err != nil {
+			slog.Error().Err(err).Msg("failed to get redeem id")
+			return
+		}
+		if urr != nil {
+			slog.Error().Msg(AdvancedRedeemShow.fmt(rid, urr))
+			return
+		}
+
+		if rc.ID != rid.String() {
+			slog.Debug().
+				Str("got", rc.ID).
+				Str("expected", rid.String()).
+				Msg("not the expected redeem")
+			return
+		}
+
+		resp, err := Talk(rc.Input)
+		if err != nil {
+			slog.Error().Err(err).Msg("failed to get gpt response")
+			return
+		}
+
+		author, err := rc.Author.Scope()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get author scope")
+			return
+		}
+
+		slog = slog.With().Int64("person", author).Logger()
+
+		m, err := core.Frontends.CreateMessage(author, here, "")
+		if err != nil {
+			slog.Error().Err(err).Msg("failed to create message")
+			return
+		}
+
+		if _, err = m.Write(resp, nil); err != nil {
+			slog.Error().Err(err).Msg("failed to write message")
+			return
+		}
+	})
+
 	return nil
 }
 
@@ -807,4 +862,210 @@ func (advancedIntervalSet) core(m *core.Message) (time.Duration, error, error) {
 	interval := time.Duration(seconds) * time.Second
 	usrErr, err := ReplyIntervalSet(here, interval)
 	return interval, usrErr, err
+}
+
+////////////
+//        //
+// redeem //
+//        //
+////////////
+
+var AdvancedRedeem = advancedRedeem{}
+
+type advancedRedeem struct{}
+
+func (c advancedRedeem) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedRedeem) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedRedeem) Names() []string {
+	return []string{
+		"redeem",
+	}
+}
+
+func (advancedRedeem) Description() string {
+	return "Control which redeem triggers god."
+}
+
+func (c advancedRedeem) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedRedeem) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedRedeem) Examples() []string {
+	return nil
+}
+
+func (advancedRedeem) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedRedeem) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedRedeemShow,
+		AdvancedRedeemSet,
+	}
+}
+
+func (advancedRedeem) Init() error {
+	return nil
+}
+
+func (advancedRedeem) Run(m *core.Message) (any, error, error) {
+	return m.Usage(), core.ErrMissingArgs, nil
+}
+
+/////////////////
+//             //
+// redeem show //
+//             //
+/////////////////
+
+var AdvancedRedeemShow = advancedRedeemShow{}
+
+type advancedRedeemShow struct{}
+
+func (c advancedRedeemShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedRedeemShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedRedeemShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedRedeemShow) Description() string {
+	return "Show what the current redeem is set to."
+}
+
+func (advancedRedeemShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedRedeemShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedRedeemShow) Examples() []string {
+	return nil
+}
+
+func (advancedRedeemShow) Parent() core.CommandStatic {
+	return AdvancedRedeem
+}
+
+func (advancedRedeemShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedRedeemShow) Init() error {
+	return nil
+}
+
+func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
+	u, usrErr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return c.fmt(u, usrErr), usrErr, nil
+}
+
+func (advancedRedeemShow) fmt(u uuid.UUID, usrErr error) string {
+	switch usrErr {
+	case nil:
+		return "The god redeem is set to: " + u.String()
+	case ErrRedeemNotSet:
+		return "The god redeem has not been set."
+	default:
+		return fmt.Sprint(usrErr)
+	}
+}
+
+func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, error, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return uuid.UUID{}, nil, err
+	}
+	return RedeemGet(here)
+}
+
+////////////////
+//            //
+// redeem set //
+//            //
+////////////////
+
+var AdvancedRedeemSet = advancedRedeemSet{}
+
+type advancedRedeemSet struct{}
+
+func (c advancedRedeemSet) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedRedeemSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedRedeemSet) Names() []string {
+	return core.AliasesSet
+}
+
+func (advancedRedeemSet) Description() string {
+	return "Set the ID of the god redeem."
+}
+
+func (advancedRedeemSet) UsageArgs() string {
+	return "<id>"
+}
+
+func (c advancedRedeemSet) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedRedeemSet) Examples() []string {
+	return nil
+}
+
+func (advancedRedeemSet) Parent() core.CommandStatic {
+	return AdvancedRedeem
+}
+
+func (advancedRedeemSet) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedRedeemSet) Init() error {
+	return nil
+}
+
+func (c advancedRedeemSet) Run(m *core.Message) (any, error, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.ErrMissingArgs, nil
+	}
+
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	return "Set the god redeem.", nil, nil
+}
+
+func (advancedRedeemSet) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return RedeemSet(here, m.Command.Args[0])
 }
