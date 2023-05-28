@@ -100,6 +100,7 @@ func streamOnline(place int64, when time.Time) error {
 	if err != nil {
 		return err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
 	err = tx.PlaceSet("stream_online_actual", place, when.UTC().Unix())
