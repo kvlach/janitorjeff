@@ -15,7 +15,7 @@ type MessageEdit struct {
 	VC      *dg.VoiceConnection
 }
 
-func messageEdit(s *dg.Session, m *dg.MessageUpdate) {
+func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 	// For some reason this randomly gets triggered if a link has been sent
 	// and there has been no edit to the message. Perhaps it could be have
 	// something to do with the message getting automatically edited in order
