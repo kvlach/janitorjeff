@@ -302,7 +302,7 @@ func (t *Twitch) Natural(msg any, _ error) (*core.Message, error) {
 	rand.Seed(time.Now().UnixNano())
 	// need this to only happen 30% of the time
 	if num := rand.Intn(10); num < 3 {
-		mention = t.message.User.DisplayName
+		mention = "@" + t.message.User.DisplayName
 	}
 	return t.send(msg, mention)
 }
