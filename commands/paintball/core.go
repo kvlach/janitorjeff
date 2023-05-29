@@ -179,21 +179,21 @@ func readFakeMovies() []string {
 }
 
 func randomMovie() movie {
-	rand.Seed(time.Now().UnixNano())
-	return movies[rand.Intn(len(movies))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return movies[r.Intn(len(movies))]
 }
 
 func randomFakeMovie() string {
-	rand.Seed(time.Now().UnixNano())
-	return fakeMovies[rand.Intn(len(fakeMovies))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fakeMovies[r.Intn(len(fakeMovies))]
 }
 
 func shuffle(s string) string {
 	re := regexp.MustCompile(`[^\s]+`)
 	return re.ReplaceAllStringFunc(s, func(m string) string {
-		rand.Seed(time.Now().UnixNano())
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		runes := []rune(m)
-		rand.Shuffle(len(runes), func(i, j int) {
+		r.Shuffle(len(runes), func(i, j int) {
 			runes[i], runes[j] = runes[j], runes[i]
 		})
 		return strings.ToLower(string(runes))
@@ -227,8 +227,8 @@ func awaitAnswer(here int64, answers []string) *core.Message {
 }
 
 func generateQuestion(round int) (*dg.MessageEmbed, []string, string) {
-	rand.Seed(time.Now().UnixNano())
-	category := categories[rand.Intn(len(categories))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	category := categories[r.Intn(len(categories))]
 
 	var desc strings.Builder
 	var question string
@@ -257,7 +257,7 @@ func generateQuestion(round int) (*dg.MessageEmbed, []string, string) {
 		question = "IS this movie FAKE or REAL?"
 
 		var title string
-		switch rand.Intn(2) {
+		switch r.Intn(2) {
 		case 0:
 			title = m.Title
 			answers = append(answers, "Real")

@@ -123,8 +123,8 @@ func randomID() string {
 }
 
 func randomName() string {
-	rand.Seed(time.Now().UnixNano())
-	return names[rand.Intn(len(names))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return names[r.Intn(len(names))]
 }
 
 func (tm *TestMessage) DiscordRandom() *TestMessage {

@@ -19,8 +19,8 @@ const (
 
 func run(player int) (int, int) {
 	var computer int
-	rand.Seed(time.Now().UnixNano())
-	switch rand.Intn(3) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	switch r.Intn(3) {
 	case 0:
 		computer = rock
 	case 1:
