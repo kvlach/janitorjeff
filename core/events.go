@@ -44,18 +44,28 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
-			log.Debug().Msg("received message event")
+			log.Debug().
+				Str("id", m.ID).
+				Str("raw", m.Raw).
+				Interface("frontend", m.Frontend.Type()).
+				Msg("received message event")
 			EventMessageHooks.Run(m)
 			if _, err := m.CommandRun(); err != nil {
 				log.Debug().Err(err).Send()
 			}
 
-		case redeem := <-EventRedeemClaim:
-			log.Debug().Msg("received redeem claim event")
-			EventRedeemClaimHooks.Run(redeem)
+		case rc := <-EventRedeemClaim:
+			log.Debug().
+				Str("id", rc.ID).
+				Str("input", rc.Input).
+				Str("when", rc.When.String()).
+				Msg("received redeem claim event")
+			EventRedeemClaimHooks.Run(rc)
 
 		case on := <-EventStreamOnline:
-			log.Debug().Msg("received stream online event")
+			log.Debug().
+				Str("when", on.When.String()).
+				Msg("received stream online event")
 			here, err := on.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err).Msg("failed to get logical here")
@@ -68,7 +78,9 @@ func EventLoop() {
 			EventStreamOnlineHooks.Run(on)
 
 		case off := <-EventStreamOffline:
-			log.Debug().Msg("received stream offline event")
+			log.Debug().
+				Str("when", off.When.String()).
+				Msg("received stream offline event")
 			here, err := off.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err).Msg("failed to get logical here")
