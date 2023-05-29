@@ -13,16 +13,16 @@ type CommandType int
 
 // The command types.
 const (
-	// A simplified command with might not give full control over something but
-	// it has a very easy to use API.
+	// Normal represents a simplified command which might not give full control
+	// over something, but it has a very easy to use API.
 	Normal CommandType = 1 << iota
 
-	// The full command and usually consists of many subcommands which makes it
-	// less intuitive for the average person.
+	// Advanced represents the full command and usually consists of many
+	// subcommands which makes it less intuitive for the average person.
 	Advanced
 
-	// Bot admin only command used to perform actions like setting an arbitrary
-	// person's options, etc.
+	// Admin represents a bot-admin-only command used to perform actions like
+	// setting an arbitrary person's settings, etc.
 	Admin
 
 	All = Normal | Advanced | Admin
@@ -40,20 +40,20 @@ const (
 // description, the list of all the aliases, etc. and the runtime part which
 // includes things like the prefix used, the arguments passed, etc.
 
-// CommandStatic is the the interface used to implement commands.
+// CommandStatic is the interface used to implement commands.
 type CommandStatic interface {
 	// Type returns the command's type.
 	Type() CommandType
 
 	// Permitted will perform checks required for a command to be executed.
 	// Returns true if the command is allowed to be executed. Usually used to
-	// chcek a user's permissions or to restrict a command to specific
+	// check a user's permissions or to restrict a command to specific
 	// frontends.
 	Permitted(m *Message) bool
 
 	// Names return a list of all the aliases a command has. The first item in
 	// the list is considered the main name and so should be the simplest and
-	// most intuitive one for the average person. For example if it's a delete
+	// most intuitive one for the average person. For example if it's a deleted
 	// subcommand the first alias should be "delete" instead of "del" or "rm".
 	Names() []string
 
@@ -71,7 +71,7 @@ type CommandStatic interface {
 	// they are split up instead of having them all in a giant list).
 	Category() CommandCategory
 
-	// Example returns a list of strings with example usages of the command.
+	// Examples returns a list of strings with example usages of the command.
 	// Only the arguments passed should be included, not the prefix and the
 	// chain of command names.
 	Examples() []string
@@ -93,7 +93,7 @@ type CommandStatic interface {
 
 // Format will return a string representation of the given command in a format
 // that can be shown to a user. Generally used in help messages to point the
-// user to a specific command in order to avoid hardcoding it. Returns the
+// user to a specific command in order to avoid hard-coding it. Returns the
 // command in the following format:
 //
 //	<prefix><command> [sub-command...] <usage-args>
@@ -208,7 +208,7 @@ func (cmds CommandsStatic) Usage() string {
 	return "(" + strings.Join(names, " | ") + ")"
 }
 
-// UsageOptions returns the names of the children in a format that can be used
+// UsageOptional returns the names of the children in a format that can be used
 // in the UsageArgs function and indicates that the sub-commands are optional.
 func (cmds CommandsStatic) UsageOptional() string {
 	var names []string
@@ -218,7 +218,7 @@ func (cmds CommandsStatic) UsageOptional() string {
 	return "[" + strings.Join(names, " | ") + "]"
 }
 
-// Recurse will recursively go through all of the commands and execute the exec
+// Recurse will recursively go through all the commands and execute the exec
 // function on them.
 func (cmds CommandsStatic) Recurse(exec func(CommandStatic)) {
 	for _, cmd := range cmds {
