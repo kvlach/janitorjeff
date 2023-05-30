@@ -120,18 +120,18 @@ func streamOnline(place int64, when time.Time) error {
 		return err
 	}
 
-	offline, err := tx.PlaceGet("stream_offline_actual", place)
+	offline, err := tx.PlaceGet("stream_offline_actual", place).Time()
 	if err != nil {
 		return err
 	}
 
-	grace, err := tx.PlaceGet("stream_grace", place)
+	grace, err := tx.PlaceGet("stream_grace", place).Duration()
 	if err != nil {
 		return err
 	}
 
-	diff := when.Sub(time.Unix(offline.(int64), 0))
-	if diff <= time.Duration(grace.(int64))*time.Second {
+	diff := when.Sub(offline)
+	if diff <= grace {
 		log.Debug().
 			Str("diff", diff.String()).
 			Msg("stream online again within grace period")
@@ -139,15 +139,15 @@ func streamOnline(place int64, when time.Time) error {
 		return tx.Commit()
 	}
 
-	offlinePrev, err := tx.PlaceGet("stream_offline_norm", place)
+	offlinePrev, err := tx.PlaceGet("stream_offline_norm", place).Int64()
 	if err != nil {
 		return err
 	}
-	err = tx.PlaceSet("stream_offline_norm_prev", place, offlinePrev.(int64))
+	err = tx.PlaceSet("stream_offline_norm_prev", place, offlinePrev)
 	if err != nil {
 		return err
 	}
-	err = tx.PlaceSet("stream_offline_norm", place, offline.(int64))
+	err = tx.PlaceSet("stream_offline_norm", place, offline.Unix())
 	if err != nil {
 		return err
 	}
