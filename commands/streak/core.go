@@ -146,11 +146,11 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
-	prev, err := tx.PersonGet("cmd_streak_last", person, place)
+	prev, err := tx.PersonGet("cmd_streak_last", person, place).Int64()
 	if err != nil {
 		return 0, err
 	}
-	offlinePrev, err := tx.PlaceGet("stream_offline_norm_prev", place)
+	offlinePrev, err := tx.PlaceGet("stream_offline_norm_prev", place).Int64()
 	if err != nil {
 		return 0, err
 	}
@@ -161,14 +161,14 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	//
 	// In which case the streak counter gets reset to 0 as the person didn't
 	// show up in the previous stream
-	if offlinePrev.(int64) > prev.(int64) {
+	if offlinePrev > prev {
 		err = tx.PersonSet("cmd_streak_num", person, place, 0)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	online, err := tx.PlaceGet("stream_online_norm", place)
+	online, err := tx.PlaceGet("stream_online_norm", place).Int64()
 	if err != nil {
 		return -1, err
 	}
@@ -179,7 +179,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	//
 	// In which case the streak doesn't get incremented as this is considered
 	// one stream.
-	if prev.(int64) >= online.(int64) {
+	if prev >= online {
 		return 0, ErrIgnore
 	}
 
@@ -187,15 +187,15 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	streak, err := tx.PersonGet("cmd_streak_num", person, place)
+	streak, err := tx.PersonGet("cmd_streak_num", person, place).Int64()
 	if err != nil {
 		return -1, err
 	}
-	err = tx.PersonSet("cmd_streak_num", person, place, streak.(int64)+1)
+	err = tx.PersonSet("cmd_streak_num", person, place, streak+1)
 	if err != nil {
 		return -1, err
 	}
-	return streak.(int64) + 1, tx.Commit()
+	return streak + 1, tx.Commit()
 }
 
 func RedeemSet(place int64, id string) error {
@@ -207,23 +207,18 @@ func RedeemSet(place int64, id string) error {
 }
 
 func RedeemGet(place int64) (uuid.UUID, error, error) {
-	id, err := core.DB.PlaceGet("cmd_streak_redeem", place)
+	id, isNil, err := core.DB.PlaceGet("cmd_streak_redeem", place).OptionalUUID()
 	if err != nil {
 		return uuid.UUID{}, nil, err
 	}
-	if id == nil {
+	if isNil {
 		return uuid.UUID{}, ErrRedeemNotSet, nil
 	}
-	u, err := uuid.Parse(string(id.([]uint8)))
-	return u, nil, err
+	return id, nil, nil
 }
 
 func Get(person, place int64) (int64, error) {
-	streak, err := core.DB.PersonGet("cmd_streak_num", person, place)
-	if err != nil {
-		return 0, err
-	}
-	return streak.(int64), nil
+	return core.DB.PersonGet("cmd_streak_num", person, place).Int64()
 }
 
 func Set(person, place int64, streak int) error {
@@ -231,11 +226,7 @@ func Set(person, place int64, streak int) error {
 }
 
 func GraceGet(place int64) (time.Duration, error) {
-	grace, err := core.DB.PlaceGet("stream_grace", place)
-	if err != nil {
-		return 0, err
-	}
-	return time.Duration(grace.(int64)) * time.Second, nil
+	return core.DB.PlaceGet("stream_grace", place).Duration()
 }
 
 func GraceSet(place int64, grace time.Duration) error {

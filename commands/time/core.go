@@ -202,12 +202,12 @@ func dbRemindExists(id, person int64) (bool, error) {
 func Now(person, place int64) (time.Time, error, error) {
 	now := time.Now().UTC()
 
-	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
+	tz, err := core.DB.PersonGet("cmd_time_tz", person, place).Str()
 	if err != nil {
 		return now, nil, err
 	}
 
-	loc, err := time.LoadLocation(tz.(string))
+	loc, err := time.LoadLocation(tz)
 	if err != nil {
 		return now, nil, err
 	}
@@ -236,8 +236,8 @@ func Convert(target, tz string) (string, error, error) {
 }
 
 func Time(when string, person, place int64) (time.Time, error, error) {
-	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
-	loc, err := time.LoadLocation(tz.(string))
+	tz, err := core.DB.PersonGet("cmd_time_tz", person, place).Str()
+	loc, err := time.LoadLocation(tz)
 	if err != nil {
 		return time.Time{}, nil, err
 	}
@@ -261,11 +261,7 @@ func Timestamp(when string, person, place int64) (time.Time, error, error) {
 }
 
 func TimezoneShow(person, place int64) (string, error) {
-	tz, err := core.DB.PersonGet("cmd_time_tz", person, place)
-	if err != nil {
-		return "", err
-	}
-	return tz.(string), nil
+	return core.DB.PersonGet("cmd_time_tz", person, place).Str()
 }
 
 func TimezoneSet(tz string, person, place int64) (string, error, error) {

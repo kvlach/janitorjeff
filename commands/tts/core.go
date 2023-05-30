@@ -310,11 +310,7 @@ func Stop(twitchUsername string) error {
 // VoiceGet returns the person's voice in this place. If no voice has
 // been set then it picks a random one and saves it.
 func VoiceGet(person, place int64) (string, error) {
-	voice, err := core.DB.PersonGet("cmd_tts_voice", person, place)
-	if err != nil {
-		return "", err
-	}
-	return voice.(string), nil
+	return core.DB.PersonGet("cmd_tts_voice", person, place).Str()
 }
 
 // VoiceSet sets the user voice.
@@ -334,11 +330,7 @@ func VoiceSet(person, place int64, voice string) error {
 
 // SubOnlyGet returns the sub-only state for the specified place.
 func SubOnlyGet(place int64) (bool, error) {
-	subonly, err := core.DB.PlaceGet("cmd_tts_subonly", place)
-	if err != nil {
-		return false, err
-	}
-	return subonly.(bool), nil
+	return core.DB.PlaceGet("cmd_tts_subonly", place).Bool()
 }
 
 // SubOnlySet sets the sub-only state for the specified place.

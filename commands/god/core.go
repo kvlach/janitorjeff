@@ -35,8 +35,7 @@ func Talk(prompt string) (string, error) {
 // ReplyOnGet returns whether auto-replying is on or off (true or false) in the
 // specified place.
 func ReplyOnGet(place int64) (bool, error) {
-	ret, err := core.DB.PlaceGet("cmd_god_reply_on", place)
-	return ret.(bool), err
+	return core.DB.PlaceGet("cmd_god_reply_on", place).Bool()
 }
 
 // ReplyOnSet will set the value that determines whether auto-replying is on or
@@ -48,11 +47,7 @@ func ReplyOnSet(place int64, on bool) error {
 // ReplyIntervalGet returns the duration object of the interval that is
 // required for auto-replies in the specified place.
 func ReplyIntervalGet(place int64) (time.Duration, error) {
-	interval, err := core.DB.PlaceGet("cmd_god_reply_interval", place)
-	if err != nil {
-		return time.Second, err
-	}
-	return time.Duration(interval.(int64)) * time.Second, nil
+	return core.DB.PlaceGet("cmd_god_reply_interval", place).Duration()
 }
 
 // ReplyIntervalSet sets the reply interval for the specified place. Returns
@@ -67,11 +62,7 @@ func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
 // ReplyLastGet returns a time object of the when the last reply happened
 // in the specified place.
 func ReplyLastGet(place int64) (time.Time, error) {
-	last, err := core.DB.PlaceGet("cmd_god_reply_last", place)
-	if err != nil {
-		return time.Time{}, err
-	}
-	return time.Unix(last.(int64), 0).UTC(), nil
+	return core.DB.PlaceGet("cmd_god_reply_last", place).Time()
 }
 
 // ReplyLastSet sets the timestamp of the last reply fot the specified place.
@@ -79,21 +70,6 @@ func ReplyLastGet(place int64) (time.Time, error) {
 func ReplyLastSet(place int64, when time.Time) error {
 	timestamp := when.UTC().Unix()
 	return core.DB.PlaceSet("cmd_god_reply_last", place, timestamp)
-}
-
-// ShouldReply returns true if the required interval has passed since the last
-// auto-reply happened, meaning that the bot should send a new reply again.
-func ShouldReply(place int64) (bool, error) {
-	interval, err := ReplyIntervalGet(place)
-	if err != nil {
-		return false, err
-	}
-	last, err := ReplyLastGet(place)
-	if err != nil {
-		return false, err
-	}
-	diff := time.Now().UTC().Sub(last)
-	return diff > interval, nil
 }
 
 func RedeemSet(place int64, id string) error {
@@ -105,13 +81,12 @@ func RedeemSet(place int64, id string) error {
 }
 
 func RedeemGet(place int64) (uuid.UUID, error, error) {
-	id, err := core.DB.PlaceGet("cmd_god_redeem", place)
+	id, isNil, err := core.DB.PlaceGet("cmd_god_redeem", place).OptionalUUID()
 	if err != nil {
 		return uuid.UUID{}, nil, err
 	}
-	if id == nil {
+	if isNil {
 		return uuid.UUID{}, ErrRedeemNotSet, nil
 	}
-	u, err := uuid.Parse(string(id.([]uint8)))
-	return u, nil, err
+	return id, nil, nil
 }

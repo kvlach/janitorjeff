@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
@@ -130,6 +132,68 @@ func (db *SQLDB) PrefixList(place int64) ([]Prefix, error) {
 	return prefixes, err
 }
 
+type Val struct {
+	val any
+	err error
+}
+
+func (v Val) Bool() (bool, error) {
+	if v.err != nil {
+		return false, v.err
+	}
+	return v.val.(bool), nil
+}
+
+func (v Val) Int64() (int64, error) {
+	if v.err != nil {
+		return 0, v.err
+	}
+	return v.val.(int64), nil
+}
+
+func (v Val) Str() (string, error) {
+	if v.err != nil {
+		return "", v.err
+	}
+	return v.val.(string), nil
+}
+
+func (v Val) OptionalStr() (string, bool, error) {
+	if v.err != nil {
+		return "", false, v.err
+	}
+	if v.val == nil {
+		return "", true, nil
+	}
+	return v.val.(string), false, nil
+}
+
+// Time returns a time object with the timezone set to UTC.
+func (v Val) Time() (time.Time, error) {
+	if v.err != nil {
+		return time.Time{}, v.err
+	}
+	return time.Unix(v.val.(int64), 0).UTC(), nil
+}
+
+func (v Val) Duration() (time.Duration, error) {
+	if v.err != nil {
+		return 0, v.err
+	}
+	return time.Duration(v.val.(int64)) * time.Second, nil
+}
+
+func (v Val) OptionalUUID() (uuid.UUID, bool, error) {
+	if v.err != nil {
+		return uuid.UUID{}, false, v.err
+	}
+	if v.val == nil {
+		return uuid.UUID{}, true, nil
+	}
+	u, err := uuid.Parse(string(v.val.([]uint8)))
+	return u, false, err
+}
+
 type Tx struct {
 	tx     *sql.Tx
 	db     *SQLDB
@@ -235,10 +299,10 @@ func (tx *Tx) placeCache(place int64) error {
 }
 
 // PlaceGet returns the value of col in table for the specified place.
-func (tx *Tx) PlaceGet(col string, place int64) (any, error) {
+func (tx *Tx) PlaceGet(col string, place int64) Val {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
-		return nil, err
+		return Val{}
 	} else {
 		tx.place = true
 	}
@@ -256,7 +320,7 @@ func (tx *Tx) PlaceGet(col string, place int64) (any, error) {
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
-	return val, err
+	return Val{val, err}
 }
 
 // PlaceSet sets the value of col in table for the specified place.
@@ -284,21 +348,21 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	return err
 }
 
-func (db *SQLDB) PlaceGet(col string, place int64) (any, error) {
+func (db *SQLDB) PlaceGet(col string, place int64) Val {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	tx, err := db.Begin()
 	if err != nil {
-		return nil, err
+		return Val{}
 	}
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
-	val, err := tx.PlaceGet(col, place)
-	if err != nil {
-		return nil, err
+	val := tx.PlaceGet(col, place)
+	if val.err != nil {
+		return Val{}
 	}
-	return val, tx.Commit()
+	return Val{val.val, tx.Commit()}
 }
 
 func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
@@ -400,10 +464,10 @@ func (tx *Tx) personCache(person, place int64) error {
 
 // PersonGet returns the value of col in table for the specified person
 // in the specified place.
-func (tx *Tx) PersonGet(col string, person, place int64) (any, error) {
+func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
-		return nil, err
+		return Val{}
 	} else {
 		tx.person = true
 	}
@@ -423,7 +487,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) (any, error) {
 		Int64("place", place).
 		Interface(col, val).
 		Msg("got value")
-	return val, err
+	return Val{val, err}
 }
 
 // PersonSet sets the value of col in table for the specified person in
@@ -453,21 +517,21 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	return err
 }
 
-func (db *SQLDB) PersonGet(col string, person, place int64) (any, error) {
+func (db *SQLDB) PersonGet(col string, person, place int64) Val {
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	tx, err := db.Begin()
 	if err != nil {
-		return nil, err
+		return Val{}
 	}
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
-	val, err := tx.PersonGet(col, person, place)
-	if err != nil {
-		return nil, err
+	val := tx.PersonGet(col, person, place)
+	if val.err != nil {
+		return Val{}
 	}
-	return val, tx.Commit()
+	return Val{val.val, tx.Commit()}
 }
 
 func (db *SQLDB) PersonSet(col string, person, place int64, val any) error {
