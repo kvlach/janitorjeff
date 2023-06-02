@@ -74,62 +74,58 @@ func (advanced) Init() error {
 			return
 		}
 
-		// GPT takes a couple of seconds to produce a response which in turn
-		// makes the whole bot lag
-		go func() {
-			core.DB.Lock.Lock()
-			defer core.DB.Lock.Unlock()
+		core.DB.Lock.Lock()
+		defer core.DB.Lock.Unlock()
 
-			tx, err := core.DB.Begin()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to begin transaction")
-				return
-			}
-			//goland:noinspection GoUnhandledErrorResult
-			defer tx.Rollback()
+		tx, err := core.DB.Begin()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to begin transaction")
+			return
+		}
+		//goland:noinspection GoUnhandledErrorResult
+		defer tx.Rollback()
 
-			if on, err := tx.PlaceGet("cmd_god_reply_on", here).Bool(); err != nil || !on {
-				log.Error().Err(err).Msg("reply not on, skipping")
-				return
-			}
+		if on, err := tx.PlaceGet("cmd_god_reply_on", here).Bool(); err != nil || !on {
+			log.Error().Err(err).Msg("reply not on, skipping")
+			return
+		}
 
-			interval, err := tx.PlaceGet("cmd_god_reply_interval", here).Duration()
-			if err != nil {
-				return
-			}
-			last, err := tx.PlaceGet("cmd_god_reply_last", here).Time()
-			if err != nil {
-				return
-			}
-			diff := time.Now().UTC().Sub(last)
-			if interval > diff {
-				log.Debug().
-					Interface("interval", interval).
-					Interface("diff", diff).
-					Msg("shouldn't reply yet, skipping")
-				return
-			}
+		interval, err := tx.PlaceGet("cmd_god_reply_interval", here).Duration()
+		if err != nil {
+			return
+		}
+		last, err := tx.PlaceGet("cmd_god_reply_last", here).Time()
+		if err != nil {
+			return
+		}
+		diff := time.Now().UTC().Sub(last)
+		if interval > diff {
+			log.Debug().
+				Interface("interval", interval).
+				Interface("diff", diff).
+				Msg("shouldn't reply yet, skipping")
+			return
+		}
 
-			resp, err := Talk(m.Raw)
-			if err != nil {
-				log.Debug().Err(err).Msg("failed to communicate with god")
-				return
-			}
+		resp, err := Talk(m.Raw)
+		if err != nil {
+			log.Debug().Err(err).Msg("failed to communicate with god")
+			return
+		}
 
-			if _, err := m.Client.Natural(resp, nil); err != nil {
-				log.Error().Err(err).Msg("failed to send message")
-				return
-			}
+		if _, err := m.Client.Natural(resp, nil); err != nil {
+			log.Error().Err(err).Msg("failed to send message")
+			return
+		}
 
-			if err := tx.PlaceSet("cmd_god_reply_last", here, time.Now().UTC().Unix()); err != nil {
-				log.Debug().Err(err).Msg("error while trying to set reply")
-				return
-			}
+		if err := tx.PlaceSet("cmd_god_reply_last", here, time.Now().UTC().Unix()); err != nil {
+			log.Debug().Err(err).Msg("error while trying to set reply")
+			return
+		}
 
-			if err := tx.Commit(); err != nil {
-				log.Error().Err(err).Msg("couldn't commit")
-			}
-		}()
+		if err := tx.Commit(); err != nil {
+			log.Error().Err(err).Msg("couldn't commit")
+		}
 	})
 
 	core.EventRedeemClaimHooks.Register(func(rc *core.RedeemClaim) {
