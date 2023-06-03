@@ -170,8 +170,8 @@ func init() {
 	}
 }
 
-// This must be run after all of the global variables have been set (including
-// ones that frontend init functions might set) since the `Init` functions might
+// Init must be run after all the global variables have been set (including ones
+// that frontend init functions might set) since the `Init` functions might
 // depend on them.
 func Init() {
 	for _, cmd := range Commands {
