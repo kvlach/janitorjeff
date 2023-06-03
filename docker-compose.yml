@@ -25,7 +25,7 @@ services:
       - DISCORD_ADMINS=comma,seperated,list,of,user,ids
       - TWITCH_ADMINS=comma,seperated,list,of,user,ids
       - TWITCH_CHANNELS=comma,seperated,list,of,channel,names
-      - TWITCH_CLIENT_ID=cliend-id
+      - TWITCH_CLIENT_ID=client-id
       - TWITCH_CLIENT_SECRET=client-secret
       - TWITCH_OAUTH=oauth-token
       # Commands
