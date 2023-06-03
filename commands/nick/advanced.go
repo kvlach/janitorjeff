@@ -166,17 +166,17 @@ func (c advancedShow) Run(m *core.Message) (any, error, error) {
 
 func (c advancedShow) discord(nick string, urr error) (*dg.MessageEmbed, error, error) {
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, fmt.Sprintf("**%s**", nick)),
+		Description: c.fmt(urr, fmt.Sprintf("**%s**", nick)),
 	}
 	return embed, urr, nil
 }
 
 func (c advancedShow) text(nick string, urr error) (string, error, error) {
 	nick = fmt.Sprintf("'%s'", nick)
-	return c.err(urr, nick), urr, nil
+	return c.fmt(urr, nick), urr, nil
 }
 
-func (advancedShow) err(urr error, nick string) string {
+func (advancedShow) fmt(urr error, nick string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
@@ -271,17 +271,17 @@ func (c advancedSet) Run(m *core.Message) (any, error, error) {
 
 func (c advancedSet) discord(nick string, urr error) (*dg.MessageEmbed, error, error) {
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, fmt.Sprintf("**%s**", nick)),
+		Description: c.fmt(urr, fmt.Sprintf("**%s**", nick)),
 	}
 	return embed, urr, nil
 }
 
 func (c advancedSet) text(nick string, urr error) (string, error, error) {
 	nick = fmt.Sprintf("'%s'", nick)
-	return c.err(urr, nick), urr, nil
+	return c.fmt(urr, nick), urr, nil
 }
 
-func (c advancedSet) err(urr error, nick string) string {
+func (c advancedSet) fmt(urr error, nick string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Nickname set to %s", nick)

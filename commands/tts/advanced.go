@@ -218,17 +218,17 @@ func (c advancedStop) Run(m *core.Message) (any, error, error) {
 func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	urr := c.core(m)
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
 
 func (c advancedStop) text(m *core.Message) (string, error, error) {
 	urr := c.core(m)
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (c advancedStop) err(urr error) string {
+func (c advancedStop) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Stopped monitoring."

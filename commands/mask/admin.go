@@ -128,7 +128,7 @@ func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 		return nil, nil, nil
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, t),
+		Description: c.fmt(urr, t),
 	}
 	return embed, urr, nil
 }
@@ -138,10 +138,10 @@ func (c adminShow) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, nil
 	}
-	return c.err(urr, t), urr, nil
+	return c.fmt(urr, t), urr, nil
 }
 
-func (adminShow) err(urr error, t Target) string {
+func (adminShow) fmt(urr error, t Target) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("person=%d place=%d", t.Person, t.Place)
@@ -315,7 +315,7 @@ func (c adminDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -325,10 +325,10 @@ func (c adminDelete) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (adminDelete) err(urr error) string {
+func (adminDelete) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Deleted your mask."

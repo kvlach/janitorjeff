@@ -81,7 +81,7 @@ func (c normal) discord(m *core.Message) (any, error, error) {
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, res),
+		Description: c.fmt(urr, res),
 	}
 	return embed, urr, nil
 }
@@ -91,10 +91,10 @@ func (c normal) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr, res), urr, nil
+	return c.fmt(urr, res), urr, nil
 }
 
-func (normal) err(urr error, res page) string {
+func (normal) fmt(urr error, res page) string {
 	switch urr {
 	case nil:
 		return res.Canonicalurl
