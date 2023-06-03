@@ -198,19 +198,28 @@ func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, t
 			if err != nil {
 				log.Error().Err(err).Msg("failed to get tts audio")
 				continue
+			} else {
+				log.Debug().Msg("got tts audio")
 			}
 
 			err = sp.Join()
 			if err != nil {
 				log.Error().Err(err).Msg("failed to join speaker")
 				continue
+			} else {
+				log.Debug().Msg("speaker joined")
 			}
 
 			state := &core.AudioState{}
 			state.Set(core.AudioPlay)
 
 			buf := ioutil.NopCloser(bytes.NewReader(audio))
-			core.AudioProcessBuffer(sp, buf, state)
+			if err := core.AudioProcessBuffer(sp, buf, state); err != nil {
+				log.Error().Err(err).Msg("failed to process audio buffer")
+				return
+			} else {
+				log.Debug().Msg("played audio buffer")
+			}
 		case core.AudioStop:
 			log.Debug().Msg("exiting loop")
 			return
