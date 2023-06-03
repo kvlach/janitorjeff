@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -138,7 +138,7 @@ func TTS(voice, text string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, t
 			state := &core.AudioState{}
 			state.Set(core.AudioPlay)
 
-			buf := ioutil.NopCloser(bytes.NewReader(audio))
+			buf := io.NopCloser(bytes.NewReader(audio))
 			if err := core.AudioProcessBuffer(sp, buf, state); err != nil {
 				log.Error().Err(err).Msg("failed to process audio buffer")
 				return
