@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+//goland:noinspection GoErrorStringFormat
 var (
 	ErrNotPaused        = errors.New("Not paused.")
 	ErrNotPlaying       = errors.New("Not playing anything.")
