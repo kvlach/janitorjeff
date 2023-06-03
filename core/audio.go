@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -83,8 +84,11 @@ func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) er
 	if err := ffmpeg.Start(); err != nil {
 		return err
 	}
-	defer ffmpeg.Process.Kill()
-
+	defer func() {
+		if err := ffmpeg.Process.Kill(); err != nil {
+			log.Error().Err(err).Msg("failed to kill ffmpeg process")
+		}
+	}()
 	return sp.Say(ffmpegbuf, st)
 }
 
@@ -98,6 +102,10 @@ func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	defer cmd.Process.Kill()
+	defer func() {
+		if err := cmd.Process.Kill(); err != nil {
+			log.Error().Err(err).Msg("failed to kill command process")
+		}
+	}()
 	return AudioProcessBuffer(sp, pipe, st)
 }
