@@ -17,11 +17,12 @@ const (
 	AudioStop
 )
 
-// A select with multiple ready cases chooses one pseudo-randomly. So if the
-// goroutine is "slow" to check those channels, you might send a value on both
-// pause and resume (assuming they are buffered) so receiving from both channels
-// could be ready, and resume could be chosen first, and in a later iteration
-// the pause when the goroutine should not be paused anymore.
+// AudioState represents the current state of the audio (playing, paused, etc.).
+// A select with multiple cases isn't used because it chooses one pseudo-randomly.
+// So if the  goroutine is "slow" to check those channels, you might send a
+// value on both pause and resume (assuming they are buffered) so receiving from
+// both channels  could be ready, and resume could be chosen first, and in a
+// later iteration the pause when the goroutine should not be paused anymore.
 //
 // Source: https://stackoverflow.com/a/60490371
 type AudioState struct {
@@ -33,10 +34,12 @@ type AudioSpeaker interface {
 	// connect to.
 	Enabled() bool
 
-	// The audio's expected frame rate.
+	// FrameRate returns the audio's expected frame rate. Is passed to ffmpeg
+	// to convert the audio stream to the correct format before sending.
 	FrameRate() int
 
-	// The audio's expected number of channels.
+	// Channels returns the audio's expected number of channels. Is passed to
+	// ffmpeg to convert the audio stream to the correct format before sending.
 	Channels() int
 
 	// Join the message author's voice channel, if they are not connected to
@@ -47,7 +50,7 @@ type AudioSpeaker interface {
 	// point).
 	Join() error
 
-	// Send audio. Must have connected to a voice channel first, otherwise
+	// Say sends audio. Must have connected to a voice channel first, otherwise
 	// returns an error.
 	Say(buf io.Reader, s *AudioState) error
 
