@@ -101,7 +101,7 @@ func findUserVoiceState(guildID, userID string) (*dg.VoiceState, error) {
 			return vs, nil
 		}
 	}
-	return nil, errors.New("Could not find user's voice state")
+	return nil, errors.New("could not find user's voice state")
 }
 
 // joinUserVoiceChannel joins a session to the same channel as another user.
@@ -116,8 +116,8 @@ func joinUserVoiceChannel(guildID, userID string) (*dg.VoiceConnection, error) {
 	return Session.ChannelVoiceJoin(vs.GuildID, vs.ChannelID, false, true)
 }
 
-// sendPCM will receive on the provied channel encode
-// received PCM data into Opus then send that to Discordgo
+// sendPCM will receive on the provided channel, encode
+// received PCM data into Opus then send that to DiscordGo
 func sendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
 	if pcm == nil {
 		return
@@ -157,7 +157,7 @@ func play(v *dg.VoiceConnection, buf io.Reader, s *core.AudioState) {
 
 	defer func() {
 		if err := v.Speaking(false); err != nil {
-			log.Debug().Err(err).Msg("Couldn't set speakig to false")
+			log.Debug().Err(err).Msg("Couldn't set speaking to false")
 		}
 	}()
 
