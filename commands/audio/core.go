@@ -10,6 +10,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -43,7 +44,10 @@ func stream(sp core.AudioSpeaker, p *Playing, place int64) {
 			// Audio only format might not exist in which case we grab the
 			// whole thing and let ffmpeg extract the audio
 			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
-			core.AudioProcessCommand(sp, ytdl, p.State)
+			if err := core.AudioProcessCommand(sp, ytdl, p.State); err != nil {
+				log.Error().Err(err).Msg("failed to stream audio")
+				return
+			}
 			if p.State.Get() != core.AudioLoop {
 				p.Queue.DeleteStable(0)
 			}
