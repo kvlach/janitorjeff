@@ -251,7 +251,7 @@ func ToJSON(t core.CommandType) Resp {
 		}
 	})
 
-	for cat, _ := range categories {
+	for cat := range categories {
 		resp.Categories = append(resp.Categories, string(cat))
 	}
 
