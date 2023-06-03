@@ -7,6 +7,7 @@ import (
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
@@ -17,6 +18,8 @@ var (
 
 // Talk returns GPT3's response to a prompt.
 func Talk(prompt string) (string, error) {
+	log.Debug().Str("prompt", prompt).Msg("talking to gpt3")
+
 	c := gogpt.NewClient(core.OpenAIKey)
 	ctx := context.Background()
 
