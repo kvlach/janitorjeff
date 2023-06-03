@@ -68,12 +68,12 @@ func (advanced) emergencyReset(m *core.Message) {
 		return
 	}
 
-	resp, usrErr, err := AdvancedReset.Run(m)
+	resp, urr, err := AdvancedReset.Run(m)
 	if err != nil {
 		return
 	}
 
-	m.Write(resp, usrErr)
+	m.Write(resp, urr)
 }
 
 func (advanced) Run(m *core.Message) (any, error, error) {

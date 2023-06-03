@@ -104,39 +104,39 @@ func cmdAdd(t core.CommandType, m *core.Message) (any, error, error) {
 }
 
 func cmdAddDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
-	prefix, collision, usrErr, err := cmdAddCore(t, m)
+	prefix, collision, urr, err := cmdAddCore(t, m)
 	if err != nil {
-		return nil, usrErr, err
+		return nil, urr, err
 	}
 
 	prefix = discord.PlaceInBackticks(prefix)
 	collision = discord.PlaceInBackticks(collision)
 
 	embed := &dg.MessageEmbed{
-		Description: cmdAddErr(usrErr, prefix, collision),
+		Description: cmdAddErr(urr, prefix, collision),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func cmdAddText(t core.CommandType, m *core.Message) (string, error, error) {
-	prefix, collision, usrErr, err := cmdAddCore(t, m)
+	prefix, collision, urr, err := cmdAddCore(t, m)
 	if err != nil {
-		return "", usrErr, err
+		return "", urr, err
 	}
-	return cmdAddErr(usrErr, prefix, collision), usrErr, nil
+	return cmdAddErr(urr, prefix, collision), urr, nil
 }
 
-func cmdAddErr(usrErr error, prefix, collision string) string {
-	switch usrErr {
+func cmdAddErr(urr error, prefix, collision string) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case ErrExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
 	case ErrCustomCommandExists:
-		return fmt.Sprintf(fmt.Sprint(usrErr), prefix, collision)
+		return fmt.Sprintf(fmt.Sprint(urr), prefix, collision)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -148,8 +148,8 @@ func cmdAddCore(t core.CommandType, m *core.Message) (string, string, error, err
 		return prefix, "", nil, err
 	}
 
-	collision, usrErr, err := Add(prefix, t, here)
-	return prefix, collision, usrErr, err
+	collision, urr, err := Add(prefix, t, here)
+	return prefix, collision, urr, err
 }
 
 ////////////
@@ -213,14 +213,14 @@ func cmdDelete(t core.CommandType, m *core.Message) (any, error, error) {
 }
 
 func cmdDeleteDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
-	prefix, usrErr, err := cmdDeleteCore(t, m)
+	prefix, urr, err := cmdDeleteCore(t, m)
 	if err != nil {
-		return nil, usrErr, err
+		return nil, urr, err
 	}
 
 	resetCommand := ""
 
-	switch usrErr {
+	switch urr {
 	case ErrOneLeft:
 		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 		resetCommand = discord.PlaceInBackticks(resetCommand)
@@ -229,28 +229,28 @@ func cmdDeleteDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, er
 	prefix = discord.PlaceInBackticks(prefix)
 
 	embed := &dg.MessageEmbed{
-		Description: cmdDeleteErr(usrErr, m, prefix, resetCommand),
+		Description: cmdDeleteErr(urr, m, prefix, resetCommand),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func cmdDeleteText(t core.CommandType, m *core.Message) (string, error, error) {
-	prefix, usrErr, err := cmdDeleteCore(t, m)
+	prefix, urr, err := cmdDeleteCore(t, m)
 	if err != nil {
-		return "", usrErr, err
+		return "", urr, err
 	}
 
 	resetCommand := ""
 
-	switch usrErr {
+	switch urr {
 	case core.ErrMissingArgs:
-		return m.Usage().(string), usrErr, nil
+		return m.Usage().(string), urr, nil
 	case ErrOneLeft:
 		resetCommand = core.Format(AdvancedReset, m.Command.Prefix)
 	}
 
-	return cmdDeleteErr(usrErr, m, prefix, resetCommand), usrErr, nil
+	return cmdDeleteErr(urr, m, prefix, resetCommand), urr, nil
 }
 
 func cmdDeleteErr(err error, m *core.Message, prefix, resetCommand string) string {
@@ -275,8 +275,8 @@ func cmdDeleteCore(t core.CommandType, m *core.Message) (string, error, error) {
 		return prefix, nil, err
 	}
 
-	usrErr, err := Delete(prefix, t, here)
-	return prefix, usrErr, err
+	urr, err := Delete(prefix, t, here)
+	return prefix, urr, err
 }
 
 //////////

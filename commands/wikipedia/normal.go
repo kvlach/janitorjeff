@@ -70,38 +70,38 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 }
 
 func (c normal) discord(m *core.Message) (any, error, error) {
-	res, usrErr, err := c.core(m)
+	res, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// simply send the url with no embed and let discord create an embed
-	if usrErr == nil {
+	if urr == nil {
 		return res.Canonicalurl, nil, nil
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, res),
+		Description: c.err(urr, res),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c normal) text(m *core.Message) (string, error, error) {
-	res, usrErr, err := c.core(m)
+	res, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr, res), usrErr, nil
+	return c.err(urr, res), urr, nil
 }
 
-func (normal) err(usrErr error, res page) string {
-	switch usrErr {
+func (normal) err(urr error, res page) string {
+	switch urr {
 	case nil:
 		return res.Canonicalurl
 	case errNoResult:
 		return "Couldn't find anything."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

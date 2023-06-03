@@ -124,19 +124,19 @@ func (c advancedSearch) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSearch) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	def, usrErr, err := c.core(m)
+	def, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return renderDiscord(def, usrErr), usrErr, nil
+	return renderDiscord(def, urr), urr, nil
 }
 
 func (c advancedSearch) text(m *core.Message) (string, error, error) {
-	def, usrErr, err := c.core(m)
+	def, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return renderText(def, usrErr), usrErr, nil
+	return renderText(def, urr), urr, nil
 }
 
 func (advancedSearch) core(m *core.Message) (definition, error, error) {
@@ -207,19 +207,19 @@ func (c advancedRandom) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedRandom) discord() (*dg.MessageEmbed, error, error) {
-	def, usrErr, err := c.core()
+	def, urr, err := c.core()
 	if err != nil {
 		return nil, nil, err
 	}
-	return renderDiscord(def, usrErr), usrErr, nil
+	return renderDiscord(def, urr), urr, nil
 }
 
 func (c advancedRandom) text() (string, error, error) {
-	def, usrErr, err := c.core()
+	def, urr, err := c.core()
 	if err != nil {
 		return "", nil, err
 	}
-	return renderText(def, usrErr), usrErr, nil
+	return renderText(def, urr), urr, nil
 }
 
 func (advancedRandom) core() (definition, error, error) {

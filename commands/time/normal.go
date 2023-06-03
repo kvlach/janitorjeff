@@ -80,12 +80,12 @@ func (normalTime) addReminder(m *core.Message) {
 		},
 	}
 
-	resp, usrErr, err := AdvancedRemindAdd.Run(m)
+	resp, urr, err := AdvancedRemindAdd.Run(m)
 	if err != nil {
 		log.Debug().Err(err).Msg("failed to create reminder")
 		return
 	}
-	m.Write(resp, usrErr)
+	m.Write(resp, urr)
 }
 
 func (normalTime) Run(m *core.Message) (any, error, error) {

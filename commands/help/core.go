@@ -123,17 +123,17 @@ func renderDiscord(cmd *core.Command, aliases []string, examples []string) *dg.M
 }
 
 func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
-	cmd, aliases, examples, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
-	if usrErr != nil {
-		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}, usrErr, nil
+	cmd, aliases, examples, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
+	if urr != nil {
+		return &dg.MessageEmbed{Description: fmt.Sprint(urr)}, urr, nil
 	}
 	return renderDiscord(cmd, aliases, examples), nil, nil
 }
 
 func runText(t core.CommandType, m *core.Message) (string, error, error) {
-	cmd, aliases, _, usrErr := runCore(t, m, m.Command.Args, m.Command.Prefix)
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	cmd, aliases, _, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 	return renderText(cmd, aliases), nil, nil
 }

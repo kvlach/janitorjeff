@@ -84,9 +84,9 @@ func Random() (definition, error, error) {
 	return read(base + random)
 }
 
-func renderDiscord(def definition, usrErr error) *dg.MessageEmbed {
-	if usrErr != nil {
-		return &dg.MessageEmbed{Description: fmt.Sprint(usrErr)}
+func renderDiscord(def definition, urr error) *dg.MessageEmbed {
+	if urr != nil {
+		return &dg.MessageEmbed{Description: fmt.Sprint(urr)}
 	}
 
 	var example []*dg.MessageEmbedField
@@ -112,9 +112,9 @@ func renderDiscord(def definition, usrErr error) *dg.MessageEmbed {
 	return embed
 }
 
-func renderText(def definition, usrErr error) string {
-	if usrErr != nil {
-		return fmt.Sprint(usrErr)
+func renderText(def definition, urr error) string {
+	if urr != nil {
+		return fmt.Sprint(urr)
 	}
 
 	def.Definition = strings.ReplaceAll(def.Definition, "\n", " ")

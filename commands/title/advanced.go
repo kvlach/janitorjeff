@@ -206,9 +206,9 @@ func (advancedEdit) twitch(m *core.Message) (string, error, error) {
 
 	title := m.RawArgs(0)
 
-	usrErr, err := h.SetTitle(m.Here.ID(), title)
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	urr, err := h.SetTitle(m.Here.ID(), title)
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 	if err != nil {
 		return "", nil, err

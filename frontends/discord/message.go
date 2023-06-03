@@ -45,30 +45,30 @@ func (d *Message) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *Message) send(msg any, usrErr error, ping bool) (*core.Message, error) {
+func (d *Message) send(msg any, urr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Message, msg.(string), ping)
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
-		return sendEmbed(d.Message, embed, usrErr, ping)
+		return sendEmbed(d.Message, embed, urr, ping)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
 }
 
-func (d *Message) Send(msg any, usrErr error) (*core.Message, error) {
-	return d.send(msg, usrErr, false)
+func (d *Message) Send(msg any, urr error) (*core.Message, error) {
+	return d.send(msg, urr, false)
 }
 
-func (d *Message) Ping(msg any, usrErr error) (*core.Message, error) {
-	return d.send(msg, usrErr, true)
+func (d *Message) Ping(msg any, urr error) (*core.Message, error) {
+	return d.send(msg, urr, true)
 }
 
-func (d *Message) Write(msg any, usrErr error) (*core.Message, error) {
-	return d.Send(msg, usrErr)
+func (d *Message) Write(msg any, urr error) (*core.Message, error) {
+	return d.Send(msg, urr)
 }
 
-func (d *Message) Natural(msg any, usrErr error) (*core.Message, error) {
-	return d.Send(msg, usrErr)
+func (d *Message) Natural(msg any, urr error) (*core.Message, error) {
+	return d.Send(msg, urr)
 }

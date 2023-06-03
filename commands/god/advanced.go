@@ -824,32 +824,32 @@ func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	interval, usrErr, err := c.core(m)
+	interval, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(interval, usrErr),
+		Description: c.fmt(interval, urr),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedIntervalSet) text(m *core.Message) (string, error, error) {
-	interval, usrErr, err := c.core(m)
+	interval, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(interval, usrErr), usrErr, nil
+	return c.fmt(interval, urr), urr, nil
 }
 
-func (advancedIntervalSet) fmt(interval time.Duration, usrErr error) string {
-	switch usrErr {
+func (advancedIntervalSet) fmt(interval time.Duration, urr error) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Updated the interval to %s.", interval)
 	case ErrIntervalTooShort:
 		return fmt.Sprintf("The interval %s is too short, must be longer or equal to %s.", interval, core.MinGodInterval)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -863,8 +863,8 @@ func (advancedIntervalSet) core(m *core.Message) (time.Duration, error, error) {
 		return time.Second, nil, err
 	}
 	interval := time.Duration(seconds) * time.Second
-	usrErr, err := ReplyIntervalSet(here, interval)
-	return interval, usrErr, err
+	urr, err := ReplyIntervalSet(here, interval)
+	return interval, urr, err
 }
 
 ////////////
@@ -977,21 +977,21 @@ func (advancedRedeemShow) Init() error {
 }
 
 func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
-	u, usrErr, err := c.core(m)
+	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return c.fmt(u, usrErr), usrErr, nil
+	return c.fmt(u, urr), urr, nil
 }
 
-func (advancedRedeemShow) fmt(u uuid.UUID, usrErr error) string {
-	switch usrErr {
+func (advancedRedeemShow) fmt(u uuid.UUID, urr error) string {
+	switch urr {
 	case nil:
 		return "The god redeem is set to: " + u.String()
 	case ErrRedeemNotSet:
 		return "The god redeem has not been set."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

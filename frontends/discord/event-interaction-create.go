@@ -80,7 +80,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 	m.Raw = prefix + strings.Join(args, " ")
 	fmt.Println("MESSAGEEEEEEEEEEEEEEEEEEEEE", m.Raw)
 
-	resp, usrErr, err := cmd.Run(m)
+	resp, urr, err := cmd.Run(m)
 	if err == core.ErrSilence {
 		return
 	}
@@ -88,7 +88,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 		m.Write("Something went wrong...", fmt.Errorf(""))
 		return
 	}
-	m.Write(resp, usrErr)
+	m.Write(resp, urr)
 }
 
 ///////////////
@@ -147,7 +147,7 @@ func (i *InteractionCreate) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
 }
 
-func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
+func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
 		resp := &dg.InteractionResponse{
@@ -160,7 +160,7 @@ func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
-		embed = embedColor(embed, usrErr)
+		embed = embedColor(embed, urr)
 
 		resp := &dg.InteractionResponse{
 			Type: dg.InteractionResponseChannelMessageWithSource,
@@ -176,20 +176,20 @@ func (i *InteractionCreate) send(msg any, usrErr error) (*core.Message, error) {
 	}
 }
 
-func (i *InteractionCreate) Send(msg any, usrErr error) (*core.Message, error) {
-	return i.send(msg, usrErr)
+func (i *InteractionCreate) Send(msg any, urr error) (*core.Message, error) {
+	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Ping(msg any, usrErr error) (*core.Message, error) {
-	return i.send(msg, usrErr)
+func (i *InteractionCreate) Ping(msg any, urr error) (*core.Message, error) {
+	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Write(msg any, usrErr error) (*core.Message, error) {
-	return i.send(msg, usrErr)
+func (i *InteractionCreate) Write(msg any, urr error) (*core.Message, error) {
+	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Natural(msg any, usrErr error) (*core.Message, error) {
-	return i.send(msg, usrErr)
+func (i *InteractionCreate) Natural(msg any, urr error) (*core.Message, error) {
+	return i.send(msg, urr)
 }
 
 /////////////

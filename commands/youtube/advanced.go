@@ -186,29 +186,29 @@ func (c advancedSearchVideo) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSearchVideo) discord(m *core.Message) (any, error, error) {
-	vid, usrErr, err := c.core(m)
+	vid, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// let discord handle the url embed
-	if usrErr == nil {
+	if urr == nil {
 		return vid.URL(), nil, nil
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: fmt.Sprint(usrErr),
+		Description: fmt.Sprint(urr),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedSearchVideo) text(m *core.Message) (string, error, error) {
-	vid, usrErr, err := c.core(m)
+	vid, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 	return fmt.Sprintf("%s | %s", vid.Title, vid.URL()), nil, nil
 }
@@ -284,39 +284,39 @@ func (c advancedSearchChannel) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedSearchChannel) discord(m *core.Message) (any, error, error) {
-	ch, usrErr, err := c.core(m)
+	ch, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 
 	// let disocrd handle the url embed
-	if usrErr == nil {
+	if urr == nil {
 		return ch.URL(), nil, nil
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: fmt.Sprint(usrErr),
+		Description: fmt.Sprint(urr),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedSearchChannel) text(m *core.Message) (string, error, error) {
-	ch, usrErr, err := c.core(m)
+	ch, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 	return fmt.Sprintf("%s | %s", ch.Title, ch.URL()), nil, nil
 }
 
-func (advancedSearchChannel) err(usrErr error, ch Channel) string {
-	switch usrErr {
+func (advancedSearchChannel) err(urr error, ch Channel) string {
+	switch urr {
 	case nil:
 		return ch.URL()
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

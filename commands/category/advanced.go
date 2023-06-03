@@ -208,10 +208,10 @@ func (advancedEdit) twitch(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	g, usrErr, err := h.SetGame(m.Here.ID(), m.RawArgs(0))
+	g, urr, err := h.SetGame(m.Here.ID(), m.RawArgs(0))
 
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 
 	switch err {

@@ -123,30 +123,30 @@ func (c adminShow) Run(m *core.Message) (any, error, error) {
 }
 
 func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, nil
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, t),
+		Description: c.err(urr, t),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c adminShow) text(m *core.Message) (string, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, nil
 	}
-	return c.err(usrErr, t), usrErr, nil
+	return c.err(urr, t), urr, nil
 }
 
-func (adminShow) err(usrErr error, t Target) string {
-	switch usrErr {
+func (adminShow) err(urr error, t Target) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("person=%d place=%d", t.Person, t.Place)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -310,30 +310,30 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (c adminDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := c.core(m)
+	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr),
+		Description: c.err(urr),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c adminDelete) text(m *core.Message) (string, error, error) {
-	usrErr, err := c.core(m)
+	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr), usrErr, nil
+	return c.err(urr), urr, nil
 }
 
-func (adminDelete) err(usrErr error) string {
-	switch usrErr {
+func (adminDelete) err(urr error) string {
+	switch urr {
 	case nil:
 		return "Deleted your mask."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

@@ -101,9 +101,9 @@ func Play(args []string, sp core.AudioSpeaker, place int64) (Item, error, error)
 			return item, ErrSiteNotSupported, nil
 		}
 	} else {
-		vid, usrErr, err := youtube.SearchVideo(strings.Join(args, " "))
-		if usrErr != nil || err != nil {
-			return item, usrErr, err
+		vid, urr, err := youtube.SearchVideo(strings.Join(args, " "))
+		if urr != nil || err != nil {
+			return item, urr, err
 		}
 		item = Item{
 			URL:   vid.URL(),

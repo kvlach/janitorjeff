@@ -41,21 +41,21 @@ type Messenger interface {
 
 	// Send sends a message to the appropriate scope, resp could be nil
 	// depending on the frontend.
-	Send(msg any, usrErr error) (resp *Message, err error)
+	Send(msg any, urr error) (resp *Message, err error)
 
 	// Ping works the same as Send except the user is also pinged.
-	Ping(msg any, usrErr error) (resp *Message, err error)
+	Ping(msg any, urr error) (resp *Message, err error)
 
 	// Write either calls Send or Ping depending on the frontend. This is what
 	// should be used in most cases.
-	Write(msg any, usrErr error) (resp *Message, err error)
+	Write(msg any, urr error) (resp *Message, err error)
 
 	// Natural will try to emulate a response as if an actual human had written
 	// it. Often the bot uses markers to distinguish its responses (for example,
 	// on Twitch it replies with the following format: @person -> <resp>), which
 	// are not natural looking. To add to the effect, randomness may be used to
 	// only sometimes mention the person.
-	Natural(msg any, usrErr error) (resp *Message, err error)
+	Natural(msg any, urr error) (resp *Message, err error)
 }
 
 // Author is the interface used to abstract a frontend's message author.
@@ -179,8 +179,8 @@ func (m *Message) RawArgs(n int) string {
 }
 
 // Sends a message.
-func (m *Message) Write(msg any, usrErr error) (*Message, error) {
-	return m.Client.Write(msg, usrErr)
+func (m *Message) Write(msg any, urr error) (*Message, error) {
+	return m.Client.Write(msg, urr)
 }
 
 // Prefixes returns the logical here's prefixes and also whether they were taken
@@ -288,7 +288,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, fmt.Errorf("admin only command, caller not admin")
 	}
 
-	resp, usrErr, err := m.Command.Run(m)
+	resp, urr, err := m.Command.Run(m)
 	if err == ErrSilence {
 		return nil, err
 	}
@@ -302,7 +302,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, fmt.Errorf("failed to run command '%v': %v", m.Command.Path, err)
 	}
 
-	return m.Write(resp, usrErr)
+	return m.Write(resp, urr)
 }
 
 func (m *Message) Usage() any {
