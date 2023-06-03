@@ -30,8 +30,7 @@ type Entry struct {
 var Hooks = gosafe.Map[string, *Entry]{}
 
 var (
-	ErrHookNotFound   = errors.New("Wasn't monitoring, what are you even trynna do??")
-	ErrPersonNotFound = errors.New("Person's voice has not been set.")
+	ErrHookNotFound = errors.New("Wasn't monitoring, what are you even trynna do??")
 )
 
 var Voices = []string{
