@@ -307,11 +307,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 		tx.place = true
 	}
 
-	query := fmt.Sprintf(`
-		SELECT %s
-		FROM settings_place
-		WHERE place = $1
-	`, col)
+	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1 FOR UPDATE`, col)
 
 	var val any
 	err := tx.tx.QueryRow(query, place).Scan(&val)
@@ -349,9 +345,6 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 }
 
 func (db *SQLDB) PlaceGet(col string, place int64) Val {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
 	tx, err := db.Begin()
 	if err != nil {
 		return Val{}
@@ -366,9 +359,6 @@ func (db *SQLDB) PlaceGet(col string, place int64) Val {
 }
 
 func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -472,11 +462,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 		tx.person = true
 	}
 
-	query := fmt.Sprintf(`
-		SELECT %s
-		FROM settings_person
-		WHERE person = $1 and place = $2
-	`, col)
+	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2 FOR UPDATE`, col)
 	row := tx.tx.QueryRow(query, person, place)
 
 	var val any
@@ -518,9 +504,6 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 }
 
 func (db *SQLDB) PersonGet(col string, person, place int64) Val {
-	db.Lock.RLock()
-	defer db.Lock.RUnlock()
-
 	tx, err := db.Begin()
 	if err != nil {
 		return Val{}
@@ -535,9 +518,6 @@ func (db *SQLDB) PersonGet(col string, person, place int64) Val {
 }
 
 func (db *SQLDB) PersonSet(col string, person, place int64, val any) error {
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
 	tx, err := db.Begin()
 	if err != nil {
 		return err
