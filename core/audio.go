@@ -2,6 +2,7 @@ package core
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"os/exec"
 	"strconv"
@@ -111,4 +112,11 @@ func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
 		}
 	}()
 	return AudioProcessBuffer(sp, pipe, st)
+}
+
+// AudioProcessBytes works exactly like AudioProcessBuffer except it accepts a
+// slice of bytes instead of a buffer. Provided just for convenience.
+func AudioProcessBytes(sp AudioSpeaker, b []byte, st *AudioState) error {
+	buf := io.NopCloser(bytes.NewReader(b))
+	return AudioProcessBuffer(sp, buf, st)
 }

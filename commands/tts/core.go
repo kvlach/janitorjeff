@@ -1,7 +1,6 @@
 package tts
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -213,8 +212,7 @@ func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, t
 			state := &core.AudioState{}
 			state.Set(core.AudioPlay)
 
-			buf := io.NopCloser(bytes.NewReader(audio))
-			if err := core.AudioProcessBuffer(sp, buf, state); err != nil {
+			if err := core.AudioProcessBytes(sp, audio, state); err != nil {
 				log.Error().Err(err).Msg("failed to process audio buffer")
 				return
 			} else {
