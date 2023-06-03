@@ -85,8 +85,7 @@ func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) er
 	}
 	defer ffmpeg.Process.Kill()
 
-	sp.Say(ffmpegbuf, st)
-	return nil
+	return sp.Say(ffmpegbuf, st)
 }
 
 // AudioProcessCommand works exactly like AudioProcessBuffer except it accepts
