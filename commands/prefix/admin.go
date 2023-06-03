@@ -139,10 +139,10 @@ func (c adminAdd) Run(m *core.Message) (any, error, error) {
 		collision = fmt.Sprintf("'%s'", collision)
 	}
 
-	return c.err(urr, m, prefix, collision), urr, nil
+	return c.fmt(urr, m, prefix, collision), urr, nil
 }
 
-func (adminAdd) err(urr error, m *core.Message, prefix, collision string) any {
+func (adminAdd) fmt(urr error, m *core.Message, prefix, collision string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
@@ -245,10 +245,10 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 		prefix = fmt.Sprintf("'%s'", prefix)
 	}
 
-	return c.err(urr, m, prefix), urr, nil
+	return c.fmt(urr, m, prefix), urr, nil
 }
 
-func (adminDelete) err(urr error, m *core.Message, prefix string) any {
+func (adminDelete) fmt(urr error, m *core.Message, prefix string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)

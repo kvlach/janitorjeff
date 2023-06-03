@@ -74,7 +74,7 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	result, computer, urr := c.core(m)
 	if urr != nil {
-		return &dg.MessageEmbed{Description: c.err(urr)}, urr, nil
+		return &dg.MessageEmbed{Description: c.fmt(urr)}, urr, nil
 	}
 
 	var title string
@@ -108,7 +108,7 @@ func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 func (c normal) text(m *core.Message) (string, error, error) {
 	result, computer, urr := c.core(m)
 	if urr != nil {
-		return c.err(urr), urr, nil
+		return c.fmt(urr), urr, nil
 	}
 
 	var title string
@@ -134,7 +134,7 @@ func (c normal) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s %s", title, desc), nil, nil
 }
 
-func (normal) err(urr error) string {
+func (normal) fmt(urr error) string {
 	switch urr {
 	case errUnexpectedArgument:
 		return "Please choose on of the following: rock, paper or scissors."

@@ -139,7 +139,7 @@ func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, discord.PlaceInBackticks(item.Title)),
+		Description: c.fmt(urr, discord.PlaceInBackticks(item.Title)),
 	}
 	return embed, urr, nil
 }
@@ -150,10 +150,10 @@ func (c advancedPlay) text(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	title := fmt.Sprintf("'%s'", item.Title)
-	return c.err(urr, title), urr, nil
+	return c.fmt(urr, title), urr, nil
 }
 
-func (advancedPlay) err(urr error, title string) string {
+func (advancedPlay) fmt(urr error, title string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Added %s in the queue.", title)
@@ -237,7 +237,7 @@ func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -247,10 +247,10 @@ func (c advancedPause) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedPause) err(urr error) string {
+func (advancedPause) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Paused playing."
@@ -337,7 +337,7 @@ func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, error, error
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -347,10 +347,10 @@ func (c advancedResume) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedResume) err(urr error) string {
+func (advancedResume) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Resumed playing."
@@ -438,7 +438,7 @@ func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -448,10 +448,10 @@ func (c advancedSkip) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedSkip) err(urr error) string {
+func (advancedSkip) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Skipped."
@@ -596,7 +596,7 @@ func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, error, error
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -606,10 +606,10 @@ func (c advancedLoopOn) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedLoopOn) err(urr error) string {
+func (advancedLoopOn) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Current item is now on loop!"
@@ -695,7 +695,7 @@ func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr),
+		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
@@ -705,10 +705,10 @@ func (c advancedLoopOff) text(m *core.Message) (string, error, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(urr), urr, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedLoopOff) err(urr error) string {
+func (advancedLoopOff) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Turned looping off."
@@ -794,7 +794,7 @@ func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 		return nil, nil, err
 	}
 	if urr != nil {
-		return &dg.MessageEmbed{Description: c.err(urr)}, urr, nil
+		return &dg.MessageEmbed{Description: c.fmt(urr)}, urr, nil
 	}
 
 	embed := &dg.MessageEmbed{
@@ -815,12 +815,12 @@ func (c advancedQueue) text(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 	if urr != nil {
-		return c.err(urr), urr, nil
+		return c.fmt(urr), urr, nil
 	}
 	return strings.Join(titles, "  ||  "), nil, nil
 }
 
-func (advancedQueue) err(urr error) string {
+func (advancedQueue) fmt(urr error) string {
 	switch urr {
 	case ErrNotPlaying:
 		return "Not playing anything, the queue is empty."

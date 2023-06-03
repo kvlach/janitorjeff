@@ -166,7 +166,7 @@ func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, trigger),
+		Description: c.fmt(urr, trigger),
 	}
 
 	return embed, urr, nil
@@ -180,10 +180,10 @@ func (c advancedAdd) text(m *core.Message) (string, error, error) {
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(urr, trigger), urr, nil
+	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedAdd) err(urr error, trigger string) string {
+func (advancedAdd) fmt(urr error, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been added.", trigger)
@@ -286,7 +286,7 @@ func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, trigger),
+		Description: c.fmt(urr, trigger),
 	}
 
 	return embed, urr, nil
@@ -300,10 +300,10 @@ func (c advancedEdit) text(m *core.Message) (string, error, error) {
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(urr, trigger), urr, nil
+	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedEdit) err(urr error, trigger string) string {
+func (advancedEdit) fmt(urr error, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
@@ -404,7 +404,7 @@ func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(urr, trigger),
+		Description: c.fmt(urr, trigger),
 	}
 
 	return embed, urr, nil
@@ -418,10 +418,10 @@ func (c advancedDelete) text(m *core.Message) (string, error, error) {
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(urr, trigger), urr, nil
+	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedDelete) err(urr error, trigger string) string {
+func (advancedDelete) fmt(urr error, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been deleted.", trigger)

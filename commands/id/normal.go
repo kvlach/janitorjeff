@@ -74,7 +74,7 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 
 func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	id, err := c.core(m)
-	resp, urr := c.err(err, id)
+	resp, urr := c.fmt(err, id)
 	embed := &dg.MessageEmbed{
 		Description: resp,
 	}
@@ -83,11 +83,11 @@ func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 
 func (c normal) text(m *core.Message) (string, error, error) {
 	id, err := c.core(m)
-	resp, urr := c.err(err, id)
+	resp, urr := c.fmt(err, id)
 	return resp, urr, nil
 }
 
-func (normal) err(err error, id string) (string, error) {
+func (normal) fmt(err error, id string) (string, error) {
 	var urr error
 	if err != nil {
 		urr = errIDNotFound
