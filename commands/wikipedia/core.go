@@ -3,7 +3,7 @@ package wikipedia
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -37,7 +37,7 @@ func Search(query string) (page, error, error) {
 		return page{}, nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return page{}, nil, err
 	}
