@@ -253,9 +253,9 @@ func Time(when string, person, place int64) (time.Time, error, error) {
 }
 
 func Timestamp(when string, person, place int64) (time.Time, error, error) {
-	t, usrErr, err := Time(when, person, place)
-	if usrErr != nil || err != nil {
-		return time.Time{}, usrErr, err
+	t, urr, err := Time(when, person, place)
+	if urr != nil || err != nil {
+		return time.Time{}, urr, err
 	}
 	return t, nil, nil
 }
@@ -278,9 +278,9 @@ func TimezoneDelete(person, place int64) error {
 }
 
 func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
-	t, usrErr, err := Time(when, person, placeLogical)
-	if usrErr != nil || err != nil {
-		return t, -1, usrErr, err
+	t, urr, err := Time(when, person, placeLogical)
+	if urr != nil || err != nil {
+		return t, -1, urr, err
 	}
 
 	if t.Before(time.Now()) {

@@ -293,8 +293,8 @@ func (t *Twitch) Ping(msg any, _ error) (*core.Message, error) {
 	return t.send(msg, mention)
 }
 
-func (t *Twitch) Write(msg any, usrErr error) (*core.Message, error) {
-	return t.Ping(msg, usrErr)
+func (t *Twitch) Write(msg any, urr error) (*core.Message, error) {
+	return t.Ping(msg, urr)
 }
 
 func (t *Twitch) Natural(msg any, _ error) (*core.Message, error) {

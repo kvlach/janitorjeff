@@ -58,7 +58,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (resp any, usrErr error, err error) {
+func (admin) Run(m *core.Message) (resp any, urr error, err error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 

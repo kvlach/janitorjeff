@@ -84,9 +84,9 @@ func (advanced) Init() error {
 			return
 		}
 
-		id, usrErr, err := RedeemGet(place)
-		if usrErr != nil || err != nil {
-			log.Error().Err(err).Interface("usrErr", usrErr).Msg("failed to get event id")
+		id, urr, err := RedeemGet(place)
+		if urr != nil || err != nil {
+			log.Error().Err(err).Interface("urr", urr).Msg("failed to get event id")
 			return
 		}
 
@@ -130,7 +130,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (resp any, usrErr error, err error) {
+func (advanced) Run(m *core.Message) (resp any, urr error, err error) {
 	return m.Usage(), core.ErrMissingArgs, nil
 }
 
@@ -267,7 +267,7 @@ func (advancedOff) Init() error {
 	return nil
 }
 
-func (c advancedOff) Run(m *core.Message) (resp any, usrErr error, err error) {
+func (c advancedOff) Run(m *core.Message) (resp any, urr error, err error) {
 	if err := c.core(m); err != nil {
 		return nil, nil, err
 	}
@@ -468,21 +468,21 @@ func (advancedRedeemShow) Init() error {
 }
 
 func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
-	u, usrErr, err := c.core(m)
+	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	return c.fmt(u, usrErr), usrErr, nil
+	return c.fmt(u, urr), urr, nil
 }
 
-func (advancedRedeemShow) fmt(u uuid.UUID, usrErr error) string {
-	switch usrErr {
+func (advancedRedeemShow) fmt(u uuid.UUID, urr error) string {
+	switch urr {
 	case nil:
 		return "The streak tracking redeem is set to: " + u.String()
 	case ErrRedeemNotSet:
 		return "The streak tracking redeem has not been set."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

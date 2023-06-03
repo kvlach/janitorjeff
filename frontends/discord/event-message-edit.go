@@ -75,7 +75,7 @@ func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
 	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
 }
 
-func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, error) {
+func (d *MessageEdit) send(msg any, urr error, ping bool) (*core.Message, error) {
 	rdbKey := rdbMessageReplyToKeyPrefix + d.Message.ID
 
 	switch t := msg.(type) {
@@ -91,27 +91,27 @@ func (d *MessageEdit) send(msg any, usrErr error, ping bool) (*core.Message, err
 		embed := msg.(*dg.MessageEmbed)
 		id, err := core.RDB.Get(ctx, rdbKey).Result()
 		if err != nil {
-			return sendEmbed(d.Message.Message, embed, usrErr, ping)
+			return sendEmbed(d.Message.Message, embed, urr, ping)
 		}
-		return editEmbed(d.Message.Message, embed, usrErr, id)
+		return editEmbed(d.Message.Message, embed, urr, id)
 
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
 }
 
-func (d *MessageEdit) Send(msg any, usrErr error) (*core.Message, error) {
-	return d.send(msg, usrErr, false)
+func (d *MessageEdit) Send(msg any, urr error) (*core.Message, error) {
+	return d.send(msg, urr, false)
 }
 
-func (d *MessageEdit) Ping(msg any, usrErr error) (*core.Message, error) {
-	return d.send(msg, usrErr, true)
+func (d *MessageEdit) Ping(msg any, urr error) (*core.Message, error) {
+	return d.send(msg, urr, true)
 }
 
-func (d *MessageEdit) Write(msg any, usrErr error) (*core.Message, error) {
-	return d.Send(msg, usrErr)
+func (d *MessageEdit) Write(msg any, urr error) (*core.Message, error) {
+	return d.Send(msg, urr)
 }
 
-func (d *MessageEdit) Natural(msg any, usrErr error) (*core.Message, error) {
-	return d.Send(msg, usrErr)
+func (d *MessageEdit) Natural(msg any, urr error) (*core.Message, error) {
+	return d.Send(msg, urr)
 }

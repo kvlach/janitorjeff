@@ -158,33 +158,33 @@ func (c advancedAdd) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return nil, usrErr, err
+		return nil, urr, err
 	}
 
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, trigger),
+		Description: c.err(urr, trigger),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedAdd) text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return "", usrErr, err
+		return "", urr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(usrErr, trigger), usrErr, nil
+	return c.err(urr, trigger), urr, nil
 }
 
-func (advancedAdd) err(usrErr error, trigger string) string {
-	switch usrErr {
+func (advancedAdd) err(urr error, trigger string) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been added.", trigger)
 	case ErrTriggerExists:
@@ -210,8 +210,8 @@ func (c advancedAdd) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := Add(here, author, trigger, response)
-	return trigger, usrErr, err
+	urr, err := Add(here, author, trigger, response)
+	return trigger, urr, err
 }
 
 //////////
@@ -278,33 +278,33 @@ func (c advancedEdit) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return nil, usrErr, err
+		return nil, urr, err
 	}
 
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, trigger),
+		Description: c.err(urr, trigger),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedEdit) text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return "", usrErr, err
+		return "", urr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(usrErr, trigger), usrErr, nil
+	return c.err(urr, trigger), urr, nil
 }
 
-func (advancedEdit) err(usrErr error, trigger string) string {
-	switch usrErr {
+func (advancedEdit) err(urr error, trigger string) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
 	case ErrTriggerNotFound:
@@ -328,8 +328,8 @@ func (advancedEdit) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := Edit(here, author, trigger, response)
-	return trigger, usrErr, err
+	urr, err := Edit(here, author, trigger, response)
+	return trigger, urr, err
 }
 
 ////////////
@@ -396,33 +396,33 @@ func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return nil, usrErr, err
+		return nil, urr, err
 	}
 
 	trigger = discord.PlaceInBackticks(trigger)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, trigger),
+		Description: c.err(urr, trigger),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedDelete) text(m *core.Message) (string, error, error) {
-	trigger, usrErr, err := c.core(m)
+	trigger, urr, err := c.core(m)
 	if err != nil {
-		return "", usrErr, err
+		return "", urr, err
 	}
 
 	trigger = fmt.Sprintf("'%s'", trigger)
 
-	return c.err(usrErr, trigger), usrErr, nil
+	return c.err(urr, trigger), urr, nil
 }
 
-func (advancedDelete) err(usrErr error, trigger string) string {
-	switch usrErr {
+func (advancedDelete) err(urr error, trigger string) string {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been deleted.", trigger)
 	case ErrTriggerNotFound:
@@ -445,8 +445,8 @@ func (advancedDelete) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	usrErr, err := Delete(here, author, trigger)
-	return trigger, usrErr, err
+	urr, err := Delete(here, author, trigger)
+	return trigger, urr, err
 }
 
 //////////

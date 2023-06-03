@@ -88,7 +88,7 @@ type CommandStatic interface {
 	Init() error
 
 	// Run is function that is called to run the command.
-	Run(m *Message) (resp any, usrErr error, err error)
+	Run(m *Message) (resp any, urr error, err error)
 }
 
 // Format will return a string representation of the given command in a format

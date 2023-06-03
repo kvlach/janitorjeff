@@ -378,16 +378,16 @@ func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
 
 	// Clears the game
 	if gameName == "-" {
-		usrErr, err := h.EditChannelInfo(channelID, title, "0")
-		return "nothing", usrErr, err
+		urr, err := h.EditChannelInfo(channelID, title, "0")
+		return "nothing", urr, err
 	}
 
 	g, err := h.SearchGame(gameName)
 	if err != nil {
 		return "", nil, err
 	}
-	usrErr, err := h.EditChannelInfo(channelID, title, g.ID)
-	return g.Name, usrErr, err
+	urr, err := h.EditChannelInfo(channelID, title, g.ID)
+	return g.Name, urr, err
 }
 
 func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {

@@ -366,9 +366,9 @@ func sendText(m *dg.Message, text string, ping bool) (*core.Message, error) {
 	return (&Message{Message: resp}).Parse()
 }
 
-func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, usrErr error, ping bool) (*core.Message, error) {
+func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*core.Message, error) {
 	// TODO: implement message scrolling
-	embed = embedColor(embed, usrErr)
+	embed = embedColor(embed, urr)
 	resp, err := msgSend(m, "", embed, ping)
 	if err != nil {
 		return nil, err
@@ -416,8 +416,8 @@ func editText(m *dg.Message, id, text string) (*core.Message, error) {
 	return (&Message{Message: resp}).Parse()
 }
 
-func editEmbed(m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (*core.Message, error) {
-	embed = embedColor(embed, usrErr)
+func editEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, id string) (*core.Message, error) {
+	embed = embedColor(embed, urr)
 	resp, err := msgEdit(m, id, "", embed)
 	if err != nil {
 		return nil, err
@@ -425,14 +425,14 @@ func editEmbed(m *dg.Message, embed *dg.MessageEmbed, usrErr error, id string) (
 	return (&Message{Message: resp}).Parse()
 }
 
-func embedColor(embed *dg.MessageEmbed, usrErr error) *dg.MessageEmbed {
+func embedColor(embed *dg.MessageEmbed, urr error) *dg.MessageEmbed {
 	if embed.Color != 0 {
 		return embed
 	}
 
 	// default value of EmbedColor is 0 so even if it's not been set
 	// then everything should be ok
-	if usrErr == nil {
+	if urr == nil {
 		embed.Color = EmbedColor
 	} else {
 		embed.Color = EmbedErrColor

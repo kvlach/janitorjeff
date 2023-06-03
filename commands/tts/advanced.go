@@ -216,24 +216,24 @@ func (c advancedStop) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr := c.core(m)
+	urr := c.core(m)
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr),
+		Description: c.err(urr),
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedStop) text(m *core.Message) (string, error, error) {
-	usrErr := c.core(m)
-	return c.err(usrErr), usrErr, nil
+	urr := c.core(m)
+	return c.err(urr), urr, nil
 }
 
-func (c advancedStop) err(usrErr error) string {
-	switch usrErr {
+func (c advancedStop) err(urr error) string {
+	switch urr {
 	case nil:
 		return "Stopped monitoring."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 

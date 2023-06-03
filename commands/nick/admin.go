@@ -111,16 +111,16 @@ func (adminShow) Init() error {
 }
 
 func (c adminShow) Run(m *core.Message) (any, error, error) {
-	nick, usrErr, err := c.core(m)
+	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
-		return AdvancedShow.discord(nick, usrErr)
+		return AdvancedShow.discord(nick, urr)
 	default:
-		return AdvancedShow.text(nick, usrErr)
+		return AdvancedShow.text(nick, urr)
 	}
 }
 
@@ -130,9 +130,9 @@ func (adminShow) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	t, usrErr, err := mask.Show(author)
-	if usrErr != nil || err != nil {
-		return "", usrErr, err
+	t, urr, err := mask.Show(author)
+	if urr != nil || err != nil {
+		return "", urr, err
 	}
 
 	return Show(t.Person, t.Place)
@@ -193,16 +193,16 @@ func (c adminSet) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	nick, usrErr, err := c.core(m)
+	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
-		return AdvancedSet.discord(nick, usrErr)
+		return AdvancedSet.discord(nick, urr)
 	default:
-		return AdvancedSet.text(nick, usrErr)
+		return AdvancedSet.text(nick, urr)
 	}
 
 }
@@ -215,13 +215,13 @@ func (adminSet) core(m *core.Message) (string, error, error) {
 		return "", nil, err
 	}
 
-	t, usrErr, err := mask.Show(author)
-	if usrErr != nil || err != nil {
-		return "", usrErr, err
+	t, urr, err := mask.Show(author)
+	if urr != nil || err != nil {
+		return "", urr, err
 	}
 
-	usrErr, err = Set(nick, t.Person, t.Place)
-	return nick, usrErr, err
+	urr, err = Set(nick, t.Person, t.Place)
+	return nick, urr, err
 }
 
 ////////////
@@ -275,12 +275,12 @@ func (adminDelete) Init() error {
 }
 
 func (c adminDelete) Run(m *core.Message) (any, error, error) {
-	usrErr, err := c.core(m)
+	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -297,9 +297,9 @@ func (adminDelete) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	t, usrErr, err := mask.Show(author)
-	if usrErr != nil || err != nil {
-		return usrErr, err
+	t, urr, err := mask.Show(author)
+	if urr != nil || err != nil {
+		return urr, err
 	}
 
 	return nil, Delete(t.Person, t.Place)

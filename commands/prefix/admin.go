@@ -125,7 +125,7 @@ func (adminAdd) Init() error {
 }
 
 func (c adminAdd) Run(m *core.Message) (any, error, error) {
-	prefix, collision, usrErr, err := c.core(m)
+	prefix, collision, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -139,11 +139,11 @@ func (c adminAdd) Run(m *core.Message) (any, error, error) {
 		collision = fmt.Sprintf("'%s'", collision)
 	}
 
-	return c.err(usrErr, m, prefix, collision), usrErr, nil
+	return c.err(urr, m, prefix, collision), urr, nil
 }
 
-func (adminAdd) err(usrErr error, m *core.Message, prefix, collision string) any {
-	switch usrErr {
+func (adminAdd) err(urr error, m *core.Message, prefix, collision string) any {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
 	case core.ErrMissingArgs:
@@ -153,7 +153,7 @@ func (adminAdd) err(usrErr error, m *core.Message, prefix, collision string) any
 	case ErrCustomCommandExists:
 		return fmt.Sprintf("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.", prefix, collision)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -178,8 +178,8 @@ func (adminAdd) core(m *core.Message) (string, string, error, error) {
 
 	scope := fs.scopeFlag
 
-	collision, usrErr, err := Add(prefix, t, scope)
-	return prefix, collision, usrErr, err
+	collision, urr, err := Add(prefix, t, scope)
+	return prefix, collision, urr, err
 }
 
 ////////////
@@ -233,7 +233,7 @@ func (adminDelete) Init() error {
 }
 
 func (c adminDelete) Run(m *core.Message) (any, error, error) {
-	prefix, usrErr, err := c.core(m)
+	prefix, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -245,11 +245,11 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 		prefix = fmt.Sprintf("'%s'", prefix)
 	}
 
-	return c.err(usrErr, m, prefix), usrErr, nil
+	return c.err(urr, m, prefix), urr, nil
 }
 
-func (adminDelete) err(usrErr error, m *core.Message, prefix string) any {
-	switch usrErr {
+func (adminDelete) err(urr error, m *core.Message, prefix string) any {
+	switch urr {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
 	case core.ErrMissingArgs:
@@ -266,7 +266,7 @@ func (adminDelete) err(usrErr error, m *core.Message, prefix string) any {
 		}
 		return fmt.Sprintf("Can't delete, %s is the only prefix left. If you wish to reset to the default prefixes run: %s", prefix, resetCmd)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -283,8 +283,8 @@ func (adminDelete) core(m *core.Message) (string, error, error) {
 	scope := fs.scopeFlag
 	prefix := args[0]
 
-	usrErr, err := Delete(prefix, core.All, scope)
-	return prefix, usrErr, err
+	urr, err := Delete(prefix, core.All, scope)
+	return prefix, urr, err
 }
 
 //////////

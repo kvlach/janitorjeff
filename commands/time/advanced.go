@@ -146,7 +146,7 @@ func (c advancedNow) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	now, cmdTzSet, usrErr, err := c.core(m)
+	now, cmdTzSet, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -154,23 +154,23 @@ func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	cmdTzSet = discord.PlaceInBackticks(cmdTzSet)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, m, now, cmdTzSet),
+		Description: c.err(urr, m, now, cmdTzSet),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedNow) text(m *core.Message) (string, error, error) {
-	now, cmdTzSet, usrErr, err := c.core(m)
+	now, cmdTzSet, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	cmdTzSet = fmt.Sprintf("'%s'", cmdTzSet)
-	return c.err(usrErr, m, now, cmdTzSet), usrErr, nil
+	return c.err(urr, m, now, cmdTzSet), urr, nil
 }
 
-func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet string) string {
-	switch usrErr {
+func (advancedNow) err(urr error, m *core.Message, now time.Time, cmdTzSet string) string {
+	switch urr {
 	case nil:
 		return now.Format(time.RFC1123)
 	case errTimezoneNotSet:
@@ -183,7 +183,7 @@ func (advancedNow) err(usrErr error, m *core.Message, now time.Time, cmdTzSet st
 	case errPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -207,8 +207,8 @@ func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
 		return time.Time{}, cmdTzSet, nil, err
 	}
 
-	now, usrErr, err := Now(person, here)
-	return now, cmdTzSet, usrErr, err
+	now, urr, err := Now(person, here)
+	return now, cmdTzSet, urr, err
 }
 
 /////////////
@@ -277,32 +277,32 @@ func (c advancedConvert) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedConvert) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, t),
+		Description: c.err(urr, t),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedConvert) text(m *core.Message) (string, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr, t), usrErr, nil
+	return c.err(urr, t), urr, nil
 }
 
-func (advancedConvert) err(usrErr error, t string) string {
-	switch usrErr {
+func (advancedConvert) err(urr error, t string) string {
+	switch urr {
 	case nil:
 		return t
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -378,17 +378,17 @@ func (c advancedTimestamp) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, t),
+		Description: c.err(urr, t),
 	}
 
-	if usrErr != nil {
-		return embed, usrErr, nil
+	if urr != nil {
+		return embed, urr, nil
 	}
 
 	embed.Footer = &dg.MessageEmbedFooter{
@@ -399,21 +399,21 @@ func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, error, er
 }
 
 func (c advancedTimestamp) text(m *core.Message) (string, error, error) {
-	t, usrErr, err := c.core(m)
+	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr, t), usrErr, nil
+	return c.err(urr, t), urr, nil
 }
 
-func (advancedTimestamp) err(usrErr error, t time.Time) string {
-	switch usrErr {
+func (advancedTimestamp) err(urr error, t time.Time) string {
+	switch urr {
 	case nil:
 		return fmt.Sprint(t.Unix())
 	case errInvalidTime:
 		return "I can't understand what date that is."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -660,7 +660,7 @@ func (c advancedTimezoneSet) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	tz, usrErr, err := c.core(m)
+	tz, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -668,23 +668,23 @@ func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, error, 
 	tz = discord.PlaceInBackticks(tz)
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr, m, tz),
+		Description: c.err(urr, m, tz),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
-	tz, usrErr, err := c.core(m)
+	tz, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
 	tz = fmt.Sprintf("'%s'", tz)
-	return c.err(usrErr, m, tz), usrErr, nil
+	return c.err(urr, m, tz), urr, nil
 }
 
-func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string {
-	switch usrErr {
+func (advancedTimezoneSet) err(urr error, m *core.Message, tz string) string {
+	switch urr {
 	case nil:
 		mention, err := m.Author.Mention()
 		if err != nil {
@@ -695,7 +695,7 @@ func (advancedTimezoneSet) err(usrErr error, m *core.Message, tz string) string 
 	case errTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -929,12 +929,12 @@ func (c advancedRemindAdd) Run(m *core.Message) (any, error, error) {
 		return m.Usage(), core.ErrMissingArgs, nil
 	}
 
-	t, id, usrErr, err := c.core(m)
+	t, id, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), nil, nil
 }
@@ -1044,28 +1044,28 @@ func (c advancedRemindDelete) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedRemindDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	usrErr, err := c.core(m)
+	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	embed := &dg.MessageEmbed{
-		Description: c.err(usrErr),
+		Description: c.err(urr),
 	}
 
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c advancedRemindDelete) text(m *core.Message) (string, error, error) {
-	usrErr, err := c.core(m)
+	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.err(usrErr), usrErr, nil
+	return c.err(urr), urr, nil
 }
 
-func (advancedRemindDelete) err(usrErr error) string {
-	switch usrErr {
+func (advancedRemindDelete) err(urr error) string {
+	switch urr {
 	case nil:
 		return "Deleted reminder."
 	case errReminderNotFound:
@@ -1073,7 +1073,7 @@ func (advancedRemindDelete) err(usrErr error) string {
 	case errInvalidRemindID:
 		return "The ID you provided is invalid, expected a number."
 	default:
-		return fmt.Sprint(usrErr)
+		return fmt.Sprint(urr)
 	}
 }
 
@@ -1151,12 +1151,12 @@ func (c advancedRemindList) Run(m *core.Message) (any, error, error) {
 }
 
 func (c advancedRemindList) discord(m *core.Message) (string, error, error) {
-	rs, usrErr, err := c.core(m)
+	rs, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	if usrErr != nil {
-		return fmt.Sprint(usrErr), usrErr, nil
+	if urr != nil {
+		return fmt.Sprint(urr), urr, nil
 	}
 
 	var resp strings.Builder

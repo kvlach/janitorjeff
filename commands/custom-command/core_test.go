@@ -48,20 +48,20 @@ func TestAdd(t *testing.T) {
 		custom_command.Advanced,
 	}
 
-	if usrErr, err := addCmd(trigger1); usrErr != nil || err != nil {
-		t.Fatalf("failed to create command '%s': usrErr = %v, err = %v", trigger1, usrErr, err)
+	if urr, err := addCmd(trigger1); urr != nil || err != nil {
+		t.Fatalf("failed to create command '%s': urr = %v, err = %v", trigger1, urr, err)
 	}
 
-	if usrErr, err := addCmd(trigger1); usrErr != custom_command.ErrTriggerExists || err != nil {
-		t.Fatalf("expected TriggerExists user error, got: usrErr = %v, err = %v", usrErr, err)
+	if urr, err := addCmd(trigger1); urr != custom_command.ErrTriggerExists || err != nil {
+		t.Fatalf("expected TriggerExists user error, got: urr = %v, err = %v", urr, err)
 	}
 
-	if usrErr, err := addCmd("$command"); usrErr != custom_command.ErrBuiltinCommand || err != nil {
-		t.Fatalf("expected BuiltinCommand user error, got: usrErr = %v, err = %v", usrErr, err)
+	if urr, err := addCmd("$command"); urr != custom_command.ErrBuiltinCommand || err != nil {
+		t.Fatalf("expected BuiltinCommand user error, got: urr = %v, err = %v", urr, err)
 	}
 
-	if usrErr, err := addCmd(trigger2); usrErr != nil || err != nil {
-		t.Fatalf("failed to add command '%s': usrErr = %v, err = %v", trigger2, usrErr, err)
+	if urr, err := addCmd(trigger2); urr != nil || err != nil {
+		t.Fatalf("failed to add command '%s': urr = %v, err = %v", trigger2, urr, err)
 	}
 
 	if resp, err := showResp(trigger1); resp != response || err != nil {
@@ -90,12 +90,12 @@ func TestList(t *testing.T) {
 }
 
 func TestEdit(t *testing.T) {
-	if usrErr, err := editCmd(trigger1); usrErr != nil || err != nil {
-		t.Fatalf("failed to edit trigger '%s' to response '%s': usrErr = %v, err = %v", trigger1, responseEdit, usrErr, err)
+	if urr, err := editCmd(trigger1); urr != nil || err != nil {
+		t.Fatalf("failed to edit trigger '%s' to response '%s': urr = %v, err = %v", trigger1, responseEdit, urr, err)
 	}
 
-	if usrErr, err := editCmd("random"); usrErr != custom_command.ErrTriggerNotFound || err != nil {
-		t.Fatalf("expected TriggerNotFound user error, got: usrErr = %v, err = %v", usrErr, err)
+	if urr, err := editCmd("random"); urr != custom_command.ErrTriggerNotFound || err != nil {
+		t.Fatalf("expected TriggerNotFound user error, got: urr = %v, err = %v", urr, err)
 	}
 
 	if resp, err := showResp(trigger1); resp != responseEdit || err != nil {
@@ -104,12 +104,12 @@ func TestEdit(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	if usrErr, err := rmCmd(trigger1); usrErr != nil || err != nil {
-		t.Fatalf("failed to delete trigger '%s', got: usrErr = %v, err = %v", trigger1, usrErr, err)
+	if urr, err := rmCmd(trigger1); urr != nil || err != nil {
+		t.Fatalf("failed to delete trigger '%s', got: urr = %v, err = %v", trigger1, urr, err)
 	}
 
-	if usrErr, err := rmCmd(trigger1); usrErr != custom_command.ErrTriggerNotFound || err != nil {
-		t.Fatalf("expected TriggerNotFound user error, got: usrErr = %v, err = %v", usrErr, err)
+	if urr, err := rmCmd(trigger1); urr != custom_command.ErrTriggerNotFound || err != nil {
+		t.Fatalf("expected TriggerNotFound user error, got: urr = %v, err = %v", urr, err)
 	}
 
 	triggers, err := custom_command.List(place)

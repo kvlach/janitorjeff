@@ -74,30 +74,30 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 
 func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	id, err := c.core(m)
-	resp, usrErr := c.err(err, id)
+	resp, urr := c.err(err, id)
 	embed := &dg.MessageEmbed{
 		Description: resp,
 	}
-	return embed, usrErr, nil
+	return embed, urr, nil
 }
 
 func (c normal) text(m *core.Message) (string, error, error) {
 	id, err := c.core(m)
-	resp, usrErr := c.err(err, id)
-	return resp, usrErr, nil
+	resp, urr := c.err(err, id)
+	return resp, urr, nil
 }
 
 func (normal) err(err error, id string) (string, error) {
-	var usrErr error
+	var urr error
 	if err != nil {
-		usrErr = errIDNotFound
+		urr = errIDNotFound
 	}
 
-	switch usrErr {
+	switch urr {
 	case nil:
 		return id, nil
 	default:
-		return fmt.Sprint(usrErr), usrErr
+		return fmt.Sprint(urr), urr
 	}
 }
 
