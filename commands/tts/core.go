@@ -179,7 +179,12 @@ func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, t
 				continue
 			}
 			if !con {
-				Stop(twitchUsername)
+				if err := Stop(twitchUsername); err != nil {
+					log.Error().Err(err).
+						Str("username", twitchUsername).
+						Msg("failed to stop monitoring")
+					return
+				}
 				return
 			}
 
