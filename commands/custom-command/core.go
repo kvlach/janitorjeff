@@ -15,7 +15,7 @@ var (
 
 // Check if a string corresponds to a command name. Doesn't check sub-commands.
 func isCommand(t core.CommandType, s string) bool {
-	for _, c := range *core.Commands {
+	for _, c := range core.Commands {
 		for _, n := range c.Names() {
 			if c.Type() == t && n == s {
 				return true

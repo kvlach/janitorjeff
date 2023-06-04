@@ -107,7 +107,7 @@ func main() {
 	})
 
 	core.Frontends = frontends.Frontends
-	core.Commands = &commands.Commands
+	core.Commands = commands.Commands
 	core.DB = db
 	core.Port = readVar("PORT")
 	core.VirtualHost = readVar("VIRTUAL_HOST")
