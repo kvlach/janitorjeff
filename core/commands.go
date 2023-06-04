@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Commands *CommandsStatic
+var Commands CommandsStatic
 
 type CommandType int
 
@@ -176,7 +176,7 @@ func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (Comman
 // In this case the prefix's subcommand "add" will be matched and returned.
 // Alongside it the index of the last valid command will be returned (in this
 // case the index of "add", which is 1).
-func (cmds *CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
+func (cmds CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0
