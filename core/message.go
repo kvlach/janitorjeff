@@ -295,8 +295,7 @@ func (m *Message) CommandRun() (*Message, error) {
 	if err != nil {
 		// passing an empty error in order to get any error specific rendering
 		// that might be supported
-		_, err = m.Write("Something went wrong...", errors.New(""))
-		if err != nil {
+		if _, err := m.Write("Something went wrong...", errors.New("")); err != nil {
 			return nil, err
 		}
 		return nil, fmt.Errorf("failed to run command '%v': %v", m.Command.Path, err)
