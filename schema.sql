@@ -185,6 +185,17 @@ CREATE TABLE cmd_customcommand_commands (
 
 ---------------------
 --                 --
+-- Command: Lens   --
+--                 --
+---------------------
+
+CREATE TABLE cmd_lens_directors (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+---------------------
+--                 --
 -- Command: Streak --
 --                 --
 ---------------------
