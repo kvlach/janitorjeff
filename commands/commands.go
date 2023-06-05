@@ -11,6 +11,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/commands/god"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/help"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/id"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/lens"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/mask"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/nick"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/paintball"
@@ -49,6 +50,8 @@ var Commands = core.CommandsStatic{
 	help.Admin,
 
 	id.Normal,
+
+	lens.Advanced,
 
 	mask.Admin,
 
