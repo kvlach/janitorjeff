@@ -44,7 +44,7 @@ func rmCmd(trigger string) (error, error) {
 func TestAdd(t *testing.T) {
 	core.Prefixes.Add(core.Advanced, "$")
 
-	core.Commands = &core.CommandsStatic{
+	core.Commands = core.CommandsStatic{
 		custom_command.Advanced,
 	}
 
