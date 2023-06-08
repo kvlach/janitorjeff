@@ -6,6 +6,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/apis/youtube"
 )
 
+//goland:noinspection GoErrorStringFormat
 var (
 	ErrVidNotFound     = errors.New("No video was found.")
 	ErrChannelNotFound = errors.New("No channel was found.")
