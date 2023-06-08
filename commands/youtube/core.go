@@ -2,6 +2,8 @@ package youtube
 
 import (
 	"errors"
+
+	"git.sr.ht/~slowtyper/janitorjeff/apis/youtube"
 )
 
 var (
@@ -12,19 +14,19 @@ var (
 // SearchVideo will automatically create a client and return the most relevant
 // completed video (not livestreams or premiers). Returns ErrVidNotFound if no
 // video was found.
-func SearchVideo(query string) (Video, error, error) {
-	client, err := New()
+func SearchVideo(query string) (youtube.Video, error, error) {
+	client, err := youtube.New()
 	if err != nil {
-		return Video{}, nil, err
+		return youtube.Video{}, nil, err
 	}
 
 	vids, err := client.SearchVideos(query, 1)
 	if err != nil {
-		return Video{}, nil, err
+		return youtube.Video{}, nil, err
 	}
 
 	if len(vids) == 0 {
-		return Video{}, ErrVidNotFound, nil
+		return youtube.Video{}, ErrVidNotFound, nil
 	}
 
 	return vids[0], nil, nil
@@ -32,18 +34,18 @@ func SearchVideo(query string) (Video, error, error) {
 
 // SearchChannel will automatically create a client and return the most relevant
 // channel. Returns ErrChannelNotFound if no channel was found.
-func SearchChannel(query string) (Channel, error, error) {
-	client, err := New()
+func SearchChannel(query string) (youtube.Channel, error, error) {
+	client, err := youtube.New()
 	if err != nil {
-		return Channel{}, nil, err
+		return youtube.Channel{}, nil, err
 	}
 
 	chs, err := client.SearchChannels(query, 1)
 	if err != nil {
-		return Channel{}, nil, err
+		return youtube.Channel{}, nil, err
 	}
 	if len(chs) == 0 {
-		return Channel{}, ErrChannelNotFound, nil
+		return youtube.Channel{}, ErrChannelNotFound, nil
 	}
 
 	return chs[0], nil, nil

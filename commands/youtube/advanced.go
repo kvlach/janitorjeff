@@ -3,6 +3,7 @@ package youtube
 import (
 	"fmt"
 
+	"git.sr.ht/~slowtyper/janitorjeff/apis/youtube"
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 
@@ -213,7 +214,7 @@ func (c advancedSearchVideo) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s | %s", vid.Title, vid.URL()), nil, nil
 }
 
-func (advancedSearchVideo) core(m *core.Message) (Video, error, error) {
+func (advancedSearchVideo) core(m *core.Message) (youtube.Video, error, error) {
 	return SearchVideo(m.RawArgs(0))
 }
 
@@ -311,7 +312,7 @@ func (c advancedSearchChannel) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s | %s", ch.Title, ch.URL()), nil, nil
 }
 
-func (advancedSearchChannel) err(urr error, ch Channel) string {
+func (advancedSearchChannel) err(urr error, ch youtube.Channel) string {
 	switch urr {
 	case nil:
 		return ch.URL()
@@ -320,6 +321,6 @@ func (advancedSearchChannel) err(urr error, ch Channel) string {
 	}
 }
 
-func (advancedSearchChannel) core(m *core.Message) (Channel, error, error) {
+func (advancedSearchChannel) core(m *core.Message) (youtube.Channel, error, error) {
 	return SearchChannel(m.RawArgs(0))
 }
