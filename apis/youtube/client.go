@@ -1,29 +1,23 @@
 package youtube
 
 import (
-	"net/http"
+	"context"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
-	"google.golang.org/api/googleapi/transport"
+	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
 type Client struct {
-	key     string
 	service *youtube.Service
 }
 
-// New returns a new youtube client using the key set in core.YouTubeKey.
+// New returns a new YouTube client using the key set in core.YouTubeKey.
 func New() (*Client, error) {
-	client := &http.Client{
-		Transport: &transport.APIKey{Key: core.YouTubeKey},
-	}
-
-	service, err := youtube.New(client)
+	service, err := youtube.NewService(context.Background(), option.WithAPIKey(core.YouTubeKey))
 	if err != nil {
 		return nil, err
 	}
-
-	return &Client{core.YouTubeKey, service}, nil
+	return &Client{service}, nil
 }
