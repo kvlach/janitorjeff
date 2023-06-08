@@ -13,3 +13,15 @@ func DirectorAdd(name string) error {
 
 	return err
 }
+
+func DirectorDelete(name string) error {
+	db := core.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	_, err := db.DB.Exec(`
+		DELETE FROM cmd_lens_directors
+		WHERE name = $1`, name)
+
+	return err
+}
