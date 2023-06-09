@@ -39,7 +39,7 @@ type StreamOffline struct {
 	Here Here
 }
 
-// EventLoop starts an infinite loop which handles all the events
+// EventLoop starts an infinite loop which handles all the incoming events
 func EventLoop() {
 	for {
 		select {
