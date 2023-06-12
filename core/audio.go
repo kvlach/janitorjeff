@@ -46,7 +46,11 @@ type AudioSpeaker interface {
 	Join() error
 
 	// Say sends audio. Must have connected to a voice channel first, otherwise
-	// returns an error.
+	// returns an error. Will only ever have to handle the following states:
+	//
+	//	- AudioPlay, the default state, keep sending audio
+	//	- AudioPause, pause the audio and wait, if AudioPlay is received resume
+	//	- AudioStop, stop sending audio and return nil
 	Say(buf io.Reader, st <-chan AudioState) error
 
 	// AuthorDeafened returns true if the author that originally made the bot
