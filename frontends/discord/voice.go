@@ -39,7 +39,7 @@ func (sp *Speaker) Join() error {
 	return nil
 }
 
-func (sp *Speaker) Say(buf io.Reader, s *core.AudioState) error {
+func (sp *Speaker) Say(buf io.Reader, s <-chan core.AudioState) error {
 	return voicePlay(sp.VC, buf, s)
 }
 
@@ -150,7 +150,7 @@ func sendPCM(v *dg.VoiceConnection, pcm <-chan []int16) {
 	}
 }
 
-func play(v *dg.VoiceConnection, buf io.Reader, s *core.AudioState) {
+func play(v *dg.VoiceConnection, buf io.Reader, st <-chan core.AudioState) {
 	if err := v.Speaking(true); err != nil {
 		log.Debug().Err(err).Msg("Couldn't set speaking to true")
 	}
@@ -170,9 +170,16 @@ func play(v *dg.VoiceConnection, buf io.Reader, s *core.AudioState) {
 		exit <- true
 	}()
 
+	state := core.AudioPlay
+	go func() {
+		for {
+			state = <-st
+		}
+	}()
+
 	for {
-		switch s.Get() {
-		case core.AudioPlay, core.AudioLoop:
+		switch state {
+		case core.AudioPlay:
 			audiobuf := make([]int16, frameSize*channels)
 			err := binary.Read(buf, binary.LittleEndian, &audiobuf)
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -191,7 +198,7 @@ func play(v *dg.VoiceConnection, buf io.Reader, s *core.AudioState) {
 	}
 }
 
-func voicePlay(v *dg.VoiceConnection, buf io.Reader, s *core.AudioState) error {
+func voicePlay(v *dg.VoiceConnection, buf io.Reader, s <-chan core.AudioState) error {
 	if v == nil {
 		return errors.New("not connected to a voice channel")
 	}

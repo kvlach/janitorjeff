@@ -226,7 +226,7 @@ func (i *InteractionCreate) Join() error {
 	return nil
 }
 
-func (i *InteractionCreate) Say(buf io.Reader, s *core.AudioState) error {
+func (i *InteractionCreate) Say(buf io.Reader, s <-chan core.AudioState) error {
 	return voicePlay(i.VC, buf, s)
 }
 

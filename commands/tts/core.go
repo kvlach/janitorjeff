@@ -23,8 +23,7 @@ type Message struct {
 
 type Entry struct {
 	HookID int
-	State  *core.AudioState
-	Queue  *gosafe.Slice[Message]
+	Player *core.AudioPlayer[Message]
 }
 
 var Hooks = gosafe.Map[string, *Entry]{}
@@ -155,80 +154,6 @@ func TTS(voice, text string) ([]byte, error) {
 	return decoded, nil
 }
 
-// Play will, if necessary join the appropriate voice channel, and start playing
-// the TTS specified by text.
-func Play(sp core.AudioSpeaker, q *gosafe.Slice[Message], st *core.AudioState, twitchUsername string) {
-	for {
-		switch st.Get() {
-		case core.AudioPlay:
-			if q.Len() == 0 {
-				continue
-			}
-
-			msg := q.Get(0)
-			q.DeleteStable(0)
-
-			con, err := sp.AuthorConnected()
-			log.Debug().
-				Err(err).
-				Bool("connected", con).
-				Msg("checked if author is still connected")
-
-			if err != nil {
-				continue
-			}
-			if !con {
-				if err := Stop(twitchUsername); err != nil {
-					log.Error().Err(err).
-						Str("username", twitchUsername).
-						Msg("failed to stop monitoring")
-					return
-				}
-				return
-			}
-
-			deaf, err := sp.AuthorDeafened()
-
-			log.Debug().
-				Err(err).
-				Bool("deaf", deaf).
-				Msg("checked if author is deafened")
-
-			if err != nil || deaf {
-				continue
-			}
-			audio, err := TTS(msg.Voice, msg.Text)
-			if err != nil {
-				log.Error().Err(err).Msg("failed to get tts audio")
-				continue
-			} else {
-				log.Debug().Msg("got tts audio")
-			}
-
-			err = sp.Join()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to join speaker")
-				continue
-			} else {
-				log.Debug().Msg("speaker joined")
-			}
-
-			state := &core.AudioState{}
-			state.Set(core.AudioPlay)
-
-			if err := core.AudioProcessBytes(sp, audio, state); err != nil {
-				log.Error().Err(err).Msg("failed to process audio buffer")
-				return
-			} else {
-				log.Debug().Msg("played audio buffer")
-			}
-		case core.AudioStop:
-			log.Debug().Msg("exiting loop")
-			return
-		}
-	}
-}
-
 // Start will create a hook and will monitor all incoming messages, if they
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
@@ -290,19 +215,77 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			Text:  m.Raw,
 		}
 		log.Debug().Interface("msg", msg).Msg("appending message to queue")
-		entry.Queue.Append(msg)
+		entry.Player.Append(msg)
 	})
-
-	st := &core.AudioState{}
-	st.Set(core.AudioPlay)
 
 	entry := &Entry{
 		HookID: id,
-		State:  st,
-		Queue:  &gosafe.Slice[Message]{},
+		Player: &core.AudioPlayer[Message]{},
 	}
+
+	entry.Player.HandlePlay(func(msg Message, st <-chan core.AudioState) error {
+		con, err := sp.AuthorConnected()
+		log.Debug().
+			Err(err).
+			Bool("connected", con).
+			Msg("checked if author is still connected")
+
+		if err != nil {
+			return err
+		}
+		if !con {
+			if err := Stop(twitchUsername); err != nil {
+				log.Error().Err(err).
+					Str("username", twitchUsername).
+					Msg("failed to stop monitoring")
+				return err
+			}
+			return errors.New("not connected")
+		}
+
+		deaf, err := sp.AuthorDeafened()
+
+		log.Debug().
+			Err(err).
+			Bool("deaf", deaf).
+			Msg("checked if author is deafened")
+
+		if err != nil {
+			return err
+		}
+		if deaf {
+			return errors.New("author is deafened")
+		}
+
+		audio, err := TTS(msg.Voice, msg.Text)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get tts audio")
+			return err
+		} else {
+			log.Debug().Msg("got tts audio")
+		}
+
+		err = sp.Join()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to join speaker")
+			return err
+		} else {
+			log.Debug().Msg("speaker joined")
+		}
+
+		if err := core.AudioProcessBytes(sp, audio, st); err != nil {
+			log.Error().Err(err).Msg("failed to process audio buffer")
+			return err
+		} else {
+			log.Debug().Msg("played audio buffer")
+		}
+
+		return nil
+	})
+
+	go entry.Player.Start()
+
 	Hooks.Set(twitchUsername, entry)
-	go Play(sp, entry.Queue, entry.State, twitchUsername)
 }
 
 // Stop will delete the hook created by Start. Returns ErrHookNotFound if the
@@ -312,7 +295,7 @@ func Stop(twitchUsername string) error {
 	if !ok {
 		return ErrHookNotFound
 	}
-	entry.State.Set(core.AudioStop)
+	entry.Player.Stop()
 	core.EventMessageHooks.Delete(entry.HookID)
 	Hooks.Delete(twitchUsername)
 	return nil

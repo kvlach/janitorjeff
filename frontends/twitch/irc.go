@@ -329,7 +329,7 @@ func (t *Twitch) Join() error {
 	return nil
 }
 
-func (t *Twitch) Say(io.Reader, *core.AudioState) error {
+func (t *Twitch) Say(io.Reader, <-chan core.AudioState) error {
 	return nil
 }
 

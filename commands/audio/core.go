@@ -26,40 +26,7 @@ type Item struct {
 	Title string `json:"title"`
 }
 
-type Playing struct {
-	State *core.AudioState
-	Queue *gosafe.Slice[Item]
-}
-
-var playing = gosafe.Map[int64, *Playing]{}
-
-func stream(sp core.AudioSpeaker, p *Playing, place int64) {
-	for {
-		if p.Queue.Len() == 0 {
-			playing.Delete(place)
-			return
-		}
-
-		switch p.State.Get() {
-		case core.AudioPlay, core.AudioLoop:
-			// Audio only format might not exist in which case we grab the
-			// whole thing and let ffmpeg extract the audio
-			ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", p.Queue.Get(0).URL)
-			if err := core.AudioProcessCommand(sp, ytdl, p.State); err != nil {
-				log.Error().Err(err).Msg("failed to stream audio")
-				return
-			}
-			if p.State.Get() != core.AudioLoop {
-				p.Queue.DeleteStable(0)
-			}
-		case core.AudioStop:
-			// Stop state means that the skip command was executed and so we
-			// set the state to Play in order for the next item in the queue to
-			// start
-			p.State.Set(core.AudioPlay)
-		}
-	}
-}
+var playing = gosafe.Map[int64, *core.AudioPlayer[Item]]{}
 
 func GetInfo(url string) (Item, error) {
 	ytdl := exec.Command("yt-dlp", "-j", url)
@@ -112,7 +79,7 @@ func Play(args []string, sp core.AudioSpeaker, place int64) (Item, error, error)
 	}
 
 	if p, ok := playing.Get(place); ok {
-		p.Queue.Append(item)
+		p.Append(item)
 		return item, nil, nil
 	}
 
@@ -121,18 +88,22 @@ func Play(args []string, sp core.AudioSpeaker, place int64) (Item, error, error)
 		return item, nil, err
 	}
 
-	state := &core.AudioState{}
-	state.Set(core.AudioPlay)
+	p := &core.AudioPlayer[Item]{}
+	p.Append(item)
+	p.HandlePlay(func(item Item, st <-chan core.AudioState) error {
+		// Audio only format might not exist in which case we grab the
+		// whole thing and let ffmpeg extract the audio
+		ytdl := exec.Command("yt-dlp", "-f", "bestaudio/best", "-o", "-", item.URL)
+		if err := core.AudioProcessCommand(sp, ytdl, st); err != nil {
+			log.Error().Err(err).Msg("failed to stream audio")
+			return err
+		}
+		return nil
+	})
 
-	queue := &gosafe.Slice[Item]{}
-	queue.Append(item)
-
-	p := &Playing{
-		State: state,
-		Queue: queue,
-	}
-	go stream(sp, p, place)
 	playing.Set(place, p)
+
+	go p.Start()
 
 	return item, nil, nil
 }
@@ -145,10 +116,10 @@ func Pause(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	if p.State.Get() != core.AudioPlay {
+	if p.Current() != core.AudioPlay {
 		return ErrNotPlaying
 	}
-	p.State.Set(core.AudioPause)
+	p.Pause()
 	return nil
 }
 
@@ -160,10 +131,10 @@ func Resume(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	if p.State.Get() != core.AudioPause {
+	if p.Current() != core.AudioPause {
 		return ErrNotPaused
 	}
-	p.State.Set(core.AudioPlay)
+	p.Play()
 	return nil
 }
 
@@ -175,7 +146,7 @@ func Skip(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	p.State.Set(core.AudioStop)
+	p.Stop()
 	return nil
 }
 
@@ -186,7 +157,7 @@ func LoopOn(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	p.State.Set(core.AudioLoop)
+	p.LoopAll()
 	return nil
 }
 
@@ -198,10 +169,10 @@ func LoopOff(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	if p.State.Get() != core.AudioLoop {
+	if p.Current() != core.AudioLoopAll {
 		return ErrNotLooping
 	}
-	p.State.Set(core.AudioPlay)
+	p.Play()
 	return nil
 }
 
@@ -213,14 +184,5 @@ func Queue(place int64) ([]Item, error) {
 	if !ok {
 		return nil, ErrNotPlaying
 	}
-
-	p.Queue.RLock()
-	defer p.Queue.RUnlock()
-
-	var items []Item
-	for i := 0; i < p.Queue.LenUnsafe(); i++ {
-		items = append(items, p.Queue.GetUnsafe(i))
-	}
-
-	return items, nil
+	return p.Queue(), nil
 }
