@@ -146,7 +146,7 @@ func Skip(place int64) error {
 	if !ok {
 		return ErrNotPlaying
 	}
-	p.Stop()
+	p.Skip()
 	return nil
 }
 
