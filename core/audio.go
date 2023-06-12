@@ -117,6 +117,8 @@ func (p *AudioPlayer[T]) Next() (T, bool) {
 
 func (p *AudioPlayer[T]) Start() {
 	p.stateQueue = make(chan AudioState)
+	// explicitly set default state
+	p.state = AudioPlay
 
 	go func() {
 		if p.play == nil {
