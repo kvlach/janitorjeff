@@ -6,29 +6,23 @@ import (
 	"io"
 	"os/exec"
 	"strconv"
+	"sync"
 
-	"git.sr.ht/~slowtyper/gosafe"
 	"github.com/rs/zerolog/log"
 )
 
+type AudioState int
+
 const (
-	AudioPlay int = iota
-	AudioLoop
+	AudioPlay AudioState = iota
+	AudioLoopAll
+	AudioLoopCurrent
 	AudioPause
 	AudioStop
+	AudioSkip
+	AudioSeek
+	AudioShuffle
 )
-
-// AudioState represents the current state of the audio (playing, paused, etc.).
-// A select with multiple cases isn't used because it chooses one pseudo-randomly.
-// So if the  goroutine is "slow" to check those channels, you might send a
-// value on both pause and resume (assuming they are buffered) so receiving from
-// both channels  could be ready, and resume could be chosen first, and in a
-// later iteration the pause when the goroutine should not be paused anymore.
-//
-// Source: https://stackoverflow.com/a/60490371
-type AudioState struct {
-	gosafe.Value[int]
-}
 
 type AudioSpeaker interface {
 	// Enabled returns true if the frontend supports voice chat that the bot can
@@ -53,7 +47,7 @@ type AudioSpeaker interface {
 
 	// Say sends audio. Must have connected to a voice channel first, otherwise
 	// returns an error.
-	Say(buf io.Reader, s *AudioState) error
+	Say(buf io.Reader, s <-chan AudioState) error
 
 	// AuthorDeafened returns true if the author that originally made the bot
 	// join the voice channel is currently deafened.
@@ -64,9 +58,143 @@ type AudioSpeaker interface {
 	AuthorConnected() (bool, error)
 }
 
+type AudioPlayer[T any] struct {
+	queue        []T
+	lock         sync.Mutex
+	state        AudioState
+	stateQueue   chan AudioState
+	stateCurrent chan AudioState
+	play         func(T, <-chan AudioState) error
+	loopAll      bool
+	loopCurrent  bool
+	index        int
+}
+
+func (p *AudioPlayer[T]) Queue() []T {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	tmp := make([]T, len(p.queue))
+	copy(tmp, p.queue)
+	return tmp
+}
+
+func (p *AudioPlayer[T]) Append(item T) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.queue = append(p.queue, item)
+}
+
+func (p *AudioPlayer[T]) Next() (T, bool) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	if len(p.queue) == 0 {
+		var none T
+		return none, true
+	}
+
+	if p.loopCurrent {
+		return p.queue[0], false
+	}
+
+	if p.loopAll {
+		p.index++
+		if p.index == len(p.queue) {
+			p.index = 0
+		}
+		next := p.queue[p.index]
+		return next, false
+	}
+
+	next := p.queue[0]
+	p.queue = append([]T{}, p.queue[1:]...)
+	return next, false
+}
+
+func (p *AudioPlayer[T]) Start() {
+	p.stateQueue = make(chan AudioState)
+
+	go func() {
+		if p.play == nil {
+			log.Debug().Msg("received play event without having a handler for it")
+			return
+		}
+
+		for {
+			current, skip := p.Next()
+			if skip {
+				continue
+			}
+			p.stateCurrent = make(chan AudioState)
+			if err := p.play(current, p.stateCurrent); err != nil {
+				log.Error().Err(err).Msg("failed to play item")
+			}
+		}
+	}()
+
+	for {
+		switch p.state = <-p.stateQueue; p.state {
+		case AudioPlay:
+			p.stateCurrent <- AudioPlay
+
+		case AudioLoopAll:
+			// TODO: check if loop current is on
+			p.loopAll = true
+
+		case AudioLoopCurrent:
+			// TODO: check if loop all is on
+			p.loopCurrent = true
+
+		case AudioPause:
+			log.Debug().Msg("received pause event")
+			p.stateCurrent <- AudioPause
+
+		case AudioStop:
+			log.Debug().Msg("received stop event")
+			p.stateCurrent <- AudioStop
+			return
+
+		case AudioSkip:
+			p.stateCurrent <- AudioStop
+		}
+	}
+}
+
+func (p *AudioPlayer[T]) Current() AudioState {
+	return p.state
+}
+
+func (p *AudioPlayer[T]) Play() {
+	p.stateQueue <- AudioPlay
+}
+
+func (p *AudioPlayer[T]) Pause() {
+	p.stateQueue <- AudioPause
+}
+
+func (p *AudioPlayer[T]) Stop() {
+	p.stateQueue <- AudioStop
+}
+
+func (p *AudioPlayer[T]) LoopAll() {
+	p.stateQueue <- AudioLoopAll
+}
+
+func (p *AudioPlayer[T]) LoopCurrent() {
+	p.stateQueue <- AudioLoopCurrent
+}
+
+func (p *AudioPlayer[T]) Skip() {
+	p.stateQueue <- AudioSkip
+}
+
+func (p *AudioPlayer[T]) HandlePlay(handler func(T, <-chan AudioState) error) {
+	p.play = handler
+}
+
 // AudioProcessBuffer will pipe audio coming from a buffer into ffmpeg and
 // transform into audio that the speaker can transmit.
-func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) error {
+func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st <-chan AudioState) error {
 	ffmpeg := exec.Command(
 		"ffmpeg",
 		"-i", "-",
@@ -98,7 +226,7 @@ func AudioProcessBuffer(sp AudioSpeaker, inBuf io.ReadCloser, st *AudioState) er
 
 // AudioProcessCommand works exactly like AudioProcessBuffer except it accepts
 // a command instead of a buffer. Provided just for convenience.
-func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
+func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st <-chan AudioState) error {
 	pipe, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -116,7 +244,7 @@ func AudioProcessCommand(sp AudioSpeaker, cmd *exec.Cmd, st *AudioState) error {
 
 // AudioProcessBytes works exactly like AudioProcessBuffer except it accepts a
 // slice of bytes instead of a buffer. Provided just for convenience.
-func AudioProcessBytes(sp AudioSpeaker, b []byte, st *AudioState) error {
+func AudioProcessBytes(sp AudioSpeaker, b []byte, st <-chan AudioState) error {
 	buf := io.NopCloser(bytes.NewReader(b))
 	return AudioProcessBuffer(sp, buf, st)
 }
