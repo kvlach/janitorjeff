@@ -7,19 +7,29 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type Event[T any] interface {
+	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
+
+	Hooks() *Hooks[T]
+}
+
 var (
 	EventMessage      = make(chan *Message)
-	EventMessageHooks = hooks[*Message]{}
+	EventMessageHooks = &Hooks[*Message]{}
 
 	EventRedeemClaim      = make(chan *RedeemClaim)
-	EventRedeemClaimHooks = hooks[*RedeemClaim]{}
+	EventRedeemClaimHooks = &Hooks[*RedeemClaim]{}
 
 	EventStreamOnline      = make(chan *StreamOnline)
-	EventStreamOnlineHooks = hooks[*StreamOnline]{}
+	EventStreamOnlineHooks = &Hooks[*StreamOnline]{}
 
 	EventStreamOffline      = make(chan *StreamOffline)
-	EventStreamOfflineHooks = hooks[*StreamOffline]{}
+	EventStreamOfflineHooks = &Hooks[*StreamOffline]{}
 )
+
+func (m *Message) Hooks() *Hooks[*Message] {
+	return EventMessageHooks
+}
 
 type RedeemClaim struct {
 	ID     string
@@ -29,14 +39,26 @@ type RedeemClaim struct {
 	Here   Here
 }
 
+func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
+	return EventRedeemClaimHooks
+}
+
 type StreamOnline struct {
 	When time.Time
 	Here Here
 }
 
+func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
+	return EventStreamOnlineHooks
+}
+
 type StreamOffline struct {
 	When time.Time
 	Here Here
+}
+
+func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {
+	return EventStreamOfflineHooks
 }
 
 // EventLoop starts an infinite loop which handles all the incoming events
@@ -51,7 +73,10 @@ func EventLoop() {
 				Msg("received message event")
 			EventMessageHooks.Run(m)
 			if _, err := m.CommandRun(); err != nil {
-				log.Debug().Err(err).Send()
+				log.Debug().
+					Err(err).
+					Interface("command", m.Command).
+					Msg("got error while running command")
 			}
 
 		case rc := <-EventRedeemClaim:
@@ -165,7 +190,7 @@ type hook[T any] struct {
 
 // Hooks are a list of functions that are applied one-by-one to incoming
 // events. All operations are thread safe.
-type hooks[T any] struct {
+type Hooks[T any] struct {
 	lock  sync.RWMutex
 	hooks []hook[T]
 
@@ -177,7 +202,7 @@ type hooks[T any] struct {
 
 // Register returns the hook's id which can be used to delete the hook by
 // calling the Delete method.
-func (hs *hooks[T]) Register(f func(T)) int {
+func (hs *Hooks[T]) Register(f func(T)) int {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
 
@@ -193,7 +218,7 @@ func (hs *hooks[T]) Register(f func(T)) int {
 
 // Delete will delete the hook with the given id. If the hook doesn't exist then
 // nothing happens.
-func (hs *hooks[T]) Delete(id int) {
+func (hs *Hooks[T]) Delete(id int) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
 
@@ -205,11 +230,37 @@ func (hs *hooks[T]) Delete(id int) {
 	}
 }
 
-func (hs *hooks[T]) Run(arg T) {
+func (hs *Hooks[T]) Run(arg T) {
 	hs.lock.RLock()
 	defer hs.lock.RUnlock()
 
 	for _, h := range hs.hooks {
 		h.Run(arg)
 	}
+}
+
+// EventAwait monitors incoming events until check is true or until timeout. If
+// nothing is matched then the returned object will be the default value of the
+// type.
+func EventAwait[T Event[T]](timeout time.Duration, check func(T) bool) T {
+	found := make(chan struct{})
+
+	var t T
+	h := t.Hooks()
+	id := h.Register(func(candidate T) {
+		if check(candidate) {
+			t = candidate
+			found <- struct{}{}
+		}
+	})
+
+	select {
+	case <-found:
+		break
+	case <-time.After(timeout):
+		break
+	}
+
+	h.Delete(id)
+	return t
 }

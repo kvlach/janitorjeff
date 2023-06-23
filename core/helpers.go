@@ -75,31 +75,6 @@ func OnlyOneBitSet(n int) bool {
 	return n&(n-1) == 0
 }
 
-// Await monitors incoming messages until check is true or until timeout. If
-// nothing is matched then the returned object will be nil.
-func Await(timeout time.Duration, check func(*Message) bool) *Message {
-	var m *Message
-
-	found := make(chan bool)
-
-	id := EventMessageHooks.Register(func(candidate *Message) {
-		if check(candidate) {
-			m = candidate
-			found <- true
-		}
-	})
-
-	select {
-	case <-found:
-		break
-	case <-time.After(timeout):
-		break
-	}
-
-	EventMessageHooks.Delete(id)
-	return m
-}
-
 func splitGraphemeClusters(text string, lenCnt func(string) int, lenLim int, parts []string) []string {
 	gr := uniseg.NewGraphemes(text)
 
