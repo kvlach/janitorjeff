@@ -46,7 +46,12 @@ func init() {
 
 func init() {
 	log.Debug().Msg("starting event loop")
-	go core.EventLoop()
+	// In order for the bot not to lag if handling a specific takes longer than
+	// virtually instantly, spawn multiple event loop handlers, Go guarantees
+	// that only one of the receivers will receive the channel data.
+	for i := 0; i < 20; i++ {
+		go core.EventLoop()
+	}
 }
 
 func readVar(name string) string {
