@@ -15,12 +15,12 @@ type AudioState int
 
 const (
 	AudioPlay AudioState = iota
-	AudioLoopAll
-	AudioLoopCurrent
 	AudioPause
 	AudioStop
-	AudioSkip
 	AudioSeek
+	AudioLoopAll
+	AudioLoopCurrent
+	AudioSkip
 	AudioShuffle
 )
 
@@ -143,14 +143,6 @@ func (p *AudioPlayer[T]) Start() {
 		case AudioPlay:
 			p.stateCurrent <- AudioPlay
 
-		case AudioLoopAll:
-			// TODO: check if loop current is on
-			p.loopAll = true
-
-		case AudioLoopCurrent:
-			// TODO: check if loop all is on
-			p.loopCurrent = true
-
 		case AudioPause:
 			log.Debug().Msg("received pause event")
 			p.stateCurrent <- AudioPause
@@ -160,8 +152,25 @@ func (p *AudioPlayer[T]) Start() {
 			p.stateCurrent <- AudioStop
 			return
 
+		case AudioSeek:
+
+		case AudioLoopAll:
+			// TODO: check if loop current is on
+			p.loopAll = true
+
+		case AudioLoopCurrent:
+			// TODO: check if loop all is on
+			p.loopCurrent = true
+
 		case AudioSkip:
 			p.stateCurrent <- AudioStop
+
+		case AudioShuffle:
+			p.lock.Lock()
+			Rand().Shuffle(len(p.queue), func(i, j int) {
+				p.queue[i], p.queue[j] = p.queue[j], p.queue[i]
+			})
+			p.lock.Unlock()
 		}
 	}
 }
@@ -182,6 +191,10 @@ func (p *AudioPlayer[T]) Stop() {
 	p.stateQueue <- AudioStop
 }
 
+func (p *AudioPlayer[T]) Seek() {
+	p.stateQueue <- AudioSeek
+}
+
 func (p *AudioPlayer[T]) LoopAll() {
 	p.stateQueue <- AudioLoopAll
 }
@@ -192,6 +205,10 @@ func (p *AudioPlayer[T]) LoopCurrent() {
 
 func (p *AudioPlayer[T]) Skip() {
 	p.stateQueue <- AudioSkip
+}
+
+func (p *AudioPlayer[T]) Shuffle() {
+	p.stateQueue <- AudioShuffle
 }
 
 func (p *AudioPlayer[T]) HandlePlay(handler func(T, <-chan AudioState) error) {
