@@ -1,8 +1,9 @@
 package core
 
 import (
-	"crypto/rand"
+	crand "crypto/rand"
 	"encoding/base64"
+	mrand "math/rand"
 	"net/url"
 	"regexp"
 	"strings"
@@ -31,7 +32,7 @@ func (s *States) Delete(token string) {
 
 func (s *States) generate() (string, error) {
 	b := make([]byte, 32)
-	_, err := rand.Read(b)
+	_, err := crand.Read(b)
 	if err != nil {
 		return "", err
 	}
@@ -153,4 +154,8 @@ func Clean(s string) string {
 	}
 
 	return b.String()
+}
+
+func Rand() *mrand.Rand {
+	return mrand.New(mrand.NewSource(time.Now().UnixNano()))
 }
