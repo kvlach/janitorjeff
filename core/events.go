@@ -61,7 +61,11 @@ func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {
 	return EventStreamOfflineHooks
 }
 
-// EventLoop starts an infinite loop which handles all the incoming events
+// EventLoop starts an infinite loop which handles all incoming events. It's
+// possible to have multiple instances running in separate goroutines (in order
+// for the bot not to lag when handling an event that takes longer than
+// virtually instantly), Golang guarantees that only one of the receivers will
+// receive the channel data.
 func EventLoop() {
 	for {
 		select {

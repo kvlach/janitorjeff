@@ -46,9 +46,6 @@ func init() {
 
 func init() {
 	log.Debug().Msg("starting event loop")
-	// In order for the bot not to lag when handling an event that takes longer
-	// than virtually instantly, spawn multiple event loop handlers, Golang
-	// guarantees that only one of the receivers will receive the channel data.
 	for i := 0; i < 20; i++ {
 		go core.EventLoop()
 	}
