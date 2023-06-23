@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"os"
 	"time"
 
@@ -123,8 +122,7 @@ func randomID() string {
 }
 
 func randomName() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return names[r.Intn(len(names))]
+	return names[core.Rand().Intn(len(names))]
 }
 
 func (tm *TestMessage) DiscordRandom() *TestMessage {

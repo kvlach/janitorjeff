@@ -1,8 +1,7 @@
 package rps
 
 import (
-	"math/rand"
-	"time"
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 const (
@@ -19,8 +18,7 @@ const (
 
 func run(player int) (int, int) {
 	var computer int
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	switch r.Intn(3) {
+	switch core.Rand().Intn(3) {
 	case 0:
 		computer = rock
 	case 1:
