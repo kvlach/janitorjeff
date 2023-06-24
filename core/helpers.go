@@ -64,7 +64,7 @@ func (s *States) New() (string, error) {
 
 	s.Append(state)
 	go func() {
-		time.Sleep(1 * time.Minute)
+		time.Sleep(10 * time.Minute)
 		s.Delete(state)
 	}()
 
