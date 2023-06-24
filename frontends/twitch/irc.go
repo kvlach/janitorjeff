@@ -2,7 +2,6 @@ package twitch
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"sync"
@@ -174,7 +173,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 		Author:   author,
 		Here:     here,
 		Client:   t,
-		Speaker:  t,
+		Speaker:  Speaker{},
 	}
 
 	return msg, nil
@@ -302,38 +301,4 @@ func (t *Twitch) Natural(msg any, _ error) (*core.Message, error) {
 		mention = "@" + t.message.User.DisplayName + " "
 	}
 	return t.send(msg, mention)
-}
-
-/////////////
-//         //
-// Speaker //
-//         //
-/////////////
-
-func (t *Twitch) Enabled() bool {
-	return false
-}
-
-func (t *Twitch) FrameRate() int {
-	return 0
-}
-
-func (t *Twitch) Channels() int {
-	return 0
-}
-
-func (t *Twitch) Join() error {
-	return nil
-}
-
-func (t *Twitch) Say(io.Reader, <-chan core.AudioState) error {
-	return nil
-}
-
-func (t *Twitch) AuthorDeafened() (bool, error) {
-	return false, nil
-}
-
-func (t *Twitch) AuthorConnected() (bool, error) {
-	return false, nil
 }
