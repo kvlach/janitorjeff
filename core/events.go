@@ -15,16 +15,16 @@ type Event[T any] interface {
 
 var (
 	EventMessage      = make(chan *Message)
-	EventMessageHooks = &Hooks[*Message]{}
+	EventMessageHooks = HooksNew[*Message](20)
 
 	EventRedeemClaim      = make(chan *RedeemClaim)
-	EventRedeemClaimHooks = &Hooks[*RedeemClaim]{}
+	EventRedeemClaimHooks = HooksNew[*RedeemClaim](5)
 
 	EventStreamOnline      = make(chan *StreamOnline)
-	EventStreamOnlineHooks = &Hooks[*StreamOnline]{}
+	EventStreamOnlineHooks = HooksNew[*StreamOnline](5)
 
 	EventStreamOffline      = make(chan *StreamOffline)
-	EventStreamOfflineHooks = &Hooks[*StreamOffline]{}
+	EventStreamOfflineHooks = HooksNew[*StreamOffline](5)
 )
 
 func (m *Message) Hooks() *Hooks[*Message] {
@@ -192,16 +192,44 @@ type hook[T any] struct {
 	Run func(T)
 }
 
+type hookData[T any] struct {
+	Hook hook[T]
+	Arg  T
+}
+
 // Hooks are a list of functions that are applied one-by-one to incoming
 // events. All operations are thread safe.
 type Hooks[T any] struct {
 	lock  sync.RWMutex
 	hooks []hook[T]
+	ch    chan hookData[T]
 
 	// Keeps track of the number of hooks added, is incremented every time a
 	// new hook is added, does not get decreased if a hook is removed. Used as
 	// a hook ID.
 	total int
+}
+
+// HooksNew generates a new Hooks object. Spawns n number of receiver functions
+// in their own goroutines.
+func HooksNew[T any](n int) *Hooks[T] {
+	hs := &Hooks[T]{}
+	hs.ch = make(chan hookData[T])
+
+	for i := 0; i < n; i++ {
+		go func() {
+			for {
+				data := <-hs.ch
+				log.Debug().
+					Int("hook-id", data.Hook.ID).
+					Interface("arg", data.Arg).
+					Msg("received data for hook")
+				data.Hook.Run(data.Arg)
+			}
+		}()
+	}
+
+	return hs
 }
 
 // Register returns the hook's id which can be used to delete the hook by
@@ -239,7 +267,7 @@ func (hs *Hooks[T]) Run(arg T) {
 	defer hs.lock.RUnlock()
 
 	for _, h := range hs.hooks {
-		h.Run(arg)
+		hs.ch <- hookData[T]{h, arg}
 	}
 }
 

@@ -74,59 +74,68 @@ func (advanced) Init() error {
 			return
 		}
 
-		// GPT3 can take a couple seconds to generate an answer which in turn
-		// makes the whole bot freeze, so we spawn a new goroutine
-		go func() {
-			tx, err := core.DB.Begin()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to begin transaction")
-				return
-			}
-			//goland:noinspection GoUnhandledErrorResult
-			defer tx.Rollback()
+		tx, err := core.DB.Begin()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to begin transaction")
+			return
+		}
+		//goland:noinspection GoUnhandledErrorResult
+		defer tx.Rollback()
 
-			if on, err := tx.PlaceGet("cmd_god_reply_on", here).Bool(); err != nil || !on {
-				log.Error().Err(err).Msg("reply not on, skipping")
-				return
-			}
+		// TODO: If the place settings have just been generated and added to
+		// the cache then we need a way to remove them from the cache in case
+		// the transaction gets rolled back. Otherwise, we end up in a situation
+		// where the cache thinks that the settings have already been generated
+		// but they in fact haven't, since the transaction got rolled back.
 
-			interval, err := tx.PlaceGet("cmd_god_reply_interval", here).Duration()
-			if err != nil {
-				return
-			}
-			last, err := tx.PlaceGet("cmd_god_reply_last", here).Time()
-			if err != nil {
-				return
-			}
-			diff := time.Now().UTC().Sub(last)
-			if interval > diff {
-				log.Debug().
-					Interface("interval", interval).
-					Interface("diff", diff).
-					Msg("shouldn't reply yet, skipping")
-				return
-			}
+		on, err := tx.PlaceGet("cmd_god_reply_on", here).Bool()
+		if err != nil {
+			log.Error().Err(err).Msg("reply not on, skipping")
+			return
+		}
+		if !on {
+			// Must commit in case the place settings haven't been generated before
+			tx.Commit()
+			return
+		}
 
-			resp, err := Talk(m.Raw)
-			if err != nil {
-				log.Debug().Err(err).Msg("failed to communicate with god")
-				return
-			}
+		interval, err := tx.PlaceGet("cmd_god_reply_interval", here).Duration()
+		if err != nil {
+			return
+		}
+		last, err := tx.PlaceGet("cmd_god_reply_last", here).Time()
+		if err != nil {
+			return
+		}
+		diff := time.Now().UTC().Sub(last)
+		if interval > diff {
+			log.Debug().
+				Interface("interval", interval).
+				Interface("diff", diff).
+				Msg("shouldn't reply yet, skipping")
+			tx.Commit()
+			return
+		}
 
-			if _, err := m.Client.Natural(resp, nil); err != nil {
-				log.Error().Err(err).Msg("failed to send message")
-				return
-			}
+		resp, err := Talk(m.Raw)
+		if err != nil {
+			log.Debug().Err(err).Msg("failed to communicate with god")
+			return
+		}
 
-			if err := tx.PlaceSet("cmd_god_reply_last", here, time.Now().UTC().Unix()); err != nil {
-				log.Debug().Err(err).Msg("error while trying to set reply")
-				return
-			}
+		if _, err := m.Client.Natural(resp, nil); err != nil {
+			log.Error().Err(err).Msg("failed to send message")
+			return
+		}
 
-			if err := tx.Commit(); err != nil {
-				log.Error().Err(err).Msg("couldn't commit")
-			}
-		}()
+		if err := tx.PlaceSet("cmd_god_reply_last", here, time.Now().UTC().Unix()); err != nil {
+			log.Debug().Err(err).Msg("error while trying to set reply")
+			return
+		}
+
+		if err := tx.Commit(); err != nil {
+			log.Error().Err(err).Msg("couldn't commit")
+		}
 	})
 
 	core.EventRedeemClaimHooks.Register(func(rc *core.RedeemClaim) {
