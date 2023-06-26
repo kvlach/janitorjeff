@@ -155,12 +155,12 @@ func (p *AudioPlayer[T]) Start() {
 		case AudioSeek:
 
 		case AudioLoopAll:
-			// TODO: check if loop current is on
 			p.loopAll = true
+			p.loopCurrent = false
 
 		case AudioLoopCurrent:
-			// TODO: check if loop all is on
 			p.loopCurrent = true
+			p.loopAll = false
 
 		case AudioSkip:
 			p.stateCurrent <- AudioStop
