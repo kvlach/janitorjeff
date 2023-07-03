@@ -117,7 +117,7 @@ func (a Author) Admin() (bool, error) {
 	return uid == a.roomID, nil
 }
 
-func (a Author) Mod() (bool, error) {
+func (a Author) Moderator() (bool, error) {
 	admin, err := a.Admin()
 	if err != nil {
 		return false, err

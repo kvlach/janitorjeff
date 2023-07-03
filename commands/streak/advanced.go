@@ -26,7 +26,7 @@ func (advanced) Permitted(m *core.Message) bool {
 	if m.Frontend.Type() != twitch.Type {
 		return false
 	}
-	mod, err := m.Author.Mod()
+	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
 		return false

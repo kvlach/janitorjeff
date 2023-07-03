@@ -20,7 +20,7 @@ func (advanced) Type() core.CommandType {
 }
 
 func (advanced) Permitted(m *core.Message) bool {
-	mod, err := m.Author.Mod()
+	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
 		return false

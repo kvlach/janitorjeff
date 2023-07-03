@@ -257,7 +257,7 @@ func (c advancedVoice) Type() core.CommandType {
 }
 
 func (c advancedVoice) Permitted(m *core.Message) bool {
-	mod, err := m.Author.Mod()
+	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
 		return false
@@ -527,7 +527,7 @@ func (c advancedSubOnly) Type() core.CommandType {
 }
 
 func (c advancedSubOnly) Permitted(m *core.Message) bool {
-	mod, err := m.Author.Mod()
+	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
 		return false
