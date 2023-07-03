@@ -214,7 +214,7 @@ func (advancedOn) core(m *core.Message) (error, error) {
 		return nil, err
 	}
 
-	return On(h, here, m.Here.ID())
+	return On(h, here, m.Here.IDExact())
 }
 
 /////////

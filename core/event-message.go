@@ -112,9 +112,13 @@ type Author interface {
 // the previous discord server example, it would be the channel's scope where
 // the message came from instead of the server's.
 type Here interface {
-	// ID returns the channel's ID, this should be a unique, static, identifier
-	// in that frontend.
-	ID() string
+	// IDExact returns the exact ID, this should be a unique, static,
+	// identifier in that frontend.
+	IDExact() string
+
+	// IDLogical returns the logical ID, this should be a unique, static,
+	// identifier for the frontend.
+	IDLogical() string
 
 	// Name return's the channel's name.
 	Name() string
