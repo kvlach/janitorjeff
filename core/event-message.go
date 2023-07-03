@@ -83,9 +83,9 @@ type Author interface {
 	// only if the author has basically every permission.
 	Admin() (bool, error)
 
-	// Mod checks if the author is considered a moderator. General rule of thumb
-	// is that if the author can ban people, then they are mods.
-	Mod() (bool, error)
+	// Moderator checks if the author is considered a moderator. General rule of
+	// thumb is that if the author can ban people, then they are mods.
+	Moderator() (bool, error)
 
 	// Subscriber returns true if the author is considered a subscriber. General
 	// rule of thumb is that if they are paying money in some way, then they are

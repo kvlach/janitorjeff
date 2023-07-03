@@ -186,7 +186,7 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			log.Error().Err(err).Msg("failed to check if author is a subscriber")
 			return
 		}
-		mod, err := m.Author.Mod()
+		mod, err := m.Author.Moderator()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to check if author is a mod")
 			return

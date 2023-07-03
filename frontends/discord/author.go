@@ -105,7 +105,7 @@ func (a *AuthorMessage) Admin() (bool, error) {
 	return isAdmin(a.GuildID, aid), nil
 }
 
-func (a *AuthorMessage) Mod() (bool, error) {
+func (a *AuthorMessage) Moderator() (bool, error) {
 	aid, err := a.ID()
 	if err != nil {
 		return false, err
@@ -176,7 +176,7 @@ func (a *AuthorInteraction) Admin() (bool, error) {
 	return isAdmin(a.GuildID, aid), nil
 }
 
-func (a *AuthorInteraction) Mod() (bool, error) {
+func (a *AuthorInteraction) Moderator() (bool, error) {
 	aid, err := a.ID()
 	if err != nil {
 		return false, err
