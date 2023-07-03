@@ -117,7 +117,7 @@ func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
 	}
 
 	game.Playing(here, true)
-	return c.playF(m.Here.ID(), here, rounds)
+	return c.playF(m.Here.IDExact(), here, rounds)
 }
 
 func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, error) {

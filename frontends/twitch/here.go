@@ -9,7 +9,11 @@ type Here struct {
 	RoomName string
 }
 
-func (h Here) ID() string {
+func (h Here) IDExact() string {
+	return h.RoomID
+}
+
+func (h Here) IDLogical() string {
 	return h.RoomID
 }
 
@@ -18,10 +22,10 @@ func (h Here) Name() string {
 }
 
 func (h Here) Scope() (int64, error) {
-	rdbKey := "frontend_twitch_scope_" + h.ID()
+	rdbKey := "frontend_twitch_scope_" + h.IDExact()
 
 	return core.CacheScope(rdbKey, func() (int64, error) {
-		return dbAddChannelSimple(h.ID(), h.Name())
+		return dbAddChannelSimple(h.IDExact(), h.Name())
 	})
 }
 
