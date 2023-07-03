@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -223,6 +224,17 @@ func (i *InteractionCreate) Join() error {
 		return err
 	}
 	i.VC = v
+	return nil
+}
+
+func (i *InteractionCreate) Leave() error {
+	if i.VC == nil {
+		return errors.New("not connected, can't disconnect")
+	}
+	if err := i.VC.Disconnect(); err != nil {
+		return err
+	}
+	i.VC = nil
 	return nil
 }
 

@@ -45,6 +45,10 @@ type AudioSpeaker interface {
 	// point).
 	Join() error
 
+	// Leave disconnects the bot from the connected to voice channel, if not
+	// connected to a voice channel then returns error.
+	Leave() error
+
 	// Say sends audio. Must have connected to a voice channel first, otherwise
 	// returns an error. Will only ever have to handle the following states:
 	//
