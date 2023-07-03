@@ -24,6 +24,10 @@ func (s Speaker) Join() error {
 	return nil
 }
 
+func (s Speaker) Leave() error {
+	return nil
+}
+
 func (s Speaker) Say(io.Reader, <-chan core.AudioState) error {
 	return nil
 }

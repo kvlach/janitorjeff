@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
@@ -22,8 +23,9 @@ type Message struct {
 }
 
 type Entry struct {
-	HookID int
-	Player *core.AudioPlayer[Message]
+	HookID  int
+	Speaker core.AudioSpeaker
+	Player  *core.AudioPlayer[Message]
 }
 
 var Hooks = gosafe.Map[string, *Entry]{}
@@ -158,6 +160,13 @@ func TTS(voice, text string) ([]byte, error) {
 // are from twitch and match the specified username then the the TTS audio will
 // be sent to the specified speaker.
 func Start(sp core.AudioSpeaker, twitchUsername string) {
+	if err := sp.Join(); err != nil {
+		log.Error().Err(err).Msg("failed to join speaker")
+		return
+	} else {
+		log.Debug().Msg("speaker joined")
+	}
+
 	id := core.EventMessageHooks.Register(func(m *core.Message) {
 		if m.Frontend.Type() != twitch.Frontend.Type() || m.Here.Name() != twitchUsername {
 			return
@@ -219,8 +228,9 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 	})
 
 	entry := &Entry{
-		HookID: id,
-		Player: &core.AudioPlayer[Message]{},
+		HookID:  id,
+		Speaker: sp,
+		Player:  &core.AudioPlayer[Message]{},
 	}
 
 	entry.Player.HandlePlay(func(msg Message, st <-chan core.AudioState) error {
@@ -265,14 +275,6 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			log.Debug().Msg("got tts audio")
 		}
 
-		err = sp.Join()
-		if err != nil {
-			log.Error().Err(err).Msg("failed to join speaker")
-			return err
-		} else {
-			log.Debug().Msg("speaker joined")
-		}
-
 		if err := core.AudioProcessBytes(sp, audio, st); err != nil {
 			log.Error().Err(err).Msg("failed to process audio buffer")
 			return err
@@ -286,6 +288,26 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 	go entry.Player.Start()
 
 	Hooks.Set(twitchUsername, entry)
+
+	go func() {
+		for {
+			time.Sleep(5 * time.Minute)
+			conn, err := sp.AuthorConnected()
+			if err != nil {
+				log.Error().Err(err).Msg("failed to check if author is connected")
+				continue
+			}
+			if conn {
+				continue
+			}
+			if err := Stop(twitchUsername); err != nil {
+				log.Error().Err(err).
+					Str("username", twitchUsername).
+					Msg("failed to stop monitoring")
+				continue
+			}
+		}
+	}()
 }
 
 // Stop will delete the hook created by Start. Returns ErrHookNotFound if the
@@ -297,6 +319,9 @@ func Stop(twitchUsername string) error {
 	}
 	entry.Player.Stop()
 	core.EventMessageHooks.Delete(entry.HookID)
+	if err := entry.Speaker.Leave(); err != nil {
+		return err
+	}
 	Hooks.Delete(twitchUsername)
 	return nil
 }

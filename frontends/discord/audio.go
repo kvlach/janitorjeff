@@ -39,6 +39,17 @@ func (sp *Speaker) Join() error {
 	return nil
 }
 
+func (sp *Speaker) Leave() error {
+	if sp.VC == nil {
+		return errors.New("not connected, can't disconnect")
+	}
+	if err := sp.VC.Disconnect(); err != nil {
+		return err
+	}
+	sp.VC = nil
+	return nil
+}
+
 func (sp *Speaker) Say(buf io.Reader, s <-chan core.AudioState) error {
 	return voicePlay(sp.VC, buf, s)
 }
@@ -72,8 +83,10 @@ func (sp *Speaker) AuthorConnected() (bool, error) {
 			Str("user", sp.AuthorID).
 			Msg("failed to get voice state")
 	}
-	// if no error, then a voice state exists
-	return err == nil, nil
+	if sp.VC == nil {
+		return false, errors.New("unexpected nil voice connection")
+	}
+	return vs.ChannelID == sp.VC.ChannelID, nil
 }
 
 // *Very* heavily inspired from https://github.com/bwmarrin/dgvoice/
