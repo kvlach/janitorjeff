@@ -13,9 +13,9 @@ import (
 )
 
 type Speaker struct {
-	GuildID  string
-	AuthorID string
-	VC       *dg.VoiceConnection
+	Author core.Author
+	Here   core.Here
+	VC     *dg.VoiceConnection
 }
 
 func (*Speaker) Enabled() bool {
@@ -31,7 +31,11 @@ func (*Speaker) Channels() int {
 }
 
 func (sp *Speaker) Join() error {
-	v, err := joinUserVoiceChannel(sp.GuildID, sp.AuthorID)
+	aid, err := sp.Author.ID()
+	if err != nil {
+		return err
+	}
+	v, err := joinUserVoiceChannel(sp.Here.IDLogical(), aid)
 	if err != nil {
 		return err
 	}
@@ -55,14 +59,20 @@ func (sp *Speaker) Say(buf io.Reader, s <-chan core.AudioState) error {
 }
 
 func (sp *Speaker) AuthorDeafened() (bool, error) {
+	aid, err := sp.Author.ID()
+	if err != nil {
+		return false, err
+	}
+	gid := sp.Here.IDLogical()
+
 	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
 	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
-	vs, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
+	vs, err := Session.State.VoiceState(gid, aid)
 	if err != nil {
 		log.Debug().
 			Err(err).
-			Str("guild", sp.GuildID).
-			Str("user", sp.AuthorID).
+			Str("guild", gid).
+			Str("user", aid).
 			Msg("failed to get voice state")
 		return false, err
 	}
@@ -70,18 +80,17 @@ func (sp *Speaker) AuthorDeafened() (bool, error) {
 }
 
 func (sp *Speaker) AuthorConnected() (bool, error) {
-	// FIXME: If the user is connected to a different channel then this will
-	// return true, we don't want this.
-
+	aid, err := sp.Author.ID()
+	if err != nil {
+		return false, err
+	}
 	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
 	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
-	_, err := Session.State.VoiceState(sp.GuildID, sp.AuthorID)
+	vs, err := Session.State.VoiceState(sp.Here.IDLogical(), aid)
+	// if error then no voice state exists, which means that the author is not
+	// connected
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Str("guild", sp.GuildID).
-			Str("user", sp.AuthorID).
-			Msg("failed to get voice state")
+		return false, nil
 	}
 	if sp.VC == nil {
 		return false, errors.New("unexpected nil voice connection")

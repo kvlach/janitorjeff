@@ -110,6 +110,12 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		GuildID:   i.Interaction.GuildID,
 	}
 
+	sp := &Speaker{
+		Author: author,
+		Here:   h,
+		VC:     nil,
+	}
+
 	m := &core.Message{
 		ID:       i.Data.ID,
 		Raw:      "", // TODO
@@ -117,7 +123,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		Author:   author,
 		Here:     h,
 		Client:   i,
-		Speaker:  i,
+		Speaker:  sp,
 	}
 	return m, nil
 }

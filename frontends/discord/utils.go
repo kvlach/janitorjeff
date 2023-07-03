@@ -232,9 +232,9 @@ func parse(m *dg.Message) *core.Message {
 	}
 
 	sp := &Speaker{
-		GuildID:  m.GuildID,
-		AuthorID: m.Author.ID,
-		VC:       nil,
+		Author: author,
+		Here:   h,
+		VC:     nil,
 	}
 
 	msg := &core.Message{
