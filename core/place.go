@@ -1,6 +1,6 @@
 package core
 
-// Here is the interface used to abstract the place where an event came from,
+// Placer is the interface used to abstract the place where an event came from,
 // e.g. channel, server, etc.
 //
 // Two type's of scopes exist for places, the exact and the logical. The logical
@@ -13,7 +13,7 @@ package core
 // exact place the message came from and does not account for context, so using
 // the previous discord server example, it would be the channel's scope where
 // the message came from instead of the server's.
-type Here interface {
+type Placer interface {
 	// IDExact returns the exact ID, this should be a unique, static,
 	// identifier in that frontend.
 	IDExact() string

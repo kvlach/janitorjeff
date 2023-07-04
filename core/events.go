@@ -35,8 +35,8 @@ type RedeemClaim struct {
 	ID     string
 	Input  string
 	When   time.Time
-	Author Author
-	Here   Here
+	Author Personifier
+	Here   Placer
 }
 
 func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
@@ -45,7 +45,7 @@ func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
 
 type StreamOnline struct {
 	When time.Time
-	Here Here
+	Here Placer
 }
 
 func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
@@ -54,7 +54,7 @@ func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
 
 type StreamOffline struct {
 	When time.Time
-	Here Here
+	Here Placer
 }
 
 func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {

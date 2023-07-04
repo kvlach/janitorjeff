@@ -13,8 +13,8 @@ import (
 )
 
 type Speaker struct {
-	Author core.Author
-	Here   core.Here
+	Author core.Personifier
+	Here   core.Placer
 	VC     *dg.VoiceConnection
 }
 
