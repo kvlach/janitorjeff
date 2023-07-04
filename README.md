@@ -4,7 +4,7 @@
 
 A general purpose, cross-platform bot.
 
-*Very much under active developement, there will most likely be breaking changes.*
+*Very much under active development, there will most likely be breaking changes.*
 
 ## Running
 
@@ -13,8 +13,9 @@ docker:
 
 ### PostgreSQL
 
-Install PostgreSQL 15. To initialize the database enter the PostgreSQL
-interactive terminal by executing `psql` and then run:
+Install PostgreSQL 15.
+To initialize the database, enter the PostgreSQL interactive terminal
+by executing `psql` and then run:
 
 ```sql
 CREATE DATABASE jeff_db;
@@ -33,7 +34,7 @@ psql -U jeff_user -f schema.sql
 
 ### Redis
 
-Make sure redis is installed and afterwards run:
+Make sure redis is installed and afterward run:
 
 ```sh
 redis-server redis.conf --daemonize yes
