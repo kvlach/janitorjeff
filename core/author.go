@@ -10,7 +10,7 @@ type Author interface {
 	Name() (string, error)
 
 	// DisplayName return's the author's display name. If only usernames exist
-	// for that frontend then returns the username.
+	// for that frontend, then return the username.
 	DisplayName() (string, error)
 
 	// Mention return's a string that mention's the author. This should ideally
@@ -35,7 +35,7 @@ type Author interface {
 	// should always return false.
 	Subscriber() (bool, error)
 
-	// Scope return's the author's scope. If it doesn't exist it will create it
-	// and add it to the database.
+	// Scope return's the author's scope.
+	// If it doesn't exist, it will create it and add it to the database.
 	Scope() (author int64, err error)
 }

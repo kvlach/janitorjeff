@@ -36,8 +36,8 @@ const (
 	CommandCategoryOther      = "Other"
 )
 
-// There's 2 parts to a command. The static part which includes things like the
-// description, the list of all the aliases, etc. and the runtime part which
+// There are 2 parts to a command: the static part which includes things like
+// the description, the list of all the aliases, etc. and the runtime part which
 // includes things like the prefix used, the arguments passed, etc.
 
 // CommandStatic is the interface used to implement commands.
@@ -53,8 +53,8 @@ type CommandStatic interface {
 
 	// Names return a list of all the aliases a command has. The first item in
 	// the list is considered the main name and so should be the simplest and
-	// most intuitive one for the average person. For example if it's a deleted
-	// subcommand the first alias should be "delete" instead of "del" or "rm".
+	// most intuitive one for the average person. For example, if it's a deleted
+	// subcommand, the first alias should be "delete" instead of "del" or "rm."
 	Names() []string
 
 	// Description will return a short description of what the command does.
@@ -84,10 +84,10 @@ type CommandStatic interface {
 	Children() CommandsStatic
 
 	// Init is executed during bot startup. Should be used to set things up
-	// necessary for the command, for example DB schemas.
+	// necessary for the command, for example, DB schemas.
 	Init() error
 
-	// Run is function that is called to run the command.
+	// Run is the function that is called to run the command.
 	Run(m *Message) (resp any, urr error, err error)
 }
 
@@ -117,7 +117,7 @@ func Format(cmd CommandStatic, prefix string) string {
 
 // CommandRuntime holds a command's runtime information.
 type CommandRuntime struct {
-	// The "path" taken to invoke the command, i.e. which names were used.
+	// The "path" taken to invoke the command, i.e., which names were used.
 	// Includes all the sub-commands e.g. ["prefix", "add"] in order to be able
 	// to display accurate help messages.
 	Path []string
@@ -169,13 +169,13 @@ func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (Comman
 }
 
 // Match will return the corresponding command based on the list of arguments.
-// The arguments don't have to match a command exactly. For example:
+// The arguments don't have to match a command exactly, for example,
 //
 //	args = [prefix add abc]
 //
-// In this case the prefix's subcommand "add" will be matched and returned.
-// Alongside it the index of the last valid command will be returned (in this
-// case the index of "add", which is 1).
+// In this case, the prefix's subcommand "add" will be matched and returned.
+// Alongside it, the index of the last valid command will be returned (in this
+// case, the index of "add," which is 1).
 func (cmds CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 

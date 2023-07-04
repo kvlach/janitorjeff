@@ -9,10 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// There's 2 types of errors. One type concerns the developer (something
+// There are 2 types of errors: one type concerns the developer (something
 // unexpected happened during execution) the other concerns the user (the user
 // did something incorrectly). The user facing error is returned in order to
-// allow special handling of error messages (for example using a different
+// allow special handling of error messages (for example, using a different
 // embed color in discord).
 
 // Messenger is the abstraction layer for message events.
@@ -29,8 +29,8 @@ type Messenger interface {
 	// from mentions.
 	PersonID(s, placeID string) (id string, err error)
 
-	// Person returns the target's scope. If it doesn't exist it will create it
-	// and add it to the database.
+	// Person returns the target's scope.
+	// If it doesn't exist, it will create it and add it to the database.
 	Person(id string) (person int64, err error)
 
 	// PlaceExact returns the exact scope of the specified ID.
@@ -74,7 +74,7 @@ func (m *Message) Fields() []string {
 }
 
 // FieldsSpace splits text into fields that include all trailing whitespace. For
-// example: "example of    text" will be split into ["example ", "of    ", "text"]
+// example, "example of    text" will be split into ["example ", "of    ", "text"]
 func (m *Message) FieldsSpace() []string {
 	text := strings.TrimSpace(m.Raw)
 	re := regexp.MustCompile(`\S+\s*`)
@@ -113,8 +113,8 @@ func (m *Message) Write(msg any, urr error) (*Message, error) {
 	return m.Client.Write(msg, urr)
 }
 
-// Prefixes returns the logical here's prefixes and also whether they were taken
-// from the database (if not then that means the default ones were used).
+// Prefixes returns the logical here's prefixes, and also whether they were
+// taken from the database (if not, then that means the default ones were used).
 func (m *Message) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
@@ -124,6 +124,7 @@ func (m *Message) Prefixes() ([]Prefix, bool, error) {
 }
 
 func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
+	//goland:noinspection SpellCheckingInspection
 	for _, p := range prefixes {
 		// Example:
 		// !prefix add !prefix
@@ -132,7 +133,7 @@ func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 		//
 		// This is because the rootCmdName "!prefix" in the third command gets
 		// matched as the prefix "!prefix" and not the prefix "!" with the
-		// command name "prefix". Which makes it so the actual command name is
+		// command name "prefix," which makes it so the actual command name is
 		// empty.
 		if p.Prefix == s {
 			continue
@@ -223,7 +224,7 @@ func (m *Message) CommandRun() (*Message, error) {
 		return nil, err
 	}
 	if err != nil {
-		// passing an empty error in order to get any error specific rendering
+		// passing an empty error in order to get any error-specific rendering
 		// that might be supported
 		if _, err := m.Write("Something went wrong...", errors.New("")); err != nil {
 			return nil, err
