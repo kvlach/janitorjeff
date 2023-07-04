@@ -105,7 +105,7 @@ func Format(cmd CommandStatic, prefix string) string {
 		args = " " + cmd.UsageArgs()
 	}
 
-	path := []string{}
+	var path []string
 	for cmd.Parent() != nil {
 		path = append([]string{cmd.Names()[0]}, path...)
 		cmd = cmd.Parent()
