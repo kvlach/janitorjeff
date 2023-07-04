@@ -83,3 +83,44 @@ Finally, you can run Jeff by executing:
 ```sh
 source data/secrets.sh && go run main.go -debug
 ```
+
+## Contributing
+
+### Directory Structure
+- `core/`: The juicy part, all the core interfaces, structs and functions are located here.
+- `frontends/`: The annoying frontend specific glue-code.
+- `commands/`: Implementations of all the commands, the bulk of the code exists here.
+
+### Scope
+One of the core ideas behind Jeff is that he supports multiple frontends.
+To achieve this in a sensible way, i.e. not having to implement each command for
+each frontend, there must be abstractions, the main of which is the "scope".
+A scope can be anything, a Discord user, a Discord channel, a Twitch channel, etc.;
+these are all scopes which are assigned a unique number by *Jeff*.
+This unique ID is only used internally.
+
+#### Person, Author, Place, Here
+Within the code, these 4 names are often used.
+They are all scopes there is no difference in, for example,
+how they are stored in the database (all exist in the `scopes` table),
+but this naming convention is used to make it clear what the scope in each instance represents:
+
+| Term   | Definition                                                    |
+|--------|---------------------------------------------------------------|
+| Person | A `scope` which refers to a `person` (users).                 |
+| Author | The `person` who authored the event.                          |
+| Place  | A `scope` that refers to a `place` (servers, channels, etc.). |
+| Here   | The `place` in which the event took place.                    |
+
+### Command Types
+- Normal
+- Advanced
+- Admin
+
+You may find more information in `core/commands.go`.
+
+### Events
+You may find more information in `core/events.go`.
+
+### Settings
+You may find more information in `core/db.go`
