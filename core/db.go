@@ -210,7 +210,7 @@ func (db *SQLDB) Begin() (*Tx, error) {
 }
 
 func (tx *Tx) Commit() error {
-	log.Debug().Msg("commiting transaction")
+	log.Debug().Msg("committing transaction")
 	return tx.tx.Commit()
 }
 
@@ -260,7 +260,7 @@ func (tx *Tx) placeGenerate(place int64) error {
 	return err
 }
 
-// placeCache will check if settings for the specified place exist  and if not
+// placeCache will check if settings for the specified place exist and if not
 // will generate them.
 func (tx *Tx) placeCache(place int64) error {
 	if tx.place {
@@ -298,7 +298,7 @@ func (tx *Tx) placeCache(place int64) error {
 	return err
 }
 
-// PlaceGet returns the value of col in table for the specified place.
+// PlaceGet returns the value of col in the table for the specified place.
 func (tx *Tx) PlaceGet(col string, place int64) Val {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
@@ -319,7 +319,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 	return Val{val, err}
 }
 
-// PlaceSet sets the value of col in table for the specified place.
+// PlaceSet sets the value of col in the table for the specified place.
 func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
@@ -452,7 +452,7 @@ func (tx *Tx) personCache(person, place int64) error {
 	return err
 }
 
-// PersonGet returns the value of col in table for the specified person
+// PersonGet returns the value of col in the table for the specified person
 // in the specified place.
 func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	// Make sure that the person settings are present
@@ -476,7 +476,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	return Val{val, err}
 }
 
-// PersonSet sets the value of col in table for the specified person in
+// PersonSet sets the value of col in the table for the specified person in
 // the specified place.
 func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present

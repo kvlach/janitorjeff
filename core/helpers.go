@@ -47,7 +47,7 @@ func (s *States) generate() (string, error) {
 
 func (s *States) Generate() (string, error) {
 	// Because generate() recursively calls itself until it generates a state
-	// that does not already exist we need to wrap it in a function that
+	// that does not already exist, we need to wrap it in a function that
 	// handles locking and unlocking, otherwise we'd get a mutex deadlock.
 	s.Lock()
 	defer s.Unlock()
@@ -94,7 +94,7 @@ func splitGraphemeClusters(text string, lenCnt func(string) int, lenLim int, par
 }
 
 // Split splits a message into sub-messages. Tries to not split words unless it
-// absolutely has to in which case it splits based on grapheme clusters.
+// absolutely has to, in which case it splits based on grapheme clusters.
 func Split(text string, lenCnt func(string) int, lenLim int) []string {
 	parts := []string{""}
 	r := regexp.MustCompile(`[^\s]+|\s+`)

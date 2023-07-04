@@ -8,8 +8,8 @@ import (
 var RDB *redis.Client
 
 // CacheScope returns the scope by looking it up in the cache, if it doesn't
-// exist then it fetches it from the DB using getScope and then caches it. The
-// key should be globally unique.
+// exist, then it fetches it from the DB using getScope and then caches it.
+// The key should be globally unique.
 func CacheScope(key string, getScope func() (int64, error)) (int64, error) {
 	slog := log.With().Str("key", key).Logger()
 

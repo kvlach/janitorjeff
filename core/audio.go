@@ -39,8 +39,8 @@ type AudioSpeaker interface {
 
 	// Join the message author's voice channel, if they are not connected to
 	// any then returns an error. If in a specific frontend only one voice
-	// channel will ever exist then the user doesn't have to be connected to it
-	// for the bot to join (for example a discord server with only one voice
+	// channel ever exists, then the user doesn't have to be connected to it
+	// for the bot to join (for example, a discord server with only one voice
 	// channel would not apply here as other ones *could* be created at any
 	// point).
 	Join() error

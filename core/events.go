@@ -64,7 +64,7 @@ func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {
 // EventLoop starts an infinite loop which handles all incoming events. It's
 // possible to have multiple instances running in separate goroutines (in order
 // for the bot not to lag when handling an event that takes longer than
-// virtually instantly), Golang guarantees that only one of the receivers will
+// virtually instantly); Golang guarantees that only one of the receivers will
 // receive the channel data.
 func EventLoop() {
 	for {
@@ -204,9 +204,9 @@ type Hooks[T any] struct {
 	hooks []hook[T]
 	ch    chan hookData[T]
 
-	// Keeps track of the number of hooks added, is incremented every time a
-	// new hook is added, does not get decreased if a hook is removed. Used as
-	// a hook ID.
+	// Tracks the number of added hooks, is incremented every time a new hook is
+	// added, does not get decreased if a hook is removed.
+	// Used as a hook ID.
 	total int
 }
 
@@ -248,8 +248,8 @@ func (hs *Hooks[T]) Register(f func(T)) int {
 	return hs.total
 }
 
-// Delete will delete the hook with the given id. If the hook doesn't exist then
-// nothing happens.
+// Delete will delete the hook with the given id. If the hook doesn't exist,
+// then nothing happens.
 func (hs *Hooks[T]) Delete(id int) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
@@ -272,7 +272,7 @@ func (hs *Hooks[T]) Run(arg T) {
 }
 
 // EventAwait monitors incoming events until check is true or until timeout. If
-// nothing is matched then the returned object will be the default value of the
+// nothing is matched, then the returned object will be the default value of the
 // type.
 func EventAwait[T Event[T]](timeout time.Duration, check func(T) bool) T {
 	found := make(chan struct{})
