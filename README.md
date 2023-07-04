@@ -124,3 +124,11 @@ You may find more information in `core/events.go`.
 
 ### Settings
 You may find more information in `core/db.go`
+
+### Errors
+There are 2 types of errors: one concerns the developer (something
+unexpected happened during execution) the other concerns the user (the user
+did something incorrectly) and should thus be informed appropriately.
+Naming convention:
+- `err` = normal errors
+- `urr` = user errors
