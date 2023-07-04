@@ -1,7 +1,7 @@
 package core
 
-// Author is the interface used to abstract a frontend's message author.
-type Author interface {
+// Personifier is the interface used to abstract a frontend's message author.
+type Personifier interface {
 	// ID returns the author's ID, this should be a unique, static, identifier
 	// in that frontend.
 	ID() (string, error)

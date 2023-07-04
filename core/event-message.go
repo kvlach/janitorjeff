@@ -62,8 +62,8 @@ type Message struct {
 	ID       string
 	Raw      string
 	Frontend Frontender
-	Author   Author
-	Here     Here
+	Author   Personifier
+	Here     Placer
 	Client   Messenger
 	Speaker  AudioSpeaker
 	Command  *Command

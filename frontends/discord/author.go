@@ -16,7 +16,7 @@ func getAuthorScope(authorID string) (int64, error) {
 	})
 }
 
-// AuthorMessage implements the core.Author interface
+// AuthorMessage implements the core.Personifier interface
 type AuthorMessage struct {
 	GuildID string
 	Author  *dg.User
@@ -125,7 +125,7 @@ func (a *AuthorMessage) Scope() (int64, error) {
 	return getAuthorScope(aid)
 }
 
-// Implement the core.Author interface for interactions
+// AuthorInteraction implements the core.Personifier interface for interactions
 type AuthorInteraction struct {
 	GuildID string
 	Member  *dg.Member

@@ -4,7 +4,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-// Here implements the core.Here interface.
+// Here implements the core.Placer interface.
 type Here struct {
 	ChannelID string
 	GuildID   string

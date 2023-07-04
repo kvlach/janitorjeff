@@ -6,8 +6,8 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-// Author implements both the core.Author and core.Here interfaces since users
-// and channels are the same thing on twitch.
+// Author implements both the core.Personifier and core.Placer interfaces since
+// users and channels are the same thing on twitch.
 type Author struct {
 	id          string
 	username    string
