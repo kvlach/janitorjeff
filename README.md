@@ -101,7 +101,7 @@ This unique ID is only used internally.
 
 #### Person, Author, Place, Here
 Within the code, these 4 names are often used.
-They are all scopes there is no difference in, for example,
+They are all scopes, there is no difference in, for example,
 how they are stored in the database (all exist in the `scopes` table),
 but this naming convention is used to make it clear what the scope in each instance represents:
 
