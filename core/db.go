@@ -158,7 +158,7 @@ func (v Val) Str() (string, error) {
 	return v.val.(string), nil
 }
 
-func (v Val) OptionalStr() (string, bool, error) {
+func (v Val) StrNil() (string, bool, error) {
 	if v.err != nil {
 		return "", false, v.err
 	}
@@ -183,7 +183,7 @@ func (v Val) Duration() (time.Duration, error) {
 	return time.Duration(v.val.(int64)) * time.Second, nil
 }
 
-func (v Val) OptionalUUID() (uuid.UUID, bool, error) {
+func (v Val) UUIDNil() (uuid.UUID, bool, error) {
 	if v.err != nil {
 		return uuid.UUID{}, false, v.err
 	}

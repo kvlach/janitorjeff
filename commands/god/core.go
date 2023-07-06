@@ -84,7 +84,7 @@ func RedeemSet(place int64, id string) error {
 }
 
 func RedeemGet(place int64) (uuid.UUID, error, error) {
-	id, isNil, err := core.DB.PlaceGet("cmd_god_redeem", place).OptionalUUID()
+	id, isNil, err := core.DB.PlaceGet("cmd_god_redeem", place).UUIDNil()
 	if err != nil {
 		return uuid.UUID{}, nil, err
 	}
