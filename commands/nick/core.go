@@ -66,7 +66,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 // Show returns the person's nickname in the specified place. If no nickname
 // has been set then returns an ErrPersonNotFound error.
 func Show(person, place int64) (string, error, error) {
-	nick, isNil, err := core.DB.PersonGet("cmd_nick_nick", person, place).OptionalStr()
+	nick, isNil, err := core.DB.PersonGet("cmd_nick_nick", person, place).StrNil()
 	if err != nil {
 		return "", nil, err
 	}
