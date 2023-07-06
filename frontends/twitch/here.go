@@ -7,6 +7,8 @@ import (
 type Here struct {
 	RoomID   string
 	RoomName string
+
+	scope int64
 }
 
 func (h Here) IDExact() string {
@@ -22,11 +24,18 @@ func (h Here) Name() string {
 }
 
 func (h Here) Scope() (int64, error) {
+	if h.scope != 0 {
+		return h.scope, nil
+	}
 	rdbKey := "frontend_twitch_scope_" + h.IDExact()
-
-	return core.CacheScope(rdbKey, func() (int64, error) {
+	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
 		return dbAddChannelSimple(h.IDExact(), h.Name())
 	})
+	if err != nil {
+		return 0, err
+	}
+	h.scope = scope
+	return scope, nil
 }
 
 func (h Here) ScopeExact() (int64, error) {
