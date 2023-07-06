@@ -9,20 +9,20 @@ type Personifier interface {
 	// Name returns the author's username.
 	Name() (string, error)
 
-	// DisplayName return's the author's display name. If only usernames exist
-	// for that frontend, then return the username.
+	// DisplayName returns the author's display name.
+	// If only usernames exist for that frontend, then return the username.
 	DisplayName() (string, error)
 
-	// Mention return's a string that mention's the author. This should ideally
-	// ping them in some way.
+	// Mention returns a string that mentions the author.
+	// This should ideally ping them in some way.
 	Mention() (string, error)
 
 	// BotAdmin returns true if the author is a bot admin, otherwise returns
 	// false.
 	BotAdmin() (bool, error)
 
-	// Admin checks if the author is considered an admin. Should return true
-	// only if the author has basically every permission.
+	// Admin checks if the author is considered an admin.
+	// Should return true only if the author has basically every permission.
 	Admin() (bool, error)
 
 	// Moderator checks if the author is considered a moderator. General rule of
