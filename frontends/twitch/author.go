@@ -6,14 +6,15 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-// Author implements both the core.Personifier and core.Placer interfaces since
-// users and channels are the same thing on twitch.
+// Author implements both the core.Personifier interface.
 type Author struct {
 	id          string
 	username    string
 	displayName string
 	badges      map[string]int
 	roomID      string
+
+	scope int64
 }
 
 func (a Author) ID() (string, error) {
@@ -170,6 +171,9 @@ func (a Author) Subscriber() (bool, error) {
 }
 
 func (a Author) Scope() (int64, error) {
+	if a.scope != 0 {
+		return a.scope, nil
+	}
 	id, err := a.ID()
 	if err != nil {
 		return 0, err
@@ -178,7 +182,12 @@ func (a Author) Scope() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return core.CacheScope("frontend_twitch_scope_"+id, func() (int64, error) {
+	scope, err := core.CacheScope("frontend_twitch_scope_"+id, func() (int64, error) {
 		return dbAddChannelSimple(id, name)
 	})
+	if err != nil {
+		return 0, err
+	}
+	a.scope = scope
+	return scope, nil
 }

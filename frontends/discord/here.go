@@ -8,6 +8,9 @@ import (
 type Here struct {
 	ChannelID string
 	GuildID   string
+
+	scopeExact   int64
+	scopeLogical int64
 }
 
 func (h *Here) IDExact() string {
@@ -26,17 +29,33 @@ func (h *Here) Name() string {
 }
 
 func (h *Here) ScopeExact() (int64, error) {
-	rdbKey := "frontend_discord_scope_here_exact_" + h.IDExact()
+	if h.scopeExact != 0 {
+		return h.scopeExact, nil
+	}
 
-	return core.CacheScope(rdbKey, func() (int64, error) {
+	rdbKey := "frontend_discord_scope_here_exact_" + h.IDExact()
+	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
 		return getPlaceExactScope(h.IDExact(), h.ChannelID, h.GuildID)
 	})
+	if err != nil {
+		return 0, err
+	}
+	h.scopeExact = scope
+	return scope, nil
 }
 
 func (h *Here) ScopeLogical() (int64, error) {
-	rdbKey := "frontend_discord_scope_here_logical_" + h.IDExact()
+	if h.scopeLogical != 0 {
+		return h.scopeLogical, nil
+	}
 
-	return core.CacheScope(rdbKey, func() (int64, error) {
+	rdbKey := "frontend_discord_scope_here_logical_" + h.IDExact()
+	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
 		return getPlaceLogicalScope(h.IDExact(), h.ChannelID, h.GuildID)
 	})
+	if err != nil {
+		return 0, err
+	}
+	h.scopeLogical = scope
+	return scope, nil
 }

@@ -21,6 +21,8 @@ type AuthorMessage struct {
 	GuildID string
 	Author  *dg.User
 	Member  *dg.Member
+
+	scope int64
 }
 
 func (a *AuthorMessage) ID() (string, error) {
@@ -118,11 +120,19 @@ func (a *AuthorMessage) Subscriber() (bool, error) {
 }
 
 func (a *AuthorMessage) Scope() (int64, error) {
+	if a.scope != 0 {
+		return a.scope, nil
+	}
 	aid, err := a.ID()
 	if err != nil {
 		return 0, err
 	}
-	return getAuthorScope(aid)
+	scope, err := getAuthorScope(aid)
+	if err != nil {
+		return 0, err
+	}
+	a.scope = scope
+	return scope, nil
 }
 
 // AuthorInteraction implements the core.Personifier interface for interactions
@@ -130,6 +140,8 @@ type AuthorInteraction struct {
 	GuildID string
 	Member  *dg.Member
 	User    *dg.User
+
+	scope int64
 }
 
 func (a *AuthorInteraction) ID() (string, error) {
@@ -202,9 +214,17 @@ func (a *AuthorInteraction) Subscriber() (bool, error) {
 }
 
 func (a *AuthorInteraction) Scope() (int64, error) {
+	if a.scope != 0 {
+		return a.scope, nil
+	}
 	aid, err := a.ID()
 	if err != nil {
 		return 0, err
 	}
-	return getAuthorScope(aid)
+	scope, err := getAuthorScope(aid)
+	if err != nil {
+		return 0, err
+	}
+	a.scope = scope
+	return scope, nil
 }
