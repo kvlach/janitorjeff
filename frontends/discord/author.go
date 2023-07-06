@@ -133,31 +133,44 @@ type AuthorInteraction struct {
 }
 
 func (a *AuthorInteraction) ID() (string, error) {
-	if a.Member != nil {
+	if a.Member != nil && a.Member.User != nil && a.Member.User.ID != "" {
 		return a.Member.User.ID, nil
 	}
-	return a.User.ID, nil
+	if a.User != nil && a.User.ID != "" {
+		return a.User.ID, nil
+	}
+	return "", errors.New("can't figure out author id")
 }
 
 func (a *AuthorInteraction) Name() (string, error) {
-	if a.Member != nil {
+	if a.Member != nil && a.Member.User != nil && a.Member.User.Username != "" {
 		return a.Member.User.Username, nil
 	}
-	return a.User.Username, nil
+	if a.User != nil && a.User.Username != "" {
+		return a.User.Username, nil
+	}
+	return "", errors.New("can't figure out author name")
 }
 
 func (a *AuthorInteraction) DisplayName() (string, error) {
-	if a.Member != nil {
+	if a.Member != nil && a.Member.User != nil && a.Member.User.Username != "" {
 		return a.Member.User.Username, nil
 	}
-	return a.User.Username, nil
+	if a.User != nil && a.User.Username != "" {
+		return a.User.Username, nil
+	}
+	return "", errors.New("can't figure out author display name")
 }
 
 func (a *AuthorInteraction) Mention() (string, error) {
-	if a.Member != nil {
+	// Member.Mention() requires Member.User
+	if a.Member != nil && a.Member.User != nil {
 		return a.Member.Mention(), nil
 	}
-	return a.User.Mention(), nil
+	if a.User != nil {
+		return a.User.Mention(), nil
+	}
+	return "", errors.New("can't figure out author mention")
 }
 
 func (a *AuthorInteraction) BotAdmin() (bool, error) {
