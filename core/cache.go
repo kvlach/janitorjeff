@@ -18,7 +18,7 @@ func CacheScope(key string, getScope func() (int64, error)) (int64, error) {
 		return -1, err
 	}
 	if err != redis.Nil {
-		slog.Debug().Int64("scope", scope).Msg("CACHE: found scope")
+		slog.Debug().Int64("scope", scope).Msg("REDIS: found scope")
 		return scope, nil
 	}
 
@@ -27,6 +27,6 @@ func CacheScope(key string, getScope func() (int64, error)) (int64, error) {
 		return -1, err
 	}
 	err = RDB.Set(ctx, key, scope, 0).Err()
-	slog.Debug().Err(err).Int64("scope", scope).Msg("CACHE: cached scope")
+	slog.Debug().Err(err).Int64("scope", scope).Msg("REDIS: cached scope")
 	return scope, err
 }
