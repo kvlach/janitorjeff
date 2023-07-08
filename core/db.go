@@ -265,9 +265,9 @@ func (tx *Tx) placeGenerate(place int64) error {
 	return err
 }
 
-// placeCache will check if settings for the specified place exist and if not
+// placeEnsure will check if settings for the specified place exist and if not
 // will generate them.
-func (tx *Tx) placeCache(place int64) error {
+func (tx *Tx) placeEnsure(place int64) error {
 	slog := log.With().Int64("place", place).Logger()
 
 	if tx.place == nil {
@@ -321,7 +321,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 	slog := log.With().Int64("place", place).Logger()
 
 	// Make sure that the place settings are present
-	if err := tx.placeCache(place); err != nil {
+	if err := tx.placeEnsure(place); err != nil {
 		return Val{}
 	}
 
@@ -341,7 +341,7 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	slog := log.With().Int64("place", place).Logger()
 
 	// Make sure that the place settings are present
-	if err := tx.placeCache(place); err != nil {
+	if err := tx.placeEnsure(place); err != nil {
 		return err
 	}
 
@@ -430,9 +430,9 @@ func (tx *Tx) personGenerate(person, place int64) error {
 	return err
 }
 
-// personCache will check if settings for the specified person in the
+// personEnsure will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
-func (tx *Tx) personCache(person, place int64) error {
+func (tx *Tx) personEnsure(person, place int64) error {
 	slog := log.With().
 		Int64("person", person).
 		Int64("place", place).
@@ -493,7 +493,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 		Logger()
 
 	// Make sure that the person settings are present
-	if err := tx.personCache(person, place); err != nil {
+	if err := tx.personEnsure(person, place); err != nil {
 		return Val{}
 	}
 
@@ -518,7 +518,7 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 		Logger()
 
 	// Make sure that the person settings are present
-	if err := tx.personCache(person, place); err != nil {
+	if err := tx.personEnsure(person, place); err != nil {
 		return err
 	}
 
