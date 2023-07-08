@@ -194,11 +194,16 @@ func (v Val) UUIDNil() (uuid.UUID, bool, error) {
 	return u, false, err
 }
 
+type coords struct {
+	person int64
+	place  int64
+}
+
 type Tx struct {
 	tx     *sql.Tx
 	db     *SQLDB
-	person bool
-	place  bool
+	person map[coords]struct{}
+	place  map[int64]struct{}
 }
 
 func (db *SQLDB) Begin() (*Tx, error) {
@@ -265,7 +270,11 @@ func (tx *Tx) placeGenerate(place int64) error {
 func (tx *Tx) placeCache(place int64) error {
 	slog := log.With().Int64("place", place).Logger()
 
-	if tx.place {
+	if tx.place == nil {
+		tx.place = make(map[int64]struct{})
+	}
+
+	if _, ok := tx.place[place]; ok {
 		slog.Debug().Msg("LOCAL: place settings already generated, skipping")
 		return nil
 	}
@@ -274,6 +283,8 @@ func (tx *Tx) placeCache(place int64) error {
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
 		slog.Debug().Msg("REDIS: place settings already generated, skipping")
+		slog.Debug().Msg("LOCAL: caching place settings")
+		tx.place[place] = struct{}{}
 		return nil
 	}
 
@@ -286,6 +297,8 @@ func (tx *Tx) placeCache(place int64) error {
 		slog.Debug().
 			Err(err).
 			Msg("REDIS: caching place settings")
+		slog.Debug().Msg("LOCAL: caching place settings")
+		tx.place[place] = struct{}{}
 		return err
 	}
 
@@ -293,7 +306,8 @@ func (tx *Tx) placeCache(place int64) error {
 	if err != nil {
 		return err
 	}
-	tx.place = true
+	slog.Debug().Msg("LOCAL: caching newly generated place settings")
+	tx.place[place] = struct{}{}
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	log.Debug().
@@ -309,9 +323,6 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return Val{}
-	} else {
-		slog.Debug().Msg("LOCAL: caching place settings")
-		tx.place = true
 	}
 
 	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1 FOR UPDATE`, col)
@@ -332,9 +343,6 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return err
-	} else {
-		slog.Debug().Msg("LOCAL: caching place settings")
-		tx.place = true
 	}
 
 	query := fmt.Sprintf(`
@@ -430,7 +438,11 @@ func (tx *Tx) personCache(person, place int64) error {
 		Int64("place", place).
 		Logger()
 
-	if tx.person {
+	if tx.person == nil {
+		tx.person = make(map[coords]struct{})
+	}
+
+	if _, ok := tx.person[coords{person: person, place: place}]; ok {
 		slog.Debug().Msg("LOCAL: person settings already generated, skipping")
 		return nil
 	}
@@ -439,6 +451,8 @@ func (tx *Tx) personCache(person, place int64) error {
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
 		slog.Debug().Msg("REDIS: person settings already generated, skipping")
+		slog.Debug().Msg("LOCAL: caching person settings")
+		tx.person[coords{person: person, place: place}] = struct{}{}
 		return nil
 	}
 
@@ -451,6 +465,8 @@ func (tx *Tx) personCache(person, place int64) error {
 		slog.Debug().
 			Err(err).
 			Msg("REDIS: caching person settings")
+		slog.Debug().Msg("LOCAL: caching person settings")
+		tx.person[coords{person: person, place: place}] = struct{}{}
 		return err
 	}
 
@@ -458,7 +474,8 @@ func (tx *Tx) personCache(person, place int64) error {
 	if err != nil {
 		return err
 	}
-	tx.person = true
+	slog.Debug().Msg("LOCAL: caching newly generated person settings")
+	tx.person[coords{person: person, place: place}] = struct{}{}
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	slog.Debug().
@@ -478,9 +495,6 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return Val{}
-	} else {
-		slog.Debug().Msg("LOCAL: caching person settings")
-		tx.person = true
 	}
 
 	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2 FOR UPDATE`, col)
@@ -506,9 +520,6 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return err
-	} else {
-		slog.Debug().Msg("LOCAL: caching person settings")
-		tx.person = true
 	}
 
 	query := fmt.Sprintf(`
