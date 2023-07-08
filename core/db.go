@@ -210,7 +210,7 @@ func (db *SQLDB) Begin() (*Tx, error) {
 }
 
 func (tx *Tx) Commit() error {
-	log.Debug().Msg("committing transaction")
+	log.Debug().Msg("POSTGRES: committing transaction")
 	return tx.tx.Commit()
 }
 
@@ -241,7 +241,7 @@ func (tx *Tx) placeExists(place int64) (bool, error) {
 		Err(err).
 		Int64("place", place).
 		Bool("exist", exists).
-		Msg("checked if place settings exist")
+		Msg("POSTGRES: checked if place settings exist")
 
 	return exists, err
 }
@@ -255,7 +255,7 @@ func (tx *Tx) placeGenerate(place int64) error {
 	log.Debug().
 		Err(err).
 		Int64("place", place).
-		Msg("generated place settings")
+		Msg("POSTGRES: generated place settings")
 
 	return err
 }
@@ -263,15 +263,17 @@ func (tx *Tx) placeGenerate(place int64) error {
 // placeCache will check if settings for the specified place exist and if not
 // will generate them.
 func (tx *Tx) placeCache(place int64) error {
+	slog := log.With().Int64("place", place).Logger()
+
 	if tx.place {
-		log.Debug().Msg("already generated place settings in transaction, skipping")
+		slog.Debug().Msg("LOCAL: place settings already generated, skipping")
 		return nil
 	}
 
 	rdbKey := fmt.Sprintf("settings_place_%d", place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
-		log.Debug().Msg("CACHE: place settings already generated")
+		slog.Debug().Msg("REDIS: place settings already generated, skipping")
 		return nil
 	}
 
@@ -281,9 +283,9 @@ func (tx *Tx) placeCache(place int64) error {
 	}
 	if exists {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
-		log.Debug().
+		slog.Debug().
 			Err(err).
-			Msg("CACHE: place settings already exist in db, caching")
+			Msg("REDIS: caching place settings")
 		return err
 	}
 
@@ -294,16 +296,21 @@ func (tx *Tx) placeCache(place int64) error {
 	tx.place = true
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
-	log.Debug().Err(err).Msg("CACHE: generated place settings in db, caching")
+	log.Debug().
+		Err(err).
+		Msg("REDIS: caching newly generated place settings")
 	return err
 }
 
 // PlaceGet returns the value of col in the table for the specified place.
 func (tx *Tx) PlaceGet(col string, place int64) Val {
+	slog := log.With().Int64("place", place).Logger()
+
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return Val{}
 	} else {
+		slog.Debug().Msg("LOCAL: caching place settings")
 		tx.place = true
 	}
 
@@ -311,20 +318,22 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 
 	var val any
 	err := tx.tx.QueryRow(query, place).Scan(&val)
-	log.Debug().
+	slog.Debug().
 		Err(err).
-		Int64("place", place).
 		Interface(col, val).
-		Msg("got value")
+		Msg("POSTGRES: got value")
 	return Val{val, err}
 }
 
 // PlaceSet sets the value of col in the table for the specified place.
 func (tx *Tx) PlaceSet(col string, place int64, val any) error {
+	slog := log.With().Int64("place", place).Logger()
+
 	// Make sure that the place settings are present
 	if err := tx.placeCache(place); err != nil {
 		return err
 	} else {
+		slog.Debug().Msg("LOCAL: caching place settings")
 		tx.place = true
 	}
 
@@ -335,11 +344,10 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	`, col)
 	_, err := tx.tx.Exec(query, val, place)
 
-	log.Debug().
+	slog.Debug().
 		Err(err).
-		Int64("place", place).
 		Interface(col, val).
-		Msg("changed setting")
+		Msg("POSTGRES: changed setting")
 
 	return err
 }
@@ -394,7 +402,7 @@ func (tx *Tx) personExists(person, place int64) (bool, error) {
 		Int64("person", person).
 		Int64("place", place).
 		Bool("exist", exists).
-		Msg("checked if person settings exist")
+		Msg("POSTGRES: checked if person settings exist")
 
 	return exists, err
 }
@@ -409,7 +417,7 @@ func (tx *Tx) personGenerate(person, place int64) error {
 		Err(err).
 		Int64("person", person).
 		Int64("place", place).
-		Msg("generated person settings")
+		Msg("POSTGRES: generated person settings")
 
 	return err
 }
@@ -417,15 +425,20 @@ func (tx *Tx) personGenerate(person, place int64) error {
 // personCache will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
 func (tx *Tx) personCache(person, place int64) error {
+	slog := log.With().
+		Int64("person", person).
+		Int64("place", place).
+		Logger()
+
 	if tx.person {
-		log.Debug().Msg("already generated person settings in transaction, skipping")
+		slog.Debug().Msg("LOCAL: person settings already generated, skipping")
 		return nil
 	}
 
 	rdbKey := fmt.Sprintf("settings_person_%d_%d", person, place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
-		log.Debug().Msg("CACHE: person settings already generated")
+		slog.Debug().Msg("REDIS: person settings already generated, skipping")
 		return nil
 	}
 
@@ -435,9 +448,9 @@ func (tx *Tx) personCache(person, place int64) error {
 	}
 	if exists {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
-		log.Debug().
+		slog.Debug().
 			Err(err).
-			Msg("CACHE: person settings already exist in db, caching")
+			Msg("REDIS: caching person settings")
 		return err
 	}
 
@@ -448,17 +461,25 @@ func (tx *Tx) personCache(person, place int64) error {
 	tx.person = true
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
-	log.Debug().Err(err).Msg("CACHE: generated person settings in db, caching")
+	slog.Debug().
+		Err(err).
+		Msg("REDIS: caching newly generated person settings")
 	return err
 }
 
 // PersonGet returns the value of col in the table for the specified person
 // in the specified place.
 func (tx *Tx) PersonGet(col string, person, place int64) Val {
+	slog := log.With().
+		Int64("person", person).
+		Int64("place", place).
+		Logger()
+
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return Val{}
 	} else {
+		slog.Debug().Msg("LOCAL: caching person settings")
 		tx.person = true
 	}
 
@@ -467,22 +488,26 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 
 	var val any
 	err := row.Scan(&val)
-	log.Debug().
+	slog.Debug().
 		Err(err).
-		Int64("person", person).
-		Int64("place", place).
 		Interface(col, val).
-		Msg("got value")
+		Msg("POSTGRES: got value")
 	return Val{val, err}
 }
 
 // PersonSet sets the value of col in the table for the specified person in
 // the specified place.
 func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
+	slog := log.With().
+		Int64("person", person).
+		Int64("place", place).
+		Logger()
+
 	// Make sure that the person settings are present
 	if err := tx.personCache(person, place); err != nil {
 		return err
 	} else {
+		slog.Debug().Msg("LOCAL: caching person settings")
 		tx.person = true
 	}
 
@@ -493,12 +518,10 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	`, col)
 	_, err := tx.tx.Exec(query, val, person, place)
 
-	log.Debug().
+	slog.Debug().
 		Err(err).
-		Int64("person", person).
-		Int64("place", place).
 		Interface(col, val).
-		Msg("changed setting")
+		Msg("POSTGRES: changed setting")
 
 	return err
 }
