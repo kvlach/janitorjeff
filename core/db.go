@@ -318,8 +318,6 @@ func (tx *Tx) placeEnsure(place int64) error {
 
 // PlaceGet returns the value of col in the table for the specified place.
 func (tx *Tx) PlaceGet(col string, place int64) Val {
-	slog := log.With().Int64("place", place).Logger()
-
 	// Make sure that the place settings are present
 	if err := tx.placeEnsure(place); err != nil {
 		return Val{}
@@ -329,8 +327,9 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 
 	var val any
 	err := tx.tx.QueryRow(query, place).Scan(&val)
-	slog.Debug().
+	log.Debug().
 		Err(err).
+		Int64("place", place).
 		Interface(col, val).
 		Msg("POSTGRES: got value")
 	return Val{val, err}
@@ -338,8 +337,6 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 
 // PlaceSet sets the value of col in the table for the specified place.
 func (tx *Tx) PlaceSet(col string, place int64, val any) error {
-	slog := log.With().Int64("place", place).Logger()
-
 	// Make sure that the place settings are present
 	if err := tx.placeEnsure(place); err != nil {
 		return err
@@ -352,8 +349,9 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	`, col)
 	_, err := tx.tx.Exec(query, val, place)
 
-	slog.Debug().
+	log.Debug().
 		Err(err).
+		Int64("place", place).
 		Interface(col, val).
 		Msg("POSTGRES: changed setting")
 
@@ -487,11 +485,6 @@ func (tx *Tx) personEnsure(person, place int64) error {
 // PersonGet returns the value of col in the table for the specified person
 // in the specified place.
 func (tx *Tx) PersonGet(col string, person, place int64) Val {
-	slog := log.With().
-		Int64("person", person).
-		Int64("place", place).
-		Logger()
-
 	// Make sure that the person settings are present
 	if err := tx.personEnsure(person, place); err != nil {
 		return Val{}
@@ -502,8 +495,10 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 
 	var val any
 	err := row.Scan(&val)
-	slog.Debug().
+	log.Debug().
 		Err(err).
+		Int64("person", person).
+		Int64("place", place).
 		Interface(col, val).
 		Msg("POSTGRES: got value")
 	return Val{val, err}
@@ -512,11 +507,6 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 // PersonSet sets the value of col in the table for the specified person in
 // the specified place.
 func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
-	slog := log.With().
-		Int64("person", person).
-		Int64("place", place).
-		Logger()
-
 	// Make sure that the person settings are present
 	if err := tx.personEnsure(person, place); err != nil {
 		return err
@@ -529,8 +519,10 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	`, col)
 	_, err := tx.tx.Exec(query, val, person, place)
 
-	slog.Debug().
+	log.Debug().
 		Err(err).
+		Int64("person", person).
+		Int64("place", place).
 		Interface(col, val).
 		Msg("POSTGRES: changed setting")
 
