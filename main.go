@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
@@ -19,10 +20,18 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+func init() {
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":2112", nil)
+	}()
+}
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix

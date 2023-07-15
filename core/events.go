@@ -4,6 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,17 +16,33 @@ type Event[T any] interface {
 }
 
 var (
-	EventMessage      = make(chan *Message)
-	EventMessageHooks = HooksNew[*Message](20)
+	EventMessage        = make(chan *Message)
+	EventMessageHooks   = HooksNew[*Message](20)
+	eventMessageCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "jeff_event_message_total",
+		Help: "Total number of received message events.",
+	})
 
-	EventRedeemClaim      = make(chan *RedeemClaim)
-	EventRedeemClaimHooks = HooksNew[*RedeemClaim](5)
+	EventRedeemClaim        = make(chan *RedeemClaim)
+	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
+	eventRedeemClaimCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "jeff_event_redeem_claim_total",
+		Help: "Total number of received redeem claim events.",
+	})
 
-	EventStreamOnline      = make(chan *StreamOnline)
-	EventStreamOnlineHooks = HooksNew[*StreamOnline](5)
+	EventStreamOnline        = make(chan *StreamOnline)
+	EventStreamOnlineHooks   = HooksNew[*StreamOnline](5)
+	eventStreamOnlineCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "jeff_event_stream_online_total",
+		Help: "Total number of received stream online events.",
+	})
 
-	EventStreamOffline      = make(chan *StreamOffline)
-	EventStreamOfflineHooks = HooksNew[*StreamOffline](5)
+	EventStreamOffline        = make(chan *StreamOffline)
+	EventStreamOfflineHooks   = HooksNew[*StreamOffline](5)
+	eventStreamOfflineCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "jeff_event_stream_offline_total",
+		Help: "Total number of received stream offline events.",
+	})
 )
 
 func (m *Message) Hooks() *Hooks[*Message] {
@@ -70,6 +88,7 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
+			eventMessageCounter.Inc()
 			log.Debug().
 				Str("id", m.ID).
 				Str("raw", m.Raw).
@@ -84,6 +103,7 @@ func EventLoop() {
 			}
 
 		case rc := <-EventRedeemClaim:
+			eventRedeemClaimCounter.Inc()
 			log.Debug().
 				Str("id", rc.ID).
 				Str("input", rc.Input).
@@ -92,6 +112,7 @@ func EventLoop() {
 			EventRedeemClaimHooks.Run(rc)
 
 		case on := <-EventStreamOnline:
+			eventStreamOnlineCounter.Inc()
 			log.Debug().
 				Str("when", on.When.String()).
 				Msg("received stream online event")
@@ -107,6 +128,7 @@ func EventLoop() {
 			EventStreamOnlineHooks.Run(on)
 
 		case off := <-EventStreamOffline:
+			eventStreamOfflineCounter.Inc()
 			log.Debug().
 				Str("when", off.When.String()).
 				Msg("received stream offline event")

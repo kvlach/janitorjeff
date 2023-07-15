@@ -40,6 +40,11 @@ Make sure redis is installed and afterward run:
 redis-server redis.conf --daemonize yes
 ```
 
+### Prometheus
+```sh
+prometheus --config.file=prometheus.yml
+```
+
 ### Jeff
 
 Make sure you are in the root of the project and run:
