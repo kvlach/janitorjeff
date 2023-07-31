@@ -29,7 +29,9 @@ import (
 func init() {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":2112", nil)
+		if err := http.ListenAndServe(":2112", nil); err != nil {
+			log.Fatal().Err(err)
+		}
 	}()
 }
 
