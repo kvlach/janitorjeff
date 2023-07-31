@@ -2,6 +2,7 @@ package discord
 
 import (
 	"errors"
+	"sync"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
@@ -22,10 +23,11 @@ type AuthorMessage struct {
 	Author  *dg.User
 	Member  *dg.Member
 
+	mu    sync.Mutex
 	scope int64
 }
 
-func (a *AuthorMessage) ID() (string, error) {
+func (a *AuthorMessage) id() (string, error) {
 	if a.Author != nil && a.Author.ID != "" {
 		return a.Author.ID, nil
 	}
@@ -35,14 +37,21 @@ func (a *AuthorMessage) ID() (string, error) {
 	return "", errors.New("can't figure out author id")
 }
 
-func (a *AuthorMessage) Name() (string, error) {
+func (a *AuthorMessage) ID() (string, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.id()
+}
+
+func (a *AuthorMessage) name() (string, error) {
 	if a.Author != nil && a.Author.Username != "" {
 		return a.Author.Username, nil
 	}
 	if a.Member != nil && a.Member.User != nil && a.Member.User.Username != "" {
 		return a.Member.User.Username, nil
 	}
-	id, err := a.ID()
+
+	id, err := a.id()
 	if err != nil {
 		return "", err
 	}
@@ -54,10 +63,19 @@ func (a *AuthorMessage) Name() (string, error) {
 	return user.Username, nil
 }
 
+func (a *AuthorMessage) Name() (string, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.name()
+}
+
 func (a *AuthorMessage) DisplayName() (string, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
 	var mem *dg.Member
 
-	aid, err := a.ID()
+	aid, err := a.id()
 	if err != nil {
 		return "", err
 	}
@@ -120,10 +138,14 @@ func (a *AuthorMessage) Subscriber() (bool, error) {
 }
 
 func (a *AuthorMessage) Scope() (int64, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
 	if a.scope != 0 {
 		return a.scope, nil
 	}
-	aid, err := a.ID()
+
+	aid, err := a.id()
 	if err != nil {
 		return 0, err
 	}

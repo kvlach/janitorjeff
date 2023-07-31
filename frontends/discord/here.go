@@ -1,7 +1,11 @@
 package discord
 
 import (
+	"sync"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
+
+	"github.com/rs/zerolog/log"
 )
 
 // Here implements the core.Placer interface.
@@ -9,6 +13,7 @@ type Here struct {
 	ChannelID string
 	GuildID   string
 
+	mu           sync.Mutex
 	scopeExact   int64
 	scopeLogical int64
 }
@@ -29,6 +34,9 @@ func (h *Here) Name() string {
 }
 
 func (h *Here) ScopeExact() (int64, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
 	if h.scopeExact != 0 {
 		return h.scopeExact, nil
 	}
@@ -45,6 +53,9 @@ func (h *Here) ScopeExact() (int64, error) {
 }
 
 func (h *Here) ScopeLogical() (int64, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
 	if h.scopeLogical != 0 {
 		return h.scopeLogical, nil
 	}
