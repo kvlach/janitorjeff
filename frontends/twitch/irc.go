@@ -49,6 +49,10 @@ func (f *frontend) Type() core.FrontendType {
 	return Type
 }
 
+func (f *frontend) Name() string {
+	return "twitch"
+}
+
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	twitchIrcClient = tirc.NewClient(f.Nick, f.OAuth)
 

@@ -18,10 +18,10 @@ type Event[T any] interface {
 var (
 	EventMessage        = make(chan *Message)
 	EventMessageHooks   = HooksNew[*Message](20)
-	eventMessageCounter = promauto.NewCounter(prometheus.CounterOpts{
+	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_message_total",
 		Help: "Total number of received message events.",
-	})
+	}, []string{"frontend"})
 
 	EventRedeemClaim        = make(chan *RedeemClaim)
 	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
@@ -88,7 +88,9 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
-			eventMessageCounter.Inc()
+			eventMessageCounter.
+				With(prometheus.Labels{"frontend": m.Frontend.Name()}).
+				Inc()
 			log.Debug().
 				Str("id", m.ID).
 				Str("raw", m.Raw).
