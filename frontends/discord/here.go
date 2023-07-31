@@ -38,6 +38,9 @@ func (h *Here) ScopeExact() (int64, error) {
 	defer h.mu.Unlock()
 
 	if h.scopeExact != 0 {
+		log.Debug().
+			Int64("scope", h.scopeLogical).
+			Msg("LOCAL: found cached scope")
 		return h.scopeExact, nil
 	}
 
@@ -57,6 +60,9 @@ func (h *Here) ScopeLogical() (int64, error) {
 	defer h.mu.Unlock()
 
 	if h.scopeLogical != 0 {
+		log.Debug().
+			Int64("scope", h.scopeLogical).
+			Msg("LOCAL: found cached scope")
 		return h.scopeLogical, nil
 	}
 
