@@ -9,10 +9,11 @@ services:
     depends_on:
       - postgres
       - redis
+      - prometheus
     environment:
       - VIRTUAL_HOST=localhost
       - PORT=5000
-      - PROMETHEUS_ADDR=prometheus:2112
+      - PROMETHEUS_ADDR=0.0.0.0:2112
       # DB
       - POSTGRES_USER=jeff_user
       - POSTGRES_PASSWORD=jeff_pass
@@ -62,9 +63,9 @@ services:
 
   prometheus:
     image: prom/prometheus
-    container_name: prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.listen-address=0.0.0.0:8000"
     ports:
       - "8000:8000"
     restart: unless-stopped
