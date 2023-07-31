@@ -7,6 +7,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 func getAuthorScope(authorID string) (int64, error) {
@@ -142,6 +143,9 @@ func (a *AuthorMessage) Scope() (int64, error) {
 	defer a.mu.Unlock()
 
 	if a.scope != 0 {
+		log.Debug().
+			Int64("scope", a.scope).
+			Msg("LOCAL: found cached scope")
 		return a.scope, nil
 	}
 
