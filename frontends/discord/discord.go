@@ -33,6 +33,10 @@ func (f *frontend) Type() core.FrontendType {
 	return Type
 }
 
+func (f *frontend) Name() string {
+	return "discord"
+}
+
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	d, err := dg.New("Bot " + f.Token)
 	if err != nil {

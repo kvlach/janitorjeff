@@ -13,6 +13,9 @@ type Frontender interface {
 	// Type returns the frontend type ID.
 	Type() FrontendType
 
+	// Name returns frontend's name formatted in all lowercase.
+	Name() string
+
 	// Init is responsible for starting up any frontend-specific services and
 	// connecting to frontend. When it receives the stop signal, then it should
 	// disconnect from everything.
