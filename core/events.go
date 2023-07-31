@@ -1,6 +1,7 @@
 package core
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
@@ -21,7 +22,7 @@ var (
 	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_message_total",
 		Help: "Total number of received message events.",
-	}, []string{"frontend"})
+	}, []string{"frontend", "person", "place"})
 
 	EventRedeemClaim        = make(chan *RedeemClaim)
 	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
@@ -88,8 +89,20 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
+			person, err := m.Author.Scope()
+			if err != nil {
+				log.Error().Err(err)
+			}
+			place, err := m.Here.ScopeLogical()
+			if err != nil {
+				log.Error().Err(err)
+			}
 			eventMessageCounter.
-				With(prometheus.Labels{"frontend": m.Frontend.Name()}).
+				With(prometheus.Labels{
+					"frontend": m.Frontend.Name(),
+					"person":   strconv.FormatInt(person, 10),
+					"place":    strconv.FormatInt(place, 10),
+				}).
 				Inc()
 			log.Debug().
 				Str("id", m.ID).
