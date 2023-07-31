@@ -61,7 +61,7 @@ contents:
 
 export VIRTUAL_HOST=localhost
 export PORT=5000
-export PROMETHEUS_ADDR=2112
+export PROMETHEUS_ADDR=localhost:2112
 # DB
 export POSTGRES_USER=jeff_user
 export POSTGRES_PASSWORD=jeff_pass
