@@ -12,6 +12,7 @@ services:
     environment:
       - VIRTUAL_HOST=localhost
       - PORT=5000
+      - PROMETHEUS_ADDR=prometheus:2112
       # DB
       - POSTGRES_USER=jeff_user
       - POSTGRES_PASSWORD=jeff_pass

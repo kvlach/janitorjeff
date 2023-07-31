@@ -26,10 +26,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func readVar(name string) string {
+	v, ok := os.LookupEnv(name)
+	if !ok {
+		log.Fatal().Msgf("no $%s given", name)
+	}
+	log.Debug().Str(name, v).Msg("read env variable")
+	return v
+}
+
 func init() {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		if err := http.ListenAndServe(":2112", nil); err != nil {
+		if err := http.ListenAndServe(readVar("PROMETHEUS_ADDR"), nil); err != nil {
 			log.Fatal().Err(err)
 		}
 	}()
@@ -60,15 +69,6 @@ func init() {
 	for i := 0; i < 20; i++ {
 		go core.EventLoop()
 	}
-}
-
-func readVar(name string) string {
-	v, ok := os.LookupEnv(name)
-	if !ok {
-		log.Fatal().Msgf("no $%s given", name)
-	}
-	log.Debug().Str(name, v).Msg("read env variable")
-	return v
 }
 
 func connect(stop chan struct{}, wgStop *sync.WaitGroup) {
