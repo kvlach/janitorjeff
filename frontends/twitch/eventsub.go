@@ -101,8 +101,9 @@ func init() {
 			}
 
 			on := &core.StreamOnline{
-				When: onlineEvent.StartedAt.Time,
-				Here: h,
+				When:     onlineEvent.StartedAt.Time,
+				Here:     h,
+				Frontend: Frontend,
 			}
 
 			core.EventStreamOnline <- on
@@ -118,8 +119,9 @@ func init() {
 			}
 
 			off := &core.StreamOffline{
-				When: time.Now().UTC(),
-				Here: h,
+				When:     time.Now().UTC(),
+				Here:     h,
+				Frontend: Frontend,
 			}
 			core.EventStreamOffline <- off
 
@@ -144,11 +146,12 @@ func init() {
 			}
 
 			r := &core.RedeemClaim{
-				ID:     redeem.Reward.ID,
-				Input:  redeem.UserInput,
-				When:   redeem.RedeemedAt.Time,
-				Author: a,
-				Here:   h,
+				ID:       redeem.Reward.ID,
+				Input:    redeem.UserInput,
+				When:     redeem.RedeemedAt.Time,
+				Author:   a,
+				Here:     h,
+				Frontend: Frontend,
 			}
 
 			core.EventRedeemClaim <- r
