@@ -26,24 +26,24 @@ var (
 
 	EventRedeemClaim        = make(chan *RedeemClaim)
 	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
-	eventRedeemClaimCounter = promauto.NewCounter(prometheus.CounterOpts{
+	eventRedeemClaimCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_redeem_claim_total",
 		Help: "Total number of received redeem claim events.",
-	})
+	}, []string{"frontend", "person", "place"})
 
 	EventStreamOnline        = make(chan *StreamOnline)
 	EventStreamOnlineHooks   = HooksNew[*StreamOnline](5)
-	eventStreamOnlineCounter = promauto.NewCounter(prometheus.CounterOpts{
+	eventStreamOnlineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_stream_online_total",
 		Help: "Total number of received stream online events.",
-	})
+	}, []string{"frontend", "place"})
 
 	EventStreamOffline        = make(chan *StreamOffline)
 	EventStreamOfflineHooks   = HooksNew[*StreamOffline](5)
-	eventStreamOfflineCounter = promauto.NewCounter(prometheus.CounterOpts{
+	eventStreamOfflineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_stream_offline_total",
 		Help: "Total number of received stream offline events.",
-	})
+	}, []string{"frontend", "place"})
 )
 
 func (m *Message) Hooks() *Hooks[*Message] {
@@ -51,11 +51,12 @@ func (m *Message) Hooks() *Hooks[*Message] {
 }
 
 type RedeemClaim struct {
-	ID     string
-	Input  string
-	When   time.Time
-	Author Personifier
-	Here   Placer
+	ID       string
+	Input    string
+	When     time.Time
+	Author   Personifier
+	Here     Placer
+	Frontend Frontender
 }
 
 func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
@@ -63,8 +64,9 @@ func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
 }
 
 type StreamOnline struct {
-	When time.Time
-	Here Placer
+	When     time.Time
+	Here     Placer
+	Frontend Frontender
 }
 
 func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
@@ -72,8 +74,9 @@ func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
 }
 
 type StreamOffline struct {
-	When time.Time
-	Here Placer
+	When     time.Time
+	Here     Placer
+	Frontend Frontender
 }
 
 func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {
@@ -118,7 +121,21 @@ func EventLoop() {
 			}
 
 		case rc := <-EventRedeemClaim:
-			eventRedeemClaimCounter.Inc()
+			person, err := rc.Author.Scope()
+			if err != nil {
+				log.Error().Err(err)
+			}
+			place, err := rc.Here.ScopeLogical()
+			if err != nil {
+				log.Error().Err(err)
+			}
+			eventRedeemClaimCounter.
+				With(prometheus.Labels{
+					"frontend": rc.Frontend.Name(),
+					"person":   strconv.FormatInt(person, 10),
+					"place":    strconv.FormatInt(place, 10),
+				}).
+				Inc()
 			log.Debug().
 				Str("id", rc.ID).
 				Str("input", rc.Input).
@@ -127,7 +144,16 @@ func EventLoop() {
 			EventRedeemClaimHooks.Run(rc)
 
 		case on := <-EventStreamOnline:
-			eventStreamOnlineCounter.Inc()
+			place, err := on.Here.ScopeLogical()
+			if err != nil {
+				log.Error().Err(err)
+			}
+			eventStreamOnlineCounter.
+				With(prometheus.Labels{
+					"frontend": on.Frontend.Name(),
+					"place":    strconv.FormatInt(place, 10),
+				}).
+				Inc()
 			log.Debug().
 				Str("when", on.When.String()).
 				Msg("received stream online event")
@@ -143,7 +169,16 @@ func EventLoop() {
 			EventStreamOnlineHooks.Run(on)
 
 		case off := <-EventStreamOffline:
-			eventStreamOfflineCounter.Inc()
+			place, err := off.Here.ScopeLogical()
+			if err != nil {
+				log.Error().Err(err)
+			}
+			eventStreamOfflineCounter.
+				With(prometheus.Labels{
+					"frontend": off.Frontend.Name(),
+					"place":    strconv.FormatInt(place, 10),
+				}).
+				Inc()
 			log.Debug().
 				Str("when", off.When.String()).
 				Msg("received stream offline event")
