@@ -59,8 +59,8 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (admin) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -113,7 +113,7 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (c adminShow) Run(m *core.Message) (any, error, error) {
+func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -122,7 +122,7 @@ func (c adminShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, nil
@@ -133,7 +133,7 @@ func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, urr, nil
 }
 
-func (c adminShow) text(m *core.Message) (string, error, error) {
+func (c adminShow) text(m *core.Message) (string, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, nil
@@ -150,7 +150,7 @@ func (adminShow) fmt(urr error, t Target) string {
 	}
 }
 
-func (adminShow) core(m *core.Message) (Target, error, error) {
+func (adminShow) core(m *core.Message) (Target, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return Target{}, nil, err
@@ -208,9 +208,9 @@ func (adminSet) Init() error {
 	return nil
 }
 
-func (c adminSet) Run(m *core.Message) (any, error, error) {
+func (c adminSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -221,7 +221,7 @@ func (c adminSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c adminSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c adminSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	t, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -232,7 +232,7 @@ func (c adminSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func (c adminSet) text(m *core.Message) (string, error, error) {
+func (c adminSet) text(m *core.Message) (string, core.Urr, error) {
 	t, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -300,7 +300,7 @@ func (adminDelete) Init() error {
 	return nil
 }
 
-func (c adminDelete) Run(m *core.Message) (any, error, error) {
+func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -309,7 +309,7 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c adminDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c adminDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -320,7 +320,7 @@ func (c adminDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, urr, nil
 }
 
-func (c adminDelete) text(m *core.Message) (string, error, error) {
+func (c adminDelete) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -328,7 +328,7 @@ func (c adminDelete) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (adminDelete) fmt(urr error) string {
+func (adminDelete) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Deleted your mask."
@@ -337,7 +337,7 @@ func (adminDelete) fmt(urr error) string {
 	}
 }
 
-func (adminDelete) core(m *core.Message) (error, error) {
+func (adminDelete) core(m *core.Message) (core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err

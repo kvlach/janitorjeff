@@ -56,9 +56,9 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -69,7 +69,7 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (any, error, error) {
+func (c normal) discord(m *core.Message) (any, core.Urr, error) {
 	res, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -86,7 +86,7 @@ func (c normal) discord(m *core.Message) (any, error, error) {
 	return embed, urr, nil
 }
 
-func (c normal) text(m *core.Message) (string, error, error) {
+func (c normal) text(m *core.Message) (string, core.Urr, error) {
 	res, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -94,17 +94,17 @@ func (c normal) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, res), urr, nil
 }
 
-func (normal) fmt(urr error, res page) string {
+func (normal) fmt(urr core.Urr, res page) string {
 	switch urr {
 	case nil:
 		return res.Canonicalurl
-	case errNoResult:
+	case UrrNoResult:
 		return "Couldn't find anything."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (normal) core(m *core.Message) (page, error, error) {
+func (normal) core(m *core.Message) (page, core.Urr, error) {
 	return Search(m.RawArgs(0))
 }

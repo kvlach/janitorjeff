@@ -1,7 +1,6 @@
 package prefix
 
 import (
-	"errors"
 	"fmt"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -15,8 +14,8 @@ func getAdminFlags(m *core.Message) (*flags, []string, error) {
 }
 
 var (
-	errAdmin           = errors.New("prefixes of type 'admin' are static, change the bot's config instead")
-	errMoreThanOneType = errors.New("only one type per prefix allowed")
+	UrrAdmin           = core.UrrNew("prefixes of type 'admin' are static, change the bot's config instead")
+	UrrMoreThanOneType = core.UrrNew("only one type per prefix allowed")
 )
 
 var Admin = admin{}
@@ -70,8 +69,8 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (admin) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////
@@ -124,7 +123,7 @@ func (adminAdd) Init() error {
 	return nil
 }
 
-func (c adminAdd) Run(m *core.Message) (any, error, error) {
+func (c adminAdd) Run(m *core.Message) (any, core.Urr, error) {
 	prefix, collision, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -142,22 +141,22 @@ func (c adminAdd) Run(m *core.Message) (any, error, error) {
 	return c.fmt(urr, m, prefix, collision), urr, nil
 }
 
-func (adminAdd) fmt(urr error, m *core.Message, prefix, collision string) any {
+func (adminAdd) fmt(urr core.Urr, m *core.Message, prefix, collision string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
-	case core.ErrMissingArgs:
+	case core.UrrMissingArgs:
 		return m.Usage()
-	case ErrExists:
+	case UrrExists:
 		return fmt.Sprintf("Prefix %s already exists.", prefix)
-	case ErrCustomCommandExists:
+	case UrrCustomCommandExists:
 		return fmt.Sprintf("Can't add the prefix %s. A custom command with the name %s exists and would collide with the built-in command of the same name. Either change the custom command or use a different prefix.", prefix, collision)
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (adminAdd) core(m *core.Message) (string, string, error, error) {
+func (adminAdd) core(m *core.Message) (string, string, core.Urr, error) {
 	fs, args, err := getAdminFlags(m)
 	if err != nil {
 		return "", "", nil, err
@@ -165,14 +164,14 @@ func (adminAdd) core(m *core.Message) (string, string, error, error) {
 
 	t := fs.typeFlag
 	if core.OnlyOneBitSet(int(t)) == false {
-		return "", "", errMoreThanOneType, nil
+		return "", "", UrrMoreThanOneType, nil
 	}
 	if t == core.Admin {
-		return "", "", errAdmin, nil
+		return "", "", UrrAdmin, nil
 	}
 
 	if len(args) == 0 {
-		return "", "", core.ErrMissingArgs, nil
+		return "", "", core.UrrMissingArgs, nil
 	}
 	prefix := args[0]
 
@@ -232,7 +231,7 @@ func (adminDelete) Init() error {
 	return nil
 }
 
-func (c adminDelete) Run(m *core.Message) (any, error, error) {
+func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
 	prefix, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -252,11 +251,11 @@ func (adminDelete) fmt(urr error, m *core.Message, prefix string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
-	case core.ErrMissingArgs:
+	case core.UrrMissingArgs:
 		return m.Usage()
-	case ErrNotFound:
+	case UrrNotFound:
 		return fmt.Sprintf("Prefix %s doesn't exist.", prefix)
-	case ErrOneLeft:
+	case UrrOneLeft:
 		resetCmd := core.Format(AdminReset, m.Command.Prefix)
 		switch m.Frontend.Type() {
 		case discord.Frontend.Type():
@@ -270,9 +269,9 @@ func (adminDelete) fmt(urr error, m *core.Message, prefix string) any {
 	}
 }
 
-func (adminDelete) core(m *core.Message) (string, error, error) {
+func (adminDelete) core(m *core.Message) (string, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return "", core.ErrMissingArgs, nil
+		return "", core.UrrMissingArgs, nil
 	}
 
 	fs, args, err := getAdminFlags(m)
@@ -337,7 +336,7 @@ func (adminList) Init() error {
 	return nil
 }
 
-func (c adminList) Run(m *core.Message) (any, error, error) {
+func (c adminList) Run(m *core.Message) (any, core.Urr, error) {
 	prefixes, err := c.core(m)
 	return fmt.Sprint(prefixes), nil, err
 }
@@ -402,7 +401,7 @@ func (adminReset) Init() error {
 	return nil
 }
 
-func (c adminReset) Run(m *core.Message) (any, error, error) {
+func (c adminReset) Run(m *core.Message) (any, core.Urr, error) {
 	return "Reset prefixes.", nil, c.core(m)
 }
 

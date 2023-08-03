@@ -57,7 +57,7 @@ func (normalTTS) Init() error {
 	return nil
 }
 
-func (normalTTS) Run(m *core.Message) (any, error, error) {
+func (normalTTS) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedStart.Run(m)
 }
 
@@ -112,10 +112,10 @@ func (normalVoice) Init() error {
 	return nil
 }
 
-func (normalVoice) Run(m *core.Message) (any, error, error) {
+func (normalVoice) Run(m *core.Message) (any, core.Urr, error) {
 	switch len(m.Command.Args) {
 	case 0:
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	case 1:
 		return AdvancedVoiceShow.Run(m)
 	default:
@@ -176,7 +176,7 @@ func (normalSubOnly) Init() error {
 	return nil
 }
 
-func (normalSubOnly) Run(m *core.Message) (any, error, error) {
+func (normalSubOnly) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedSubOnlyShow.Run(m)
 }
 
@@ -230,7 +230,7 @@ func (normalSubOnlyOn) Init() error {
 	return nil
 }
 
-func (normalSubOnlyOn) Run(m *core.Message) (any, error, error) {
+func (normalSubOnlyOn) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedSubOnlyOn.Run(m)
 }
 
@@ -284,6 +284,6 @@ func (normalSubOnlyOff) Init() error {
 	return nil
 }
 
-func (normalSubOnlyOff) Run(m *core.Message) (any, error, error) {
+func (normalSubOnlyOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedSubOnlyOff.Run(m)
 }

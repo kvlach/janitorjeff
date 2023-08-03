@@ -63,8 +63,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ///////////
@@ -119,9 +119,9 @@ func (advancedStart) Init() error {
 	return nil
 }
 
-func (c advancedStart) Run(m *core.Message) (any, error, error) {
+func (c advancedStart) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -132,7 +132,7 @@ func (c advancedStart) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedStart) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedStart) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	c.core(m)
 	embed := &dg.MessageEmbed{
 		Description: "Monitoring channel.",
@@ -140,7 +140,7 @@ func (c advancedStart) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 	return embed, nil, nil
 }
 
-func (c advancedStart) text(m *core.Message) (string, error, error) {
+func (c advancedStart) text(m *core.Message) (string, core.Urr, error) {
 	c.core(m)
 	return "Monitoring channel.", nil, nil
 }
@@ -202,9 +202,9 @@ func (advancedStop) Init() error {
 	return nil
 }
 
-func (c advancedStop) Run(m *core.Message) (any, error, error) {
+func (c advancedStop) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -215,20 +215,26 @@ func (c advancedStop) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
-	urr := c.core(m)
+func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	urr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(urr),
 	}
 	return embed, urr, nil
 }
 
-func (c advancedStop) text(m *core.Message) (string, error, error) {
-	urr := c.core(m)
+func (c advancedStop) text(m *core.Message) (string, core.Urr, error) {
+	urr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
 	return c.fmt(urr), urr, nil
 }
 
-func (c advancedStop) fmt(urr error) string {
+func (c advancedStop) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Stopped monitoring."
@@ -237,7 +243,7 @@ func (c advancedStop) fmt(urr error) string {
 	}
 }
 
-func (advancedStop) core(m *core.Message) error {
+func (advancedStop) core(m *core.Message) (core.Urr, error) {
 	twitchUsername := strings.ToLower(m.Command.Args[0])
 	return Stop(twitchUsername)
 }
@@ -302,8 +308,8 @@ func (advancedVoice) Init() error {
 	return nil
 }
 
-func (c advancedVoice) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (c advancedVoice) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////////
@@ -356,9 +362,9 @@ func (advancedVoiceShow) Init() error {
 	return nil
 }
 
-func (c advancedVoiceShow) Run(m *core.Message) (any, error, error) {
+func (c advancedVoiceShow) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -369,7 +375,7 @@ func (c advancedVoiceShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -380,7 +386,7 @@ func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, error, er
 	return embed, nil, nil
 }
 
-func (c advancedVoiceShow) text(m *core.Message) (string, error, error) {
+func (c advancedVoiceShow) text(m *core.Message) (string, core.Urr, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -458,9 +464,9 @@ func (advancedVoiceSet) Init() error {
 	return nil
 }
 
-func (c advancedVoiceSet) Run(m *core.Message) (any, error, error) {
+func (c advancedVoiceSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -471,7 +477,7 @@ func (c advancedVoiceSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -485,7 +491,7 @@ func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, error, err
 	return embed, nil, nil
 }
 
-func (c advancedVoiceSet) text(m *core.Message) (string, error, error) {
+func (c advancedVoiceSet) text(m *core.Message) (string, core.Urr, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -573,8 +579,8 @@ func (advancedSubOnly) Init() error {
 	return nil
 }
 
-func (c advancedSubOnly) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (c advancedSubOnly) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////////
@@ -627,7 +633,7 @@ func (advancedSubOnlyOn) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
+func (c advancedSubOnlyOn) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -636,7 +642,7 @@ func (c advancedSubOnlyOn) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -647,7 +653,7 @@ func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, error, er
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyOn) text(m *core.Message) (string, error, error) {
+func (c advancedSubOnlyOn) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -717,7 +723,7 @@ func (advancedSubOnlyOff) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
+func (c advancedSubOnlyOff) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -726,7 +732,7 @@ func (c advancedSubOnlyOff) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -737,7 +743,7 @@ func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, error, e
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyOff) text(m *core.Message) (string, error, error) {
+func (c advancedSubOnlyOff) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -807,7 +813,7 @@ func (advancedSubOnlyShow) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
+func (c advancedSubOnlyShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -816,7 +822,7 @@ func (c advancedSubOnlyShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	subonly, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -827,7 +833,7 @@ func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, error, 
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyShow) text(m *core.Message) (string, error, error) {
+func (c advancedSubOnlyShow) text(m *core.Message) (string, core.Urr, error) {
 	subonly, err := c.core(m)
 	if err != nil {
 		return "", nil, err

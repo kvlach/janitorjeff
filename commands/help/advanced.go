@@ -48,6 +48,6 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
 	return run(core.Advanced, m)
 }

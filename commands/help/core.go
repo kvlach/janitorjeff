@@ -1,7 +1,6 @@
 package help
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -27,12 +26,12 @@ const (
 	cmdUsageArgs   = "<command...>"
 )
 
-var errCommandNotFound = errors.New("Command could not be found.")
+var UrrCommandNotFound = core.UrrNew("Command could not be found.")
 
-func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, []string, error) {
+func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, []string, core.Urr) {
 	cmdStatic, index, err := core.Commands.Match(t, m, args)
 	if err != nil {
-		return nil, nil, nil, errCommandNotFound
+		return nil, nil, nil, UrrCommandNotFound
 	}
 
 	cmd := &core.Command{
@@ -122,7 +121,7 @@ func renderDiscord(cmd *core.Command, aliases []string, examples []string) *dg.M
 	return embed
 }
 
-func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, error) {
+func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	cmd, aliases, examples, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if urr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(urr)}, urr, nil
@@ -130,7 +129,7 @@ func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, error, e
 	return renderDiscord(cmd, aliases, examples), nil, nil
 }
 
-func runText(t core.CommandType, m *core.Message) (string, error, error) {
+func runText(t core.CommandType, m *core.Message) (string, core.Urr, error) {
 	cmd, aliases, _, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if urr != nil {
 		return fmt.Sprint(urr), urr, nil
@@ -138,9 +137,9 @@ func runText(t core.CommandType, m *core.Message) (string, error, error) {
 	return renderText(cmd, aliases), nil, nil
 }
 
-func run(t core.CommandType, m *core.Message) (any, error, error) {
+func run(t core.CommandType, m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {

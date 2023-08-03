@@ -45,7 +45,7 @@ func (f *Flags) Usage() {
 func (f *Flags) Parse() ([]string, error) {
 	err := f.FlagSet.Parse(f.Msg.Command.Args)
 	if err != nil {
-		err = ErrSilence
+		err = UrrSilence
 	}
 	return f.FlagSet.Args(), err
 }

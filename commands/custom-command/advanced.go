@@ -90,8 +90,8 @@ func (advanced) writeCustomCommand(m *core.Message) {
 	m.Write(resp, nil)
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////
@@ -144,9 +144,9 @@ func (advancedAdd) Init() error {
 	return nil
 }
 
-func (c advancedAdd) Run(m *core.Message) (any, error, error) {
+func (c advancedAdd) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -157,7 +157,7 @@ func (c advancedAdd) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -172,7 +172,7 @@ func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, urr, nil
 }
 
-func (c advancedAdd) text(m *core.Message) (string, error, error) {
+func (c advancedAdd) text(m *core.Message) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -183,20 +183,20 @@ func (c advancedAdd) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedAdd) fmt(urr error, trigger string) string {
+func (advancedAdd) fmt(urr core.Urr, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been added.", trigger)
-	case ErrTriggerExists:
+	case UrrTriggerExists:
 		return fmt.Sprintf("Custom command %s already exists.", trigger)
-	case ErrBuiltinCommand:
+	case UrrBuiltinCommand:
 		return fmt.Sprintf("Command %s already exists as a built-in command.", trigger)
 	default:
 		return "Something went wrong..."
 	}
 }
 
-func (c advancedAdd) core(m *core.Message) (string, error, error) {
+func (c advancedAdd) core(m *core.Message) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
@@ -264,9 +264,9 @@ func (advancedEdit) Init() error {
 	return nil
 }
 
-func (c advancedEdit) Run(m *core.Message) (any, error, error) {
+func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -277,7 +277,7 @@ func (c advancedEdit) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -292,7 +292,7 @@ func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, urr, nil
 }
 
-func (c advancedEdit) text(m *core.Message) (string, error, error) {
+func (c advancedEdit) text(m *core.Message) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -303,18 +303,18 @@ func (c advancedEdit) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedEdit) fmt(urr error, trigger string) string {
+func (advancedEdit) fmt(urr core.Urr, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been modified.", trigger)
-	case ErrTriggerNotFound:
+	case UrrTriggerNotFound:
 		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
 	}
 }
 
-func (advancedEdit) core(m *core.Message) (string, error, error) {
+func (advancedEdit) core(m *core.Message) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
@@ -382,9 +382,9 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -395,7 +395,7 @@ func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -410,7 +410,7 @@ func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error
 	return embed, urr, nil
 }
 
-func (c advancedDelete) text(m *core.Message) (string, error, error) {
+func (c advancedDelete) text(m *core.Message) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -421,18 +421,18 @@ func (c advancedDelete) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, trigger), urr, nil
 }
 
-func (advancedDelete) fmt(urr error, trigger string) string {
+func (advancedDelete) fmt(urr core.Urr, trigger string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Custom command %s has been deleted.", trigger)
-	case ErrTriggerNotFound:
+	case UrrTriggerNotFound:
 		return fmt.Sprintf("Custom command %s doesn't exist.", trigger)
 	default:
 		return "Something went wrong..."
 	}
 }
 
-func (advancedDelete) core(m *core.Message) (string, error, error) {
+func (advancedDelete) core(m *core.Message) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()
@@ -499,7 +499,7 @@ func (advancedList) Init() error {
 	return nil
 }
 
-func (c advancedList) Run(m *core.Message) (any, error, error) {
+func (c advancedList) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -508,7 +508,7 @@ func (c advancedList) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	triggers, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -532,7 +532,7 @@ func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, nil, nil
 }
 
-func (c advancedList) text(m *core.Message) (string, error, error) {
+func (c advancedList) text(m *core.Message) (string, core.Urr, error) {
 	triggers, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -604,9 +604,9 @@ func (advancedHistory) Init() error {
 	return nil
 }
 
-func (c advancedHistory) Run(m *core.Message) (any, error, error) {
+func (c advancedHistory) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -636,7 +636,7 @@ func formatDelete(timestamp int64) string {
 	return fmt.Sprintf("deleted %s by @", when)
 }
 
-func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, history, err := c.core(m)
 	if err != nil {
 		return nil, nil, err

@@ -57,18 +57,18 @@ func (d *Message) send(msg any, urr error, ping bool) (*core.Message, error) {
 	}
 }
 
-func (d *Message) Send(msg any, urr error) (*core.Message, error) {
+func (d *Message) Send(msg any, urr core.Urr) (*core.Message, error) {
 	return d.send(msg, urr, false)
 }
 
-func (d *Message) Ping(msg any, urr error) (*core.Message, error) {
+func (d *Message) Ping(msg any, urr core.Urr) (*core.Message, error) {
 	return d.send(msg, urr, true)
 }
 
-func (d *Message) Write(msg any, urr error) (*core.Message, error) {
+func (d *Message) Write(msg any, urr core.Urr) (*core.Message, error) {
 	return d.Send(msg, urr)
 }
 
-func (d *Message) Natural(msg any, urr error) (*core.Message, error) {
+func (d *Message) Natural(msg any, urr core.Urr) (*core.Message, error) {
 	return d.Send(msg, urr)
 }

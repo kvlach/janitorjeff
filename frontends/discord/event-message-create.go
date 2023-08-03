@@ -92,18 +92,18 @@ func (d *MessageCreate) send(msg any, urr error, ping bool) (*core.Message, erro
 	}
 }
 
-func (d *MessageCreate) Send(msg any, urr error) (*core.Message, error) {
+func (d *MessageCreate) Send(msg any, urr core.Urr) (*core.Message, error) {
 	return d.send(msg, urr, false)
 }
 
-func (d *MessageCreate) Ping(msg any, urr error) (*core.Message, error) {
+func (d *MessageCreate) Ping(msg any, urr core.Urr) (*core.Message, error) {
 	return d.send(msg, urr, true)
 }
 
-func (d *MessageCreate) Write(msg any, urr error) (*core.Message, error) {
+func (d *MessageCreate) Write(msg any, urr core.Urr) (*core.Message, error) {
 	return d.Send(msg, urr)
 }
 
-func (d *MessageCreate) Natural(msg any, urr error) (*core.Message, error) {
+func (d *MessageCreate) Natural(msg any, urr core.Urr) (*core.Message, error) {
 	return d.Send(msg, urr)
 }

@@ -51,7 +51,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, error, error) {
+func (normal) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedTalk.Run(m)
 }
 
@@ -108,7 +108,7 @@ func (normalReply) Init() error {
 	return nil
 }
 
-func (normalReply) Run(m *core.Message) (any, error, error) {
+func (normalReply) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyShow.Run(m)
 }
 
@@ -162,7 +162,7 @@ func (normalReplyOn) Init() error {
 	return nil
 }
 
-func (normalReplyOn) Run(m *core.Message) (any, error, error) {
+func (normalReplyOn) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOn.Run(m)
 }
 
@@ -216,7 +216,7 @@ func (normalReplyOff) Init() error {
 	return nil
 }
 
-func (normalReplyOff) Run(m *core.Message) (any, error, error) {
+func (normalReplyOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOff.Run(m)
 }
 
@@ -270,7 +270,7 @@ func (normalInterval) Init() error {
 	return nil
 }
 
-func (normalInterval) Run(m *core.Message) (any, error, error) {
+func (normalInterval) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedIntervalShow.Run(m)
 	}

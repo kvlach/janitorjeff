@@ -2,7 +2,6 @@ package urban_dictionary
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -20,7 +21,7 @@ const (
 	random = "/random"
 )
 
-var errNoResults = errors.New("No results found.")
+var UrrNoResults = core.UrrNew("No results found.")
 
 type definition struct {
 	Definition  string    `json:"definition"`
@@ -49,7 +50,7 @@ func cleanLinks(s string) string {
 	})
 }
 
-func read(u string) (definition, error, error) {
+func read(u string) (definition, core.Urr, error) {
 	resp, err := http.Get(u)
 	if err != nil {
 		return definition{}, nil, err
@@ -67,7 +68,7 @@ func read(u string) (definition, error, error) {
 	}
 
 	if len(defs.List) == 0 {
-		return definition{}, errNoResults, nil
+		return definition{}, UrrNoResults, nil
 	}
 
 	def := defs.List[0]
@@ -76,15 +77,15 @@ func read(u string) (definition, error, error) {
 	return def, nil, nil
 }
 
-func Search(term string) (definition, error, error) {
+func Search(term string) (definition, core.Urr, error) {
 	return read(base + define + url.QueryEscape(term))
 }
 
-func Random() (definition, error, error) {
+func Random() (definition, core.Urr, error) {
 	return read(base + random)
 }
 
-func renderDiscord(def definition, urr error) *dg.MessageEmbed {
+func renderDiscord(def definition, urr core.Urr) *dg.MessageEmbed {
 	if urr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(urr)}
 	}
@@ -112,7 +113,7 @@ func renderDiscord(def definition, urr error) *dg.MessageEmbed {
 	return embed
 }
 
-func renderText(def definition, urr error) string {
+func renderText(def definition, urr core.Urr) string {
 	if urr != nil {
 		return fmt.Sprint(urr)
 	}

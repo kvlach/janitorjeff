@@ -56,8 +56,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////////
@@ -116,8 +116,8 @@ func (advancedDirectors) Init() error {
 	return nil
 }
 
-func (advancedDirectors) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedDirectors) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ///////////////////
@@ -170,9 +170,9 @@ func (advancedDirectorsAdd) Init() error {
 	return nil
 }
 
-func (c advancedDirectorsAdd) Run(m *core.Message) (any, error, error) {
+func (c advancedDirectorsAdd) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -183,7 +183,7 @@ func (c advancedDirectorsAdd) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedDirectorsAdd) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedDirectorsAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -194,7 +194,7 @@ func (c advancedDirectorsAdd) discord(m *core.Message) (*dg.MessageEmbed, error,
 	return embed, nil, nil
 }
 
-func (c advancedDirectorsAdd) text(m *core.Message) (string, error, error) {
+func (c advancedDirectorsAdd) text(m *core.Message) (string, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -263,9 +263,9 @@ func (advancedDirectorsDelete) Init() error {
 	return nil
 }
 
-func (c advancedDirectorsDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedDirectorsDelete) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -276,7 +276,7 @@ func (c advancedDirectorsDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedDirectorsDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedDirectorsDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -287,7 +287,7 @@ func (c advancedDirectorsDelete) discord(m *core.Message) (*dg.MessageEmbed, err
 	return embed, nil, nil
 }
 
-func (c advancedDirectorsDelete) text(m *core.Message) (string, error, error) {
+func (c advancedDirectorsDelete) text(m *core.Message) (string, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return "", nil, err

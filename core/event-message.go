@@ -155,21 +155,21 @@ type Messenger interface {
 
 	// Send sends a message to the appropriate scope, resp could be nil
 	// depending on the frontend.
-	Send(msg any, urr error) (resp *Message, err error)
+	Send(msg any, urr Urr) (resp *Message, err error)
 
 	// Ping works the same as Send except the user is also pinged.
-	Ping(msg any, urr error) (resp *Message, err error)
+	Ping(msg any, urr Urr) (resp *Message, err error)
 
 	// Write either calls Send or Ping depending on the frontend. This is what
 	// should be used in most cases.
-	Write(msg any, urr error) (resp *Message, err error)
+	Write(msg any, urr Urr) (resp *Message, err error)
 
 	// Natural will try to emulate a response as if an actual human had written
 	// it. Often the bot uses markers to distinguish its responses (for example,
 	// on Twitch it replies with the following format: @person -> <resp>), which
 	// are not natural looking. To add to the effect, randomness may be used to
 	// only sometimes mention the person.
-	Natural(msg any, urr error) (resp *Message, err error)
+	Natural(msg any, urr Urr) (resp *Message, err error)
 }
 
 type Message struct {
@@ -334,7 +334,7 @@ func (m *Message) CommandRun() (*Message, error) {
 	}
 
 	resp, urr, err := m.Command.Run(m)
-	if err == ErrSilence {
+	if err == UrrSilence {
 		return nil, err
 	}
 	if err != nil {

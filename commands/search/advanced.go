@@ -55,9 +55,9 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (c advanced) Run(m *core.Message) (any, error, error) {
+func (c advanced) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -68,7 +68,7 @@ func (c advanced) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	matches := c.core(m)
 
 	var desc strings.Builder
@@ -92,7 +92,7 @@ func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func (c advanced) text(m *core.Message) (string, error, error) {
+func (c advanced) text(m *core.Message) (string, core.Urr, error) {
 	matches := c.core(m)
 
 	var b strings.Builder

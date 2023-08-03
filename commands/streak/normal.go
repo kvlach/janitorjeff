@@ -53,7 +53,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, error, error) {
+func (normal) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedShow.Run(m)
 }
 
@@ -107,7 +107,7 @@ func (normalOn) Init() error {
 	return nil
 }
 
-func (normalOn) Run(m *core.Message) (any, error, error) {
+func (normalOn) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedOn.Run(m)
 }
 
@@ -161,7 +161,7 @@ func (normalOff) Init() error {
 	return nil
 }
 
-func (normalOff) Run(m *core.Message) (any, error, error) {
+func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedOff.Run(m)
 }
 
@@ -215,7 +215,7 @@ func (normalRedeem) Init() error {
 	return nil
 }
 
-func (normalRedeem) Run(m *core.Message) (any, error, error) {
+func (normalRedeem) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedRedeemShow.Run(m)
 	}
@@ -272,7 +272,7 @@ func (normalGrace) Init() error {
 	return nil
 }
 
-func (normalGrace) Run(m *core.Message) (any, error, error) {
+func (normalGrace) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedGraceShow.Run(m)
 	}

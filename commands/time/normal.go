@@ -88,7 +88,7 @@ func (normalTime) addReminder(m *core.Message) {
 	m.Write(resp, urr)
 }
 
-func (normalTime) Run(m *core.Message) (any, error, error) {
+func (normalTime) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedNow.Run(m)
 }
 
@@ -145,7 +145,7 @@ func (normalTimezone) Init() error {
 	return nil
 }
 
-func (normalTimezone) Run(m *core.Message) (any, error, error) {
+func (normalTimezone) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedTimezoneShow.Run(m)
 	}

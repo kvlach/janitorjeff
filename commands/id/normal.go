@@ -1,7 +1,6 @@
 package id
 
 import (
-	"errors"
 	"fmt"
 
 	"git.sr.ht/~slowtyper/janitorjeff/commands/nick"
@@ -11,7 +10,7 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var errIDNotFound = errors.New("Couldn't find ID for the specified user. Does this user exist?")
+var UrrIDNotFound = core.UrrNew("Couldn't find ID for the specified user. Does this user exist?")
 
 var Normal = normal{}
 
@@ -59,9 +58,9 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -72,7 +71,7 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	id, err := c.core(m)
 	resp, urr := c.fmt(err, id)
 	embed := &dg.MessageEmbed{
@@ -81,7 +80,7 @@ func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, urr, nil
 }
 
-func (c normal) text(m *core.Message) (string, error, error) {
+func (c normal) text(m *core.Message) (string, core.Urr, error) {
 	id, err := c.core(m)
 	resp, urr := c.fmt(err, id)
 	return resp, urr, nil
@@ -90,7 +89,7 @@ func (c normal) text(m *core.Message) (string, error, error) {
 func (normal) fmt(err error, id string) (string, error) {
 	var urr error
 	if err != nil {
-		urr = errIDNotFound
+		urr = UrrIDNotFound
 	}
 
 	switch urr {

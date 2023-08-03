@@ -1,14 +1,12 @@
 package mask
 
 import (
-	"errors"
-
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"git.sr.ht/~slowtyper/gosafe"
 )
 
-var errMaskNotSet = errors.New("No mask has been set.")
+var UrrMaskNotSet = core.UrrNew("No mask has been set.")
 
 type Target struct {
 	Person int64
@@ -22,7 +20,7 @@ var masks = gosafe.Map[int64, Target]{}
 func Show(person int64) (Target, error, error) {
 	t, ok := masks.Get(person)
 	if !ok {
-		return Target{}, errMaskNotSet, nil
+		return Target{}, UrrMaskNotSet, nil
 	}
 	return t, nil, nil
 }
@@ -48,9 +46,9 @@ func Set(m core.Messenger, person int64, userID string, locID string) (Target, e
 
 }
 
-func Delete(person int64) error {
+func Delete(person int64) core.Urr {
 	if _, ok := masks.Get(person); !ok {
-		return errMaskNotSet
+		return UrrMaskNotSet
 	}
 	masks.Delete(person)
 	return nil

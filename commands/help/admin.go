@@ -48,6 +48,6 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, error, error) {
+func (admin) Run(m *core.Message) (any, core.Urr, error) {
 	return run(core.Admin, m)
 }
