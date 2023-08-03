@@ -78,7 +78,7 @@ var normalHelp = &dg.MessageEmbed{
 	Color: embedColor,
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -87,14 +87,14 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return normalHelp, core.ErrMissingArgs, nil
+		return normalHelp, core.UrrMissingArgs, nil
 	}
 	return c.play(m)
 }
 
-func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normal) play(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	rounds, err := strconv.Atoi(m.Command.Args[0])
 	if err != nil {
 		return normalHelp, nil, nil
@@ -120,7 +120,7 @@ func (c normal) play(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return c.playF(m.Here.IDExact(), here, rounds)
 }
 
-func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, error, error) {
+func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, core.Urr, error) {
 	write(channel, &dg.MessageEmbed{
 		Title:       "🔥 **Free-For-All** 🔥",
 		Description: "Game starting in a few seconds!",
@@ -153,5 +153,5 @@ func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, e
 
 	write(channel, generateScorecard(game.Scores(here)))
 	game.Playing(here, false)
-	return nil, nil, core.ErrSilence
+	return nil, nil, core.UrrSilence
 }

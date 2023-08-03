@@ -96,8 +96,8 @@ func (advanced) discordAppCommand() {
 	discord.RegisterAppCommand(cmd)
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -150,7 +150,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, error, error) {
+func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -164,30 +164,30 @@ func (c advancedShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedShow) discord(nick string, urr error) (*dg.MessageEmbed, error, error) {
+func (c advancedShow) discord(nick string, urr error) (*dg.MessageEmbed, core.Urr, error) {
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(urr, fmt.Sprintf("**%s**", nick)),
 	}
 	return embed, urr, nil
 }
 
-func (c advancedShow) text(nick string, urr error) (string, error, error) {
+func (c advancedShow) text(nick string, urr error) (string, core.Urr, error) {
 	nick = fmt.Sprintf("'%s'", nick)
 	return c.fmt(urr, nick), urr, nil
 }
 
-func (advancedShow) fmt(urr error, nick string) string {
+func (advancedShow) fmt(urr core.Urr, nick string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
-	case ErrPersonNotFound:
+	case UrrPersonNotFound:
 		return "You have not set a nickname."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedShow) core(m *core.Message) (string, error, error) {
+func (advancedShow) core(m *core.Message) (string, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
@@ -251,9 +251,9 @@ func (advancedSet) Init() error {
 	return nil
 }
 
-func (c advancedSet) Run(m *core.Message) (any, error, error) {
+func (c advancedSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	nick, urr, err := c.core(m)
@@ -269,19 +269,19 @@ func (c advancedSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSet) discord(nick string, urr error) (*dg.MessageEmbed, error, error) {
+func (c advancedSet) discord(nick string, urr error) (*dg.MessageEmbed, core.Urr, error) {
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(urr, fmt.Sprintf("**%s**", nick)),
 	}
 	return embed, urr, nil
 }
 
-func (c advancedSet) text(nick string, urr error) (string, error, error) {
+func (c advancedSet) text(nick string, urr error) (string, core.Urr, error) {
 	nick = fmt.Sprintf("'%s'", nick)
 	return c.fmt(urr, nick), urr, nil
 }
 
-func (c advancedSet) fmt(urr error, nick string) string {
+func (c advancedSet) fmt(urr core.Urr, nick string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Nickname set to %s", nick)
@@ -290,7 +290,7 @@ func (c advancedSet) fmt(urr error, nick string) string {
 	}
 }
 
-func (c advancedSet) core(m *core.Message) (string, error, error) {
+func (c advancedSet) core(m *core.Message) (string, core.Urr, error) {
 	nick := m.Command.Args[0]
 
 	author, err := m.Author.Scope()
@@ -357,7 +357,7 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -371,14 +371,14 @@ func (c advancedDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedDelete) discord() (*dg.MessageEmbed, error, error) {
+func (c advancedDelete) discord() (*dg.MessageEmbed, core.Urr, error) {
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(),
 	}
 	return embed, nil, nil
 }
 
-func (c advancedDelete) text() (string, error, error) {
+func (c advancedDelete) text() (string, core.Urr, error) {
 	return c.fmt(), nil, nil
 }
 
@@ -386,7 +386,7 @@ func (advancedDelete) fmt() string {
 	return "Deleted your nickname."
 }
 
-func (advancedDelete) core(m *core.Message) error {
+func (advancedDelete) core(m *core.Message) core.Urr {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return err

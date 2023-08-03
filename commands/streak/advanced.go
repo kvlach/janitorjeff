@@ -1,7 +1,6 @@
 package streak
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var ErrInvalidDuration = errors.New("provided duration could not be parsed")
+var UrrInvalidDuration = core.UrrNew("provided duration could not be parsed")
 
 var Advanced = advanced{}
 
@@ -130,8 +129,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (resp any, urr error, err error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (resp any, urr core.Urr, err error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////
@@ -184,7 +183,7 @@ func (advancedOn) Init() error {
 	return nil
 }
 
-func (c advancedOn) Run(m *core.Message) (any, error, error) {
+func (c advancedOn) Run(m *core.Message) (any, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -192,18 +191,18 @@ func (c advancedOn) Run(m *core.Message) (any, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedOn) fmt(urr error) string {
+func (advancedOn) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Streak tracking has been turned on."
-	case ErrAlreadyOn:
+	case UrrAlreadyOn:
 		return "Can't turn streak tracking on, already on."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedOn) core(m *core.Message) (error, error) {
+func (advancedOn) core(m *core.Message) (core.Urr, error) {
 	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, err
@@ -267,7 +266,7 @@ func (advancedOff) Init() error {
 	return nil
 }
 
-func (c advancedOff) Run(m *core.Message) (resp any, urr error, err error) {
+func (c advancedOff) Run(m *core.Message) (resp any, urr core.Urr, err error) {
 	if err := c.core(m); err != nil {
 		return nil, nil, err
 	}
@@ -338,7 +337,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, error, error) {
+func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	streak, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -413,8 +412,8 @@ func (advancedRedeem) Init() error {
 	return nil
 }
 
-func (advancedRedeem) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedRedeem) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////////////
@@ -467,7 +466,7 @@ func (advancedRedeemShow) Init() error {
 	return nil
 }
 
-func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
+func (c advancedRedeemShow) Run(m *core.Message) (any, core.Urr, error) {
 	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -475,18 +474,18 @@ func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
 	return c.fmt(u, urr), urr, nil
 }
 
-func (advancedRedeemShow) fmt(u uuid.UUID, urr error) string {
+func (advancedRedeemShow) fmt(u uuid.UUID, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "The streak tracking redeem is set to: " + u.String()
-	case ErrRedeemNotSet:
+	case UrrRedeemNotSet:
 		return "The streak tracking redeem has not been set."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, error, error) {
+func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return uuid.UUID{}, nil, err
@@ -544,9 +543,9 @@ func (advancedRedeemSet) Init() error {
 	return nil
 }
 
-func (c advancedRedeemSet) Run(m *core.Message) (any, error, error) {
+func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	err := c.core(m)
@@ -619,8 +618,8 @@ func (advancedGrace) Init() error {
 	return nil
 }
 
-func (advancedGrace) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedGrace) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////////
@@ -673,7 +672,7 @@ func (advancedGraceShow) Init() error {
 	return nil
 }
 
-func (c advancedGraceShow) Run(m *core.Message) (any, error, error) {
+func (c advancedGraceShow) Run(m *core.Message) (any, core.Urr, error) {
 	grace, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -739,9 +738,9 @@ func (advancedGraceSet) Init() error {
 	return nil
 }
 
-func (c advancedGraceSet) Run(m *core.Message) (any, error, error) {
+func (c advancedGraceSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 	grace, urr, err := c.core(m)
 	if err != nil {
@@ -750,25 +749,25 @@ func (c advancedGraceSet) Run(m *core.Message) (any, error, error) {
 	return c.fmt(grace, urr), urr, nil
 }
 
-func (advancedGraceSet) fmt(grace time.Duration, urr error) string {
+func (advancedGraceSet) fmt(grace time.Duration, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "The grace period is now set to: " + grace.String()
-	case ErrInvalidDuration:
+	case UrrInvalidDuration:
 		return "Can't understand duration, use the following format: 1h30m10s (sets the grace period to 1 hour, 30 minutes and, 10 seconds) or more simply 10m (sets it to 10 minutes)"
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedGraceSet) core(m *core.Message) (time.Duration, error, error) {
+func (advancedGraceSet) core(m *core.Message) (time.Duration, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return 0, nil, err
 	}
 	grace, err := time.ParseDuration(m.Command.Args[0])
 	if err != nil {
-		return 0, ErrInvalidDuration, nil
+		return 0, UrrInvalidDuration, nil
 	}
 	return grace, nil, GraceSet(here, grace)
 }

@@ -48,7 +48,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedShow.Run(m)
 	}

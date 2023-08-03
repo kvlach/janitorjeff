@@ -2,7 +2,6 @@ package time
 
 import (
 	"database/sql"
-	"errors"
 	"strconv"
 	"sync"
 	"time"
@@ -14,13 +13,13 @@ import (
 )
 
 var (
-	errTimestamp        = errors.New("invalid timestamp")
-	errTimezone         = errors.New("invalid timezone")
-	errTimezoneNotSet   = errors.New("user hasn't set their timezone")
-	errInvalidTime      = errors.New("could not parse given time string")
-	errNoReminders      = errors.New("couldn't find any reminders")
-	errReminderNotFound = errors.New("couldn't find person's reminder")
-	errOldTime          = errors.New("given time has already passed")
+	UrrTimestamp        = core.UrrNew("invalid timestamp")
+	UrrTimezone         = core.UrrNew("invalid timezone")
+	UrrTimezoneNotSet   = core.UrrNew("user hasn't set their timezone")
+	UrrInvalidTime      = core.UrrNew("could not parse given time string")
+	UrrNoReminders      = core.UrrNew("couldn't find any reminders")
+	UrrReminderNotFound = core.UrrNew("couldn't find person's reminder")
+	UrrOldTime          = core.UrrNew("given time has already passed")
 )
 
 type reminder struct {
@@ -199,7 +198,7 @@ func dbRemindExists(id, person int64) (bool, error) {
 //     //
 /////////
 
-func Now(person, place int64) (time.Time, error, error) {
+func Now(person, place int64) (time.Time, core.Urr, error) {
 	now := time.Now().UTC()
 
 	tz, err := core.DB.PersonGet("cmd_time_tz", person, place).Str()
@@ -215,27 +214,27 @@ func Now(person, place int64) (time.Time, error, error) {
 	return now.In(loc), nil, nil
 }
 
-func Convert(target, tz string) (string, error, error) {
+func Convert(target, tz string) (string, core.Urr, error) {
 	var t time.Time
 	if target == "now" {
 		t = time.Now().UTC()
 	} else {
 		timestamp, err := strconv.ParseInt(target, 10, 64)
 		if err != nil {
-			return "", errTimestamp, nil
+			return "", UrrTimestamp, nil
 		}
 		t = time.Unix(timestamp, 0).UTC()
 	}
 
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		return "", errTimezone, nil
+		return "", UrrTimezone, nil
 	}
 
 	return t.In(loc).Format(time.UnixDate), nil, nil
 }
 
-func Time(when string, person, place int64) (time.Time, error, error) {
+func Time(when string, person, place int64) (time.Time, core.Urr, error) {
 	tz, err := core.DB.PersonGet("cmd_time_tz", person, place).Str()
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
@@ -247,12 +246,12 @@ func Time(when string, person, place int64) (time.Time, error, error) {
 
 	t, err := naturaldate.Parse(when, now, direction)
 	if err != nil {
-		return time.Time{}, errInvalidTime, nil
+		return time.Time{}, UrrInvalidTime, nil
 	}
 	return t, nil, nil
 }
 
-func Timestamp(when string, person, place int64) (time.Time, error, error) {
+func Timestamp(when string, person, place int64) (time.Time, core.Urr, error) {
 	t, urr, err := Time(when, person, place)
 	if urr != nil || err != nil {
 		return time.Time{}, urr, err
@@ -264,10 +263,10 @@ func TimezoneShow(person, place int64) (string, error) {
 	return core.DB.PersonGet("cmd_time_tz", person, place).Str()
 }
 
-func TimezoneSet(tz string, person, place int64) (string, error, error) {
+func TimezoneSet(tz string, person, place int64) (string, core.Urr, error) {
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		return tz, errTimezone, nil
+		return tz, UrrTimezone, nil
 	}
 	tz = loc.String()
 	return tz, nil, core.DB.PersonSet("cmd_time_tz", person, place, tz)
@@ -277,14 +276,14 @@ func TimezoneDelete(person, place int64) error {
 	return core.DB.PersonSet("cmd_time_tz", person, place, "UTC")
 }
 
-func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, error, error) {
+func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64) (time.Time, int64, core.Urr, error) {
 	t, urr, err := Time(when, person, placeLogical)
 	if urr != nil || err != nil {
 		return t, -1, urr, err
 	}
 
 	if t.Before(time.Now()) {
-		return t, -1, errOldTime, nil
+		return t, -1, UrrOldTime, nil
 	}
 
 	id, err := dbRemindAdd(person, placeExact, t.UTC().Unix(), what, msgID)
@@ -295,7 +294,7 @@ func RemindAdd(when, what, msgID string, person, placeExact, placeLogical int64)
 	return t, id, nil, err
 }
 
-func RemindDelete(id, person int64) (error, error) {
+func RemindDelete(id, person int64) (core.Urr, error) {
 	// if the person their own reminder, but from a different place then we
 	// allow that
 	exists, err := dbRemindExists(id, person)
@@ -303,18 +302,18 @@ func RemindDelete(id, person int64) (error, error) {
 		return nil, err
 	}
 	if !exists {
-		return errReminderNotFound, nil
+		return UrrReminderNotFound, nil
 	}
 	return nil, dbRemindDelete(id)
 }
 
-func RemindList(person, place int64) ([]reminder, error, error) {
+func RemindList(person, place int64) ([]reminder, core.Urr, error) {
 	rs, err := dbRemindList(person, place)
 	if err != nil {
 		return nil, nil, err
 	}
 	if len(rs) == 0 {
-		return nil, errNoReminders, nil
+		return nil, UrrNoReminders, nil
 	}
 	return rs, nil, nil
 }

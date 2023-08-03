@@ -66,8 +66,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -120,7 +120,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, error, error) {
+func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case twitch.Frontend.Type():
 		return c.twitch(m)
@@ -129,7 +129,7 @@ func (c advancedShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (advancedShow) twitch(m *core.Message) (string, error, error) {
+func (advancedShow) twitch(m *core.Message) (string, core.Urr, error) {
 	h, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err
@@ -189,7 +189,7 @@ func (advancedEdit) Init() error {
 	return nil
 }
 
-func (c advancedEdit) Run(m *core.Message) (any, error, error) {
+func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case twitch.Frontend.Type():
 		return c.twitch(m)
@@ -198,7 +198,7 @@ func (c advancedEdit) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (advancedEdit) twitch(m *core.Message) (string, error, error) {
+func (advancedEdit) twitch(m *core.Message) (string, core.Urr, error) {
 	h, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err

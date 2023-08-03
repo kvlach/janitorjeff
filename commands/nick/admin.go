@@ -56,8 +56,8 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (admin) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -110,7 +110,7 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (c adminShow) Run(m *core.Message) (any, error, error) {
+func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
 	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -124,7 +124,7 @@ func (c adminShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (adminShow) core(m *core.Message) (string, error, error) {
+func (adminShow) core(m *core.Message) (string, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
@@ -188,9 +188,9 @@ func (adminSet) Init() error {
 	return nil
 }
 
-func (c adminSet) Run(m *core.Message) (any, error, error) {
+func (c adminSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	nick, urr, err := c.core(m)
@@ -207,7 +207,7 @@ func (c adminSet) Run(m *core.Message) (any, error, error) {
 
 }
 
-func (adminSet) core(m *core.Message) (string, error, error) {
+func (adminSet) core(m *core.Message) (string, core.Urr, error) {
 	nick := m.Command.Args[0]
 
 	author, err := m.Author.Scope()
@@ -274,7 +274,7 @@ func (adminDelete) Init() error {
 	return nil
 }
 
-func (c adminDelete) Run(m *core.Message) (any, error, error) {
+func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -291,7 +291,7 @@ func (c adminDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (adminDelete) core(m *core.Message) (error, error) {
+func (adminDelete) core(m *core.Message) (core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err

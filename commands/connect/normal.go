@@ -58,8 +58,8 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (normal) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////
@@ -114,7 +114,7 @@ func (normalTwitch) Init() error {
 	return nil
 }
 
-func (c normalTwitch) Run(m *core.Message) (any, error, error) {
+func (c normalTwitch) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -123,12 +123,12 @@ func (c normalTwitch) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normalTwitch) discord(m *core.Message) (string, error, error) {
+func (c normalTwitch) discord(m *core.Message) (string, core.Urr, error) {
 	url, err := c.core(m)
 	return fmt.Sprintf("<%s>", url), nil, err
 }
 
-func (c normalTwitch) text(m *core.Message) (string, error, error) {
+func (c normalTwitch) text(m *core.Message) (string, core.Urr, error) {
 	url, err := c.core(m)
 	return url, nil, err
 }

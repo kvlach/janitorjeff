@@ -285,20 +285,20 @@ func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 	return nil, nil
 }
 
-func (t *Twitch) Send(msg any, _ error) (*core.Message, error) {
+func (t *Twitch) Send(msg any, _ core.Urr) (*core.Message, error) {
 	return t.send(msg, "")
 }
 
-func (t *Twitch) Ping(msg any, _ error) (*core.Message, error) {
+func (t *Twitch) Ping(msg any, _ core.Urr) (*core.Message, error) {
 	mention := fmt.Sprintf("@%s -> ", t.message.User.DisplayName)
 	return t.send(msg, mention)
 }
 
-func (t *Twitch) Write(msg any, urr error) (*core.Message, error) {
+func (t *Twitch) Write(msg any, urr core.Urr) (*core.Message, error) {
 	return t.Ping(msg, urr)
 }
 
-func (t *Twitch) Natural(msg any, _ error) (*core.Message, error) {
+func (t *Twitch) Natural(msg any, _ core.Urr) (*core.Message, error) {
 	var mention string
 	// need this to only happen 30% of the time
 	if num := core.Rand().Intn(10); num < 3 {

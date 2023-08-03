@@ -1,7 +1,6 @@
 package rps
 
 import (
-	"errors"
 	"fmt"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -10,7 +9,7 @@ import (
 	dg "github.com/bwmarrin/discordgo"
 )
 
-var errUnexpectedArgument = errors.New("got an unexpected argument")
+var UrrUnexpectedArgument = core.UrrNew("got an unexpected argument")
 
 var Normal = normal{}
 
@@ -58,9 +57,9 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -71,7 +70,7 @@ func (c normal) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	result, computer, urr := c.core(m)
 	if urr != nil {
 		return &dg.MessageEmbed{Description: c.fmt(urr)}, urr, nil
@@ -105,7 +104,7 @@ func (c normal) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, nil, nil
 }
 
-func (c normal) text(m *core.Message) (string, error, error) {
+func (c normal) text(m *core.Message) (string, core.Urr, error) {
 	result, computer, urr := c.core(m)
 	if urr != nil {
 		return c.fmt(urr), urr, nil
@@ -134,16 +133,16 @@ func (c normal) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s %s", title, desc), nil, nil
 }
 
-func (normal) fmt(urr error) string {
+func (normal) fmt(urr core.Urr) string {
 	switch urr {
-	case errUnexpectedArgument:
+	case UrrUnexpectedArgument:
 		return "Please choose on of the following: rock, paper or scissors."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (normal) core(m *core.Message) (int, int, error) {
+func (normal) core(m *core.Message) (int, int, core.Urr) {
 	var player int
 	switch m.Command.Args[0] {
 	case "r", "rock", "🪨":
@@ -153,7 +152,7 @@ func (normal) core(m *core.Message) (int, int, error) {
 	case "s", "scissors", "✂":
 		player = scissors
 	default:
-		return -1, -1, errUnexpectedArgument
+		return -1, -1, UrrUnexpectedArgument
 	}
 	result, computer := run(player)
 	return result, computer, nil

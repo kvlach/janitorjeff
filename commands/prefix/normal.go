@@ -52,7 +52,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, error, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdList(c.Type(), m)
 }
 
@@ -106,7 +106,7 @@ func (normalAdd) Init() error {
 	return nil
 }
 
-func (c normalAdd) Run(m *core.Message) (any, error, error) {
+func (c normalAdd) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdAdd(c.Type(), m)
 }
 
@@ -160,7 +160,7 @@ func (normalDelete) Init() error {
 	return nil
 }
 
-func (c normalDelete) Run(m *core.Message) (any, error, error) {
+func (c normalDelete) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdDelete(c.Type(), m)
 }
 
@@ -214,6 +214,6 @@ func (normalReset) Init() error {
 	return nil
 }
 
-func (normalReset) Run(m *core.Message) (any, error, error) {
+func (normalReset) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdReset(m)
 }

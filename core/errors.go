@@ -4,7 +4,17 @@ import (
 	"errors"
 )
 
+// Urr represents a user-induced error (as opposed to an unexpected internal
+// error.) This means that if such an error is returned, the user should, in
+// some way, be informed of what their mistake was and not just receive a
+// message along the lines of "something went wrong"
+type Urr error
+
+func UrrNew(text string) Urr {
+	return errors.New(text)
+}
+
 var (
-	ErrMissingArgs = errors.New("not enough arguments provided")
-	ErrSilence     = errors.New("if this error is returned don't send any message")
+	UrrMissingArgs = UrrNew("not enough arguments provided")
+	UrrSilence     = UrrNew("if this error is returned don't send any message")
 )

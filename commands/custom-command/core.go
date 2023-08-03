@@ -1,16 +1,15 @@
 package custom_command
 
 import (
-	"errors"
 	"strings"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
 var (
-	ErrTriggerExists   = errors.New("trigger already exists")
-	ErrBuiltinCommand  = errors.New("trigger collides with a built-in command")
-	ErrTriggerNotFound = errors.New("trigger was not found")
+	UrrTriggerExists   = core.UrrNew("trigger already exists")
+	UrrBuiltinCommand  = core.UrrNew("trigger collides with a built-in command")
+	UrrTriggerNotFound = core.UrrNew("trigger was not found")
 )
 
 // Check if a string corresponds to a command name. Doesn't check sub-commands.
@@ -46,13 +45,13 @@ func isBuiltin(place int64, trigger string) (bool, error) {
 	return false, nil
 }
 
-func Add(place, creator int64, trigger, response string) (error, error) {
+func Add(place, creator int64, trigger, response string) (core.Urr, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return ErrTriggerExists, nil
+		return UrrTriggerExists, nil
 	}
 
 	builtin, err := isBuiltin(place, trigger)
@@ -60,30 +59,30 @@ func Add(place, creator int64, trigger, response string) (error, error) {
 		return nil, err
 	}
 	if builtin {
-		return ErrBuiltinCommand, nil
+		return UrrBuiltinCommand, nil
 	}
 
 	return nil, dbAdd(place, creator, trigger, response)
 }
 
-func Edit(place, editor int64, trigger, response string) (error, error) {
+func Edit(place, editor int64, trigger, response string) (core.Urr, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return ErrTriggerNotFound, nil
+		return UrrTriggerNotFound, nil
 	}
 	return nil, dbEdit(place, editor, trigger, response)
 }
 
-func Delete(place, deleter int64, trigger string) (error, error) {
+func Delete(place, deleter int64, trigger string) (core.Urr, error) {
 	exists, err := dbTriggerExists(place, trigger)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return ErrTriggerNotFound, nil
+		return UrrTriggerNotFound, nil
 	}
 	return nil, dbDelete(place, deleter, trigger)
 }

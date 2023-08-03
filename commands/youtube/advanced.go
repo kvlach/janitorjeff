@@ -59,8 +59,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////
@@ -116,8 +116,8 @@ func (advancedSearch) Init() error {
 	return nil
 }
 
-func (advancedSearch) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedSearch) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////////////
@@ -173,9 +173,9 @@ func (advancedSearchVideo) Init() error {
 	return nil
 }
 
-func (c advancedSearchVideo) Run(m *core.Message) (any, error, error) {
+func (c advancedSearchVideo) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -186,7 +186,7 @@ func (c advancedSearchVideo) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSearchVideo) discord(m *core.Message) (any, error, error) {
+func (c advancedSearchVideo) discord(m *core.Message) (any, core.Urr, error) {
 	vid, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -203,7 +203,7 @@ func (c advancedSearchVideo) discord(m *core.Message) (any, error, error) {
 	return embed, urr, nil
 }
 
-func (c advancedSearchVideo) text(m *core.Message) (string, error, error) {
+func (c advancedSearchVideo) text(m *core.Message) (string, core.Urr, error) {
 	vid, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -214,7 +214,7 @@ func (c advancedSearchVideo) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s | %s", vid.Title, vid.URL()), nil, nil
 }
 
-func (advancedSearchVideo) core(m *core.Message) (youtube.Video, error, error) {
+func (advancedSearchVideo) core(m *core.Message) (youtube.Video, core.Urr, error) {
 	return SearchVideo(m.RawArgs(0))
 }
 
@@ -271,9 +271,9 @@ func (advancedSearchChannel) Init() error {
 	return nil
 }
 
-func (c advancedSearchChannel) Run(m *core.Message) (any, error, error) {
+func (c advancedSearchChannel) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -284,7 +284,7 @@ func (c advancedSearchChannel) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSearchChannel) discord(m *core.Message) (any, error, error) {
+func (c advancedSearchChannel) discord(m *core.Message) (any, core.Urr, error) {
 	ch, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -301,7 +301,7 @@ func (c advancedSearchChannel) discord(m *core.Message) (any, error, error) {
 	return embed, urr, nil
 }
 
-func (c advancedSearchChannel) text(m *core.Message) (string, error, error) {
+func (c advancedSearchChannel) text(m *core.Message) (string, core.Urr, error) {
 	ch, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -312,7 +312,7 @@ func (c advancedSearchChannel) text(m *core.Message) (string, error, error) {
 	return fmt.Sprintf("%s | %s", ch.Title, ch.URL()), nil, nil
 }
 
-func (advancedSearchChannel) err(urr error, ch youtube.Channel) string {
+func (advancedSearchChannel) err(urr core.Urr, ch youtube.Channel) string {
 	switch urr {
 	case nil:
 		return ch.URL()
@@ -321,6 +321,6 @@ func (advancedSearchChannel) err(urr error, ch youtube.Channel) string {
 	}
 }
 
-func (advancedSearchChannel) core(m *core.Message) (youtube.Channel, error, error) {
+func (advancedSearchChannel) core(m *core.Message) (youtube.Channel, core.Urr, error) {
 	return SearchChannel(m.RawArgs(0))
 }

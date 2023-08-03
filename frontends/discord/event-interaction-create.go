@@ -82,7 +82,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 	fmt.Println("MESSAGEEEEEEEEEEEEEEEEEEEEE", m.Raw)
 
 	resp, urr, err := cmd.Run(m)
-	if err == core.ErrSilence {
+	if err == core.UrrSilence {
 		return
 	}
 	if err != nil {
@@ -183,19 +183,19 @@ func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 	}
 }
 
-func (i *InteractionCreate) Send(msg any, urr error) (*core.Message, error) {
+func (i *InteractionCreate) Send(msg any, urr core.Urr) (*core.Message, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Ping(msg any, urr error) (*core.Message, error) {
+func (i *InteractionCreate) Ping(msg any, urr core.Urr) (*core.Message, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Write(msg any, urr error) (*core.Message, error) {
+func (i *InteractionCreate) Write(msg any, urr core.Urr) (*core.Message, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Natural(msg any, urr error) (*core.Message, error) {
+func (i *InteractionCreate) Natural(msg any, urr core.Urr) (*core.Message, error) {
 	return i.send(msg, urr)
 }
 

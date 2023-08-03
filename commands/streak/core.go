@@ -1,7 +1,6 @@
 package streak
 
 import (
-	"errors"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -13,12 +12,12 @@ import (
 )
 
 var (
-	ErrRedeemNotSet = errors.New("the streak redeem has not been set")
-	ErrIgnore       = errors.New("stream online within grace period, do nothing")
-	ErrAlreadyOn    = errors.New("streak tracking has already been turned on for this place")
+	UrrRedeemNotSet = core.UrrNew("the streak redeem has not been set")
+	UrrIgnore       = core.UrrNew("stream online within grace period, do nothing")
+	UrrAlreadyOn    = core.UrrNew("streak tracking has already been turned on for this place")
 )
 
-func On(h *twitch.Helix, place int64, broadcasterID string) (error, error) {
+func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -37,7 +36,7 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (error, error) {
 		    WHERE place = $1
 		)`, place).Scan(&exists)
 	if exists {
-		return ErrAlreadyOn, nil
+		return UrrAlreadyOn, nil
 	}
 
 	onlineSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOnline)
@@ -180,7 +179,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	// In which case the streak doesn't get incremented as this is considered
 	// one stream.
 	if prev >= online {
-		return 0, ErrIgnore
+		return 0, UrrIgnore
 	}
 
 	err = tx.PersonSet("cmd_streak_last", person, place, when.UTC().Unix())
@@ -206,13 +205,13 @@ func RedeemSet(place int64, id string) error {
 	return core.DB.PlaceSet("cmd_streak_redeem", place, u)
 }
 
-func RedeemGet(place int64) (uuid.UUID, error, error) {
+func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
 	id, isNil, err := core.DB.PlaceGet("cmd_streak_redeem", place).UUIDNil()
 	if err != nil {
 		return uuid.UUID{}, nil, err
 	}
 	if isNil {
-		return uuid.UUID{}, ErrRedeemNotSet, nil
+		return uuid.UUID{}, UrrRedeemNotSet, nil
 	}
 	return id, nil, nil
 }

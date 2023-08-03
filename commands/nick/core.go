@@ -1,16 +1,14 @@
 package nick
 
 import (
-	"errors"
-
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/rs/zerolog/log"
 )
 
 var (
-	ErrPersonNotFound = errors.New("You have not set a nickname.")
-	ErrNickExists     = errors.New("Nickname is already in use either by you or someone else.")
+	UrrPersonNotFound = core.UrrNew("You have not set a nickname.")
+	UrrNickExists     = core.UrrNew("Nickname is already in use either by you or someone else.")
 )
 
 func dbNickExists(nick string, place int64) (bool, error) {
@@ -64,33 +62,33 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 }
 
 // Show returns the person's nickname in the specified place. If no nickname
-// has been set then returns an ErrPersonNotFound error.
-func Show(person, place int64) (string, error, error) {
+// has been set then returns an UrrPersonNotFound error.
+func Show(person, place int64) (string, core.Urr, error) {
 	nick, isNil, err := core.DB.PersonGet("cmd_nick_nick", person, place).StrNil()
 	if err != nil {
 		return "", nil, err
 	}
 	if isNil {
-		return "", ErrPersonNotFound, nil
+		return "", UrrPersonNotFound, nil
 	}
 	return nick, nil, nil
 }
 
 // Set sets the person's nickname in the specified place. If the nickname
-// already exists in that place then it returns an ErrNickExists error.
-func Set(nick string, person, place int64) (error, error) {
+// already exists in that place then it returns an UrrNickExists error.
+func Set(nick string, person, place int64) (core.Urr, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
 		return nil, err
 	}
 	if nickExists {
-		return ErrNickExists, nil
+		return UrrNickExists, nil
 	}
 	return nil, core.DB.PersonSet("cmd_nick_nick", person, place, nick)
 }
 
 // Delete deletes the person's nickname in the specified place. If no nickname
-// has been set then returns an ErrPersonNotFound error.
+// has been set then returns an UrrPersonNotFound error.
 func Delete(person, place int64) error {
 	return core.DB.PersonSet("cmd_nick_nick", person, place, nil)
 }

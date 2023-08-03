@@ -2,13 +2,14 @@ package wikipedia
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"net/url"
+
+	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-var errNoResult = errors.New("no results found")
+var UrrNoResult = core.UrrNew("no results found")
 
 const queryURL = "https://en.wikipedia.org/w/api.php?" +
 	"action=query" +
@@ -31,7 +32,7 @@ type response struct {
 	} `json:"query"`
 }
 
-func Search(query string) (page, error, error) {
+func Search(query string) (page, core.Urr, error) {
 	resp, err := http.Get(queryURL + url.QueryEscape(query))
 	if err != nil {
 		return page{}, nil, err
@@ -49,7 +50,7 @@ func Search(query string) (page, error, error) {
 	}
 
 	if len(r.Query.Pages) == 0 {
-		return page{}, errNoResult, nil
+		return page{}, UrrNoResult, nil
 	}
 
 	return r.Query.Pages[0], nil, nil

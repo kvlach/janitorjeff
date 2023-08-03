@@ -76,8 +76,8 @@ func (advanced) emergencyReset(m *core.Message) {
 	m.Write(resp, urr)
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////
@@ -130,7 +130,7 @@ func (advancedAdd) Init() error {
 	return nil
 }
 
-func (c advancedAdd) Run(m *core.Message) (any, error, error) {
+func (c advancedAdd) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdAdd(c.Type(), m)
 }
 
@@ -184,7 +184,7 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdDelete(c.Type(), m)
 }
 
@@ -238,7 +238,7 @@ func (advancedList) Init() error {
 	return nil
 }
 
-func (c advancedList) Run(m *core.Message) (any, error, error) {
+func (c advancedList) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdList(c.Type(), m)
 }
 
@@ -294,6 +294,6 @@ func (advancedReset) Init() error {
 	return nil
 }
 
-func (advancedReset) Run(m *core.Message) (any, error, error) {
+func (advancedReset) Run(m *core.Message) (any, core.Urr, error) {
 	return cmdReset(m)
 }

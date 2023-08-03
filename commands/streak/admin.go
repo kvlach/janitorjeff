@@ -1,7 +1,6 @@
 package streak
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -58,8 +57,8 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (resp any, urr error, err error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (admin) Run(m *core.Message) (resp any, urr core.Urr, err error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -112,9 +111,9 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (adminShow) Run(m *core.Message) (any, error, error) {
+func (adminShow) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 	person, err := nick.ParsePersonHere(m, m.Command.Args[0])
 	if err != nil {
@@ -181,9 +180,9 @@ func (adminSet) Init() error {
 	return nil
 }
 
-func (adminSet) Run(m *core.Message) (any, error, error) {
+func (adminSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 	person, err := nick.ParsePersonHere(m, m.Command.Args[0])
 	if err != nil {
@@ -195,7 +194,7 @@ func (adminSet) Run(m *core.Message) (any, error, error) {
 	}
 	streak, err := strconv.Atoi(m.Command.Args[1])
 	if err != nil {
-		return "Expected number, got: " + m.Command.Args[1], errors.New("not a number"), nil
+		return "Expected number, got: " + m.Command.Args[1], core.UrrNew("not a number"), nil
 	}
 	if err := Set(person, here, streak); err != nil {
 		return nil, nil, err

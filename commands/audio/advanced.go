@@ -63,8 +63,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -120,9 +120,9 @@ func (advancedPlay) Init() error {
 	return nil
 }
 
-func (c advancedPlay) Run(m *core.Message) (any, error, error) {
+func (c advancedPlay) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -133,7 +133,7 @@ func (c advancedPlay) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	item, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -144,7 +144,7 @@ func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, urr, nil
 }
 
-func (c advancedPlay) text(m *core.Message) (string, error, error) {
+func (c advancedPlay) text(m *core.Message) (string, core.Urr, error) {
 	item, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -153,7 +153,7 @@ func (c advancedPlay) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, title), urr, nil
 }
 
-func (advancedPlay) fmt(urr error, title string) string {
+func (advancedPlay) fmt(urr core.Urr, title string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Added %s in the queue.", title)
@@ -162,7 +162,7 @@ func (advancedPlay) fmt(urr error, title string) string {
 	}
 }
 
-func (advancedPlay) core(m *core.Message) (Item, error, error) {
+func (advancedPlay) core(m *core.Message) (Item, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Item{}, nil, err
@@ -222,7 +222,7 @@ func (advancedPause) Init() error {
 	return nil
 }
 
-func (c advancedPause) Run(m *core.Message) (any, error, error) {
+func (c advancedPause) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -231,7 +231,7 @@ func (c advancedPause) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -242,7 +242,7 @@ func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 	return embed, urr, nil
 }
 
-func (c advancedPause) text(m *core.Message) (string, error, error) {
+func (c advancedPause) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -250,18 +250,18 @@ func (c advancedPause) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedPause) fmt(urr error) string {
+func (advancedPause) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Paused playing."
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Can't pause, nothing is playing."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedPause) core(m *core.Message) (error, error) {
+func (advancedPause) core(m *core.Message) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -322,7 +322,7 @@ func (advancedResume) Init() error {
 	return nil
 }
 
-func (c advancedResume) Run(m *core.Message) (any, error, error) {
+func (c advancedResume) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -331,7 +331,7 @@ func (c advancedResume) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -342,7 +342,7 @@ func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, error, error
 	return embed, urr, nil
 }
 
-func (c advancedResume) text(m *core.Message) (string, error, error) {
+func (c advancedResume) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -350,20 +350,20 @@ func (c advancedResume) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedResume) fmt(urr error) string {
+func (advancedResume) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Resumed playing."
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Can't resume, not playing anything."
-	case ErrNotPaused:
+	case UrrNotPaused:
 		return "It's not paused what do you want from meeeeeeee"
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedResume) core(m *core.Message) (error, error) {
+func (advancedResume) core(m *core.Message) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -423,7 +423,7 @@ func (advancedSkip) Init() error {
 	return nil
 }
 
-func (c advancedSkip) Run(m *core.Message) (any, error, error) {
+func (c advancedSkip) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -432,7 +432,7 @@ func (c advancedSkip) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -443,7 +443,7 @@ func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, urr, nil
 }
 
-func (c advancedSkip) text(m *core.Message) (string, error, error) {
+func (c advancedSkip) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -455,7 +455,7 @@ func (advancedSkip) fmt(urr error) string {
 	switch urr {
 	case nil:
 		return "Skipped."
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Can't skip, not playing anything."
 	default:
 		return fmt.Sprint(urr)
@@ -525,8 +525,8 @@ func (advancedLoop) Init() error {
 	return nil
 }
 
-func (advancedLoop) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedLoop) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////////
@@ -581,7 +581,7 @@ func (advancedLoopOn) Init() error {
 	return nil
 }
 
-func (c advancedLoopOn) Run(m *core.Message) (any, error, error) {
+func (c advancedLoopOn) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -590,7 +590,7 @@ func (c advancedLoopOn) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -601,7 +601,7 @@ func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, error, error
 	return embed, urr, nil
 }
 
-func (c advancedLoopOn) text(m *core.Message) (string, error, error) {
+func (c advancedLoopOn) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -609,18 +609,18 @@ func (c advancedLoopOn) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedLoopOn) fmt(urr error) string {
+func (advancedLoopOn) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Current item is now on loop!"
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Can't loop, nothing is playing."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedLoopOn) core(m *core.Message) (error, error) {
+func (advancedLoopOn) core(m *core.Message) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -680,7 +680,7 @@ func (advancedLoopOff) Init() error {
 	return nil
 }
 
-func (c advancedLoopOff) Run(m *core.Message) (any, error, error) {
+func (c advancedLoopOff) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -689,7 +689,7 @@ func (c advancedLoopOff) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -700,7 +700,7 @@ func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 	return embed, urr, nil
 }
 
-func (c advancedLoopOff) text(m *core.Message) (string, error, error) {
+func (c advancedLoopOff) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -708,20 +708,20 @@ func (c advancedLoopOff) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedLoopOff) fmt(urr error) string {
+func (advancedLoopOff) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Turned looping off."
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Can't turn looping off, nothing is playing."
-	case ErrNotLooping:
+	case UrrNotLooping:
 		return "Not looping, can't turn it off."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedLoopOff) core(m *core.Message) (error, error) {
+func (advancedLoopOff) core(m *core.Message) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -779,7 +779,7 @@ func (advancedQueue) Init() error {
 	return nil
 }
 
-func (c advancedQueue) Run(m *core.Message) (any, error, error) {
+func (c advancedQueue) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -788,7 +788,7 @@ func (c advancedQueue) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	titles, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -809,7 +809,7 @@ func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, error, error)
 	return embed, nil, nil
 }
 
-func (c advancedQueue) text(m *core.Message) (string, error, error) {
+func (c advancedQueue) text(m *core.Message) (string, core.Urr, error) {
 	titles, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -820,16 +820,16 @@ func (c advancedQueue) text(m *core.Message) (string, error, error) {
 	return strings.Join(titles, "  ||  "), nil, nil
 }
 
-func (advancedQueue) fmt(urr error) string {
+func (advancedQueue) fmt(urr core.Urr) string {
 	switch urr {
-	case ErrNotPlaying:
+	case UrrNotPlaying:
 		return "Not playing anything, the queue is empty."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedQueue) core(m *core.Message) ([]string, error, error) {
+func (advancedQueue) core(m *core.Message) ([]string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, nil, err

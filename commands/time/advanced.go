@@ -1,7 +1,6 @@
 package time
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -17,8 +16,8 @@ import (
 )
 
 var (
-	errPersonNotFound  = errors.New("was unable to find user")
-	errInvalidRemindID = errors.New("invalid reminder ID")
+	UrrPersonNotFound  = core.UrrNew("was unable to find user")
+	UrrInvalidRemindID = core.UrrNew("invalid reminder ID")
 )
 
 var Advanced = advanced{}
@@ -80,8 +79,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////
@@ -136,7 +135,7 @@ func (advancedNow) Init() error {
 	return nil
 }
 
-func (c advancedNow) Run(m *core.Message) (any, error, error) {
+func (c advancedNow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -145,7 +144,7 @@ func (c advancedNow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	now, cmdTzSet, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -160,7 +159,7 @@ func (c advancedNow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
 	return embed, urr, nil
 }
 
-func (c advancedNow) text(m *core.Message) (string, error, error) {
+func (c advancedNow) text(m *core.Message) (string, core.Urr, error) {
 	now, cmdTzSet, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -169,25 +168,25 @@ func (c advancedNow) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, m, now, cmdTzSet), urr, nil
 }
 
-func (advancedNow) fmt(urr error, m *core.Message, now time.Time, cmdTzSet string) string {
+func (advancedNow) fmt(urr core.Urr, m *core.Message, now time.Time, cmdTzSet string) string {
 	switch urr {
 	case nil:
 		return now.Format(time.RFC1123)
-	case errTimezoneNotSet:
+	case UrrTimezoneNotSet:
 		mention, err := m.Author.Mention()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get author mention")
 			return ""
 		}
 		return fmt.Sprintf("User %s has not set their timezone, to set a timezone use the %s command.", mention, cmdTzSet)
-	case errPersonNotFound:
+	case UrrPersonNotFound:
 		return fmt.Sprintf("Was unable to find the user %s", m.Command.Args[0])
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
+func (advancedNow) core(m *core.Message) (time.Time, string, core.Urr, error) {
 	cmdTzSet := core.Format(AdvancedTimezoneSet, m.Command.Prefix)
 
 	var person int64
@@ -199,7 +198,7 @@ func (advancedNow) core(m *core.Message) (time.Time, string, error, error) {
 	}
 
 	if err != nil {
-		return time.Time{}, cmdTzSet, errPersonNotFound, nil
+		return time.Time{}, cmdTzSet, UrrPersonNotFound, nil
 	}
 
 	here, err := m.Here.ScopeLogical()
@@ -263,9 +262,9 @@ func (advancedConvert) Init() error {
 	return nil
 }
 
-func (c advancedConvert) Run(m *core.Message) (any, error, error) {
+func (c advancedConvert) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -276,7 +275,7 @@ func (c advancedConvert) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedConvert) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedConvert) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -289,7 +288,7 @@ func (c advancedConvert) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 	return embed, urr, nil
 }
 
-func (c advancedConvert) text(m *core.Message) (string, error, error) {
+func (c advancedConvert) text(m *core.Message) (string, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -306,7 +305,7 @@ func (advancedConvert) fmt(urr error, t string) string {
 	}
 }
 
-func (advancedConvert) core(m *core.Message) (string, error, error) {
+func (advancedConvert) core(m *core.Message) (string, core.Urr, error) {
 	target := m.Command.Args[0]
 	tz := m.Command.Args[1]
 	return Convert(target, tz)
@@ -364,9 +363,9 @@ func (advancedTimestamp) Init() error {
 	return nil
 }
 
-func (c advancedTimestamp) Run(m *core.Message) (any, error, error) {
+func (c advancedTimestamp) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -377,7 +376,7 @@ func (c advancedTimestamp) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -398,7 +397,7 @@ func (c advancedTimestamp) discord(m *core.Message) (*dg.MessageEmbed, error, er
 	return embed, nil, nil
 }
 
-func (c advancedTimestamp) text(m *core.Message) (string, error, error) {
+func (c advancedTimestamp) text(m *core.Message) (string, core.Urr, error) {
 	t, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -406,18 +405,18 @@ func (c advancedTimestamp) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, t), urr, nil
 }
 
-func (advancedTimestamp) fmt(urr error, t time.Time) string {
+func (advancedTimestamp) fmt(urr core.Urr, t time.Time) string {
 	switch urr {
 	case nil:
 		return fmt.Sprint(t.Unix())
-	case errInvalidTime:
+	case UrrInvalidTime:
 		return "I can't understand what date that is."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedTimestamp) core(m *core.Message) (time.Time, error, error) {
+func (advancedTimestamp) core(m *core.Message) (time.Time, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return time.Time{}, nil, err
@@ -491,8 +490,8 @@ func (advancedTimezone) Init() error {
 	return nil
 }
 
-func (advancedTimezone) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedTimezone) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ///////////////////
@@ -545,7 +544,7 @@ func (advancedTimezoneShow) Init() error {
 	return nil
 }
 
-func (c advancedTimezoneShow) Run(m *core.Message) (any, error, error) {
+func (c advancedTimezoneShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -554,7 +553,7 @@ func (c advancedTimezoneShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	tz, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -569,7 +568,7 @@ func (c advancedTimezoneShow) discord(m *core.Message) (*dg.MessageEmbed, error,
 	return embed, nil, nil
 }
 
-func (c advancedTimezoneShow) text(m *core.Message) (string, error, error) {
+func (c advancedTimezoneShow) text(m *core.Message) (string, core.Urr, error) {
 	tz, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -646,9 +645,9 @@ func (advancedTimezoneSet) Init() error {
 	return nil
 }
 
-func (c advancedTimezoneSet) Run(m *core.Message) (any, error, error) {
+func (c advancedTimezoneSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -659,7 +658,7 @@ func (c advancedTimezoneSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	tz, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -674,7 +673,7 @@ func (c advancedTimezoneSet) discord(m *core.Message) (*dg.MessageEmbed, error, 
 	return embed, urr, nil
 }
 
-func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
+func (c advancedTimezoneSet) text(m *core.Message) (string, core.Urr, error) {
 	tz, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -683,7 +682,7 @@ func (c advancedTimezoneSet) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr, m, tz), urr, nil
 }
 
-func (advancedTimezoneSet) fmt(urr error, m *core.Message, tz string) string {
+func (advancedTimezoneSet) fmt(urr core.Urr, m *core.Message, tz string) string {
 	switch urr {
 	case nil:
 		mention, err := m.Author.Mention()
@@ -692,14 +691,14 @@ func (advancedTimezoneSet) fmt(urr error, m *core.Message, tz string) string {
 			return ""
 		}
 		return fmt.Sprintf("Added %s with timezone %s", mention, tz)
-	case errTimezone:
+	case UrrTimezone:
 		return fmt.Sprintf("%s is not a valid timezone.", tz)
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedTimezoneSet) core(m *core.Message) (string, error, error) {
+func (advancedTimezoneSet) core(m *core.Message) (string, core.Urr, error) {
 	tz := m.Command.Args[0]
 
 	author, err := m.Author.Scope()
@@ -765,7 +764,7 @@ func (advancedTimezoneDelete) Init() error {
 	return nil
 }
 
-func (c advancedTimezoneDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedTimezoneDelete) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -774,7 +773,7 @@ func (c advancedTimezoneDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedTimezoneDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedTimezoneDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -785,7 +784,7 @@ func (c advancedTimezoneDelete) discord(m *core.Message) (*dg.MessageEmbed, erro
 	return embed, nil, nil
 }
 
-func (c advancedTimezoneDelete) text(m *core.Message) (string, error, error) {
+func (c advancedTimezoneDelete) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -870,8 +869,8 @@ func (advancedRemind) Init() error {
 	return nil
 }
 
-func (advancedRemind) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedRemind) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////////
@@ -924,9 +923,9 @@ func (advancedRemindAdd) Init() error {
 	return nil
 }
 
-func (c advancedRemindAdd) Run(m *core.Message) (any, error, error) {
+func (c advancedRemindAdd) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	t, id, urr, err := c.core(m)
@@ -939,7 +938,7 @@ func (c advancedRemindAdd) Run(m *core.Message) (any, error, error) {
 	return fmt.Sprintf("%s (#%d)", t.Format(time.RFC1123), id), nil, nil
 }
 
-func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, error, error) {
+func (advancedRemindAdd) core(m *core.Message) (time.Time, int64, core.Urr, error) {
 	rxWhat := `(?P<what>.+)`
 	rxWhen := `(in|on)\s+(?P<when>.+)`
 
@@ -1030,9 +1029,9 @@ func (advancedRemindDelete) Init() error {
 	return nil
 }
 
-func (c advancedRemindDelete) Run(m *core.Message) (any, error, error) {
+func (c advancedRemindDelete) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -1043,7 +1042,7 @@ func (c advancedRemindDelete) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedRemindDelete) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedRemindDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1056,7 +1055,7 @@ func (c advancedRemindDelete) discord(m *core.Message) (*dg.MessageEmbed, error,
 	return embed, urr, nil
 }
 
-func (c advancedRemindDelete) text(m *core.Message) (string, error, error) {
+func (c advancedRemindDelete) text(m *core.Message) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1064,23 +1063,23 @@ func (c advancedRemindDelete) text(m *core.Message) (string, error, error) {
 	return c.fmt(urr), urr, nil
 }
 
-func (advancedRemindDelete) fmt(urr error) string {
+func (advancedRemindDelete) fmt(urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Deleted reminder."
-	case errReminderNotFound:
+	case UrrReminderNotFound:
 		return "Reminder not found. Maybe you are not the one who created the reminder?"
-	case errInvalidRemindID:
+	case UrrInvalidRemindID:
 		return "The ID you provided is invalid, expected a number."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedRemindDelete) core(m *core.Message) (error, error) {
+func (advancedRemindDelete) core(m *core.Message) (core.Urr, error) {
 	id, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
 	if err != nil {
-		return errInvalidRemindID, nil
+		return UrrInvalidRemindID, nil
 	}
 
 	author, err := m.Author.Scope()
@@ -1141,7 +1140,7 @@ func (advancedRemindList) Init() error {
 	return nil
 }
 
-func (c advancedRemindList) Run(m *core.Message) (any, error, error) {
+func (c advancedRemindList) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1150,7 +1149,7 @@ func (c advancedRemindList) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedRemindList) discord(m *core.Message) (string, error, error) {
+func (c advancedRemindList) discord(m *core.Message) (string, core.Urr, error) {
 	rs, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1177,7 +1176,7 @@ func (c advancedRemindList) discord(m *core.Message) (string, error, error) {
 	return resp.String(), nil, nil
 }
 
-func (advancedRemindList) core(m *core.Message) ([]reminder, error, error) {
+func (advancedRemindList) core(m *core.Message) ([]reminder, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, nil, err

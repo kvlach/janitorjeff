@@ -58,7 +58,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, error, error) {
+func (admin) Run(m *core.Message) (any, core.Urr, error) {
 	return m.Usage(), nil, nil
 }
 
@@ -117,7 +117,7 @@ func (adminEventSub) Init() error {
 	return nil
 }
 
-func (adminEventSub) Run(m *core.Message) (any, error, error) {
+func (adminEventSub) Run(m *core.Message) (any, core.Urr, error) {
 	return m.Usage(), nil, nil
 }
 
@@ -171,7 +171,7 @@ func (adminEventSubList) Init() error {
 	return nil
 }
 
-func (adminEventSubList) Run(*core.Message) (any, error, error) {
+func (adminEventSubList) Run(*core.Message) (any, core.Urr, error) {
 	h, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
@@ -241,9 +241,9 @@ func (adminEventSubDelete) Init() error {
 	return nil
 }
 
-func (adminEventSubDelete) Run(m *core.Message) (any, error, error) {
+func (adminEventSubDelete) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	h, err := twitch.Frontend.Helix()

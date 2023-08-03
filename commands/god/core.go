@@ -2,18 +2,18 @@ package god
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
 var (
-	ErrIntervalTooShort = errors.New("The given interval is too short.")
-	ErrRedeemNotSet     = errors.New("the streak redeem has not been set")
+	UrrIntervalTooShort = core.UrrNew("The given interval is too short.")
+	UrrRedeemNotSet     = core.UrrNew("the streak redeem has not been set")
 )
 
 // Talk returns GPT3's response to a prompt.
@@ -54,10 +54,10 @@ func ReplyIntervalGet(place int64) (time.Duration, error) {
 }
 
 // ReplyIntervalSet sets the reply interval for the specified place. Returns
-// ErrIntervalTooShort if dur is larger than the global minimum that is allowed.
+// UrrIntervalTooShort if dur is larger than the global minimum that is allowed.
 func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
 	if core.MinGodInterval > dur {
-		return ErrIntervalTooShort, nil
+		return UrrIntervalTooShort, nil
 	}
 	return nil, core.DB.PlaceSet("cmd_god_reply_interval", place, int(dur.Seconds()))
 }
@@ -89,7 +89,7 @@ func RedeemGet(place int64) (uuid.UUID, error, error) {
 		return uuid.UUID{}, nil, err
 	}
 	if isNil {
-		return uuid.UUID{}, ErrRedeemNotSet, nil
+		return uuid.UUID{}, UrrRedeemNotSet, nil
 	}
 	return id, nil, nil
 }

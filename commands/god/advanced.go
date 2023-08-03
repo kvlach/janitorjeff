@@ -1,7 +1,6 @@
 package god
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -13,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var ErrInvalidInterval = errors.New("Expected an integer number as the interval.")
+var UrrInvalidInterval = core.UrrNew("Expected an integer number as the interval.")
 
 var Advanced = advanced{}
 
@@ -193,8 +192,8 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (c advanced) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (c advanced) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 //////////
@@ -251,9 +250,9 @@ func (advancedTalk) Init() error {
 	return nil
 }
 
-func (c advancedTalk) Run(m *core.Message) (any, error, error) {
+func (c advancedTalk) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -264,7 +263,7 @@ func (c advancedTalk) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	resp, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -275,7 +274,7 @@ func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, error, error) 
 	return embed, nil, nil
 }
 
-func (c advancedTalk) text(m *core.Message) (string, error, error) {
+func (c advancedTalk) text(m *core.Message) (string, core.Urr, error) {
 	resp, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -343,8 +342,8 @@ func (advancedReply) Init() error {
 	return nil
 }
 
-func (c advancedReply) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (c advancedReply) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ////////////////
@@ -397,7 +396,7 @@ func (advancedReplyShow) Init() error {
 	return nil
 }
 
-func (c advancedReplyShow) Run(m *core.Message) (any, error, error) {
+func (c advancedReplyShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -406,7 +405,7 @@ func (c advancedReplyShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedReplyShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedReplyShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -417,7 +416,7 @@ func (c advancedReplyShow) discord(m *core.Message) (*dg.MessageEmbed, error, er
 	return embed, nil, nil
 }
 
-func (c advancedReplyShow) text(m *core.Message) (string, error, error) {
+func (c advancedReplyShow) text(m *core.Message) (string, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -490,7 +489,7 @@ func (advancedReplyOn) Init() error {
 	return nil
 }
 
-func (c advancedReplyOn) Run(m *core.Message) (any, error, error) {
+func (c advancedReplyOn) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -499,7 +498,7 @@ func (c advancedReplyOn) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedReplyOn) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedReplyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -510,7 +509,7 @@ func (c advancedReplyOn) discord(m *core.Message) (*dg.MessageEmbed, error, erro
 	return embed, nil, nil
 }
 
-func (c advancedReplyOn) text(m *core.Message) (string, error, error) {
+func (c advancedReplyOn) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -580,7 +579,7 @@ func (advancedReplyOff) Init() error {
 	return nil
 }
 
-func (c advancedReplyOff) Run(m *core.Message) (any, error, error) {
+func (c advancedReplyOff) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -589,7 +588,7 @@ func (c advancedReplyOff) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedReplyOff) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedReplyOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -600,7 +599,7 @@ func (c advancedReplyOff) discord(m *core.Message) (*dg.MessageEmbed, error, err
 	return embed, nil, nil
 }
 
-func (c advancedReplyOff) text(m *core.Message) (string, error, error) {
+func (c advancedReplyOff) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -675,8 +674,8 @@ func (advancedInterval) Init() error {
 	return nil
 }
 
-func (advancedInterval) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedInterval) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 ///////////////////
@@ -729,7 +728,7 @@ func (advancedIntervalShow) Init() error {
 	return nil
 }
 
-func (c advancedIntervalShow) Run(m *core.Message) (any, error, error) {
+func (c advancedIntervalShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -738,7 +737,7 @@ func (c advancedIntervalShow) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	interval, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -749,7 +748,7 @@ func (c advancedIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, error,
 	return embed, nil, nil
 }
 
-func (c advancedIntervalShow) text(m *core.Message) (string, error, error) {
+func (c advancedIntervalShow) text(m *core.Message) (string, core.Urr, error) {
 	interval, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -819,9 +818,9 @@ func (advancedIntervalSet) Init() error {
 	return nil
 }
 
-func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
+func (c advancedIntervalSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	switch m.Frontend.Type() {
@@ -832,7 +831,7 @@ func (c advancedIntervalSet) Run(m *core.Message) (any, error, error) {
 	}
 }
 
-func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, error, error) {
+func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	interval, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -843,7 +842,7 @@ func (c advancedIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, error, 
 	return embed, urr, nil
 }
 
-func (c advancedIntervalSet) text(m *core.Message) (string, error, error) {
+func (c advancedIntervalSet) text(m *core.Message) (string, core.Urr, error) {
 	interval, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -851,21 +850,21 @@ func (c advancedIntervalSet) text(m *core.Message) (string, error, error) {
 	return c.fmt(interval, urr), urr, nil
 }
 
-func (advancedIntervalSet) fmt(interval time.Duration, urr error) string {
+func (advancedIntervalSet) fmt(interval time.Duration, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Updated the interval to %s.", interval)
-	case ErrIntervalTooShort:
+	case UrrIntervalTooShort:
 		return fmt.Sprintf("The interval %s is too short, must be longer or equal to %s.", interval, core.MinGodInterval)
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedIntervalSet) core(m *core.Message) (time.Duration, error, error) {
+func (advancedIntervalSet) core(m *core.Message) (time.Duration, core.Urr, error) {
 	seconds, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
 	if err != nil {
-		return time.Second, ErrInvalidInterval, nil
+		return time.Second, UrrInvalidInterval, nil
 	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
@@ -931,8 +930,8 @@ func (advancedRedeem) Init() error {
 	return nil
 }
 
-func (advancedRedeem) Run(m *core.Message) (any, error, error) {
-	return m.Usage(), core.ErrMissingArgs, nil
+func (advancedRedeem) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
 }
 
 /////////////////
@@ -985,7 +984,7 @@ func (advancedRedeemShow) Init() error {
 	return nil
 }
 
-func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
+func (c advancedRedeemShow) Run(m *core.Message) (any, core.Urr, error) {
 	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -993,18 +992,18 @@ func (c advancedRedeemShow) Run(m *core.Message) (any, error, error) {
 	return c.fmt(u, urr), urr, nil
 }
 
-func (advancedRedeemShow) fmt(u uuid.UUID, urr error) string {
+func (advancedRedeemShow) fmt(u uuid.UUID, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "The god redeem is set to: " + u.String()
-	case ErrRedeemNotSet:
+	case UrrRedeemNotSet:
 		return "The god redeem has not been set."
 	default:
 		return fmt.Sprint(urr)
 	}
 }
 
-func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, error, error) {
+func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return uuid.UUID{}, nil, err
@@ -1062,9 +1061,9 @@ func (advancedRedeemSet) Init() error {
 	return nil
 }
 
-func (c advancedRedeemSet) Run(m *core.Message) (any, error, error) {
+func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
-		return m.Usage(), core.ErrMissingArgs, nil
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
 	err := c.core(m)

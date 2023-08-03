@@ -31,7 +31,7 @@ type Entry struct {
 var Hooks = gosafe.Map[string, *Entry]{}
 
 var (
-	ErrHookNotFound = errors.New("Wasn't monitoring, what are you even trynna do??")
+	UrrHookNotFound = core.UrrNew("Wasn't monitoring, what are you even trynna do??")
 )
 
 var Voices = []string{
@@ -244,8 +244,9 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			return err
 		}
 		if !con {
-			if err := Stop(twitchUsername); err != nil {
+			if urr, err := Stop(twitchUsername); urr != nil || err != nil {
 				log.Error().Err(err).
+					Interface("urr", urr).
 					Str("username", twitchUsername).
 					Msg("failed to stop monitoring")
 				return err
@@ -300,8 +301,9 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 			if conn {
 				continue
 			}
-			if err := Stop(twitchUsername); err != nil {
+			if urr, err := Stop(twitchUsername); urr != nil || err != nil {
 				log.Error().Err(err).
+					Interface("urr", urr).
 					Str("username", twitchUsername).
 					Msg("failed to stop monitoring")
 				continue
@@ -310,20 +312,20 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 	}()
 }
 
-// Stop will delete the hook created by Start. Returns ErrHookNotFound if the
+// Stop will delete the hook created by Start. Returns UrrHookNotFound if the
 // hook doesn't exist.
-func Stop(twitchUsername string) error {
+func Stop(twitchUsername string) (core.Urr, error) {
 	entry, ok := Hooks.Get(twitchUsername)
 	if !ok {
-		return ErrHookNotFound
+		return UrrHookNotFound, nil
 	}
 	entry.Player.Stop()
 	core.EventMessageHooks.Delete(entry.HookID)
 	if err := entry.Speaker.Leave(); err != nil {
-		return err
+		return nil, err
 	}
 	Hooks.Delete(twitchUsername)
-	return nil
+	return nil, nil
 }
 
 // VoiceGet returns the person's voice in this place. If no voice has
