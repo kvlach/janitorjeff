@@ -61,19 +61,6 @@ func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
 	return nil, core.DB.PlaceSet("cmd_god_reply_interval", place, int(dur.Seconds()))
 }
 
-// ReplyLastGet returns a time object of the when the last reply happened
-// in the specified place.
-func ReplyLastGet(place int64) (time.Time, error) {
-	return core.DB.PlaceGet("cmd_god_reply_last", place).Time()
-}
-
-// ReplyLastSet sets the timestamp of the last reply fot the specified place.
-// The passed when is set to UTC before extracting the timestamp.
-func ReplyLastSet(place int64, when time.Time) error {
-	timestamp := when.UTC().Unix()
-	return core.DB.PlaceSet("cmd_god_reply_last", place, timestamp)
-}
-
 func RedeemSet(place int64, id string) error {
 	u, err := uuid.Parse(id)
 	if err != nil {
