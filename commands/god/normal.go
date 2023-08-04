@@ -42,7 +42,9 @@ func (normal) Parent() core.CommandStatic {
 
 func (normal) Children() core.CommandsStatic {
 	return core.CommandsStatic{
-		NormalReply,
+		NormalShow,
+		NormalOn,
+		NormalOff,
 		NormalInterval,
 	}
 }
@@ -55,168 +57,165 @@ func (normal) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedTalk.Run(m)
 }
 
-///////////
-//       //
-// reply //
-//       //
-///////////
+//////////
+//      //
+// show //
+//      //
+//////////
 
-var NormalReply = normalReply{}
+var NormalShow = normalShow{}
 
-type normalReply struct{}
+type normalShow struct{}
 
-func (c normalReply) Type() core.CommandType {
+func (c normalShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalReply) Permitted(m *core.Message) bool {
+func (c normalShow) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalReply) Names() []string {
-	return AdvancedReply.Names()
+func (normalShow) Names() []string {
+	return AdvancedReplyShow.Names()
 }
 
-func (normalReply) Description() string {
-	return AdvancedReply.Description()
+func (normalShow) Description() string {
+	return AdvancedReplyShow.Description()
 }
 
-func (c normalReply) UsageArgs() string {
-	return c.Children().UsageOptional()
+func (c normalShow) UsageArgs() string {
+	return AdvancedReplyShow.UsageArgs()
 }
 
-func (c normalReply) Category() core.CommandCategory {
+func (c normalShow) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (normalReply) Examples() []string {
+func (normalShow) Examples() []string {
 	return nil
 }
 
-func (normalReply) Parent() core.CommandStatic {
+func (normalShow) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalReply) Children() core.CommandsStatic {
-	return core.CommandsStatic{
-		NormalReplyOn,
-		NormalReplyOff,
-	}
-}
-
-func (normalReply) Init() error {
+func (normalShow) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalReply) Run(m *core.Message) (any, core.Urr, error) {
+func (normalShow) Init() error {
+	return nil
+}
+
+func (normalShow) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyShow.Run(m)
 }
 
-//////////////
-//          //
-// reply on //
-//          //
-//////////////
+////////
+//    //
+// on //
+//    //
+////////
 
-var NormalReplyOn = normalReplyOn{}
+var NormalOn = normalOn{}
 
-type normalReplyOn struct{}
+type normalOn struct{}
 
-func (c normalReplyOn) Type() core.CommandType {
+func (c normalOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalReplyOn) Permitted(m *core.Message) bool {
+func (c normalOn) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalReplyOn) Names() []string {
+func (normalOn) Names() []string {
 	return AdvancedReplyOn.Names()
 }
 
-func (normalReplyOn) Description() string {
+func (normalOn) Description() string {
 	return AdvancedReplyOn.Description()
 }
 
-func (c normalReplyOn) UsageArgs() string {
+func (c normalOn) UsageArgs() string {
 	return AdvancedReplyOn.UsageArgs()
 }
 
-func (c normalReplyOn) Category() core.CommandCategory {
+func (c normalOn) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (normalReplyOn) Examples() []string {
+func (normalOn) Examples() []string {
 	return nil
 }
 
-func (normalReplyOn) Parent() core.CommandStatic {
-	return NormalReply
+func (normalOn) Parent() core.CommandStatic {
+	return Normal
 }
 
-func (normalReplyOn) Children() core.CommandsStatic {
+func (normalOn) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalReplyOn) Init() error {
+func (normalOn) Init() error {
 	return nil
 }
 
-func (normalReplyOn) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOn) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOn.Run(m)
 }
 
-///////////////
-//           //
-// reply off //
-//           //
-///////////////
+/////////
+//     //
+// off //
+//     //
+/////////
 
-var NormalReplyOff = normalReplyOff{}
+var NormalOff = normalOff{}
 
-type normalReplyOff struct{}
+type normalOff struct{}
 
-func (c normalReplyOff) Type() core.CommandType {
+func (c normalOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalReplyOff) Permitted(m *core.Message) bool {
+func (c normalOff) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (normalReplyOff) Names() []string {
+func (normalOff) Names() []string {
 	return AdvancedReplyOff.Names()
 }
 
-func (normalReplyOff) Description() string {
+func (normalOff) Description() string {
 	return AdvancedReplyOff.Description()
 }
 
-func (c normalReplyOff) UsageArgs() string {
+func (c normalOff) UsageArgs() string {
 	return AdvancedReplyOff.UsageArgs()
 }
 
-func (c normalReplyOff) Category() core.CommandCategory {
+func (c normalOff) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (normalReplyOff) Examples() []string {
+func (normalOff) Examples() []string {
 	return nil
 }
 
-func (normalReplyOff) Parent() core.CommandStatic {
-	return NormalReply
+func (normalOff) Parent() core.CommandStatic {
+	return Normal
 }
 
-func (normalReplyOff) Children() core.CommandsStatic {
+func (normalOff) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalReplyOff) Init() error {
+func (normalOff) Init() error {
 	return nil
 }
 
-func (normalReplyOff) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOff.Run(m)
 }
 
