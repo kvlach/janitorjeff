@@ -164,14 +164,14 @@ func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedShow) discord(nick string, urr error) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedShow) discord(nick string, urr core.Urr) (*dg.MessageEmbed, core.Urr, error) {
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(urr, fmt.Sprintf("**%s**", nick)),
 	}
 	return embed, urr, nil
 }
 
-func (c advancedShow) text(nick string, urr error) (string, core.Urr, error) {
+func (c advancedShow) text(nick string, urr core.Urr) (string, core.Urr, error) {
 	nick = fmt.Sprintf("'%s'", nick)
 	return c.fmt(urr, nick), urr, nil
 }
@@ -180,7 +180,7 @@ func (advancedShow) fmt(urr core.Urr, nick string) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Your nickname is: %s", nick)
-	case UrrPersonNotFound:
+	case core.UrrValNil:
 		return "You have not set a nickname."
 	default:
 		return fmt.Sprint(urr)
