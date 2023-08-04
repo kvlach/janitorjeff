@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	UrrPersonNotFound = core.UrrNew("You have not set a nickname.")
-	UrrNickExists     = core.UrrNew("Nickname is already in use either by you or someone else.")
+	UrrNickExists = core.UrrNew("Nickname is already in use either by you or someone else.")
 )
 
 func dbNickExists(nick string, place int64) (bool, error) {
@@ -61,17 +60,10 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 	return person, err
 }
 
-// Show returns the person's nickname in the specified place. If no nickname
-// has been set then returns an UrrPersonNotFound error.
+// Show returns the person's nickname in the specified place.
+// If no nickname has been set returns a core.UrrValNil error.
 func Show(person, place int64) (string, core.Urr, error) {
-	nick, isNil, err := core.DB.PersonGet("cmd_nick_nick", person, place).StrNil()
-	if err != nil {
-		return "", nil, err
-	}
-	if isNil {
-		return "", UrrPersonNotFound, nil
-	}
-	return nick, nil, nil
+	return core.DB.PersonGet("cmd_nick_nick", person, place).StrNil()
 }
 
 // Set sets the person's nickname in the specified place. If the nickname
@@ -87,8 +79,7 @@ func Set(nick string, person, place int64) (core.Urr, error) {
 	return nil, core.DB.PersonSet("cmd_nick_nick", person, place, nick)
 }
 
-// Delete deletes the person's nickname in the specified place. If no nickname
-// has been set then returns an UrrPersonNotFound error.
+// Delete sets the person's nickname in the specified place to nil.
 func Delete(person, place int64) error {
 	return core.DB.PersonSet("cmd_nick_nick", person, place, nil)
 }

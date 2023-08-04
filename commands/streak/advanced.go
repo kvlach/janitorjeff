@@ -478,7 +478,7 @@ func (advancedRedeemShow) fmt(u uuid.UUID, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "The streak tracking redeem is set to: " + u.String()
-	case UrrRedeemNotSet:
+	case core.UrrValNil:
 		return "The streak tracking redeem has not been set."
 	default:
 		return fmt.Sprint(urr)

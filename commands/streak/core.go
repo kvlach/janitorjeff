@@ -12,9 +12,8 @@ import (
 )
 
 var (
-	UrrRedeemNotSet = core.UrrNew("the streak redeem has not been set")
-	UrrIgnore       = core.UrrNew("stream online within grace period, do nothing")
-	UrrAlreadyOn    = core.UrrNew("streak tracking has already been turned on for this place")
+	UrrIgnore    = core.UrrNew("stream online within grace period, do nothing")
+	UrrAlreadyOn = core.UrrNew("streak tracking has already been turned on for this place")
 )
 
 func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
@@ -206,14 +205,7 @@ func RedeemSet(place int64, id string) error {
 }
 
 func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
-	id, isNil, err := core.DB.PlaceGet("cmd_streak_redeem", place).UUIDNil()
-	if err != nil {
-		return uuid.UUID{}, nil, err
-	}
-	if isNil {
-		return uuid.UUID{}, UrrRedeemNotSet, nil
-	}
-	return id, nil, nil
+	return core.DB.PlaceGet("cmd_streak_redeem", place).UUIDNil()
 }
 
 func Get(person, place int64) (int64, error) {

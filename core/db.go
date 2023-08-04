@@ -16,6 +16,8 @@ var DB *SQLDB
 
 var ctx = context.Background()
 
+var UrrValNil = UrrNew("Value doesn't exist.")
+
 type SQLDB struct {
 	Lock sync.RWMutex
 	DB   *sql.DB
@@ -158,14 +160,14 @@ func (v Val) Str() (string, error) {
 	return v.val.(string), nil
 }
 
-func (v Val) StrNil() (string, bool, error) {
+func (v Val) StrNil() (string, Urr, error) {
 	if v.err != nil {
-		return "", false, v.err
+		return "", nil, v.err
 	}
 	if v.val == nil {
-		return "", true, nil
+		return "", UrrValNil, nil
 	}
-	return v.val.(string), false, nil
+	return v.val.(string), nil, nil
 }
 
 // Time returns a time object with the timezone set to UTC.
@@ -183,15 +185,15 @@ func (v Val) Duration() (time.Duration, error) {
 	return time.Duration(v.val.(int64)) * time.Second, nil
 }
 
-func (v Val) UUIDNil() (uuid.UUID, bool, error) {
+func (v Val) UUIDNil() (uuid.UUID, Urr, error) {
 	if v.err != nil {
-		return uuid.UUID{}, false, v.err
+		return uuid.UUID{}, nil, v.err
 	}
 	if v.val == nil {
-		return uuid.UUID{}, true, nil
+		return uuid.UUID{}, UrrValNil, nil
 	}
 	u, err := uuid.Parse(string(v.val.([]uint8)))
-	return u, false, err
+	return u, UrrValNil, err
 }
 
 type coords struct {

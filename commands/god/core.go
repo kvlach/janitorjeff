@@ -13,7 +13,6 @@ import (
 
 var (
 	UrrIntervalTooShort = core.UrrNew("The given interval is too short.")
-	UrrRedeemNotSet     = core.UrrNew("the streak redeem has not been set")
 )
 
 // Talk returns GPT3's response to a prompt.
@@ -83,13 +82,8 @@ func RedeemSet(place int64, id string) error {
 	return core.DB.PlaceSet("cmd_god_redeem", place, u)
 }
 
-func RedeemGet(place int64) (uuid.UUID, error, error) {
-	id, isNil, err := core.DB.PlaceGet("cmd_god_redeem", place).UUIDNil()
-	if err != nil {
-		return uuid.UUID{}, nil, err
-	}
-	if isNil {
-		return uuid.UUID{}, UrrRedeemNotSet, nil
-	}
-	return id, nil, nil
+// RedeemGet returns the place's god triggering redeem.
+// If no redeem has been set returns core.UrrValNil.
+func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
+	return core.DB.PlaceGet("cmd_god_redeem", place).UUIDNil()
 }
