@@ -6,6 +6,7 @@ var AliasesAdd = []string{
 	"add",
 	"new",
 	"create",
+	"+",
 }
 
 var AliasesEdit = []string{
@@ -19,6 +20,7 @@ var AliasesDelete = []string{
 	"del",
 	"remove",
 	"rm",
+	"-",
 }
 
 var AliasesList = []string{
@@ -38,6 +40,7 @@ var AliasesShow = []string{
 
 var AliasesSet = []string{
 	"set",
+	"=",
 }
 
 var AliasesSearch = []string{
