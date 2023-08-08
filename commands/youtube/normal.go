@@ -21,7 +21,7 @@ func (normal) Names() []string {
 }
 
 func (normal) Description() string {
-	return "Search a video on YouTube."
+	return AdvancedSearchVideo.Description()
 }
 
 func (normal) UsageArgs() string {
@@ -33,7 +33,7 @@ func (normal) Category() core.CommandCategory {
 }
 
 func (normal) Examples() []string {
-	return nil
+	return AdvancedSearchVideo.Examples()
 }
 
 func (normal) Parent() core.CommandStatic {

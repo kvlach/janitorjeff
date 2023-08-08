@@ -30,7 +30,7 @@ func (advanced) Names() []string {
 }
 
 func (advanced) Description() string {
-	return "Youtube related commands."
+	return "YouTube related commands."
 }
 
 func (c advanced) UsageArgs() string {
@@ -38,7 +38,7 @@ func (c advanced) UsageArgs() string {
 }
 
 func (advanced) Category() core.CommandCategory {
-	return core.CommandCategoryOther
+	return core.CommandCategoryServices
 }
 
 func (advanced) Examples() []string {
@@ -86,7 +86,7 @@ func (advancedSearch) Names() []string {
 }
 
 func (advancedSearch) Description() string {
-	return "Group of various search realted commands."
+	return "Group of various search related commands."
 }
 
 func (c advancedSearch) UsageArgs() string {
@@ -146,7 +146,7 @@ func (advancedSearchVideo) Names() []string {
 }
 
 func (advancedSearchVideo) Description() string {
-	return "Search for a video."
+	return "Search for a YouTube video."
 }
 
 func (advancedSearchVideo) UsageArgs() string {
@@ -158,7 +158,9 @@ func (c advancedSearchVideo) Category() core.CommandCategory {
 }
 
 func (advancedSearchVideo) Examples() []string {
-	return nil
+	return []string{
+		"gangnam style",
+	}
 }
 
 func (advancedSearchVideo) Parent() core.CommandStatic {
@@ -244,11 +246,11 @@ func (c advancedSearchChannel) Names() []string {
 }
 
 func (advancedSearchChannel) Description() string {
-	return "Search for a channel."
+	return "Search for a YouTube channel."
 }
 
 func (advancedSearchChannel) UsageArgs() string {
-	return "<channel...>"
+	return "<channel name>"
 }
 
 func (c advancedSearchChannel) Category() core.CommandCategory {
@@ -256,7 +258,9 @@ func (c advancedSearchChannel) Category() core.CommandCategory {
 }
 
 func (advancedSearchChannel) Examples() []string {
-	return nil
+	return []string{
+		"ben eater",
+	}
 }
 
 func (advancedSearchChannel) Parent() core.CommandStatic {
@@ -290,7 +294,7 @@ func (c advancedSearchChannel) discord(m *core.Message) (any, core.Urr, error) {
 		return "", nil, err
 	}
 
-	// let disocrd handle the url embed
+	// let discord handle the url embed
 	if urr == nil {
 		return ch.URL(), nil, nil
 	}
@@ -310,15 +314,6 @@ func (c advancedSearchChannel) text(m *core.Message) (string, core.Urr, error) {
 		return fmt.Sprint(urr), urr, nil
 	}
 	return fmt.Sprintf("%s | %s", ch.Title, ch.URL()), nil, nil
-}
-
-func (advancedSearchChannel) err(urr core.Urr, ch youtube.Channel) string {
-	switch urr {
-	case nil:
-		return ch.URL()
-	default:
-		return fmt.Sprint(urr)
-	}
 }
 
 func (advancedSearchChannel) core(m *core.Message) (youtube.Channel, core.Urr, error) {
