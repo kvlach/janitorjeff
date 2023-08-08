@@ -34,6 +34,7 @@ const (
 	CommandCategoryGames      = "Games"
 	CommandCategoryModerators = "Moderators"
 	CommandCategoryOther      = "Other"
+	CommandCategoryServices   = "Services"
 )
 
 // There are 2 parts to a command: the static part which includes things like
