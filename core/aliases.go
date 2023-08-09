@@ -46,6 +46,7 @@ var AliasesSet = []string{
 var AliasesSearch = []string{
 	"search",
 	"find",
+	"lookup",
 }
 
 var AliasesOn = []string{
