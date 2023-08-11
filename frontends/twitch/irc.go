@@ -306,3 +306,7 @@ func (t *Twitch) Natural(msg any, _ core.Urr) (*core.Message, error) {
 	}
 	return t.send(msg, mention)
 }
+
+func (t *Twitch) QuoteCommand(cmd string) string {
+	return "'" + cmd + "'"
+}
