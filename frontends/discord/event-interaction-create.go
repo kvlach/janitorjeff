@@ -199,6 +199,10 @@ func (i *InteractionCreate) Natural(msg any, urr core.Urr) (*core.Message, error
 	return i.send(msg, urr)
 }
 
+func (i *InteractionCreate) QuoteCommand(cmd string) string {
+	return PlaceInBackticks(cmd)
+}
+
 /////////////
 //         //
 // Speaker //

@@ -170,6 +170,10 @@ type Messenger interface {
 	// are not natural looking. To add to the effect, randomness may be used to
 	// only sometimes mention the person.
 	Natural(msg any, urr Urr) (resp *Message, err error)
+
+	// QuoteCommand returns the passed cmd quoted appropriately.
+	// If frontend-specific formatting doesn't exist, then use single quotes.
+	QuoteCommand(cmd string) string
 }
 
 type Message struct {

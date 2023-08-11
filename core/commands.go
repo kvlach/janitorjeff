@@ -113,7 +113,13 @@ func Format(cmd CommandStatic, prefix string) string {
 	}
 	path = append([]string{cmd.Names()[0]}, path...)
 
-	return fmt.Sprintf("%s%s%s", prefix, strings.Join(path, " "), args)
+	return prefix + strings.Join(path, " ") + args
+}
+
+// FormatQuote works much like Format but also quotes the resulting string using
+// Messenger.QuoteCommand.
+func FormatQuote(cmd CommandStatic, prefix string, msng Messenger) string {
+	return msng.QuoteCommand(Format(cmd, prefix))
 }
 
 // CommandRuntime holds a command's runtime information.

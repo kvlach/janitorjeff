@@ -115,3 +115,7 @@ func (d *MessageEdit) Write(msg any, urr core.Urr) (*core.Message, error) {
 func (d *MessageEdit) Natural(msg any, urr core.Urr) (*core.Message, error) {
 	return d.Send(msg, urr)
 }
+
+func (d *MessageEdit) QuoteCommand(cmd string) string {
+	return PlaceInBackticks(cmd)
+}
