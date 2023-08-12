@@ -269,6 +269,7 @@ func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
+		Title:       "God says...",
 		Description: resp,
 	}
 	return embed, nil, nil
@@ -757,7 +758,7 @@ func (c advancedIntervalShow) text(m *core.Message) (string, core.Urr, error) {
 }
 
 func (advancedIntervalShow) fmt(interval time.Duration) string {
-	return "The interval is set to: " + interval.String()
+	return "God will automatically reply once every " + interval.String()
 }
 
 func (advancedIntervalShow) core(m *core.Message) (time.Duration, error) {
