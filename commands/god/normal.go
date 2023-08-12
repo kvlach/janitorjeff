@@ -1,7 +1,13 @@
 package god
 
 import (
+	"fmt"
+	"time"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+
+	dg "github.com/bwmarrin/discordgo"
 )
 
 var Normal = normal{}
@@ -25,7 +31,8 @@ func (normal) Description() string {
 }
 
 func (c normal) UsageArgs() string {
-	return c.Children().UsageOptional()
+	//return c.Children().UsageOptional()
+	return "<text>"
 }
 
 func (normal) Category() core.CommandCategory {
@@ -33,7 +40,13 @@ func (normal) Category() core.CommandCategory {
 }
 
 func (normal) Examples() []string {
-	return nil
+	return []string{
+		"20m",
+		"2h30m",
+		"on",
+		"off",
+		"",
+	}
 }
 
 func (normal) Parent() core.CommandStatic {
@@ -45,7 +58,6 @@ func (normal) Children() core.CommandsStatic {
 		NormalShow,
 		NormalOn,
 		NormalOff,
-		NormalInterval,
 	}
 }
 
@@ -53,8 +65,54 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) == 0 {
+		here, err := m.Here.ScopeLogical()
+		if err != nil {
+			return nil, nil, err
+		}
+		on, err := ReplyOnGet(here)
+		if err != nil {
+			return nil, nil, err
+		}
+		if on {
+			// this response + You can also ask me a question directly by doing
+			// !god <text> or can turn auto-replying off by doing !god off
+			// Interval is set to <>, to change it use !god <interval>
+			return AdvancedIntervalShow.Run(m)
+		}
+		return c.renderOff(m)
+
+		// Auto-replying is off. You can talk to me directly by using
+		// !god <text>. You can turn auto-replying on by doing !god on
+	}
+	if _, err := time.ParseDuration(m.Command.Args[0]); err == nil {
+		//
+	}
 	return AdvancedTalk.Run(m)
+}
+
+func (c normal) renderOff(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return &dg.MessageEmbed{
+			Title: "Auto-replying is off.",
+			Fields: []*dg.MessageEmbedField{
+				{
+					Name: "Hints",
+					Value: "- Talk to God directly using " + core.FormatQuote(Normal, m.Command.Prefix, m.Client) +
+						"\n- Turn auto-replying on using " + core.FormatQuote(NormalOn, m.Command.Prefix, m.Client),
+				},
+			},
+		}, nil, nil
+
+	default:
+		return c.fmtOff(m), nil, nil
+	}
+}
+
+func (normal) fmtOff(m *core.Message) string {
+	return fmt.Sprintf("Auto-replying is off. You can talk to God directly using %s. You can turn auto-replying on using %s", core.FormatQuote(Normal, m.Command.Prefix, m.Client), core.FormatQuote(NormalOn, m.Command.Prefix, m.Client))
 }
 
 //////////
@@ -217,61 +275,4 @@ func (normalOff) Init() error {
 
 func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOff.Run(m)
-}
-
-//////////////
-//          //
-// interval //
-//          //
-//////////////
-
-var NormalInterval = normalInterval{}
-
-type normalInterval struct{}
-
-func (c normalInterval) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (c normalInterval) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
-}
-
-func (normalInterval) Names() []string {
-	return AdvancedInterval.Names()
-}
-
-func (normalInterval) Description() string {
-	return AdvancedInterval.Description()
-}
-
-func (normalInterval) UsageArgs() string {
-	return "[interval]"
-}
-
-func (c normalInterval) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (normalInterval) Examples() []string {
-	return nil
-}
-
-func (normalInterval) Parent() core.CommandStatic {
-	return Normal
-}
-
-func (normalInterval) Children() core.CommandsStatic {
-	return nil
-}
-
-func (normalInterval) Init() error {
-	return nil
-}
-
-func (normalInterval) Run(m *core.Message) (any, core.Urr, error) {
-	if len(m.Command.Args) == 0 {
-		return AdvancedIntervalShow.Run(m)
-	}
-	return AdvancedIntervalSet.Run(m)
 }
