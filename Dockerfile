@@ -9,4 +9,4 @@ RUN apk add --no-cache tzdata ffmpeg yt-dlp
 WORKDIR /app
 COPY --from=build-env /go/bin/jeff ./
 COPY schema.sql .
-ENTRYPOINT ["./jeff", "-debug"]
+ENTRYPOINT ["./jeff"]
