@@ -29,7 +29,7 @@ func Talk(prompt string) (string, error) {
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "You are God who has taken the form of a janitor. You are a bit of an asshole. Always respond in English. Never use slurs. Respond with 300 characters or less.",
+					Content: "You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Always respond in English. Never use slurs. Respond with 300 characters or less.",
 				},
 				{
 					Role:    openai.ChatMessageRoleUser,
