@@ -8,30 +8,40 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	gogpt "github.com/sashabaranov/go-gpt3"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 var (
 	UrrIntervalTooShort = core.UrrNew("The given interval is too short.")
 )
 
-// Talk returns GPT3's response to a prompt.
+// Talk returns GPT3.5's response to a user prompt.
 func Talk(prompt string) (string, error) {
-	log.Debug().Str("prompt", prompt).Msg("talking to gpt3")
+	log.Debug().Str("prompt", prompt).Msg("talking to gpt3.5")
 
-	c := gogpt.NewClient(core.OpenAIKey)
-	ctx := context.Background()
+	client := openai.NewClient(core.OpenAIKey)
 
-	req := gogpt.CompletionRequest{
-		Model:     gogpt.GPT3TextDavinci003,
-		MaxTokens: 60,
-		Prompt:    prompt,
-	}
-	resp, err := c.CreateCompletion(ctx, req)
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model:     openai.GPT3Dot5Turbo,
+			MaxTokens: 80,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: "You are God who has taken the form of a janitor. You are a bit of an asshole. Always respond in English. Never use slurs. Respond with 300 characters or less.",
+				},
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: prompt,
+				},
+			},
+		},
+	)
 	if err != nil {
 		return "", err
 	}
-	return resp.Choices[0].Text, nil
+	return resp.Choices[0].Message.Content, nil
 }
 
 // ReplyOnGet returns whether auto-replying is on or off (true or false) in the
