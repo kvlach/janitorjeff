@@ -66,6 +66,11 @@ func Add(prefix string, t core.CommandType, place int64) (string, core.Urr, erro
 	// get added without the user realizing.
 	if !inDB {
 		for _, p := range prefixes {
+			// Admin prefixes are only declared through the configuration and
+			// should not be saved in the database
+			if p.Type == core.Admin {
+				continue
+			}
 			if err = dbAdd(p.Prefix, p.Type, place); err != nil {
 				return "", nil, err
 			}
