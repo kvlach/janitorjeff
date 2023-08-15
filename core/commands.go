@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -156,10 +157,6 @@ func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (Comman
 	name = strings.ToLower(name)
 
 	for _, c := range cmds {
-		if !c.Permitted(m) {
-			continue
-		}
-
 		if c.Type() != t {
 			continue
 		}
@@ -202,6 +199,9 @@ func (cmds CommandsStatic) Match(t CommandType, m *Message, args []string) (Comm
 		cmd = tmp
 	}
 
+	if !cmd.Permitted(m) {
+		return nil, 0, errors.New("not permitted to execute command")
+	}
 	return cmd, index, nil
 }
 
