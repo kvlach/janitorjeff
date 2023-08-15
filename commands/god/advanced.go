@@ -213,7 +213,7 @@ func (c advancedTalk) Type() core.CommandType {
 }
 
 func (c advancedTalk) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return true
 }
 
 func (advancedTalk) Names() []string {
@@ -308,7 +308,7 @@ func (c advancedReply) Type() core.CommandType {
 }
 
 func (c advancedReply) Permitted(m *core.Message) bool {
-	return true
+	return c.Parent().Permitted(m)
 }
 
 func (advancedReply) Names() []string {
