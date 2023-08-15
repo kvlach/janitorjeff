@@ -146,6 +146,13 @@ func (v Val) Bool() (bool, error) {
 	return v.val.(bool), nil
 }
 
+func (v Val) Int() (int, error) {
+	if v.err != nil {
+		return 0, v.err
+	}
+	return int(v.val.(int64)), nil
+}
+
 func (v Val) Int64() (int64, error) {
 	if v.err != nil {
 		return 0, v.err

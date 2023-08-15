@@ -37,7 +37,8 @@ CREATE TABLE settings_place (
 	cmd_god_reply_on BOOL NOT NULL DEFAULT FALSE,
 	cmd_god_reply_interval INTEGER NOT NULL DEFAULT 1800, -- in seconds
 	cmd_god_reply_last INTEGER NOT NULL DEFAULT 0, -- unix timestamp of last reply
-	cmd_god_redeem UUID
+	cmd_god_redeem UUID,
+	cmd_god_mood INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE settings_person (
