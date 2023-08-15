@@ -40,7 +40,7 @@ func (m Mood) String() string {
 func SystemPrompt(mood Mood) (string, error) {
 	switch mood {
 	case MoodDefault:
-		return "You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Always respond in English. Never use slurs. Respond with 300 characters or less.", nil
+		return "You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Always respond in English. Respond with 300 characters or less.", nil
 	case MoodRude:
 		return "You are God who has taken the form of a janitor. You are rude. Always respond in English. Respond with 300 characters or less.", nil
 	case MoodSad:
