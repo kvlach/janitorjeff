@@ -33,11 +33,11 @@ func (normal) Description() string {
 }
 
 func (normal) UsageArgs() string {
-	return "<query...>"
+	return "<query>"
 }
 
 func (normal) Category() core.CommandCategory {
-	return core.CommandCategoryOther
+	return core.CommandCategoryServices
 }
 
 func (normal) Examples() []string {
