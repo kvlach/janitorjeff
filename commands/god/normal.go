@@ -142,7 +142,7 @@ func (c normalShow) Type() core.CommandType {
 }
 
 func (c normalShow) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return AdvancedReplyShow.Permitted(m)
 }
 
 func (normalShow) Names() []string {
@@ -196,7 +196,7 @@ func (c normalOn) Type() core.CommandType {
 }
 
 func (c normalOn) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return AdvancedReplyOn.Permitted(m)
 }
 
 func (normalOn) Names() []string {
@@ -250,7 +250,7 @@ func (c normalOff) Type() core.CommandType {
 }
 
 func (c normalOff) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return AdvancedReplyOff.Permitted(m)
 }
 
 func (normalOff) Names() []string {
