@@ -1,6 +1,7 @@
 package streak
 
 import (
+	"errors"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -12,8 +13,8 @@ import (
 )
 
 var (
-	UrrIgnore    = core.UrrNew("stream online within grace period, do nothing")
-	UrrAlreadyOn = core.UrrNew("streak tracking has already been turned on for this place")
+	ErrIgnore    = errors.New("stream online within grace period, do nothing")
+	UrrAlreadyOn = core.UrrNew("Streak tracking has already been turned on.")
 )
 
 func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
@@ -133,6 +134,9 @@ func Off(h *twitch.Helix, place int64) error {
 	return tx.Commit()
 }
 
+// Appearance returns the person's current streak with when being their latest appearance.
+// Accounts for offline -> online within grace; for more info: core/events.go.
+// If a stream is missed, the streak gets reset to 0.
 func Appearance(person, place int64, when time.Time) (int64, error) {
 	core.DB.Lock.Lock()
 	defer core.DB.Lock.Unlock()
@@ -158,7 +162,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	//     online -> offline -> online -> redeem
 	//
 	// In which case the streak counter gets reset to 0 as the person didn't
-	// show up in the previous stream
+	// show up in the previous stream.
 	if offlinePrev > prev {
 		err = tx.PersonSet("cmd_streak_num", person, place, 0)
 		if err != nil {
@@ -178,7 +182,7 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	// In which case the streak doesn't get incremented as this is considered
 	// one stream.
 	if prev >= online {
-		return 0, UrrIgnore
+		return 0, ErrIgnore
 	}
 
 	err = tx.PersonSet("cmd_streak_last", person, place, when.UTC().Unix())
@@ -196,6 +200,13 @@ func Appearance(person, place int64, when time.Time) (int64, error) {
 	return streak + 1, tx.Commit()
 }
 
+// RedeemGet returns the place's streak triggering redeem.
+// If no redeem has been set returns core.UrrValNil.
+func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
+	return core.DB.PlaceGet("cmd_streak_redeem", place).UUIDNil()
+}
+
+// RedeemSet updates the place's streak redeem id.
 func RedeemSet(place int64, id string) error {
 	u, err := uuid.Parse(id)
 	if err != nil {
@@ -204,22 +215,22 @@ func RedeemSet(place int64, id string) error {
 	return core.DB.PlaceSet("cmd_streak_redeem", place, u)
 }
 
-func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
-	return core.DB.PlaceGet("cmd_streak_redeem", place).UUIDNil()
-}
-
+// Get returns the person's current streak.
 func Get(person, place int64) (int64, error) {
 	return core.DB.PersonGet("cmd_streak_num", person, place).Int64()
 }
 
+// Set updates the person's current streak.
 func Set(person, place int64, streak int) error {
 	return core.DB.PersonSet("cmd_streak_num", person, place, streak)
 }
 
+// GraceGet returns the place's grace period. For more info: core/events.go.
 func GraceGet(place int64) (time.Duration, error) {
 	return core.DB.PlaceGet("stream_grace", place).Duration()
 }
 
+// GraceSet updates the place's grace period. For more info: core/events.go.
 func GraceSet(place int64, grace time.Duration) error {
 	return core.DB.PlaceSet("stream_grace", place, int(grace.Seconds()))
 }
