@@ -61,13 +61,13 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 }
 
 // Show returns the person's nickname in the specified place.
-// If no nickname has been set returns a core.UrrValNil error.
+// If the nickname is nil returns core.UrrValNil.
 func Show(person, place int64) (string, core.Urr, error) {
 	return core.DB.PersonGet("cmd_nick_nick", person, place).StrNil()
 }
 
-// Set sets the person's nickname in the specified place. If the nickname
-// already exists in that place then it returns an UrrNickExists error.
+// Set sets the person's nickname in the specified place.
+// If the nickname is already in use in the place returns UrrNickExists.
 func Set(nick string, person, place int64) (core.Urr, error) {
 	nickExists, err := dbNickExists(nick, place)
 	if err != nil {
@@ -84,10 +84,10 @@ func Delete(person, place int64) error {
 	return core.DB.PersonSet("cmd_nick_nick", person, place, nil)
 }
 
-// Tries to find a person from the given string. If "me" is passed the author
-// is returned. Then tries to match a nickname and if it fails it tries various
-// platform specific things (checking if the string is a mention of some sort,
-// etc.)
+// ParsePerson tries to find a person from the given string.
+// If "me" is passed, the author is returned, otherwise tries to match a nickname,
+// and if it fails, it tries various frontend-specific extraction methods
+// (e.g., checking if the string is a mention of some sort, etc.)
 func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 	if s == "me" {
 		return m.Author.Scope()
@@ -110,7 +110,7 @@ func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 	return m.Client.Person(id)
 }
 
-// Same as ParsePerson but uses the default place instead
+// ParsePersonHere is the same as ParsePerson but place = here.
 func ParsePersonHere(m *core.Message, s string) (int64, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
