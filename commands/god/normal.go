@@ -19,7 +19,7 @@ func (normal) Type() core.CommandType {
 }
 
 func (normal) Permitted(m *core.Message) bool {
-	return Advanced.Permitted(m)
+	return true
 }
 
 func (normal) Names() []string {
@@ -70,6 +70,14 @@ func (normal) Init() error {
 }
 
 func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+	mod, err := m.Author.Moderator()
+	if err != nil {
+		return nil, nil, err
+	}
+	if !mod {
+		return AdvancedTalk.Run(m)
+	}
+
 	if len(m.Command.Args) == 0 {
 		here, err := m.Here.ScopeLogical()
 		if err != nil {

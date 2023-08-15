@@ -308,7 +308,7 @@ func (c advancedReply) Type() core.CommandType {
 }
 
 func (c advancedReply) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+	return true
 }
 
 func (advancedReply) Names() []string {
