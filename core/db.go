@@ -332,7 +332,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 		return Val{}
 	}
 
-	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1 FOR UPDATE`, col)
+	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1`, col)
 
 	var val any
 	err := tx.tx.QueryRow(query, place).Scan(&val)
@@ -499,7 +499,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 		return Val{}
 	}
 
-	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2 FOR UPDATE`, col)
+	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2`, col)
 	row := tx.tx.QueryRow(query, person, place)
 
 	var val any
