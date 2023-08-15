@@ -2,6 +2,7 @@ package god
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -15,13 +16,53 @@ var (
 	UrrIntervalTooShort = core.UrrNew("The given interval is too short.")
 )
 
+type Mood int
+
+const (
+	MoodDefault Mood = iota
+	MoodRude
+	MoodSad
+)
+
+func (m Mood) String() string {
+	switch m {
+	case MoodDefault:
+		return "Default"
+	case MoodRude:
+		return "Rude"
+	case MoodSad:
+		return "Sad"
+	default:
+		panic("unknown mood")
+	}
+}
+
+func SystemPrompt(mood Mood) (string, error) {
+	switch mood {
+	case MoodDefault:
+		return "You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Always respond in English. Never use slurs. Respond with 300 characters or less.", nil
+	case MoodRude:
+		return "You are God who has taken the form of a janitor. You are rude. Always respond in English. Respond with 300 characters or less.", nil
+	case MoodSad:
+		return "You are God who has taken the form of a janitor. You are very sad about everything. Respond in 300 characters or less.", nil
+	default:
+		return "", fmt.Errorf("unknown mood '%d'", mood)
+	}
+}
+
 // Talk returns GPT3.5's response to a user prompt.
-func Talk(prompt string) (string, error) {
-	log.Debug().Str("prompt", prompt).Msg("talking to gpt3.5")
+func Talk(userPrompt string, place int64) (string, error) {
+	mood, err := MoodGet(place)
+	if err != nil {
+		return "", err
+	}
+	systemPrompt, err := SystemPrompt(mood)
+	if err != nil {
+		return "", err
+	}
 
-	client := openai.NewClient(core.OpenAIKey)
-
-	resp, err := client.CreateChatCompletion(
+	log.Debug().Str("user-prompt", userPrompt).Msg("talking to gpt3.5")
+	resp, err := openai.NewClient(core.OpenAIKey).CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model:     openai.GPT3Dot5Turbo,
@@ -29,11 +70,11 @@ func Talk(prompt string) (string, error) {
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Always respond in English. Never use slurs. Respond with 300 characters or less.",
+					Content: systemPrompt,
 				},
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
+					Content: userPrompt,
 				},
 			},
 		},
@@ -83,4 +124,16 @@ func RedeemSet(place int64, id string) error {
 // If no redeem has been set returns core.UrrValNil.
 func RedeemGet(place int64) (uuid.UUID, core.Urr, error) {
 	return core.DB.PlaceGet("cmd_god_redeem", place).UUIDNil()
+}
+
+func MoodSet(place int64, mood Mood) error {
+	return core.DB.PlaceSet("cmd_god_mood", place, int(mood))
+}
+
+func MoodGet(place int64) (Mood, error) {
+	mood, err := core.DB.PlaceGet("cmd_god_mood", place).Int()
+	if err != nil {
+		return 0, err
+	}
+	return Mood(mood), nil
 }

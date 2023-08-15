@@ -7,6 +7,7 @@ import (
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -63,6 +64,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedReply,
 		AdvancedInterval,
 		AdvancedRedeem,
+		AdvancedMood,
 	}
 }
 
@@ -116,7 +118,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		resp, err := Talk(m.Raw)
+		resp, err := Talk(m.Raw, here)
 		if err != nil {
 			log.Debug().Err(err).Msg("failed to communicate with god")
 			return
@@ -163,7 +165,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		resp, err := Talk(rc.Input)
+		resp, err := Talk(rc.Input, here)
 		if err != nil {
 			slog.Error().Err(err).Msg("failed to get gpt response")
 			return
@@ -284,7 +286,11 @@ func (c advancedTalk) text(m *core.Message) (string, core.Urr, error) {
 }
 
 func (advancedTalk) core(m *core.Message) (string, error) {
-	return Talk(m.RawArgs(0))
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return "", err
+	}
+	return Talk(m.RawArgs(0), here)
 }
 
 ///////////
@@ -1080,4 +1086,484 @@ func (advancedRedeemSet) core(m *core.Message) error {
 		return err
 	}
 	return RedeemSet(here, m.Command.Args[0])
+}
+
+//////////
+//      //
+// mood //
+//      //
+//////////
+
+var AdvancedMood = advancedMood{}
+
+type advancedMood struct{}
+
+func (c advancedMood) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMood) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMood) Names() []string {
+	return []string{
+		"mood",
+		"moods",
+	}
+}
+
+func (advancedMood) Description() string {
+	return "Control God's mood."
+}
+
+func (c advancedMood) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedMood) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMood) Examples() []string {
+	return nil
+}
+
+func (advancedMood) Parent() core.CommandStatic {
+	return Advanced
+}
+
+func (advancedMood) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedMoodShow,
+		AdvancedMoodSet,
+	}
+}
+
+func (advancedMood) Init() error {
+	return nil
+}
+
+func (advancedMood) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
+}
+
+///////////////
+//           //
+// mood show //
+//           //
+///////////////
+
+var AdvancedMoodShow = advancedMoodShow{}
+
+type advancedMoodShow struct{}
+
+func (c advancedMoodShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedMoodShow) Description() string {
+	return "Show God's current mood."
+}
+
+func (advancedMoodShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedMoodShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodShow) Examples() []string {
+	return nil
+}
+
+func (advancedMoodShow) Parent() core.CommandStatic {
+	return AdvancedMood
+}
+
+func (advancedMoodShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedMoodShow) Init() error {
+	return nil
+}
+
+func (c advancedMoodShow) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return nil, nil, nil
+	}
+}
+
+func (c advancedMoodShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	mood, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(mood),
+	}
+	return embed, nil, nil
+}
+
+func (advancedMoodShow) fmt(mood Mood) string {
+	return mood.String()
+}
+
+func (advancedMoodShow) core(m *core.Message) (Mood, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return 0, err
+	}
+	mood, err := MoodGet(here)
+	if err != nil {
+		return 0, err
+	}
+	return mood, nil
+}
+
+//////////////
+//          //
+// mood set //
+//          //
+//////////////
+
+var AdvancedMoodSet = advancedMoodSet{}
+
+type advancedMoodSet struct{}
+
+func (c advancedMoodSet) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodSet) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodSet) Names() []string {
+	return core.AliasesSet
+}
+
+func (advancedMoodSet) Description() string {
+	return "Set God's mood."
+}
+
+func (c advancedMoodSet) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedMoodSet) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodSet) Examples() []string {
+	return nil
+}
+
+func (advancedMoodSet) Parent() core.CommandStatic {
+	return AdvancedMood
+}
+
+func (c advancedMoodSet) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedMoodSetDefault,
+		AdvancedMoodSetRude,
+		AdvancedMoodSetSad,
+	}
+}
+
+func (advancedMoodSet) Init() error {
+	return nil
+}
+
+func (advancedMoodSet) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
+}
+
+//////////////////////
+//                  //
+// mood set default //
+//                  //
+//////////////////////
+
+var AdvancedMoodSetDefault = advancedMoodSetDefault{}
+
+type advancedMoodSetDefault struct{}
+
+func (c advancedMoodSetDefault) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodSetDefault) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodSetDefault) Names() []string {
+	return []string{
+		"default",
+	}
+}
+
+func (advancedMoodSetDefault) Description() string {
+	return "Revert to the default mood."
+}
+
+func (c advancedMoodSetDefault) UsageArgs() string {
+	return ""
+}
+
+func (c advancedMoodSetDefault) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodSetDefault) Examples() []string {
+	return nil
+}
+
+func (advancedMoodSetDefault) Parent() core.CommandStatic {
+	return AdvancedMoodSet
+}
+
+func (advancedMoodSetDefault) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedMoodSetDefault) Init() error {
+	return nil
+}
+
+func (c advancedMoodSetDefault) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedMoodSetDefault) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedMoodSetDefault) text(m *core.Message) (string, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedMoodSetDefault) fmt() string {
+	return "Set the mood to default."
+}
+
+func (advancedMoodSetDefault) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return MoodSet(here, MoodDefault)
+}
+
+///////////////////
+//               //
+// mood set rude //
+//               //
+///////////////////
+
+var AdvancedMoodSetRude = advancedMoodSetRude{}
+
+type advancedMoodSetRude struct{}
+
+func (c advancedMoodSetRude) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodSetRude) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodSetRude) Names() []string {
+	return []string{
+		"rude",
+	}
+}
+
+func (advancedMoodSetRude) Description() string {
+	return "Make God rude."
+}
+
+func (c advancedMoodSetRude) UsageArgs() string {
+	return ""
+}
+
+func (c advancedMoodSetRude) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodSetRude) Examples() []string {
+	return nil
+}
+
+func (advancedMoodSetRude) Parent() core.CommandStatic {
+	return AdvancedMoodSet
+}
+
+func (advancedMoodSetRude) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedMoodSetRude) Init() error {
+	return nil
+}
+
+func (c advancedMoodSetRude) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedMoodSetRude) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedMoodSetRude) text(m *core.Message) (string, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedMoodSetRude) fmt() string {
+	return "God will now be very rude!"
+}
+
+func (advancedMoodSetRude) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return MoodSet(here, MoodRude)
+}
+
+//////////////////
+//              //
+// mood set sad //
+//              //
+//////////////////
+
+var AdvancedMoodSetSad = advancedMoodSetSad{}
+
+type advancedMoodSetSad struct{}
+
+func (c advancedMoodSetSad) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodSetSad) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodSetSad) Names() []string {
+	return []string{
+		"sad",
+	}
+}
+
+func (advancedMoodSetSad) Description() string {
+	return "Make God sad :("
+}
+
+func (c advancedMoodSetSad) UsageArgs() string {
+	return ""
+}
+
+func (c advancedMoodSetSad) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodSetSad) Examples() []string {
+	return nil
+}
+
+func (advancedMoodSetSad) Parent() core.CommandStatic {
+	return AdvancedMoodSet
+}
+
+func (advancedMoodSetSad) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedMoodSetSad) Init() error {
+	return nil
+}
+
+func (c advancedMoodSetSad) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedMoodSetSad) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedMoodSetSad) text(m *core.Message) (string, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedMoodSetSad) fmt() string {
+	return "God is now sad :("
+}
+
+func (advancedMoodSetSad) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return MoodSet(here, MoodSad)
 }
