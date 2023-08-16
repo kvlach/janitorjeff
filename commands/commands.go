@@ -8,6 +8,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/commands/category"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/connect"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/custom-command"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/discord"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/god"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/help"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/id"
@@ -41,6 +42,8 @@ var Commands = core.CommandsStatic{
 	connect.Normal,
 
 	custom_command.Advanced,
+
+	discord.Admin,
 
 	god.Advanced,
 	god.Normal,
