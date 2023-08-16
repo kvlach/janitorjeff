@@ -275,7 +275,13 @@ func memberHasPerms(guildID, userID string, perms int64) (bool, error) {
 		}
 	}
 
-	return false, nil
+	guild, err := Session.State.Guild(guildID)
+	if err != nil {
+		if guild, err = Session.Guild(guildID); err != nil {
+			return false, err
+		}
+	}
+	return guild.OwnerID == userID, nil
 }
 
 func isAdmin(guildID string, userID string) bool {
