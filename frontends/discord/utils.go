@@ -270,6 +270,9 @@ func memberHasPerms(guildID, userID string, perms int64) (bool, error) {
 		if role.Permissions&perms != 0 {
 			return true, nil
 		}
+		if role.Permissions&dg.PermissionAdministrator != 0 {
+			return true, nil
+		}
 	}
 
 	return false, nil
