@@ -2,7 +2,6 @@ package god
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -869,15 +868,14 @@ func (advancedIntervalSet) fmt(interval time.Duration, urr core.Urr) string {
 }
 
 func (advancedIntervalSet) core(m *core.Message) (time.Duration, core.Urr, error) {
-	seconds, err := strconv.ParseInt(m.Command.Args[0], 10, 64)
+	interval, err := time.ParseDuration(m.Command.Args[0])
 	if err != nil {
-		return time.Second, UrrInvalidInterval, nil
+		return 0, nil, err
 	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return time.Second, nil, err
 	}
-	interval := time.Duration(seconds) * time.Second
 	urr, err := ReplyIntervalSet(here, interval)
 	return interval, urr, err
 }

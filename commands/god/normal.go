@@ -99,7 +99,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 		// !god <text>. You can turn auto-replying on by doing !god on
 	}
 	if _, err := time.ParseDuration(m.Command.Args[0]); err == nil {
-		//
+		return AdvancedIntervalSet.Run(m)
 	}
 	return AdvancedTalk.Run(m)
 }
