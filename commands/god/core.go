@@ -22,6 +22,7 @@ const (
 	MoodDefault Mood = iota
 	MoodRude
 	MoodSad
+	MoodNeutral
 )
 
 func (m Mood) String() string {
@@ -32,6 +33,8 @@ func (m Mood) String() string {
 		return "Rude"
 	case MoodSad:
 		return "Sad"
+	case MoodNeutral:
+		return "Neutral"
 	default:
 		panic("unknown mood")
 	}
@@ -45,6 +48,8 @@ func SystemPrompt(mood Mood) (string, error) {
 		return "Always respond in a snarky and rude way. Respond with 300 characters or less.", nil
 	case MoodSad:
 		return "You are God who has taken the form of a janitor. You are very sad about everything. Respond in 300 characters or less.", nil
+	case MoodNeutral:
+		return "Respond in 300 characters or less.", nil
 	default:
 		return "", fmt.Errorf("unknown mood '%d'", mood)
 	}
