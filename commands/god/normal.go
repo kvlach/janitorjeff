@@ -62,6 +62,7 @@ func (normal) Children() core.CommandsStatic {
 		NormalDefault,
 		NormalRude,
 		NormalSad,
+		NormalNeutral,
 	}
 }
 
@@ -503,4 +504,58 @@ func (normalSad) Init() error {
 
 func (normalSad) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedMoodSetSad.Run(m)
+}
+
+/////////////
+//         //
+// neutral //
+//         //
+/////////////
+
+var NormalNeutral = normalNeutral{}
+
+type normalNeutral struct{}
+
+func (c normalNeutral) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (normalNeutral) Permitted(m *core.Message) bool {
+	return AdvancedMoodSetNeutral.Permitted(m)
+}
+
+func (normalNeutral) Names() []string {
+	return AdvancedMoodSetNeutral.Names()
+}
+
+func (normalNeutral) Description() string {
+	return AdvancedMoodSetNeutral.Description()
+}
+
+func (normalNeutral) UsageArgs() string {
+	return AdvancedMoodSetNeutral.UsageArgs()
+}
+
+func (c normalNeutral) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (normalNeutral) Examples() []string {
+	return AdvancedMoodSetNeutral.Examples()
+}
+
+func (normalNeutral) Parent() core.CommandStatic {
+	return Normal
+}
+
+func (normalNeutral) Children() core.CommandsStatic {
+	return nil
+}
+
+func (normalNeutral) Init() error {
+	return nil
+}
+
+func (normalNeutral) Run(m *core.Message) (any, core.Urr, error) {
+	return AdvancedMoodSetNeutral.Run(m)
 }

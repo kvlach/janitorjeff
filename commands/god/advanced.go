@@ -1279,6 +1279,7 @@ func (c advancedMoodSet) Children() core.CommandsStatic {
 		AdvancedMoodSetDefault,
 		AdvancedMoodSetRude,
 		AdvancedMoodSetSad,
+		AdvancedMoodSetNeutral,
 	}
 }
 
@@ -1564,4 +1565,96 @@ func (advancedMoodSetSad) core(m *core.Message) error {
 		return err
 	}
 	return MoodSet(here, MoodSad)
+}
+
+//////////////////////
+//                  //
+// mood set neutral //
+//                  //
+//////////////////////
+
+var AdvancedMoodSetNeutral = advancedMoodSetNeutral{}
+
+type advancedMoodSetNeutral struct{}
+
+func (c advancedMoodSetNeutral) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedMoodSetNeutral) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedMoodSetNeutral) Names() []string {
+	return []string{
+		"neutral",
+	}
+}
+
+func (advancedMoodSetNeutral) Description() string {
+	return "Make God respond a generally neutral tone."
+}
+
+func (c advancedMoodSetNeutral) UsageArgs() string {
+	return ""
+}
+
+func (c advancedMoodSetNeutral) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedMoodSetNeutral) Examples() []string {
+	return nil
+}
+
+func (advancedMoodSetNeutral) Parent() core.CommandStatic {
+	return AdvancedMoodSet
+}
+
+func (advancedMoodSetNeutral) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedMoodSetNeutral) Init() error {
+	return nil
+}
+
+func (c advancedMoodSetNeutral) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedMoodSetNeutral) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedMoodSetNeutral) text(m *core.Message) (string, core.Urr, error) {
+	err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedMoodSetNeutral) fmt() string {
+	return "Not really much personality here."
+}
+
+func (advancedMoodSetNeutral) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return MoodSet(here, MoodNeutral)
 }
