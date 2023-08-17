@@ -1108,6 +1108,7 @@ func (advancedMood) Names() []string {
 	return []string{
 		"mood",
 		"moods",
+		"personality",
 	}
 }
 
