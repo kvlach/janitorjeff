@@ -274,9 +274,9 @@ func (tx *Tx) placeGenerate(place int64) error {
 	return err
 }
 
-// placeEnsure will check if settings for the specified place exist and if not
+// PlaceEnsure will check if settings for the specified place exist and if not
 // will generate them.
-func (tx *Tx) placeEnsure(place int64) error {
+func (tx *Tx) PlaceEnsure(place int64) error {
 	slog := log.With().Int64("place", place).Logger()
 
 	if tx.place == nil {
@@ -328,7 +328,7 @@ func (tx *Tx) placeEnsure(place int64) error {
 // PlaceGet returns the value of col in the table for the specified place.
 func (tx *Tx) PlaceGet(col string, place int64) Val {
 	// Make sure that the place settings are present
-	if err := tx.placeEnsure(place); err != nil {
+	if err := tx.PlaceEnsure(place); err != nil {
 		return Val{}
 	}
 
@@ -347,7 +347,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 // PlaceSet sets the value of col in the table for the specified place.
 func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 	// Make sure that the place settings are present
-	if err := tx.placeEnsure(place); err != nil {
+	if err := tx.PlaceEnsure(place); err != nil {
 		return err
 	}
 
@@ -437,9 +437,9 @@ func (tx *Tx) personGenerate(person, place int64) error {
 	return err
 }
 
-// personEnsure will check if settings for the specified person in the
+// PersonEnsure will check if settings for the specified person in the
 // specified place exist, and if not will generate them.
-func (tx *Tx) personEnsure(person, place int64) error {
+func (tx *Tx) PersonEnsure(person, place int64) error {
 	slog := log.With().
 		Int64("person", person).
 		Int64("place", place).
@@ -495,7 +495,7 @@ func (tx *Tx) personEnsure(person, place int64) error {
 // in the specified place.
 func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	// Make sure that the person settings are present
-	if err := tx.personEnsure(person, place); err != nil {
+	if err := tx.PersonEnsure(person, place); err != nil {
 		return Val{}
 	}
 
@@ -517,7 +517,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 // the specified place.
 func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 	// Make sure that the person settings are present
-	if err := tx.personEnsure(person, place); err != nil {
+	if err := tx.PersonEnsure(person, place); err != nil {
 		return err
 	}
 
