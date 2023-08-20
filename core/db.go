@@ -209,8 +209,8 @@ type coords struct {
 }
 
 type Tx struct {
-	tx     *sql.Tx
-	db     *SQLDB
+	Tx *sql.Tx
+	db *SQLDB
 	person map[coords]struct{}
 	place  map[int64]struct{}
 }
@@ -220,16 +220,16 @@ func (db *SQLDB) Begin() (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tx{tx: tx, db: db}, nil
+	return &Tx{Tx: tx, db: db}, nil
 }
 
 func (tx *Tx) Commit() error {
 	log.Debug().Msg("POSTGRES: committing transaction")
-	return tx.tx.Commit()
+	return tx.Tx.Commit()
 }
 
 func (tx *Tx) Rollback() error {
-	return tx.tx.Rollback()
+	return tx.Tx.Rollback()
 }
 
 ////////////////////
@@ -241,7 +241,7 @@ func (tx *Tx) Rollback() error {
 func (tx *Tx) placeExists(place int64) (bool, error) {
 	var exists bool
 
-	row := tx.tx.QueryRow(`
+	row := tx.Tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_place
 			WHERE place = $1
@@ -261,7 +261,7 @@ func (tx *Tx) placeExists(place int64) (bool, error) {
 }
 
 func (tx *Tx) placeGenerate(place int64) error {
-	_, err := tx.tx.Exec(`
+	_, err := tx.Tx.Exec(`
 		INSERT INTO settings_place (place)
 		VALUES ($1)
 	`, place)
@@ -335,7 +335,7 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1`, col)
 
 	var val any
-	err := tx.tx.QueryRow(query, place).Scan(&val)
+	err := tx.Tx.QueryRow(query, place).Scan(&val)
 	log.Debug().
 		Err(err).
 		Int64("place", place).
@@ -356,7 +356,7 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 		SET %s = $1
 		WHERE place = $2
 	`, col)
-	_, err := tx.tx.Exec(query, val, place)
+	_, err := tx.Tx.Exec(query, val, place)
 
 	log.Debug().
 		Err(err).
@@ -404,7 +404,7 @@ func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
 func (tx *Tx) personExists(person, place int64) (bool, error) {
 	var exists bool
 
-	err := tx.tx.QueryRow(`
+	err := tx.Tx.QueryRow(`
 		SELECT EXISTS (
 			SELECT 1 FROM settings_person
 			WHERE person = $1 and place = $2
@@ -423,7 +423,7 @@ func (tx *Tx) personExists(person, place int64) (bool, error) {
 }
 
 func (tx *Tx) personGenerate(person, place int64) error {
-	_, err := tx.tx.Exec(`
+	_, err := tx.Tx.Exec(`
 		INSERT INTO settings_person (person, place)
 		VALUES ($1, $2)
 	`, person, place)
@@ -500,7 +500,7 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 	}
 
 	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2`, col)
-	row := tx.tx.QueryRow(query, person, place)
+	row := tx.Tx.QueryRow(query, person, place)
 
 	var val any
 	err := row.Scan(&val)
@@ -526,7 +526,7 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 		SET %s = $1
 		WHERE person = $2 and place = $3
 	`, col)
-	_, err := tx.tx.Exec(query, val, person, place)
+	_, err := tx.Tx.Exec(query, val, person, place)
 
 	log.Debug().
 		Err(err).
