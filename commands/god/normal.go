@@ -58,11 +58,8 @@ func (normal) Children() core.CommandsStatic {
 		NormalShow,
 		NormalOn,
 		NormalOff,
-		NormalMood,
-		NormalDefault,
-		NormalRude,
-		NormalSad,
-		NormalNeutral,
+		NormalPersonality,
+		NormalPersonalities,
 	}
 }
 
@@ -290,272 +287,129 @@ func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedReplyOff.Run(m)
 }
 
-//////////
-//      //
-// mood //
-//      //
-//////////
+/////////////////
+//             //
+// personality //
+//             //
+/////////////////
 
-var NormalMood = normalMood{}
+var NormalPersonality = normalPersonality{}
 
-type normalMood struct{}
+type normalPersonality struct{}
 
-func (c normalMood) Type() core.CommandType {
+func (c normalPersonality) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (normalMood) Permitted(m *core.Message) bool {
-	return AdvancedMoodShow.Permitted(m)
+func (normalPersonality) Permitted(m *core.Message) bool {
+	return AdvancedPersonalityShow.Permitted(m)
 }
 
-func (normalMood) Names() []string {
-	return AdvancedMood.Names()
+func (normalPersonality) Names() []string {
+	return AdvancedPersonality.Names()
 }
 
-func (normalMood) Description() string {
-	return AdvancedMoodShow.Description()
+func (normalPersonality) Description() string {
+	return AdvancedPersonalityShow.Description()
 }
 
-func (normalMood) UsageArgs() string {
-	return AdvancedMoodShow.UsageArgs()
+func (normalPersonality) UsageArgs() string {
+	return AdvancedPersonalityShow.UsageArgs()
 }
 
-func (c normalMood) Category() core.CommandCategory {
+func (c normalPersonality) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (normalMood) Examples() []string {
-	return AdvancedMoodShow.Examples()
+func (normalPersonality) Examples() []string {
+	return AdvancedPersonalityShow.Examples()
 }
 
-func (normalMood) Parent() core.CommandStatic {
+func (normalPersonality) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalMood) Children() core.CommandsStatic {
+func (normalPersonality) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalMood) Init() error {
+func (normalPersonality) Init() error {
 	return nil
 }
 
-func (normalMood) Run(m *core.Message) (resp any, urr core.Urr, err error) {
-	return AdvancedMoodShow.Run(m)
+func (normalPersonality) Run(m *core.Message) (any, core.Urr, error) {
+	switch len(m.Command.Args) {
+	case 0:
+		return AdvancedPersonalityShow.Run(m)
+	case 1:
+		return AdvancedPersonalitySet.Run(m)
+	default:
+		resp, urr, err := AdvancedPersonalityAdd.Run(m)
+		if err != nil {
+			return nil, nil, err
+		}
+		if urr == UrrPersonalityExists {
+			return AdvancedPersonalityEdit.Run(m)
+		} else {
+			return resp, urr, nil
+		}
+	}
 }
 
-/////////////
-//         //
-// default //
-//         //
-/////////////
+///////////////////
+//               //
+// personalities //
+//               //
+///////////////////
 
-var NormalDefault = normalDefault{}
+var NormalPersonalities = normalPersonalities{}
 
-type normalDefault struct{}
+type normalPersonalities struct{}
 
-func (c normalDefault) Type() core.CommandType {
+func (c normalPersonalities) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (normalDefault) Permitted(m *core.Message) bool {
-	return AdvancedMoodSetDefault.Permitted(m)
+func (normalPersonalities) Permitted(m *core.Message) bool {
+	return AdvancedPersonalityList.Permitted(m)
 }
 
-func (normalDefault) Names() []string {
-	return AdvancedMoodSetDefault.Names()
+func (normalPersonalities) Names() []string {
+	return []string{
+		"personalities",
+		"moods",
+		"cosplays",
+	}
 }
 
-func (normalDefault) Description() string {
-	return AdvancedMoodSetDefault.Description()
+func (normalPersonalities) Description() string {
+	return AdvancedPersonalityList.Description()
 }
 
-func (normalDefault) UsageArgs() string {
-	return AdvancedMoodSetDefault.UsageArgs()
+func (normalPersonalities) UsageArgs() string {
+	return AdvancedPersonalityList.UsageArgs()
 }
 
-func (c normalDefault) Category() core.CommandCategory {
+func (c normalPersonalities) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (normalDefault) Examples() []string {
-	return AdvancedMoodSetDefault.Examples()
+func (normalPersonalities) Examples() []string {
+	return AdvancedPersonalityList.Examples()
 }
 
-func (normalDefault) Parent() core.CommandStatic {
+func (normalPersonalities) Parent() core.CommandStatic {
 	return Normal
 }
 
-func (normalDefault) Children() core.CommandsStatic {
+func (normalPersonalities) Children() core.CommandsStatic {
 	return nil
 }
 
-func (normalDefault) Init() error {
+func (normalPersonalities) Init() error {
 	return nil
 }
 
-func (normalDefault) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedMoodSetDefault.Run(m)
-}
-
-//////////
-//      //
-// rude //
-//      //
-//////////
-
-var NormalRude = normalRude{}
-
-type normalRude struct{}
-
-func (c normalRude) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (normalRude) Permitted(m *core.Message) bool {
-	return AdvancedMoodSetRude.Permitted(m)
-}
-
-func (normalRude) Names() []string {
-	return AdvancedMoodSetRude.Names()
-}
-
-func (normalRude) Description() string {
-	return AdvancedMoodSetRude.Description()
-}
-
-func (normalRude) UsageArgs() string {
-	return AdvancedMoodSetRude.UsageArgs()
-}
-
-func (c normalRude) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (normalRude) Examples() []string {
-	return AdvancedMoodSetRude.Examples()
-}
-
-func (normalRude) Parent() core.CommandStatic {
-	return Normal
-}
-
-func (normalRude) Children() core.CommandsStatic {
-	return nil
-}
-
-func (normalRude) Init() error {
-	return nil
-}
-
-func (normalRude) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedMoodSetRude.Run(m)
-}
-
-/////////
-//     //
-// sad //
-//     //
-/////////
-
-var NormalSad = normalSad{}
-
-type normalSad struct{}
-
-func (c normalSad) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (normalSad) Permitted(m *core.Message) bool {
-	return AdvancedMoodSetSad.Permitted(m)
-}
-
-func (normalSad) Names() []string {
-	return AdvancedMoodSetSad.Names()
-}
-
-func (normalSad) Description() string {
-	return AdvancedMoodSetSad.Description()
-}
-
-func (normalSad) UsageArgs() string {
-	return AdvancedMoodSetSad.UsageArgs()
-}
-
-func (c normalSad) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (normalSad) Examples() []string {
-	return AdvancedMoodSetSad.Examples()
-}
-
-func (normalSad) Parent() core.CommandStatic {
-	return Normal
-}
-
-func (normalSad) Children() core.CommandsStatic {
-	return nil
-}
-
-func (normalSad) Init() error {
-	return nil
-}
-
-func (normalSad) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedMoodSetSad.Run(m)
-}
-
-/////////////
-//         //
-// neutral //
-//         //
-/////////////
-
-var NormalNeutral = normalNeutral{}
-
-type normalNeutral struct{}
-
-func (c normalNeutral) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (normalNeutral) Permitted(m *core.Message) bool {
-	return AdvancedMoodSetNeutral.Permitted(m)
-}
-
-func (normalNeutral) Names() []string {
-	return AdvancedMoodSetNeutral.Names()
-}
-
-func (normalNeutral) Description() string {
-	return AdvancedMoodSetNeutral.Description()
-}
-
-func (normalNeutral) UsageArgs() string {
-	return AdvancedMoodSetNeutral.UsageArgs()
-}
-
-func (c normalNeutral) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (normalNeutral) Examples() []string {
-	return AdvancedMoodSetNeutral.Examples()
-}
-
-func (normalNeutral) Parent() core.CommandStatic {
-	return Normal
-}
-
-func (normalNeutral) Children() core.CommandsStatic {
-	return nil
-}
-
-func (normalNeutral) Init() error {
-	return nil
-}
-
-func (normalNeutral) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedMoodSetNeutral.Run(m)
+func (normalPersonalities) Run(m *core.Message) (any, core.Urr, error) {
+	return AdvancedPersonalityList.Run(m)
 }

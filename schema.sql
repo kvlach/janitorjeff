@@ -38,7 +38,8 @@ CREATE TABLE settings_place (
 	cmd_god_reply_interval INTEGER NOT NULL DEFAULT 1800, -- in seconds
 	cmd_god_reply_last INTEGER NOT NULL DEFAULT 0, -- unix timestamp of last reply
 	cmd_god_redeem UUID,
-	cmd_god_mood INT NOT NULL DEFAULT 0
+	cmd_god_personality BIGINT NOT NULL DEFAULT 1,
+	FOREIGN KEY (cmd_god_personality) REFERENCES cmd_god_personalities(id) ON DELETE NO ACTION
 );
 
 CREATE TABLE settings_person (
@@ -183,6 +184,27 @@ CREATE TABLE cmd_customcommand_commands (
 	FOREIGN KEY (creator) REFERENCES scopes(id) ON DELETE CASCADE,
 	FOREIGN KEY (deleter) REFERENCES scopes(id) ON DELETE CASCADE
 );
+
+--------------------
+--                --
+-- Command: God   --
+--                --
+--------------------
+
+CREATE TABLE cmd_god_personalities (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    place BIGINT, -- null means global
+    name VARCHAR(255) NOT NULL,
+    prompt TEXT NOT NULL,
+    UNIQUE(place, name),
+    FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE
+);
+
+INSERT INTO cmd_god_personalities(place, name, prompt) VALUES
+    (NULL, 'neutral', 'Respond in 300 characters or less.'),
+    (NULL, 'goofy', 'You are God who has taken the form of a janitor. You are a bit of an asshole, but not too much. You are goofy. Respond with 300 characters or less.'),
+    (NULL, 'rude', 'Always respond in a snarky and rude way. Respond with 300 characters or less.'),
+    (NULL, 'sad', 'You are God who has taken the form of a janitor. You are very sad about everything. Respond in 300 characters or less.');
 
 ---------------------
 --                 --
