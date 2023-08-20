@@ -386,7 +386,12 @@ func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*co
 }
 
 func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
-	var embeds []*dg.MessageEmbed
+	// Not using a var declaration for embeds because of the following scenario:
+	// The original message contains an embed, our edit sends a text edit.
+	// If the var declaration were to be used, the original embed would remain,
+	// with the text edit added on top.
+	//goland:noinspection GoPreferNilSlice
+	embeds := []*dg.MessageEmbed{}
 	if embed != nil {
 		embeds = append(embeds, embed)
 	}
