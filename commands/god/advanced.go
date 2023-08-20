@@ -2,6 +2,7 @@ package god
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -63,7 +64,7 @@ func (advanced) Children() core.CommandsStatic {
 		AdvancedReply,
 		AdvancedInterval,
 		AdvancedRedeem,
-		AdvancedMood,
+		AdvancedPersonality,
 	}
 }
 
@@ -1086,265 +1087,221 @@ func (advancedRedeemSet) core(m *core.Message) error {
 	return RedeemSet(here, m.Command.Args[0])
 }
 
-//////////
-//      //
-// mood //
-//      //
-//////////
+/////////////////
+//             //
+// personality //
+//             //
+/////////////////
 
-var AdvancedMood = advancedMood{}
+var AdvancedPersonality = advancedPersonality{}
 
-type advancedMood struct{}
+type advancedPersonality struct{}
 
-func (c advancedMood) Type() core.CommandType {
+func (c advancedPersonality) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedMood) Permitted(m *core.Message) bool {
+func (c advancedPersonality) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedMood) Names() []string {
+func (advancedPersonality) Names() []string {
 	return []string{
-		"mood",
-		"moods",
 		"personality",
+		"mood",
+		"cosplay",
 	}
 }
 
-func (advancedMood) Description() string {
-	return "Control God's mood."
+func (advancedPersonality) Description() string {
+	return "Control God's personality."
 }
 
-func (c advancedMood) UsageArgs() string {
+func (c advancedPersonality) UsageArgs() string {
 	return c.Children().Usage()
 }
 
-func (c advancedMood) Category() core.CommandCategory {
+func (c advancedPersonality) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedMood) Examples() []string {
+func (advancedPersonality) Examples() []string {
 	return nil
 }
 
-func (advancedMood) Parent() core.CommandStatic {
+func (advancedPersonality) Parent() core.CommandStatic {
 	return Advanced
 }
 
-func (advancedMood) Children() core.CommandsStatic {
+func (advancedPersonality) Children() core.CommandsStatic {
 	return core.CommandsStatic{
-		AdvancedMoodShow,
-		AdvancedMoodSet,
+		AdvancedPersonalityShow,
+		AdvancedPersonalitySet,
+		AdvancedPersonalityAdd,
+		AdvancedPersonalityEdit,
+		AdvancedPersonalityDelete,
+		AdvancedPersonalityInfo,
+		AdvancedPersonalityList,
 	}
 }
 
-func (advancedMood) Init() error {
+func (advancedPersonality) Init() error {
 	return nil
 }
 
-func (advancedMood) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedPersonality) Run(m *core.Message) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
-///////////////
-//           //
-// mood show //
-//           //
-///////////////
+//////////////////////
+//                  //
+// personality show //
+//                  //
+//////////////////////
 
-var AdvancedMoodShow = advancedMoodShow{}
+var AdvancedPersonalityShow = advancedPersonalityShow{}
 
-type advancedMoodShow struct{}
+type advancedPersonalityShow struct{}
 
-func (c advancedMoodShow) Type() core.CommandType {
+func (c advancedPersonalityShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedMoodShow) Permitted(m *core.Message) bool {
+func (c advancedPersonalityShow) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedMoodShow) Names() []string {
+func (advancedPersonalityShow) Names() []string {
 	return core.AliasesShow
 }
 
-func (advancedMoodShow) Description() string {
-	return "Show God's current mood."
+func (advancedPersonalityShow) Description() string {
+	return "Show God's current personality."
 }
 
-func (advancedMoodShow) UsageArgs() string {
+func (advancedPersonalityShow) UsageArgs() string {
 	return ""
 }
 
-func (c advancedMoodShow) Category() core.CommandCategory {
+func (c advancedPersonalityShow) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedMoodShow) Examples() []string {
+func (advancedPersonalityShow) Examples() []string {
 	return nil
 }
 
-func (advancedMoodShow) Parent() core.CommandStatic {
-	return AdvancedMood
+func (advancedPersonalityShow) Parent() core.CommandStatic {
+	return AdvancedPersonality
 }
 
-func (advancedMoodShow) Children() core.CommandsStatic {
+func (advancedPersonalityShow) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedMoodShow) Init() error {
+func (advancedPersonalityShow) Init() error {
 	return nil
 }
 
-func (c advancedMoodShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
 	default:
-		return nil, nil, nil
+		return c.text(m)
 	}
 }
 
-func (c advancedMoodShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	mood, err := c.core(m)
+func (c advancedPersonalityShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	personality, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(mood),
+		Description: c.fmt(personality),
 	}
 	return embed, nil, nil
 }
 
-func (advancedMoodShow) fmt(mood Mood) string {
-	return mood.String()
+func (c advancedPersonalityShow) text(m *core.Message) (string, core.Urr, error) {
+	personality, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(personality), nil, nil
 }
 
-func (advancedMoodShow) core(m *core.Message) (Mood, error) {
+func (advancedPersonalityShow) fmt(p Personality) string {
+	return "Current personality is: " + p.Name
+}
+
+func (advancedPersonalityShow) core(m *core.Message) (Personality, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return 0, err
+		return Personality{}, err
 	}
-	mood, err := MoodGet(here)
+	p, err := PersonalityActive(here)
 	if err != nil {
-		return 0, err
+		return Personality{}, err
 	}
-	return mood, nil
+	return p, nil
 }
 
-//////////////
-//          //
-// mood set //
-//          //
-//////////////
+/////////////////////
+//                 //
+// personality set //
+//                 //
+/////////////////////
 
-var AdvancedMoodSet = advancedMoodSet{}
+var AdvancedPersonalitySet = advancedPersonalitySet{}
 
-type advancedMoodSet struct{}
+type advancedPersonalitySet struct{}
 
-func (c advancedMoodSet) Type() core.CommandType {
+func (c advancedPersonalitySet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedMoodSet) Permitted(m *core.Message) bool {
+func (c advancedPersonalitySet) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedMoodSet) Names() []string {
+func (advancedPersonalitySet) Names() []string {
 	return core.AliasesSet
 }
 
-func (advancedMoodSet) Description() string {
-	return "Set God's mood."
+func (advancedPersonalitySet) Description() string {
+	return "Set God's personality."
 }
 
-func (c advancedMoodSet) UsageArgs() string {
-	return c.Children().Usage()
+func (c advancedPersonalitySet) UsageArgs() string {
+	return "<name>"
 }
 
-func (c advancedMoodSet) Category() core.CommandCategory {
+func (c advancedPersonalitySet) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedMoodSet) Examples() []string {
+func (advancedPersonalitySet) Examples() []string {
 	return nil
 }
 
-func (advancedMoodSet) Parent() core.CommandStatic {
-	return AdvancedMood
+func (advancedPersonalitySet) Parent() core.CommandStatic {
+	return AdvancedPersonality
 }
 
-func (c advancedMoodSet) Children() core.CommandsStatic {
-	return core.CommandsStatic{
-		AdvancedMoodSetDefault,
-		AdvancedMoodSetRude,
-		AdvancedMoodSetSad,
-		AdvancedMoodSetNeutral,
+func (c advancedPersonalitySet) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedPersonalitySet) Init() error {
+	return nil
+}
+
+func (c advancedPersonalitySet) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.UrrMissingArgs, nil
 	}
-}
 
-func (advancedMoodSet) Init() error {
-	return nil
-}
-
-func (advancedMoodSet) Run(m *core.Message) (any, core.Urr, error) {
-	return m.Usage(), core.UrrMissingArgs, nil
-}
-
-//////////////////////
-//                  //
-// mood set default //
-//                  //
-//////////////////////
-
-var AdvancedMoodSetDefault = advancedMoodSetDefault{}
-
-type advancedMoodSetDefault struct{}
-
-func (c advancedMoodSetDefault) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (c advancedMoodSetDefault) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
-}
-
-func (advancedMoodSetDefault) Names() []string {
-	return []string{
-		"default",
-	}
-}
-
-func (advancedMoodSetDefault) Description() string {
-	return "Revert to the default mood."
-}
-
-func (c advancedMoodSetDefault) UsageArgs() string {
-	return ""
-}
-
-func (c advancedMoodSetDefault) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (advancedMoodSetDefault) Examples() []string {
-	return nil
-}
-
-func (advancedMoodSetDefault) Parent() core.CommandStatic {
-	return AdvancedMoodSet
-}
-
-func (advancedMoodSetDefault) Children() core.CommandsStatic {
-	return nil
-}
-
-func (advancedMoodSetDefault) Init() error {
-	return nil
-}
-
-func (c advancedMoodSetDefault) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1353,90 +1310,99 @@ func (c advancedMoodSetDefault) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedMoodSetDefault) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalitySet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	name, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(),
+		Description: c.fmt("**"+name+"**", urr),
 	}
-	return embed, nil, nil
+	return embed, urr, nil
 }
 
-func (c advancedMoodSetDefault) text(m *core.Message) (string, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalitySet) text(m *core.Message) (string, core.Urr, error) {
+	name, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(), nil, nil
+	return c.fmt(name, urr), urr, nil
 }
 
-func (advancedMoodSetDefault) fmt() string {
-	return "Set the mood to default."
+func (advancedPersonalitySet) fmt(name string, urr core.Urr) string {
+	switch urr {
+	case nil:
+		return "Set personality to " + name
+	case UrrPersonalityNotFound:
+		return "Couldn't find " + name + " personality."
+	default:
+		return fmt.Sprint(urr)
+	}
 }
 
-func (advancedMoodSetDefault) core(m *core.Message) error {
+func (advancedPersonalitySet) core(m *core.Message) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return err
+		return "", nil, err
 	}
-	return MoodSet(here, MoodDefault)
+	return PersonalitySet(here, m.Command.Args[0])
 }
 
-///////////////////
-//               //
-// mood set rude //
-//               //
-///////////////////
+/////////////////////
+//                 //
+// personality add //
+//                 //
+/////////////////////
 
-var AdvancedMoodSetRude = advancedMoodSetRude{}
+var AdvancedPersonalityAdd = advancedPersonalityAdd{}
 
-type advancedMoodSetRude struct{}
+type advancedPersonalityAdd struct{}
 
-func (c advancedMoodSetRude) Type() core.CommandType {
+func (c advancedPersonalityAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedMoodSetRude) Permitted(m *core.Message) bool {
+func (c advancedPersonalityAdd) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedMoodSetRude) Names() []string {
-	return []string{
-		"rude",
-	}
+func (advancedPersonalityAdd) Names() []string {
+	return core.AliasesAdd
 }
 
-func (advancedMoodSetRude) Description() string {
-	return "Make God rude."
+func (advancedPersonalityAdd) Description() string {
+	return "Add a new God personality."
 }
 
-func (c advancedMoodSetRude) UsageArgs() string {
-	return ""
+func (advancedPersonalityAdd) UsageArgs() string {
+	return "<personality> <prompt...>"
 }
 
-func (c advancedMoodSetRude) Category() core.CommandCategory {
+func (c advancedPersonalityAdd) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedMoodSetRude) Examples() []string {
+func (advancedPersonalityAdd) Examples() []string {
 	return nil
 }
 
-func (advancedMoodSetRude) Parent() core.CommandStatic {
-	return AdvancedMoodSet
+func (advancedPersonalityAdd) Parent() core.CommandStatic {
+	return AdvancedPersonality
 }
 
-func (advancedMoodSetRude) Children() core.CommandsStatic {
+func (advancedPersonalityAdd) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedMoodSetRude) Init() error {
+func (advancedPersonalityAdd) Init() error {
 	return nil
 }
 
-func (c advancedMoodSetRude) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityAdd) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 2 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1445,182 +1411,97 @@ func (c advancedMoodSetRude) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedMoodSetRude) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalityAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(),
+		Description: c.fmt(urr),
 	}
-	return embed, nil, nil
+	return embed, urr, nil
 }
 
-func (c advancedMoodSetRude) text(m *core.Message) (string, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalityAdd) text(m *core.Message) (string, core.Urr, error) {
+	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(), nil, nil
+	return c.fmt(urr), urr, nil
 }
 
-func (advancedMoodSetRude) fmt() string {
-	return "God will now be very rude!"
-}
-
-func (advancedMoodSetRude) core(m *core.Message) error {
-	here, err := m.Here.ScopeLogical()
-	if err != nil {
-		return err
-	}
-	return MoodSet(here, MoodRude)
-}
-
-//////////////////
-//              //
-// mood set sad //
-//              //
-//////////////////
-
-var AdvancedMoodSetSad = advancedMoodSetSad{}
-
-type advancedMoodSetSad struct{}
-
-func (c advancedMoodSetSad) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (c advancedMoodSetSad) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
-}
-
-func (advancedMoodSetSad) Names() []string {
-	return []string{
-		"sad",
-	}
-}
-
-func (advancedMoodSetSad) Description() string {
-	return "Make God sad :("
-}
-
-func (c advancedMoodSetSad) UsageArgs() string {
-	return ""
-}
-
-func (c advancedMoodSetSad) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (advancedMoodSetSad) Examples() []string {
-	return nil
-}
-
-func (advancedMoodSetSad) Parent() core.CommandStatic {
-	return AdvancedMoodSet
-}
-
-func (advancedMoodSetSad) Children() core.CommandsStatic {
-	return nil
-}
-
-func (advancedMoodSetSad) Init() error {
-	return nil
-}
-
-func (c advancedMoodSetSad) Run(m *core.Message) (any, core.Urr, error) {
-	switch m.Frontend.Type() {
-	case discord.Frontend.Type():
-		return c.discord(m)
+func (advancedPersonalityAdd) fmt(urr core.Urr) string {
+	switch urr {
+	case nil:
+		return "Added personality."
 	default:
-		return c.text(m)
+		return urr.Error()
 	}
 }
 
-func (c advancedMoodSetSad) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	err := c.core(m)
-	if err != nil {
-		return nil, nil, err
-	}
-	embed := &dg.MessageEmbed{
-		Description: c.fmt(),
-	}
-	return embed, nil, nil
-}
-
-func (c advancedMoodSetSad) text(m *core.Message) (string, core.Urr, error) {
-	err := c.core(m)
-	if err != nil {
-		return "", nil, err
-	}
-	return c.fmt(), nil, nil
-}
-
-func (advancedMoodSetSad) fmt() string {
-	return "God is now sad :("
-}
-
-func (advancedMoodSetSad) core(m *core.Message) error {
+func (advancedPersonalityAdd) core(m *core.Message) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return MoodSet(here, MoodSad)
+	return PersonalityAdd(here, m.Command.Args[0], m.RawArgs(1))
 }
 
 //////////////////////
 //                  //
-// mood set neutral //
+// personality edit //
 //                  //
 //////////////////////
 
-var AdvancedMoodSetNeutral = advancedMoodSetNeutral{}
+var AdvancedPersonalityEdit = advancedPersonalityEdit{}
 
-type advancedMoodSetNeutral struct{}
+type advancedPersonalityEdit struct{}
 
-func (c advancedMoodSetNeutral) Type() core.CommandType {
+func (c advancedPersonalityEdit) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedMoodSetNeutral) Permitted(m *core.Message) bool {
+func (c advancedPersonalityEdit) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedMoodSetNeutral) Names() []string {
-	return []string{
-		"neutral",
-	}
+func (advancedPersonalityEdit) Names() []string {
+	return core.AliasesEdit
 }
 
-func (advancedMoodSetNeutral) Description() string {
-	return "Make God respond a generally neutral tone."
+func (advancedPersonalityEdit) Description() string {
+	return "Edit one of God's personalities."
 }
 
-func (c advancedMoodSetNeutral) UsageArgs() string {
-	return ""
+func (advancedPersonalityEdit) UsageArgs() string {
+	return "<personality> <prompt...>"
 }
 
-func (c advancedMoodSetNeutral) Category() core.CommandCategory {
+func (c advancedPersonalityEdit) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedMoodSetNeutral) Examples() []string {
+func (advancedPersonalityEdit) Examples() []string {
 	return nil
 }
 
-func (advancedMoodSetNeutral) Parent() core.CommandStatic {
-	return AdvancedMoodSet
+func (advancedPersonalityEdit) Parent() core.CommandStatic {
+	return AdvancedPersonality
 }
 
-func (advancedMoodSetNeutral) Children() core.CommandsStatic {
+func (advancedPersonalityEdit) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedMoodSetNeutral) Init() error {
+func (advancedPersonalityEdit) Init() error {
 	return nil
 }
 
-func (c advancedMoodSetNeutral) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityEdit) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 2 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1629,33 +1510,346 @@ func (c advancedMoodSetNeutral) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedMoodSetNeutral) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalityEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(),
+		Description: c.fmt(urr),
+	}
+	return embed, urr, nil
+}
+
+func (c advancedPersonalityEdit) text(m *core.Message) (string, core.Urr, error) {
+	urr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(urr), urr, nil
+}
+
+func (advancedPersonalityEdit) fmt(urr core.Urr) string {
+	switch urr {
+	case nil:
+		return "Edited personality."
+	default:
+		return urr.Error()
+	}
+}
+
+func (advancedPersonalityEdit) core(m *core.Message) (core.Urr, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return nil, err
+	}
+	return PersonalityEdit(here, m.Command.Args[0], m.RawArgs(1))
+}
+
+////////////////////////
+//                    //
+// personality delete //
+//                    //
+////////////////////////
+
+var AdvancedPersonalityDelete = advancedPersonalityDelete{}
+
+type advancedPersonalityDelete struct{}
+
+func (c advancedPersonalityDelete) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedPersonalityDelete) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedPersonalityDelete) Names() []string {
+	return core.AliasesDelete
+}
+
+func (advancedPersonalityDelete) Description() string {
+	return "Delete one of God's personalities."
+}
+
+func (advancedPersonalityDelete) UsageArgs() string {
+	return "<personality>"
+}
+
+func (c advancedPersonalityDelete) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedPersonalityDelete) Examples() []string {
+	return nil
+}
+
+func (advancedPersonalityDelete) Parent() core.CommandStatic {
+	return AdvancedPersonality
+}
+
+func (advancedPersonalityDelete) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedPersonalityDelete) Init() error {
+	return nil
+}
+
+func (c advancedPersonalityDelete) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedPersonalityDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	urr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(urr),
+	}
+	return embed, urr, nil
+}
+
+func (c advancedPersonalityDelete) text(m *core.Message) (string, core.Urr, error) {
+	urr, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(urr), urr, nil
+}
+
+func (advancedPersonalityDelete) fmt(urr core.Urr) string {
+	switch urr {
+	case nil:
+		return "Deleted personality."
+	default:
+		return urr.Error()
+	}
+}
+
+func (advancedPersonalityDelete) core(m *core.Message) (core.Urr, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return nil, err
+	}
+	return PersonalityDelete(here, m.Command.Args[0])
+}
+
+//////////////////////
+//                  //
+// personality info //
+//                  //
+//////////////////////
+
+var AdvancedPersonalityInfo = advancedPersonalityInfo{}
+
+type advancedPersonalityInfo struct{}
+
+func (c advancedPersonalityInfo) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedPersonalityInfo) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedPersonalityInfo) Names() []string {
+	return []string{
+		"info",
+	}
+}
+
+func (advancedPersonalityInfo) Description() string {
+	return "View information on the specified personality."
+}
+
+func (advancedPersonalityInfo) UsageArgs() string {
+	return "<personality>"
+}
+
+func (c advancedPersonalityInfo) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedPersonalityInfo) Examples() []string {
+	return nil
+}
+
+func (advancedPersonalityInfo) Parent() core.CommandStatic {
+	return AdvancedPersonality
+}
+
+func (advancedPersonalityInfo) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedPersonalityInfo) Init() error {
+	return nil
+}
+
+func (c advancedPersonalityInfo) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedPersonalityInfo) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	personality, urr, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	if urr != nil {
+		embed := &dg.MessageEmbed{
+			Description: urr.Error(),
+		}
+		return embed, urr, nil
+	}
+	embed := &dg.MessageEmbed{
+		Title:       "Personality: " + personality.Name,
+		Description: "**Prompt**\n" + personality.Prompt,
 	}
 	return embed, nil, nil
 }
 
-func (c advancedMoodSetNeutral) text(m *core.Message) (string, core.Urr, error) {
-	err := c.core(m)
+func (c advancedPersonalityInfo) text(m *core.Message) (string, core.Urr, error) {
+	personality, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(), nil, nil
+	if urr != nil {
+		return urr.Error(), urr, nil
+	}
+	return personality.Name + ": " + personality.Prompt, nil, nil
 }
 
-func (advancedMoodSetNeutral) fmt() string {
-	return "Not really much personality here."
-}
-
-func (advancedMoodSetNeutral) core(m *core.Message) error {
+func (advancedPersonalityInfo) core(m *core.Message) (Personality, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return err
+		return Personality{}, nil, err
 	}
-	return MoodSet(here, MoodNeutral)
+	return PersonalityGet(here, m.Command.Args[0])
+}
+
+//////////////////////
+//                  //
+// personality list //
+//                  //
+//////////////////////
+
+var AdvancedPersonalityList = advancedPersonalityList{}
+
+type advancedPersonalityList struct{}
+
+func (c advancedPersonalityList) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedPersonalityList) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedPersonalityList) Names() []string {
+	return core.AliasesList
+}
+
+func (advancedPersonalityList) Description() string {
+	return "List all the available personalities."
+}
+
+func (advancedPersonalityList) UsageArgs() string {
+	return ""
+}
+
+func (c advancedPersonalityList) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedPersonalityList) Examples() []string {
+	return nil
+}
+
+func (advancedPersonalityList) Parent() core.CommandStatic {
+	return AdvancedPersonality
+}
+
+func (advancedPersonalityList) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedPersonalityList) Init() error {
+	return nil
+}
+
+func (c advancedPersonalityList) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedPersonalityList) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	active, personalities, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	var b strings.Builder
+	for _, p := range personalities {
+		if p.Name == active.Name {
+			p.Name = "**" + p.Name + "**"
+		}
+		b.WriteString("- ")
+		b.WriteString(p.Name)
+		b.WriteString("\n")
+	}
+	embed := &dg.MessageEmbed{
+		Description: b.String(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedPersonalityList) text(m *core.Message) (string, core.Urr, error) {
+	_, personalities, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	var names []string
+	for _, p := range personalities {
+		names = append(names, p.Name)
+	}
+	return "Personalities: " + strings.Join(names, ", "), nil, nil
+}
+
+func (advancedPersonalityList) core(m *core.Message) (Personality, []Personality, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return Personality{}, nil, err
+	}
+	ps, err := PersonalitiesList(here)
+	if err != nil {
+		return Personality{}, nil, err
+	}
+	active, err := PersonalityActive(here)
+	if err != nil {
+		return Personality{}, nil, err
+	}
+	return active, ps, nil
 }
