@@ -118,7 +118,9 @@ func (advanced) Init() error {
 			return
 		}
 
-		resp, err := Talk(m.Raw, here)
+		// Don't remember conversation as it is meant to be a random response,
+		// not a discussion
+		resp, err := Talk(-1, here, m.Raw)
 		if err != nil {
 			log.Debug().Err(err).Msg("failed to communicate with god")
 			return
@@ -140,12 +142,21 @@ func (advanced) Init() error {
 	})
 
 	core.EventRedeemClaimHooks.Register(func(rc *core.RedeemClaim) {
+		author, err := rc.Author.Scope()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get author scope")
+			return
+		}
 		here, err := rc.Here.ScopeLogical()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get logical here")
+			return
 		}
 
-		slog := log.With().Int64("place", here).Logger()
+		slog := log.With().
+			Int64("person", author).
+			Int64("place", here).
+			Logger()
 
 		rid, urr, err := RedeemGet(here)
 		if err != nil {
@@ -165,15 +176,9 @@ func (advanced) Init() error {
 			return
 		}
 
-		resp, err := Talk(rc.Input, here)
+		resp, err := Talk(author, here, rc.Input)
 		if err != nil {
 			slog.Error().Err(err).Msg("failed to get gpt response")
-			return
-		}
-
-		author, err := rc.Author.Scope()
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get author scope")
 			return
 		}
 
@@ -286,11 +291,15 @@ func (c advancedTalk) text(m *core.Message) (string, core.Urr, error) {
 }
 
 func (advancedTalk) core(m *core.Message) (string, error) {
+	author, err := m.Author.Scope()
+	if err != nil {
+		return "", err
+	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", err
 	}
-	return Talk(m.RawArgs(0), here)
+	return Talk(author, here, m.RawArgs(0))
 }
 
 ///////////

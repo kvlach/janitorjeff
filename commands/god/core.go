@@ -3,12 +3,16 @@ package god
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	openai "github.com/sashabaranov/go-openai"
 )
@@ -22,39 +26,83 @@ var (
 )
 
 // Talk returns GPT3.5's response to a user prompt.
-func Talk(userPrompt string, place int64) (string, error) {
-	p, err := PersonalityActive(place)
-	if err != nil {
+// The system prompt will be the active personality for place.
+// If person equals -1 then the conversation will not be kept track of.
+func Talk(person, place int64, userPrompt string) (string, error) {
+	slog := log.With().
+		Int64("person", person).
+		Int64("place", place).
+		Logger()
+
+	ctx := context.Background()
+	key := fmt.Sprintf("cmd_god-dialogue-%d-%d", person, place)
+
+	dialogueBytes, err := core.RDB.Get(ctx, key).Bytes()
+	if err != nil && err != redis.Nil {
 		return "", err
 	}
 
-	log.Debug().
-		Str("system-prompt", p.Prompt).
-		Str("user-prompt", userPrompt).
-		Int64("place", place).
-		Msg("talking to gpt3.5")
+	var dialogue []openai.ChatCompletionMessage
+
+	// If not present in cache, set system prompt using active personality
+	// otherwise just use the cached dialogue
+	if err == redis.Nil {
+		p, err := PersonalityActive(place)
+		if err != nil {
+			return "", err
+		}
+		dialogue = append(dialogue, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleSystem,
+			Content: p.Prompt,
+		})
+	} else {
+		if err := json.Unmarshal(dialogueBytes, &dialogue); err != nil {
+			return "", err
+		}
+	}
+	slog.Debug().Interface("dialogue", dialogue).Msg("got dialogue")
+
+	dialogue = append(dialogue, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: userPrompt,
+	})
 
 	resp, err := openai.NewClient(core.OpenAIKey).CreateChatCompletion(
-		context.Background(),
+		ctx,
 		openai.ChatCompletionRequest{
 			Model:     openai.GPT3Dot5Turbo,
 			MaxTokens: 80,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleSystem,
-					Content: p.Prompt,
-				},
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: userPrompt,
-				},
-			},
+			Messages:  dialogue,
 		},
 	)
 	if err != nil {
 		return "", err
 	}
-	return resp.Choices[0].Message.Content, nil
+	if len(resp.Choices) == 0 {
+		return "", errors.New("response was empty")
+	}
+
+	reply := resp.Choices[0].Message.Content
+
+	if person != -1 {
+		dialogue = append(dialogue, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleAssistant,
+			Content: reply,
+		})
+		dialogueBytes, err = json.Marshal(dialogue)
+		if err != nil {
+			return "", err
+		}
+		err = core.RDB.Set(ctx, key, string(dialogueBytes), 5*time.Minute).Err()
+		if err != nil {
+			return "", err
+		}
+		slog.Debug().
+			Interface("dialogue", dialogue).
+			Msg("saved new dialogue")
+	}
+
+	return reply, nil
 }
 
 // ReplyOnGet returns whether auto-replying is on or off (true or false) in the
