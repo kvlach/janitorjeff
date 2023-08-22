@@ -3,6 +3,7 @@ package god
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
@@ -69,7 +70,16 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
+	var mu sync.Mutex
+
 	core.EventMessageHooks.Register(func(m *core.Message) {
+		// Due to the fact that Talk can take a couple of seconds to return,
+		// multiple auto-replies can be queued during that period, since
+		// cmd_god_reply_last gets updated after the call.
+		// To fix this, a mutex is used.
+		mu.Lock()
+		defer mu.Unlock()
+
 		here, err := m.Here.ScopeLogical()
 		if err != nil {
 			return
