@@ -89,7 +89,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 			// this response + You can also ask me a question directly by doing
 			// !god <text> or can turn auto-replying off by doing !god off
 			// Interval is set to <>, to change it use !god <interval>
-			return AdvancedIntervalShow.Run(m)
+			return AdvancedAutoIntervalShow.Run(m)
 		}
 		return c.renderOff(m)
 
@@ -97,7 +97,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 		// !god <text>. You can turn auto-replying on by doing !god on
 	}
 	if _, err := time.ParseDuration(m.Command.Args[0]); err == nil {
-		return AdvancedIntervalSet.Run(m)
+		return AdvancedAutoIntervalSet.Run(m)
 	}
 	return AdvancedTalk.Run(m)
 }
@@ -140,19 +140,19 @@ func (c normalShow) Type() core.CommandType {
 }
 
 func (c normalShow) Permitted(m *core.Message) bool {
-	return AdvancedReplyShow.Permitted(m)
+	return AdvancedAutoReplyShow.Permitted(m)
 }
 
 func (normalShow) Names() []string {
-	return AdvancedReplyShow.Names()
+	return AdvancedAutoReplyShow.Names()
 }
 
 func (normalShow) Description() string {
-	return AdvancedReplyShow.Description()
+	return AdvancedAutoReplyShow.Description()
 }
 
 func (c normalShow) UsageArgs() string {
-	return AdvancedReplyShow.UsageArgs()
+	return AdvancedAutoReplyShow.UsageArgs()
 }
 
 func (c normalShow) Category() core.CommandCategory {
@@ -176,7 +176,7 @@ func (normalShow) Init() error {
 }
 
 func (normalShow) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedReplyShow.Run(m)
+	return AdvancedAutoReplyShow.Run(m)
 }
 
 ////////
@@ -194,19 +194,19 @@ func (c normalOn) Type() core.CommandType {
 }
 
 func (c normalOn) Permitted(m *core.Message) bool {
-	return AdvancedReplyOn.Permitted(m)
+	return AdvancedAutoReplyOn.Permitted(m)
 }
 
 func (normalOn) Names() []string {
-	return AdvancedReplyOn.Names()
+	return AdvancedAutoReplyOn.Names()
 }
 
 func (normalOn) Description() string {
-	return AdvancedReplyOn.Description()
+	return AdvancedAutoReplyOn.Description()
 }
 
 func (c normalOn) UsageArgs() string {
-	return AdvancedReplyOn.UsageArgs()
+	return AdvancedAutoReplyOn.UsageArgs()
 }
 
 func (c normalOn) Category() core.CommandCategory {
@@ -230,7 +230,7 @@ func (normalOn) Init() error {
 }
 
 func (normalOn) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedReplyOn.Run(m)
+	return AdvancedAutoReplyOn.Run(m)
 }
 
 /////////
@@ -248,19 +248,19 @@ func (c normalOff) Type() core.CommandType {
 }
 
 func (c normalOff) Permitted(m *core.Message) bool {
-	return AdvancedReplyOff.Permitted(m)
+	return AdvancedAutoReplyOff.Permitted(m)
 }
 
 func (normalOff) Names() []string {
-	return AdvancedReplyOff.Names()
+	return AdvancedAutoReplyOff.Names()
 }
 
 func (normalOff) Description() string {
-	return AdvancedReplyOff.Description()
+	return AdvancedAutoReplyOff.Description()
 }
 
 func (c normalOff) UsageArgs() string {
-	return AdvancedReplyOff.UsageArgs()
+	return AdvancedAutoReplyOff.UsageArgs()
 }
 
 func (c normalOff) Category() core.CommandCategory {
@@ -284,7 +284,7 @@ func (normalOff) Init() error {
 }
 
 func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
-	return AdvancedReplyOff.Run(m)
+	return AdvancedAutoReplyOff.Run(m)
 }
 
 /////////////////
