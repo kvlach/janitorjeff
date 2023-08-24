@@ -28,6 +28,7 @@ var (
 // Talk returns GPT3.5's response to a user prompt.
 // The system prompt will be the active personality for place.
 // If person equals -1 then the conversation will not be kept track of.
+// If the active personality changes, then the saved dialogue is cleared.
 func Talk(person, place int64, userPrompt string) (string, error) {
 	slog := log.With().
 		Int64("person", person).
@@ -39,6 +40,11 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 
 	var dialogue []openai.ChatCompletionMessage
 
+	p, err := PersonalityActive(place)
+	if err != nil {
+		return "", err
+	}
+
 	if person != -1 {
 		dialogueBytes, err := core.RDB.Get(ctx, key).Bytes()
 		if err != nil && err != redis.Nil {
@@ -49,16 +55,16 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 			if err := json.Unmarshal(dialogueBytes, &dialogue); err != nil {
 				return "", err
 			}
+			// Personality changed which means we clear the dialogue
+			if dialogue[0].Content != p.Prompt {
+				dialogue = dialogue[:0]
+			}
 		}
 	}
 
 	// If not present in cache, set system prompt using active personality
 	// otherwise just use the cached dialogue
 	if len(dialogue) == 0 {
-		p, err := PersonalityActive(place)
-		if err != nil {
-			return "", err
-		}
 		dialogue = append(dialogue, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleSystem,
 			Content: p.Prompt,
