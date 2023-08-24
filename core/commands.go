@@ -193,7 +193,7 @@ func (cmds CommandsStatic) Match(t CommandType, m *Message, args []string) (Comm
 	for _, name := range args[1:] {
 		tmp, err := cmd.Children().match(t, m, name)
 		if err != nil {
-			return cmd, index, nil
+			break
 		}
 		index++
 		cmd = tmp
