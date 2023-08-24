@@ -242,8 +242,8 @@ func (advancedTalk) Description() string {
 	return "Talk to God."
 }
 
-func (advancedTalk) UsageArgs() string {
-	return "<text>"
+func (c advancedTalk) UsageArgs() string {
+	return c.Children().Usage()
 }
 
 func (c advancedTalk) Category() core.CommandCategory {
@@ -259,14 +259,77 @@ func (advancedTalk) Parent() core.CommandStatic {
 }
 
 func (advancedTalk) Children() core.CommandsStatic {
-	return nil
+	return core.CommandsStatic{
+		AdvancedTalkDialogue,
+		AdvancedTalkOnce,
+	}
 }
 
 func (advancedTalk) Init() error {
 	return nil
 }
 
-func (c advancedTalk) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedTalk) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
+}
+
+///////////////////
+//               //
+// talk dialogue //
+//               //
+///////////////////
+
+var AdvancedTalkDialogue = advancedTalkDialogue{}
+
+type advancedTalkDialogue struct{}
+
+func (c advancedTalkDialogue) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkDialogue) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkDialogue) Names() []string {
+	return []string{
+		"dialogue",
+		"convo",
+		"conversation",
+		"converse",
+		"discuss",
+	}
+}
+
+func (advancedTalkDialogue) Description() string {
+	return "Hold a conversation with God."
+}
+
+func (advancedTalkDialogue) UsageArgs() string {
+	return "<text>"
+}
+
+func (c advancedTalkDialogue) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkDialogue) Examples() []string {
+	return nil
+}
+
+func (advancedTalkDialogue) Parent() core.CommandStatic {
+	return AdvancedTalk
+}
+
+func (advancedTalkDialogue) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedTalkDialogue) Init() error {
+	return nil
+}
+
+func (c advancedTalkDialogue) Run(m *core.Message) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -279,7 +342,7 @@ func (c advancedTalk) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	resp, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -291,7 +354,7 @@ func (c advancedTalk) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, nil, nil
 }
 
-func (c advancedTalk) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkDialogue) text(m *core.Message) (string, core.Urr, error) {
 	resp, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -299,7 +362,7 @@ func (c advancedTalk) text(m *core.Message) (string, core.Urr, error) {
 	return resp, nil, nil
 }
 
-func (advancedTalk) core(m *core.Message) (string, error) {
+func (advancedTalkDialogue) core(m *core.Message) (string, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return "", err
@@ -309,6 +372,99 @@ func (advancedTalk) core(m *core.Message) (string, error) {
 		return "", err
 	}
 	return Talk(author, here, m.RawArgs(0))
+}
+
+///////////////
+//           //
+// talk once //
+//           //
+///////////////
+
+var AdvancedTalkOnce = advancedTalkOnce{}
+
+type advancedTalkOnce struct{}
+
+func (c advancedTalkOnce) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkOnce) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkOnce) Names() []string {
+	return []string{
+		"once",
+	}
+}
+
+func (advancedTalkOnce) Description() string {
+	return "Talk to God without the conversation being remembered."
+}
+
+func (advancedTalkOnce) UsageArgs() string {
+	return "<text>"
+}
+
+func (c advancedTalkOnce) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkOnce) Examples() []string {
+	return nil
+}
+
+func (advancedTalkOnce) Parent() core.CommandStatic {
+	return AdvancedTalk
+}
+
+func (advancedTalkOnce) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedTalkOnce) Init() error {
+	return nil
+}
+
+func (c advancedTalkOnce) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	resp, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Title:       "God says...",
+		Description: resp,
+	}
+	return embed, nil, nil
+}
+
+func (c advancedTalkOnce) text(m *core.Message) (string, core.Urr, error) {
+	resp, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return resp, nil, nil
+}
+
+func (advancedTalkOnce) core(m *core.Message) (string, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return "", err
+	}
+	return Talk(-1, here, m.RawArgs(0))
 }
 
 //////////
