@@ -73,7 +73,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 		return nil, nil, err
 	}
 	if !mod {
-		return AdvancedTalk.Run(m)
+		return AdvancedTalkDialogue.Run(m)
 	}
 
 	if len(m.Command.Args) == 0 {
@@ -99,7 +99,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	if _, err := time.ParseDuration(m.Command.Args[0]); err == nil {
 		return AdvancedAutoIntervalSet.Run(m)
 	}
-	return AdvancedTalk.Run(m)
+	return AdvancedTalkDialogue.Run(m)
 }
 
 func (c normal) renderOff(m *core.Message) (any, core.Urr, error) {
