@@ -37,16 +37,24 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("cmd_god-dialogue-%d-%d", person, place)
 
-	dialogueBytes, err := core.RDB.Get(ctx, key).Bytes()
-	if err != nil && err != redis.Nil {
-		return "", err
-	}
-
 	var dialogue []openai.ChatCompletionMessage
+
+	if person != -1 {
+		dialogueBytes, err := core.RDB.Get(ctx, key).Bytes()
+		if err != nil && err != redis.Nil {
+			return "", err
+		}
+		// Can't unmarshal what's not there
+		if err != redis.Nil {
+			if err := json.Unmarshal(dialogueBytes, &dialogue); err != nil {
+				return "", err
+			}
+		}
+	}
 
 	// If not present in cache, set system prompt using active personality
 	// otherwise just use the cached dialogue
-	if err == redis.Nil {
+	if len(dialogue) == 0 {
 		p, err := PersonalityActive(place)
 		if err != nil {
 			return "", err
@@ -55,11 +63,8 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 			Role:    openai.ChatMessageRoleSystem,
 			Content: p.Prompt,
 		})
-	} else {
-		if err := json.Unmarshal(dialogueBytes, &dialogue); err != nil {
-			return "", err
-		}
 	}
+
 	slog.Debug().Interface("dialogue", dialogue).Msg("got dialogue")
 
 	dialogue = append(dialogue, openai.ChatCompletionMessage{
@@ -89,7 +94,7 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: reply,
 		})
-		dialogueBytes, err = json.Marshal(dialogue)
+		dialogueBytes, err := json.Marshal(dialogue)
 		if err != nil {
 			return "", err
 		}
