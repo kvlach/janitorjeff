@@ -180,6 +180,7 @@ CREATE TABLE settings_place (
 	cmd_god_reply_last INTEGER NOT NULL DEFAULT 0, -- unix timestamp of last reply
 	cmd_god_redeem UUID,
 	cmd_god_personality BIGINT NOT NULL DEFAULT 1,
+	cmd_god_everyone BOOL NOT NULL DEFAULT FALSE,
 	FOREIGN KEY (cmd_god_personality) REFERENCES cmd_god_personalities(id) ON DELETE NO ACTION
 );
 

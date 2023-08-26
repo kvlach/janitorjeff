@@ -23,6 +23,7 @@ var (
 	UrrPersonalityExists   = core.UrrNew("This personality already exists, try editing instead.")
 	UrrOneLeft             = core.UrrNew("Only one personality left, better not delete it.")
 	UrrGlobalPersonality   = core.UrrNew("This is a global personality, can't delete.")
+	UrrModOnly             = core.UrrNew("Non-moderators are currently not allowed to use this command.")
 )
 
 // Talk returns GPT3.5's response to a user prompt.
@@ -497,4 +498,15 @@ func PersonalitiesList(place int64) ([]Personality, error) {
 		return nil, err
 	}
 	return ps, tx.Commit()
+}
+
+// EveryoneGet returns true if everyone (mods + non-mods) in place is allowed
+// to talk to God.
+func EveryoneGet(place int64) (bool, error) {
+	return core.DB.PlaceGet("cmd_god_everyone", place).Bool()
+}
+
+// EveryoneSet sets whether everyone is place is allowed to talk to God.
+func EveryoneSet(place int64, allowed bool) error {
+	return core.DB.PlaceSet("cmd_god_everyone", place, allowed)
 }
