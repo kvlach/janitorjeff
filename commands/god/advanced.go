@@ -227,7 +227,7 @@ func (c advancedTalk) Type() core.CommandType {
 }
 
 func (c advancedTalk) Permitted(m *core.Message) bool {
-	return true
+	return c.Parent().Permitted(m)
 }
 
 func (advancedTalk) Names() []string {
@@ -262,6 +262,7 @@ func (advancedTalk) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdvancedTalkDialogue,
 		AdvancedTalkOnce,
+		AdvancedTalkEveryone,
 	}
 }
 
@@ -287,8 +288,8 @@ func (c advancedTalkDialogue) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkDialogue) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+func (advancedTalkDialogue) Permitted(*core.Message) bool {
+	return true
 }
 
 func (advancedTalkDialogue) Names() []string {
@@ -343,35 +344,55 @@ func (c advancedTalkDialogue) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	resp, err := c.core(m)
+	resp, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Title:       "God says...",
-		Description: resp,
+		Description: c.fmt(resp, urr),
 	}
 	return embed, nil, nil
 }
 
 func (c advancedTalkDialogue) text(m *core.Message) (string, core.Urr, error) {
-	resp, err := c.core(m)
+	resp, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return resp, nil, nil
+	return c.fmt(resp, urr), nil, nil
 }
 
-func (advancedTalkDialogue) core(m *core.Message) (string, error) {
-	author, err := m.Author.Scope()
-	if err != nil {
-		return "", err
+func (advancedTalkDialogue) fmt(resp string, urr core.Urr) string {
+	switch urr {
+	case nil:
+		return resp
+	default:
+		return urr.Error()
 	}
+}
+
+func (advancedTalkDialogue) core(m *core.Message) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return Talk(author, here, m.RawArgs(0))
+	everyone, err := EveryoneGet(here)
+	if err != nil {
+		return "", nil, err
+	}
+	mod, err := m.Author.Moderator()
+	if err != nil {
+		return "", nil, err
+	}
+	if !everyone && !mod {
+		return "", UrrModOnly, nil
+	}
+	author, err := m.Author.Scope()
+	if err != nil {
+		return "", nil, err
+	}
+	resp, err := Talk(author, here, m.RawArgs(0))
+	return resp, nil, err
 }
 
 ///////////////
@@ -388,8 +409,8 @@ func (c advancedTalkOnce) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkOnce) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
+func (advancedTalkOnce) Permitted(*core.Message) bool {
+	return true
 }
 
 func (advancedTalkOnce) Names() []string {
@@ -440,31 +461,380 @@ func (c advancedTalkOnce) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	resp, err := c.core(m)
+	resp, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Title:       "God says...",
-		Description: resp,
+		Description: c.fmt(resp, urr),
 	}
 	return embed, nil, nil
 }
 
 func (c advancedTalkOnce) text(m *core.Message) (string, core.Urr, error) {
-	resp, err := c.core(m)
+	resp, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return resp, nil, nil
+	return c.fmt(resp, urr), nil, nil
 }
 
-func (advancedTalkOnce) core(m *core.Message) (string, error) {
+func (advancedTalkOnce) fmt(resp string, urr core.Urr) string {
+	switch urr {
+	case nil:
+		return resp
+	default:
+		return urr.Error()
+	}
+}
+
+func (advancedTalkOnce) core(m *core.Message) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return Talk(-1, here, m.RawArgs(0))
+	everyone, err := EveryoneGet(here)
+	if err != nil {
+		return "", nil, err
+	}
+	mod, err := m.Author.Moderator()
+	if err != nil {
+		return "", nil, err
+	}
+	if !everyone && !mod {
+		return "", UrrModOnly, nil
+	}
+	resp, err := Talk(-1, here, m.RawArgs(0))
+	return resp, nil, err
+}
+
+///////////////////
+//               //
+// talk everyone //
+//               //
+///////////////////
+
+var AdvancedTalkEveryone = advancedTalkEveryone{}
+
+type advancedTalkEveryone struct{}
+
+func (c advancedTalkEveryone) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkEveryone) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkEveryone) Names() []string {
+	return []string{
+		"everyone",
+	}
+}
+
+func (advancedTalkEveryone) Description() string {
+	return "Control whether everyone or just moderators can talk to God."
+}
+
+func (c advancedTalkEveryone) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c advancedTalkEveryone) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkEveryone) Examples() []string {
+	return nil
+}
+
+func (advancedTalkEveryone) Parent() core.CommandStatic {
+	return AdvancedTalk
+}
+
+func (advancedTalkEveryone) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdvancedTalkEveryoneShow,
+		AdvancedTalkEveryoneOn,
+		AdvancedTalkEveryoneOff,
+	}
+}
+
+func (advancedTalkEveryone) Init() error {
+	return nil
+}
+
+func (advancedTalkEveryone) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
+}
+
+////////////////////////
+//                    //
+// talk everyone show //
+//                    //
+////////////////////////
+
+var AdvancedTalkEveryoneShow = advancedTalkEveryoneShow{}
+
+type advancedTalkEveryoneShow struct{}
+
+func (c advancedTalkEveryoneShow) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkEveryoneShow) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkEveryoneShow) Names() []string {
+	return core.AliasesShow
+}
+
+func (advancedTalkEveryoneShow) Description() string {
+	return "Show whether non-mods are allowed to talk to God."
+}
+
+func (advancedTalkEveryoneShow) UsageArgs() string {
+	return ""
+}
+
+func (c advancedTalkEveryoneShow) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkEveryoneShow) Examples() []string {
+	return nil
+}
+
+func (advancedTalkEveryoneShow) Parent() core.CommandStatic {
+	return AdvancedTalkEveryone
+}
+
+func (advancedTalkEveryoneShow) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedTalkEveryoneShow) Init() error {
+	return nil
+}
+
+func (c advancedTalkEveryoneShow) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedTalkEveryoneShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	everyone, err := c.core(m)
+	if err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(everyone),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedTalkEveryoneShow) text(m *core.Message) (string, core.Urr, error) {
+	everyone, err := c.core(m)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.fmt(everyone), nil, nil
+}
+
+func (advancedTalkEveryoneShow) fmt(everyone bool) string {
+	if everyone {
+		return "Everyone can talk to God."
+	}
+	return "Only moderators can talk to God."
+}
+
+func (advancedTalkEveryoneShow) core(m *core.Message) (bool, error) {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return false, nil
+	}
+	return EveryoneGet(here)
+}
+
+//////////////////////
+//                  //
+// talk everyone on //
+//                  //
+//////////////////////
+
+var AdvancedTalkEveryoneOn = advancedTalkEveryoneOn{}
+
+type advancedTalkEveryoneOn struct{}
+
+func (c advancedTalkEveryoneOn) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkEveryoneOn) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkEveryoneOn) Names() []string {
+	return core.AliasesOn
+}
+
+func (advancedTalkEveryoneOn) Description() string {
+	return "Allow non-mods to talk to God."
+}
+
+func (advancedTalkEveryoneOn) UsageArgs() string {
+	return ""
+}
+
+func (c advancedTalkEveryoneOn) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkEveryoneOn) Examples() []string {
+	return nil
+}
+
+func (advancedTalkEveryoneOn) Parent() core.CommandStatic {
+	return AdvancedTalkEveryone
+}
+
+func (advancedTalkEveryoneOn) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedTalkEveryoneOn) Init() error {
+	return nil
+}
+
+func (c advancedTalkEveryoneOn) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedTalkEveryoneOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	if err := c.core(m); err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedTalkEveryoneOn) text(m *core.Message) (string, core.Urr, error) {
+	if err := c.core(m); err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedTalkEveryoneOn) fmt() string {
+	return "Everyone can now talk to God."
+}
+
+func (advancedTalkEveryoneOn) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return EveryoneSet(here, true)
+}
+
+///////////////////////
+//                   //
+// talk everyone off //
+//                   //
+///////////////////////
+
+var AdvancedTalkEveryoneOff = advancedTalkEveryoneOff{}
+
+type advancedTalkEveryoneOff struct{}
+
+func (c advancedTalkEveryoneOff) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c advancedTalkEveryoneOff) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (advancedTalkEveryoneOff) Names() []string {
+	return core.AliasesOff
+}
+
+func (advancedTalkEveryoneOff) Description() string {
+	return "Disallow non-mods from talking to God."
+}
+
+func (advancedTalkEveryoneOff) UsageArgs() string {
+	return ""
+}
+
+func (c advancedTalkEveryoneOff) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (advancedTalkEveryoneOff) Examples() []string {
+	return nil
+}
+
+func (advancedTalkEveryoneOff) Parent() core.CommandStatic {
+	return AdvancedTalkEveryone
+}
+
+func (advancedTalkEveryoneOff) Children() core.CommandsStatic {
+	return nil
+}
+
+func (advancedTalkEveryoneOff) Init() error {
+	return nil
+}
+
+func (c advancedTalkEveryoneOff) Run(m *core.Message) (any, core.Urr, error) {
+	switch m.Frontend.Type() {
+	case discord.Frontend.Type():
+		return c.discord(m)
+	default:
+		return c.text(m)
+	}
+}
+
+func (c advancedTalkEveryoneOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	if err := c.core(m); err != nil {
+		return nil, nil, err
+	}
+	embed := &dg.MessageEmbed{
+		Description: c.fmt(),
+	}
+	return embed, nil, nil
+}
+
+func (c advancedTalkEveryoneOff) text(m *core.Message) (string, core.Urr, error) {
+	if err := c.core(m); err != nil {
+		return "", nil, err
+	}
+	return c.fmt(), nil, nil
+}
+
+func (advancedTalkEveryoneOff) fmt() string {
+	return "Only moderators can now talk to God."
+}
+
+func (advancedTalkEveryoneOff) core(m *core.Message) error {
+	here, err := m.Here.ScopeLogical()
+	if err != nil {
+		return err
+	}
+	return EveryoneSet(here, false)
 }
 
 //////////
