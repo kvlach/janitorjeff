@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -143,12 +144,18 @@ func (v Val) Bool() (bool, error) {
 	if v.err != nil {
 		return false, v.err
 	}
+	if v.val == nil {
+		return false, errors.New("expected bool, got nil")
+	}
 	return v.val.(bool), nil
 }
 
 func (v Val) Int() (int, error) {
 	if v.err != nil {
 		return 0, v.err
+	}
+	if v.val == nil {
+		return 0, errors.New("expected int, got nil")
 	}
 	return int(v.val.(int64)), nil
 }
@@ -157,12 +164,18 @@ func (v Val) Int64() (int64, error) {
 	if v.err != nil {
 		return 0, v.err
 	}
+	if v.val == nil {
+		return 0, errors.New("expected int64, got nil")
+	}
 	return v.val.(int64), nil
 }
 
 func (v Val) Str() (string, error) {
 	if v.err != nil {
 		return "", v.err
+	}
+	if v.val == nil {
+		return "", errors.New("expected string, got nil")
 	}
 	return v.val.(string), nil
 }
@@ -182,12 +195,18 @@ func (v Val) Time() (time.Time, error) {
 	if v.err != nil {
 		return time.Time{}, v.err
 	}
+	if v.val == nil {
+		return time.Time{}, errors.New("expected time.Time, got nil")
+	}
 	return time.Unix(v.val.(int64), 0).UTC(), nil
 }
 
 func (v Val) Duration() (time.Duration, error) {
 	if v.err != nil {
 		return 0, v.err
+	}
+	if v.val == nil {
+		return 0, errors.New("expected time.Duration, got nil")
 	}
 	return time.Duration(v.val.(int64)) * time.Second, nil
 }
