@@ -228,8 +228,8 @@ type coords struct {
 }
 
 type Tx struct {
-	Tx *sql.Tx
-	db *SQLDB
+	Tx     *sql.Tx
+	db     *SQLDB
 	person map[coords]struct{}
 	place  map[int64]struct{}
 }
