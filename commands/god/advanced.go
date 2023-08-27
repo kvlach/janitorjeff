@@ -98,31 +98,41 @@ func (advanced) Init() error {
 		// where the cache thinks that the settings have already been generated
 		// but they in fact haven't, since the transaction got rolled back.
 
-		on, err := tx.PlaceGet("cmd_god_reply_on", here).Bool()
+		err = tx.PlaceEnsure(here)
 		if err != nil {
-			log.Error().Err(err).Msg("reply not on, skipping")
+			log.Error().Err(err).Msg("couldn't ensure place exists")
 			return
 		}
-		if !on {
+
+		var shouldReply bool
+		err = tx.Tx.QueryRow(`
+			SELECT
+				CASE
+					WHEN cmd_god_reply_on = FALSE THEN FALSE
+					WHEN CURRENT_TIMESTAMP - TO_TIMESTAMP(cmd_god_reply_last) > (cmd_god_reply_interval || 'seconds')::INTERVAL THEN TRUE
+					ELSE FALSE
+					END AS should_reply
+			FROM
+				settings_place
+			WHERE
+				place = 2
+		`).Scan(&shouldReply)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("failed to check if auto-reply should be sent")
 			// Must commit in case the place settings haven't been generated before
 			tx.Commit()
 			return
 		}
 
-		interval, err := tx.PlaceGet("cmd_god_reply_interval", here).Duration()
-		if err != nil {
-			return
-		}
-		last, err := tx.PlaceGet("cmd_god_reply_last", here).Time()
-		if err != nil {
-			return
-		}
-		diff := time.Now().UTC().Sub(last)
-		if interval > diff {
-			log.Debug().
-				Interface("interval", interval).
-				Interface("diff", diff).
-				Msg("shouldn't reply yet, skipping")
+		log.Debug().
+			Int64("place", here).
+			Bool("should-reply", shouldReply).
+			Msg("POSTGRES: checked if auto-reply should be sent")
+
+		if !shouldReply {
+			// Must commit in case the place settings haven't been generated before
 			tx.Commit()
 			return
 		}
