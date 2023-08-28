@@ -47,6 +47,7 @@ var Commands = core.CommandsStatic{
 
 	god.Advanced,
 	god.Normal,
+	god.Admin,
 
 	help.Normal,
 	help.Advanced,
