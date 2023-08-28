@@ -1853,7 +1853,7 @@ func (advancedPersonalityShow) core(m *core.Message) (Personality, error) {
 	if err != nil {
 		return Personality{}, err
 	}
-	p, err := PersonalityActive(here)
+	p, _, err := PersonalityActive(here)
 	if err != nil {
 		return Personality{}, err
 	}
@@ -2460,7 +2460,7 @@ func (advancedPersonalityList) core(m *core.Message) (Personality, []Personality
 	if err != nil {
 		return Personality{}, nil, err
 	}
-	active, err := PersonalityActive(here)
+	active, _, err := PersonalityActive(here)
 	if err != nil {
 		return Personality{}, nil, err
 	}

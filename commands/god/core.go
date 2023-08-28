@@ -24,6 +24,7 @@ var (
 	UrrOneLeft             = core.UrrNew("Only one personality left, better not delete it.")
 	UrrGlobalPersonality   = core.UrrNew("This is a global personality, can't delete.")
 	UrrModOnly             = core.UrrNew("Non-moderators are currently not allowed to use this command.")
+	UrrNotInt              = core.UrrNew("Expected number (integer) instead.")
 )
 
 // Talk returns GPT3.5's response to a user prompt.
@@ -41,7 +42,7 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 
 	var dialogue []openai.ChatCompletionMessage
 
-	p, err := PersonalityActive(place)
+	p, max, err := PersonalityActive(place)
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +84,7 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 		ctx,
 		openai.ChatCompletionRequest{
 			Model:     openai.GPT3Dot5Turbo,
-			MaxTokens: 80,
+			MaxTokens: max,
 			Messages:  dialogue,
 		},
 	)
@@ -165,47 +166,49 @@ type Personality struct {
 	Global bool
 }
 
-func personalityActive(tx *core.Tx, place int64) (Personality, error) {
+func personalityActive(tx *core.Tx, place int64) (Personality, int, error) {
 	// Since the settings table is accessed, make sure the row is there
 	if err := tx.PlaceEnsure(place); err != nil {
-		return Personality{}, err
+		return Personality{}, 0, err
 	}
 
 	var name, prompt string
 	var placeDB *int64
 	var id int64
+	var max int
 
 	err := tx.Tx.QueryRow(`
-		SELECT cgp.id, cgp.name, cgp.prompt, cgp.place
+		SELECT cgp.id, cgp.name, cgp.prompt, cgp.place, sp.cmd_god_max
 		FROM settings_place sp
 		INNER JOIN cmd_god_personalities cgp ON sp.cmd_god_personality = cgp.id
 		WHERE sp.place = $1 AND (cgp.place = $1 OR cgp.place IS NULL);
-    `, place).Scan(&id, &name, &prompt, &placeDB)
+    `, place).Scan(&id, &name, &prompt, &placeDB, &max)
 	if err != nil {
-		return Personality{}, err
+		return Personality{}, 0, err
 	}
 	return Personality{
 		ID:     id,
 		Name:   name,
 		Prompt: prompt,
 		Global: placeDB == nil,
-	}, nil
+	}, max, nil
 }
 
-// PersonalityActive returns the currently selected personality for place.
+// PersonalityActive returns the currently selected personality for place, along
+// with the maximum allowed tokens to be passed in the OpenAI request.
 // Assumes that at least one exists, as it probably does because of globals.
-func PersonalityActive(place int64) (Personality, error) {
+func PersonalityActive(place int64) (Personality, int, error) {
 	tx, err := core.DB.Begin()
 	if err != nil {
-		return Personality{}, err
+		return Personality{}, 0, err
 	}
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
-	p, err := personalityActive(tx, place)
+	p, max, err := personalityActive(tx, place)
 	if err != nil {
-		return Personality{}, err
+		return Personality{}, 0, err
 	}
-	return p, tx.Commit()
+	return p, max, tx.Commit()
 }
 
 func personalitySet(tx *core.Tx, place int64, name string) (string, core.Urr, error) {
@@ -394,7 +397,7 @@ func PersonalityDelete(place int64, name string) (core.Urr, error) {
 		return UrrGlobalPersonality, nil
 	}
 
-	active, err := personalityActive(tx, place)
+	active, _, err := personalityActive(tx, place)
 	if err != nil {
 		return nil, err
 	}
@@ -509,4 +512,14 @@ func EveryoneGet(place int64) (bool, error) {
 // EveryoneSet sets whether everyone is place is allowed to talk to God.
 func EveryoneSet(place int64, allowed bool) error {
 	return core.DB.PlaceSet("cmd_god_everyone", place, allowed)
+}
+
+// MaxGet returns the maximum number of tokens that a response is allowed.
+func MaxGet(place int64) (int, error) {
+	return core.DB.PlaceGet("cmd_god_max", place).Int()
+}
+
+// MaxSet sets the maximum number of tokens that a response is allowed.
+func MaxSet(place int64, max int) error {
+	return core.DB.PlaceSet("cmd_god_max", place, max)
 }
