@@ -14,8 +14,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var UrrInvalidInterval = core.UrrNew("Expected an integer number as the interval.")
-
 var Advanced = advanced{}
 
 type advanced struct{}
@@ -1363,7 +1361,7 @@ func (c advancedAutoIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, co
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(interval),
+		Description: c.fmt(fmt.Sprintf("**%v**", interval)),
 	}
 	return embed, nil, nil
 }
@@ -1373,11 +1371,11 @@ func (c advancedAutoIntervalShow) text(m *core.Message) (string, core.Urr, error
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(interval), nil, nil
+	return c.fmt(interval.String()), nil, nil
 }
 
-func (advancedAutoIntervalShow) fmt(interval time.Duration) string {
-	return "God will automatically reply once every " + interval.String()
+func (advancedAutoIntervalShow) fmt(interval string) string {
+	return "God will automatically reply once every " + interval + "."
 }
 
 func (advancedAutoIntervalShow) core(m *core.Message) (time.Duration, error) {
@@ -1457,7 +1455,7 @@ func (c advancedAutoIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, cor
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(interval, urr),
+		Description: c.fmt(fmt.Sprintf("**%v**", interval), urr),
 	}
 	return embed, urr, nil
 }
@@ -1467,10 +1465,10 @@ func (c advancedAutoIntervalSet) text(m *core.Message) (string, core.Urr, error)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(interval, urr), urr, nil
+	return c.fmt(interval.String(), urr), urr, nil
 }
 
-func (advancedAutoIntervalSet) fmt(interval time.Duration, urr core.Urr) string {
+func (advancedAutoIntervalSet) fmt(interval string, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Updated the interval to %s.", interval)
@@ -1484,7 +1482,7 @@ func (advancedAutoIntervalSet) fmt(interval time.Duration, urr core.Urr) string 
 func (advancedAutoIntervalSet) core(m *core.Message) (time.Duration, core.Urr, error) {
 	interval, err := time.ParseDuration(m.Command.Args[0])
 	if err != nil {
-		return 0, nil, err
+		return 0, UrrInvalidInterval, nil
 	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
@@ -1519,7 +1517,7 @@ func (advancedRedeem) Names() []string {
 }
 
 func (advancedRedeem) Description() string {
-	return "Control which redeem triggers god."
+	return "Control which redeem triggers God."
 }
 
 func (c advancedRedeem) UsageArgs() string {
@@ -1831,7 +1829,7 @@ func (c advancedPersonalityShow) discord(m *core.Message) (*dg.MessageEmbed, cor
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(personality),
+		Description: c.fmt("**" + personality.Name + "**"),
 	}
 	return embed, nil, nil
 }
@@ -1841,11 +1839,11 @@ func (c advancedPersonalityShow) text(m *core.Message) (string, core.Urr, error)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(personality), nil, nil
+	return c.fmt(personality.Name), nil, nil
 }
 
-func (advancedPersonalityShow) fmt(p Personality) string {
-	return "Current personality is: " + p.Name
+func (advancedPersonalityShow) fmt(pName string) string {
+	return "Active personality: " + pName
 }
 
 func (advancedPersonalityShow) core(m *core.Message) (Personality, error) {
@@ -1945,9 +1943,9 @@ func (c advancedPersonalitySet) text(m *core.Message) (string, core.Urr, error) 
 func (advancedPersonalitySet) fmt(name string, urr core.Urr) string {
 	switch urr {
 	case nil:
-		return "Set personality to " + name
+		return "Set personality to " + name + "."
 	case UrrPersonalityNotFound:
-		return "Couldn't find " + name + " personality."
+		return "Couldn't find the " + name + " personality."
 	default:
 		return fmt.Sprint(urr)
 	}
@@ -1988,7 +1986,7 @@ func (advancedPersonalityAdd) Description() string {
 }
 
 func (advancedPersonalityAdd) UsageArgs() string {
-	return "<personality> <prompt...>"
+	return "<personality> <instructions...>"
 }
 
 func (c advancedPersonalityAdd) Category() core.CommandCategory {
@@ -2025,18 +2023,35 @@ func (c advancedPersonalityAdd) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedPersonalityAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	urr, err := c.core(m)
+	name, prompt, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	embed := &dg.MessageEmbed{
-		Description: c.fmt(urr),
+	if urr != nil {
+		return &dg.MessageEmbed{
+			Description: c.fmt(urr),
+		}, urr, nil
 	}
-	return embed, urr, nil
+	embed := &dg.MessageEmbed{
+		Title: c.fmt(urr),
+		Fields: []*dg.MessageEmbedField{
+			{
+				Name:   "Personality",
+				Value:  name,
+				Inline: false,
+			},
+			{
+				Name:   "Instructions",
+				Value:  prompt,
+				Inline: false,
+			},
+		},
+	}
+	return embed, nil, nil
 }
 
 func (c advancedPersonalityAdd) text(m *core.Message) (string, core.Urr, error) {
-	urr, err := c.core(m)
+	_, _, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
@@ -2052,12 +2067,15 @@ func (advancedPersonalityAdd) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedPersonalityAdd) core(m *core.Message) (core.Urr, error) {
+func (advancedPersonalityAdd) core(m *core.Message) (string, string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return "", "", nil, err
 	}
-	return PersonalityAdd(here, m.Command.Args[0], m.RawArgs(1))
+	name := m.Command.Args[0]
+	prompt := m.RawArgs(1)
+	urr, err := PersonalityAdd(here, name, prompt)
+	return name, prompt, urr, err
 }
 
 //////////////////////
@@ -2087,7 +2105,7 @@ func (advancedPersonalityEdit) Description() string {
 }
 
 func (advancedPersonalityEdit) UsageArgs() string {
-	return "<personality> <prompt...>"
+	return "<personality> <instructions...>"
 }
 
 func (c advancedPersonalityEdit) Category() core.CommandCategory {
@@ -2124,39 +2142,66 @@ func (c advancedPersonalityEdit) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedPersonalityEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	urr, err := c.core(m)
+	name, prompt, old, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
-	embed := &dg.MessageEmbed{
-		Description: c.fmt(urr),
+	if urr != nil {
+		return &dg.MessageEmbed{
+			Description: c.fmt("**"+name+"**", urr),
+		}, urr, nil
 	}
-	return embed, urr, nil
+	embed := &dg.MessageEmbed{
+		Title: c.fmt(name, urr),
+		Fields: []*dg.MessageEmbedField{
+			{
+				Name:   "Personality",
+				Value:  name,
+				Inline: false,
+			},
+			{
+				Name:   "New Instructions",
+				Value:  prompt,
+				Inline: false,
+			},
+			{
+				Name:   "Old Instructions",
+				Value:  old,
+				Inline: false,
+			},
+		},
+	}
+	return embed, nil, nil
 }
 
 func (c advancedPersonalityEdit) text(m *core.Message) (string, core.Urr, error) {
-	urr, err := c.core(m)
+	name, _, _, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(urr), urr, nil
+	return c.fmt("'"+name+"'", urr), urr, nil
 }
 
-func (advancedPersonalityEdit) fmt(urr core.Urr) string {
+func (advancedPersonalityEdit) fmt(pName string, urr core.Urr) string {
 	switch urr {
 	case nil:
 		return "Edited personality."
+	case UrrGlobalPersonality:
+		return pName + " is a global personality, can't edit."
 	default:
 		return urr.Error()
 	}
 }
 
-func (advancedPersonalityEdit) core(m *core.Message) (core.Urr, error) {
+func (advancedPersonalityEdit) core(m *core.Message) (string, string, string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return "", "", "", nil, err
 	}
-	return PersonalityEdit(here, m.Command.Args[0], m.RawArgs(1))
+	name := m.Command.Args[0]
+	prompt := m.RawArgs(1)
+	old, urr, err := PersonalityEdit(here, name, prompt)
+	return name, prompt, old, urr, err
 }
 
 ////////////////////////
@@ -2335,8 +2380,18 @@ func (c advancedPersonalityInfo) discord(m *core.Message) (*dg.MessageEmbed, cor
 		return embed, urr, nil
 	}
 	embed := &dg.MessageEmbed{
-		Title:       "Personality: " + personality.Name,
-		Description: "**Prompt**\n" + personality.Prompt,
+		Fields: []*dg.MessageEmbedField{
+			{
+				Name:   "Personality",
+				Value:  personality.Name,
+				Inline: false,
+			},
+			{
+				Name:   "Instructions",
+				Value:  personality.Prompt,
+				Inline: false,
+			},
+		},
 	}
 	return embed, nil, nil
 }

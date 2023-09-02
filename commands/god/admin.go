@@ -184,7 +184,7 @@ func (c adminMaxShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(max),
+		Description: c.fmt(fmt.Sprintf("**%d**", max)),
 	}
 	return embed, nil, nil
 }
@@ -194,11 +194,11 @@ func (c adminMaxShow) text(m *core.Message) (string, core.Urr, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(max), nil, nil
+	return c.fmt(strconv.Itoa(max)), nil, nil
 }
 
-func (adminMaxShow) fmt(max int) string {
-	return fmt.Sprintf("Max tokens is set to: %d", max)
+func (adminMaxShow) fmt(max string) string {
+	return fmt.Sprintf("The response will contain a maximum of %s tokens.", max)
 }
 
 func (adminMaxShow) core(m *core.Message) (int, error) {
@@ -273,41 +273,47 @@ func (c adminMaxSet) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c adminMaxSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
-	urr, err := c.core(m)
+	max, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
 	}
 	embed := &dg.MessageEmbed{
-		Description: c.fmt(urr),
+		Description: c.fmt(
+			fmt.Sprintf("**%d**", max),
+			"**"+m.Command.Args[0]+"**",
+			urr,
+		),
 	}
 	return embed, nil, nil
 }
 
 func (c adminMaxSet) text(m *core.Message) (string, core.Urr, error) {
-	urr, err := c.core(m)
+	max, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(urr), nil, nil
+	return c.fmt(strconv.Itoa(max), m.Command.Args[0], urr), nil, nil
 }
 
-func (adminMaxSet) fmt(urr core.Urr) string {
+func (adminMaxSet) fmt(max, arg string, urr core.Urr) string {
 	switch urr {
 	case nil:
-		return "Updated max tokens."
+		return "Updated max tokens to " + max + "."
+	case UrrNotInt:
+		return "Expected integer, got " + arg + "."
 	default:
 		return urr.Error()
 	}
 }
 
-func (adminMaxSet) core(m *core.Message) (core.Urr, error) {
+func (adminMaxSet) core(m *core.Message) (int, core.Urr, error) {
 	max, err := strconv.Atoi(m.Command.Args[0])
 	if err != nil {
-		return UrrNotInt, nil
+		return 0, UrrNotInt, nil
 	}
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
-	return nil, MaxSet(here, max)
+	return max, nil, MaxSet(here, max)
 }
