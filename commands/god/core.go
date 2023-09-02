@@ -22,9 +22,11 @@ var (
 	UrrPersonalityNotFound = core.UrrNew("The given personality could not be found.")
 	UrrPersonalityExists   = core.UrrNew("This personality already exists, try editing instead.")
 	UrrOneLeft             = core.UrrNew("Only one personality left, better not delete it.")
-	UrrGlobalPersonality   = core.UrrNew("This is a global personality, can't delete.")
+	UrrGlobalPersonality   = core.UrrNew("This is a global personality, can't modify it.")
 	UrrModOnly             = core.UrrNew("Non-moderators are currently not allowed to use this command.")
-	UrrNotInt              = core.UrrNew("Expected number (integer) instead.")
+	UrrNotInt              = core.UrrNew("Expected an integer instead.")
+	UrrInvalidInterval     = core.UrrNew("Expected an interval in the form of 1h30m.")
+	UrrPromptSame          = core.UrrNew("Provided instructions are exactly the same as the already set ones.")
 )
 
 // Talk returns GPT3.5's response to a user prompt.
@@ -311,12 +313,14 @@ func PersonalityAdd(place int64, name, prompt string) (core.Urr, error) {
 }
 
 // PersonalityEdit edits the specified personality in place.
+// Returns the old prompt.
 // Returns UrrPersonalityNotFound if name doesn't correspond to any.
 // Returns UrrGlobalPersonality if it's global and not place-defined.
-func PersonalityEdit(place int64, name, prompt string) (core.Urr, error) {
+// Returns UrrPromptSame if the old prompt and newPrompt are equal.
+func PersonalityEdit(place int64, name, newPrompt string) (string, core.Urr, error) {
 	tx, err := core.DB.Begin()
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
@@ -325,37 +329,44 @@ func PersonalityEdit(place int64, name, prompt string) (core.Urr, error) {
 
 	exists, err := personalityExists(tx, place, name)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	if !exists {
-		return UrrPersonalityNotFound, nil
+		return "", UrrPersonalityNotFound, nil
 	}
 
 	global, err := personalityGlobal(tx, place, name)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	if global {
-		return UrrGlobalPersonality, nil
+		return "", UrrGlobalPersonality, nil
 	}
 
-	_, err = tx.Tx.Exec(`
-		UPDATE cmd_god_personalities
+	var oldPrompt string
+	err = tx.Tx.QueryRow(`
+		UPDATE cmd_god_personalities new
 		SET prompt = $3
-		WHERE place = $1 AND name = $2
-	`, place, name, prompt)
+		FROM cmd_god_personalities old
+		WHERE new.place = $1 AND old.place = new.place AND new.name = $2 AND old.name = new.name
+		RETURNING old.prompt
+	`, place, name, newPrompt).Scan(&oldPrompt)
 
 	log.Debug().
 		Err(err).
 		Int64("place", place).
 		Str("name", name).
-		Str("prompt", prompt).
+		Str("new-prompt", newPrompt).
+		Str("old-prompt", oldPrompt).
 		Msg("edited personality")
 
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-	return nil, tx.Commit()
+	if newPrompt == oldPrompt {
+		return oldPrompt, UrrPromptSame, nil
+	}
+	return oldPrompt, nil, tx.Commit()
 }
 
 // PersonalityDelete will delete the given personality in place.
