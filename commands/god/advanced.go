@@ -891,7 +891,9 @@ func (advancedAuto) Parent() core.CommandStatic {
 
 func (advancedAuto) Children() core.CommandsStatic {
 	return core.CommandsStatic{
-		AdvancedAutoReply,
+		AdvancedAutoShow,
+		AdvancedAutoOn,
+		AdvancedAutoOff,
 		AdvancedAutoInterval,
 	}
 }
@@ -904,117 +906,57 @@ func (advancedAuto) Run(m *core.Message) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
-////////////////
-//            //
-// auto reply //
-//            //
-////////////////
+///////////////
+//           //
+// auto show //
+//           //
+///////////////
 
-var AdvancedAutoReply = advancedAutoReply{}
+var AdvancedAutoShow = advancedAutoShow{}
 
-type advancedAutoReply struct{}
+type advancedAutoShow struct{}
 
-func (c advancedAutoReply) Type() core.CommandType {
+func (c advancedAutoShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoReply) Permitted(m *core.Message) bool {
+func (c advancedAutoShow) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedAutoReply) Names() []string {
-	return []string{
-		"reply",
-	}
-}
-
-func (advancedAutoReply) Description() string {
-	return "Auto-replying related commands."
-}
-
-func (c advancedAutoReply) UsageArgs() string {
-	return c.Children().Usage()
-}
-
-func (c advancedAutoReply) Category() core.CommandCategory {
-	return c.Parent().Category()
-}
-
-func (advancedAutoReply) Examples() []string {
-	return nil
-}
-
-func (advancedAutoReply) Parent() core.CommandStatic {
-	return AdvancedAuto
-}
-
-func (advancedAutoReply) Children() core.CommandsStatic {
-	return core.CommandsStatic{
-		AdvancedAutoReplyShow,
-		AdvancedAutoReplyOn,
-		AdvancedAutoReplyOff,
-	}
-}
-
-func (advancedAutoReply) Init() error {
-	return nil
-}
-
-func (c advancedAutoReply) Run(m *core.Message) (any, core.Urr, error) {
-	return m.Usage(), core.UrrMissingArgs, nil
-}
-
-/////////////////////
-//                 //
-// auto reply show //
-//                 //
-/////////////////////
-
-var AdvancedAutoReplyShow = advancedAutoReplyShow{}
-
-type advancedAutoReplyShow struct{}
-
-func (c advancedAutoReplyShow) Type() core.CommandType {
-	return c.Parent().Type()
-}
-
-func (c advancedAutoReplyShow) Permitted(m *core.Message) bool {
-	return c.Parent().Permitted(m)
-}
-
-func (advancedAutoReplyShow) Names() []string {
+func (advancedAutoShow) Names() []string {
 	return core.AliasesShow
 }
 
-func (advancedAutoReplyShow) Description() string {
+func (advancedAutoShow) Description() string {
 	return "Show if auto-replying is on or off."
 }
 
-func (advancedAutoReplyShow) UsageArgs() string {
+func (advancedAutoShow) UsageArgs() string {
 	return ""
 }
 
-func (c advancedAutoReplyShow) Category() core.CommandCategory {
+func (c advancedAutoShow) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedAutoReplyShow) Examples() []string {
+func (advancedAutoShow) Examples() []string {
 	return nil
 }
 
-func (advancedAutoReplyShow) Parent() core.CommandStatic {
-	return AdvancedAutoReply
+func (advancedAutoShow) Parent() core.CommandStatic {
+	return AdvancedAuto
 }
 
-func (advancedAutoReplyShow) Children() core.CommandsStatic {
+func (advancedAutoShow) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedAutoReplyShow) Init() error {
+func (advancedAutoShow) Init() error {
 	return nil
 }
 
-func (c advancedAutoReplyShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoShow) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1023,7 +965,7 @@ func (c advancedAutoReplyShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoReplyShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1034,7 +976,7 @@ func (c advancedAutoReplyShow) discord(m *core.Message) (*dg.MessageEmbed, core.
 	return embed, nil, nil
 }
 
-func (c advancedAutoReplyShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoShow) text(m *core.Message) (string, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1042,14 +984,14 @@ func (c advancedAutoReplyShow) text(m *core.Message) (string, core.Urr, error) {
 	return c.fmt(on), nil, nil
 }
 
-func (advancedAutoReplyShow) fmt(on bool) string {
+func (advancedAutoShow) fmt(on bool) string {
 	if on {
 		return "Auto-replying is on."
 	}
 	return "Auto-replying is off."
 }
 
-func (advancedAutoReplyShow) core(m *core.Message) (bool, error) {
+func (advancedAutoShow) core(m *core.Message) (bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return false, err
@@ -1057,57 +999,57 @@ func (advancedAutoReplyShow) core(m *core.Message) (bool, error) {
 	return ReplyOnGet(here)
 }
 
-///////////////////
-//               //
-// auto reply on //
-//               //
-///////////////////
+/////////////
+//         //
+// auto on //
+//         //
+/////////////
 
-var AdvancedAutoReplyOn = advancedAutoReplyOn{}
+var AdvancedAutoOn = advancedAutoOn{}
 
-type advancedAutoReplyOn struct{}
+type advancedAutoOn struct{}
 
-func (c advancedAutoReplyOn) Type() core.CommandType {
+func (c advancedAutoOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoReplyOn) Permitted(m *core.Message) bool {
+func (c advancedAutoOn) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedAutoReplyOn) Names() []string {
+func (advancedAutoOn) Names() []string {
 	return core.AliasesOn
 }
 
-func (advancedAutoReplyOn) Description() string {
+func (advancedAutoOn) Description() string {
 	return "Turn auto-replying on."
 }
 
-func (advancedAutoReplyOn) UsageArgs() string {
+func (advancedAutoOn) UsageArgs() string {
 	return ""
 }
 
-func (c advancedAutoReplyOn) Category() core.CommandCategory {
+func (c advancedAutoOn) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedAutoReplyOn) Examples() []string {
+func (advancedAutoOn) Examples() []string {
 	return nil
 }
 
-func (advancedAutoReplyOn) Parent() core.CommandStatic {
-	return AdvancedAutoReply
+func (advancedAutoOn) Parent() core.CommandStatic {
+	return AdvancedAuto
 }
 
-func (advancedAutoReplyOn) Children() core.CommandsStatic {
+func (advancedAutoOn) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedAutoReplyOn) Init() error {
+func (advancedAutoOn) Init() error {
 	return nil
 }
 
-func (c advancedAutoReplyOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoOn) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1116,7 +1058,7 @@ func (c advancedAutoReplyOn) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoReplyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1127,7 +1069,7 @@ func (c advancedAutoReplyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Ur
 	return embed, nil, nil
 }
 
-func (c advancedAutoReplyOn) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoOn) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1135,11 +1077,11 @@ func (c advancedAutoReplyOn) text(m *core.Message) (string, core.Urr, error) {
 	return c.fmt(), nil, nil
 }
 
-func (advancedAutoReplyOn) fmt() string {
+func (advancedAutoOn) fmt() string {
 	return "Auto-replying has been turned on."
 }
 
-func (advancedAutoReplyOn) core(m *core.Message) error {
+func (advancedAutoOn) core(m *core.Message) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -1153,51 +1095,51 @@ func (advancedAutoReplyOn) core(m *core.Message) error {
 //                //
 ////////////////////
 
-var AdvancedAutoReplyOff = advancedAutoReplyOff{}
+var AdvancedAutoOff = advancedAutoOff{}
 
-type advancedAutoReplyOff struct{}
+type advancedAutoOff struct{}
 
-func (c advancedAutoReplyOff) Type() core.CommandType {
+func (c advancedAutoOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoReplyOff) Permitted(m *core.Message) bool {
+func (c advancedAutoOff) Permitted(m *core.Message) bool {
 	return c.Parent().Permitted(m)
 }
 
-func (advancedAutoReplyOff) Names() []string {
+func (advancedAutoOff) Names() []string {
 	return core.AliasesOff
 }
 
-func (advancedAutoReplyOff) Description() string {
+func (advancedAutoOff) Description() string {
 	return "Turn auto-replying off."
 }
 
-func (advancedAutoReplyOff) UsageArgs() string {
+func (advancedAutoOff) UsageArgs() string {
 	return ""
 }
 
-func (c advancedAutoReplyOff) Category() core.CommandCategory {
+func (c advancedAutoOff) Category() core.CommandCategory {
 	return c.Parent().Category()
 }
 
-func (advancedAutoReplyOff) Examples() []string {
+func (advancedAutoOff) Examples() []string {
 	return nil
 }
 
-func (advancedAutoReplyOff) Parent() core.CommandStatic {
-	return AdvancedAutoReply
+func (advancedAutoOff) Parent() core.CommandStatic {
+	return AdvancedAuto
 }
 
-func (advancedAutoReplyOff) Children() core.CommandsStatic {
+func (advancedAutoOff) Children() core.CommandsStatic {
 	return nil
 }
 
-func (advancedAutoReplyOff) Init() error {
+func (advancedAutoOff) Init() error {
 	return nil
 }
 
-func (c advancedAutoReplyOff) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoOff) Run(m *core.Message) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1206,7 +1148,7 @@ func (c advancedAutoReplyOff) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoReplyOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1217,7 +1159,7 @@ func (c advancedAutoReplyOff) discord(m *core.Message) (*dg.MessageEmbed, core.U
 	return embed, nil, nil
 }
 
-func (c advancedAutoReplyOff) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoOff) text(m *core.Message) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1225,11 +1167,11 @@ func (c advancedAutoReplyOff) text(m *core.Message) (string, core.Urr, error) {
 	return c.fmt(), nil, nil
 }
 
-func (advancedAutoReplyOff) fmt() string {
+func (advancedAutoOff) fmt() string {
 	return "Auto-replying has been turned off."
 }
 
-func (advancedAutoReplyOff) core(m *core.Message) error {
+func (advancedAutoOff) core(m *core.Message) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
