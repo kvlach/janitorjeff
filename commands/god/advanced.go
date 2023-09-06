@@ -359,7 +359,7 @@ func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.U
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(resp, urr),
 	}
-	return embed, nil, nil
+	return embed, urr, nil
 }
 
 func (c advancedTalkDialogue) text(m *core.Message) (string, core.Urr, error) {
@@ -367,7 +367,7 @@ func (c advancedTalkDialogue) text(m *core.Message) (string, core.Urr, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(resp, urr), nil, nil
+	return c.fmt(resp, urr), urr, nil
 }
 
 func (advancedTalkDialogue) fmt(resp string, urr core.Urr) string {
@@ -476,7 +476,7 @@ func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, 
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(resp, urr),
 	}
-	return embed, nil, nil
+	return embed, urr, nil
 }
 
 func (c advancedTalkOnce) text(m *core.Message) (string, core.Urr, error) {
@@ -484,7 +484,7 @@ func (c advancedTalkOnce) text(m *core.Message) (string, core.Urr, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	return c.fmt(resp, urr), nil, nil
+	return c.fmt(resp, urr), urr, nil
 }
 
 func (advancedTalkOnce) fmt(resp string, urr core.Urr) string {
