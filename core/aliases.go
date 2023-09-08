@@ -53,12 +53,10 @@ var AliasesOn = []string{
 	"on",
 	"enable",
 	"true",
-	"yes",
 }
 
 var AliasesOff = []string{
 	"off",
 	"disable",
 	"false",
-	"no",
 }
