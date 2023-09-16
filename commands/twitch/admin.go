@@ -18,7 +18,7 @@ func (admin) Type() core.CommandType {
 }
 
 func (admin) Permitted(m *core.Message) bool {
-	return m.Frontend.Type() == twitch.Type
+	return true
 }
 
 func (admin) Names() []string {
