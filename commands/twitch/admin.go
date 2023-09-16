@@ -51,6 +51,7 @@ func (admin) Parent() core.CommandStatic {
 func (admin) Children() core.CommandsStatic {
 	return core.CommandsStatic{
 		AdminEventSub,
+		AdminRedeem,
 	}
 }
 
@@ -262,4 +263,135 @@ func (adminEventSubDelete) Run(m *core.Message) (any, core.Urr, error) {
 		return "Deleted subscription.", nil, nil
 	}
 	return "Deleted subscriptions.", nil, nil
+}
+
+////////////
+//        //
+// redeem //
+//        //
+////////////
+
+var AdminRedeem = adminRedeem{}
+
+type adminRedeem struct{}
+
+func (c adminRedeem) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c adminRedeem) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (adminRedeem) Names() []string {
+	return []string{
+		"redeem",
+	}
+}
+
+func (adminRedeem) Description() string {
+	return "Operations related to a channel's redeems."
+}
+
+func (c adminRedeem) UsageArgs() string {
+	return c.Children().Usage()
+}
+
+func (c adminRedeem) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (adminRedeem) Examples() []string {
+	return nil
+}
+
+func (adminRedeem) Parent() core.CommandStatic {
+	return Admin
+}
+
+func (adminRedeem) Children() core.CommandsStatic {
+	return core.CommandsStatic{
+		AdminRedeemList,
+	}
+}
+
+func (adminRedeem) Init() error {
+	return nil
+}
+
+func (adminRedeem) Run(m *core.Message) (any, core.Urr, error) {
+	return m.Usage(), core.UrrMissingArgs, nil
+}
+
+/////////////////
+//             //
+// redeem list //
+//             //
+/////////////////
+
+var AdminRedeemList = adminRedeemList{}
+
+type adminRedeemList struct{}
+
+func (c adminRedeemList) Type() core.CommandType {
+	return c.Parent().Type()
+}
+
+func (c adminRedeemList) Permitted(m *core.Message) bool {
+	return c.Parent().Permitted(m)
+}
+
+func (adminRedeemList) Names() []string {
+	return core.AliasesList
+}
+
+func (adminRedeemList) Description() string {
+	return "List a channel's redeems."
+}
+
+func (adminRedeemList) UsageArgs() string {
+	return "<channel id>"
+}
+
+func (c adminRedeemList) Category() core.CommandCategory {
+	return c.Parent().Category()
+}
+
+func (adminRedeemList) Examples() []string {
+	return nil
+}
+
+func (adminRedeemList) Parent() core.CommandStatic {
+	return AdminRedeem
+}
+
+func (adminRedeemList) Children() core.CommandsStatic {
+	return nil
+}
+
+func (adminRedeemList) Init() error {
+	return nil
+}
+
+func (adminRedeemList) Run(m *core.Message) (any, core.Urr, error) {
+	if len(m.Command.Args) < 1 {
+		return m.Usage(), core.UrrMissingArgs, nil
+	}
+
+	h, err := twitch.NewHelix(m.Command.Args[0])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rs, err := h.RedeemsList(m.Command.Args[0])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var fmted []string
+	for _, r := range rs {
+		fmted = append(fmted, r.ID+"="+r.Title)
+	}
+
+	return strings.Join(fmted, " | "), nil, nil
 }
