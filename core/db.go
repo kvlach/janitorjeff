@@ -219,7 +219,7 @@ func (v Val) UUIDNil() (uuid.UUID, Urr, error) {
 		return uuid.UUID{}, UrrValNil, nil
 	}
 	u, err := uuid.Parse(string(v.val.([]uint8)))
-	return u, UrrValNil, err
+	return u, nil, err
 }
 
 type coords struct {
