@@ -20,6 +20,24 @@ var (
 
 var appAccessToken = gosafe.Value[string]{}
 
+func NewHelix(userID string) (*Helix, error) {
+	h, err := helix.NewClient(&helix.Options{
+		ClientID: ClientID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userAccessToken, err := dbGetUserAccessToken(userID)
+	if err == nil {
+		h.SetUserAccessToken(userAccessToken)
+	} else {
+		h.SetAppAccessToken(appAccessToken.Get())
+	}
+
+	return &Helix{h}, nil
+}
+
 func generateAppAccessToken() error {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     ClientID,
@@ -388,6 +406,29 @@ func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
 	}
 	urr, err := h.EditChannelInfo(channelID, title, g.ID)
 	return g.Name, urr, err
+}
+
+func (h *Helix) RedeemsList(broadcasterID string) ([]helix.ChannelCustomReward, error) {
+	resp, err := h.c.GetCustomRewards(&helix.GetCustomRewardsParams{
+		BroadcasterID: broadcasterID,
+	})
+
+	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.ChannelCustomRewards))
+
+	switch err {
+	case nil:
+		log.Debug().
+			Interface("redeems", resp.Data.ChannelCustomRewards).
+			Msg("got redeems")
+		return resp.Data.ChannelCustomRewards, nil
+	case ErrRetry:
+		if err := h.refreshToken(); err != nil {
+			return nil, err
+		}
+		return h.RedeemsList(broadcasterID)
+	default:
+		return nil, err
+	}
 }
 
 func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {

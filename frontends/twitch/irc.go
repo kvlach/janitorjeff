@@ -133,21 +133,7 @@ func (f *frontend) Helix() (*Helix, error) {
 var twitchIrcClient *tirc.Client
 
 func (t *Twitch) Helix() (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
-		ClientID: ClientID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	userAccessToken, err := dbGetUserAccessToken(t.message.RoomID)
-	if err == nil {
-		h.SetUserAccessToken(userAccessToken)
-	} else {
-		h.SetAppAccessToken(appAccessToken.Get())
-	}
-
-	return &Helix{h}, nil
+	return NewHelix(t.message.RoomID)
 }
 
 ///////////////
