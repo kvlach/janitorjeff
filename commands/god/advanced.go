@@ -118,8 +118,8 @@ func (advanced) Init() error {
 			FROM
 				settings_place
 			WHERE
-				place = 2
-		`).Scan(&on, &now, &last, &interval, &shouldReply)
+				place = $1
+		`, here).Scan(&on, &now, &last, &interval, &shouldReply)
 		if err != nil {
 			log.Error().
 				Err(err).
