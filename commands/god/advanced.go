@@ -102,9 +102,14 @@ func (advanced) Init() error {
 			return
 		}
 
-		var shouldReply bool
+		var on, shouldReply bool
+		var now, last, interval int64
 		err = tx.Tx.QueryRow(`
 			SELECT
+			    cmd_god_reply_on,
+			    CAST(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) AS BIGINT) AS now,
+			    cmd_god_reply_last,
+			    cmd_god_reply_interval,
 				CASE
 					WHEN cmd_god_reply_on = FALSE THEN FALSE
 					WHEN CURRENT_TIMESTAMP - TO_TIMESTAMP(cmd_god_reply_last) > (cmd_god_reply_interval || 'seconds')::INTERVAL THEN TRUE
@@ -114,7 +119,7 @@ func (advanced) Init() error {
 				settings_place
 			WHERE
 				place = 2
-		`).Scan(&shouldReply)
+		`).Scan(&on, &now, &last, &interval, &shouldReply)
 		if err != nil {
 			log.Error().
 				Err(err).
@@ -126,6 +131,10 @@ func (advanced) Init() error {
 
 		log.Debug().
 			Int64("place", here).
+			Bool("cmd_god_reply_on", on).
+			Int64("now", now).
+			Int64("cmd_god_reply_last", last).
+			Int64("cmd_god_reply_interval", interval).
 			Bool("should-reply", shouldReply).
 			Msg("POSTGRES: checked if auto-reply should be sent")
 
