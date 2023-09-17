@@ -72,7 +72,7 @@ func (advanced) Init() error {
 	core.EventMessageHooks.Register(func(m *core.Message) {
 		// Due to the fact that Talk can take a couple of seconds to return,
 		// multiple auto-replies can be queued during that period, since
-		// cmd_god_reply_last gets updated after the call.
+		// cmd_god_auto_last gets updated after the call.
 		// To fix this, a mutex is used.
 		mu.Lock()
 		defer mu.Unlock()
@@ -106,13 +106,13 @@ func (advanced) Init() error {
 		var now, last, interval int64
 		err = tx.Tx.QueryRow(`
 			SELECT
-			    cmd_god_reply_on,
+			    cmd_god_auto_on,
 			    CAST(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) AS BIGINT) AS now,
-			    cmd_god_reply_last,
-			    cmd_god_reply_interval,
+			    cmd_god_auto_last,
+			    cmd_god_auto_interval,
 				CASE
-					WHEN cmd_god_reply_on = FALSE THEN FALSE
-					WHEN CURRENT_TIMESTAMP - TO_TIMESTAMP(cmd_god_reply_last) > (cmd_god_reply_interval || 'seconds')::INTERVAL THEN TRUE
+					WHEN cmd_god_auto_on = FALSE THEN FALSE
+					WHEN CURRENT_TIMESTAMP - TO_TIMESTAMP(cmd_god_auto_last) > (cmd_god_auto_interval || 'seconds')::INTERVAL THEN TRUE
 					ELSE FALSE
 					END AS should_reply
 			FROM
@@ -131,10 +131,10 @@ func (advanced) Init() error {
 
 		log.Debug().
 			Int64("place", here).
-			Bool("cmd_god_reply_on", on).
+			Bool("cmd_god_auto_on", on).
 			Int64("now", now).
-			Int64("cmd_god_reply_last", last).
-			Int64("cmd_god_reply_interval", interval).
+			Int64("cmd_god_auto_last", last).
+			Int64("cmd_god_auto_interval", interval).
 			Bool("should-reply", shouldReply).
 			Msg("POSTGRES: checked if auto-reply should be sent")
 
@@ -157,7 +157,7 @@ func (advanced) Init() error {
 			return
 		}
 
-		if err := tx.PlaceSet("cmd_god_reply_last", here, time.Now().UTC().Unix()); err != nil {
+		if err := tx.PlaceSet("cmd_god_auto_last", here, time.Now().UTC().Unix()); err != nil {
 			log.Debug().Err(err).Msg("error while trying to set reply")
 			return
 		}

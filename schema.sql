@@ -175,9 +175,9 @@ CREATE TABLE info_place (
 
 	cmd_tts_subonly BOOLEAN NOT NULL DEFAULT FALSE,
 
-	cmd_god_reply_on BOOL NOT NULL DEFAULT FALSE,
-	cmd_god_reply_interval INTEGER NOT NULL DEFAULT 1800, -- in seconds
-	cmd_god_reply_last BIGINT NOT NULL DEFAULT 0, -- unix timestamp
+	cmd_god_auto_on BOOL NOT NULL DEFAULT FALSE,
+	cmd_god_auto_interval INTEGER NOT NULL DEFAULT 1800, -- in seconds
+	cmd_god_auto_last BIGINT NOT NULL DEFAULT 0, -- unix timestamp
 	cmd_god_redeem UUID,
 	cmd_god_personality BIGINT NOT NULL DEFAULT 1,
 	cmd_god_everyone BOOL NOT NULL DEFAULT FALSE,

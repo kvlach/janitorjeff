@@ -123,19 +123,19 @@ func Talk(person, place int64, userPrompt string) (string, error) {
 // ReplyOnGet returns whether auto-replying is on or off (true or false) in the
 // specified place.
 func ReplyOnGet(place int64) (bool, error) {
-	return core.DB.PlaceGet("cmd_god_reply_on", place).Bool()
+	return core.DB.PlaceGet("cmd_god_auto_on", place).Bool()
 }
 
 // ReplyOnSet will set the value that determines whether auto-replying is on or
 // off (true or false) in the specified place.
 func ReplyOnSet(place int64, on bool) error {
-	return core.DB.PlaceSet("cmd_god_reply_on", place, on)
+	return core.DB.PlaceSet("cmd_god_auto_on", place, on)
 }
 
 // ReplyIntervalGet returns the duration object of the interval that is
 // required for auto-replies in the specified place.
 func ReplyIntervalGet(place int64) (time.Duration, error) {
-	return core.DB.PlaceGet("cmd_god_reply_interval", place).Duration()
+	return core.DB.PlaceGet("cmd_god_auto_interval", place).Duration()
 }
 
 // ReplyIntervalSet sets the reply interval for the specified place. Returns
@@ -144,7 +144,7 @@ func ReplyIntervalSet(place int64, dur time.Duration) (error, error) {
 	if core.MinGodInterval > dur {
 		return UrrIntervalTooShort, nil
 	}
-	return nil, core.DB.PlaceSet("cmd_god_reply_interval", place, int(dur.Seconds()))
+	return nil, core.DB.PlaceSet("cmd_god_auto_interval", place, int(dur.Seconds()))
 }
 
 func RedeemSet(place int64, id string) error {
