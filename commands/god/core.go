@@ -169,7 +169,7 @@ type Personality struct {
 }
 
 func personalityActive(tx *core.Tx, place int64) (Personality, int, error) {
-	// Since the settings table is accessed, make sure the row is there
+	// Since the info table is accessed, make sure the row is there
 	if err := tx.PlaceEnsure(place); err != nil {
 		return Personality{}, 0, err
 	}
@@ -181,7 +181,7 @@ func personalityActive(tx *core.Tx, place int64) (Personality, int, error) {
 
 	err := tx.Tx.QueryRow(`
 		SELECT cgp.id, cgp.name, cgp.prompt, cgp.place, sp.cmd_god_max
-		FROM settings_place sp
+		FROM info_place sp
 		INNER JOIN cmd_god_personalities cgp ON sp.cmd_god_personality = cgp.id
 		WHERE sp.place = $1 AND (cgp.place = $1 OR cgp.place IS NULL);
     `, place).Scan(&id, &name, &prompt, &placeDB, &max)

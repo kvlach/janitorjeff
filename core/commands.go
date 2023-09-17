@@ -23,7 +23,7 @@ const (
 	Advanced
 
 	// Admin represents a bot-admin-only command used to perform actions like
-	// setting an arbitrary person's settings, etc.
+	// setting an arbitrary person's info, etc.
 	Admin
 
 	All = Normal | Advanced | Admin

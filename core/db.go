@@ -251,18 +251,18 @@ func (tx *Tx) Rollback() error {
 	return tx.Tx.Rollback()
 }
 
-////////////////////
-//                //
-// place settings //
-//                //
-////////////////////
+////////////////
+//            //
+// info place //
+//            //
+////////////////
 
 func (tx *Tx) placeExists(place int64) (bool, error) {
 	var exists bool
 
 	row := tx.Tx.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM settings_place
+			SELECT 1 FROM info_place
 			WHERE place = $1
 			LIMIT 1
 		);
@@ -274,27 +274,26 @@ func (tx *Tx) placeExists(place int64) (bool, error) {
 		Err(err).
 		Int64("place", place).
 		Bool("exist", exists).
-		Msg("POSTGRES: checked if place settings exist")
+		Msg("POSTGRES: checked if place info exists")
 
 	return exists, err
 }
 
 func (tx *Tx) placeGenerate(place int64) error {
 	_, err := tx.Tx.Exec(`
-		INSERT INTO settings_place (place)
+		INSERT INTO info_place (place)
 		VALUES ($1)
 	`, place)
 
 	log.Debug().
 		Err(err).
 		Int64("place", place).
-		Msg("POSTGRES: generated place settings")
+		Msg("POSTGRES: generated place info")
 
 	return err
 }
 
-// PlaceEnsure will check if settings for the specified place exist and if not
-// will generate them.
+// PlaceEnsure checks if the place info exists, if not, generates it.
 func (tx *Tx) PlaceEnsure(place int64) error {
 	slog := log.With().Int64("place", place).Logger()
 
@@ -303,15 +302,15 @@ func (tx *Tx) PlaceEnsure(place int64) error {
 	}
 
 	if _, ok := tx.place[place]; ok {
-		slog.Debug().Msg("LOCAL: place settings already generated, skipping")
+		slog.Debug().Msg("LOCAL: place info already generated, skipping")
 		return nil
 	}
 
-	rdbKey := fmt.Sprintf("settings_place_%d", place)
+	rdbKey := fmt.Sprintf("info_place_%d", place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
-		slog.Debug().Msg("REDIS: place settings already generated, skipping")
-		slog.Debug().Msg("LOCAL: caching place settings")
+		slog.Debug().Msg("REDIS: place info already generated, skipping")
+		slog.Debug().Msg("LOCAL: caching place info")
 		tx.place[place] = struct{}{}
 		return nil
 	}
@@ -324,8 +323,8 @@ func (tx *Tx) PlaceEnsure(place int64) error {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
 		slog.Debug().
 			Err(err).
-			Msg("REDIS: caching place settings")
-		slog.Debug().Msg("LOCAL: caching place settings")
+			Msg("REDIS: caching place info")
+		slog.Debug().Msg("LOCAL: caching place info")
 		tx.place[place] = struct{}{}
 		return err
 	}
@@ -334,24 +333,24 @@ func (tx *Tx) PlaceEnsure(place int64) error {
 	if err != nil {
 		return err
 	}
-	slog.Debug().Msg("LOCAL: caching newly generated place settings")
+	slog.Debug().Msg("LOCAL: caching newly generated place info")
 	tx.place[place] = struct{}{}
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	log.Debug().
 		Err(err).
-		Msg("REDIS: caching newly generated place settings")
+		Msg("REDIS: caching newly generated place info")
 	return err
 }
 
 // PlaceGet returns the value of col in the table for the specified place.
 func (tx *Tx) PlaceGet(col string, place int64) Val {
-	// Make sure that the place settings are present
+	// Make sure that the place info is present
 	if err := tx.PlaceEnsure(place); err != nil {
 		return Val{}
 	}
 
-	query := fmt.Sprintf(`SELECT %s FROM settings_place WHERE place = $1`, col)
+	query := fmt.Sprintf(`SELECT %s FROM info_place WHERE place = $1`, col)
 
 	var val any
 	err := tx.Tx.QueryRow(query, place).Scan(&val)
@@ -365,13 +364,13 @@ func (tx *Tx) PlaceGet(col string, place int64) Val {
 
 // PlaceSet sets the value of col in the table for the specified place.
 func (tx *Tx) PlaceSet(col string, place int64, val any) error {
-	// Make sure that the place settings are present
+	// Make sure that the place info is present
 	if err := tx.PlaceEnsure(place); err != nil {
 		return err
 	}
 
 	query := fmt.Sprintf(`
-		UPDATE settings_place
+		UPDATE info_place
 		SET %s = $1
 		WHERE place = $2
 	`, col)
@@ -381,7 +380,7 @@ func (tx *Tx) PlaceSet(col string, place int64, val any) error {
 		Err(err).
 		Int64("place", place).
 		Interface(col, val).
-		Msg("POSTGRES: changed setting")
+		Msg("POSTGRES: updated info")
 
 	return err
 }
@@ -414,18 +413,18 @@ func (db *SQLDB) PlaceSet(col string, place int64, val any) error {
 	return tx.Commit()
 }
 
-/////////////////////
-//                 //
-// person settings //
-//                 //
-/////////////////////
+/////////////////
+//             //
+// info person //
+//             //
+/////////////////
 
 func (tx *Tx) personExists(person, place int64) (bool, error) {
 	var exists bool
 
 	err := tx.Tx.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM settings_person
+			SELECT 1 FROM info_person
 			WHERE person = $1 and place = $2
 			LIMIT 1
 		)
@@ -436,14 +435,14 @@ func (tx *Tx) personExists(person, place int64) (bool, error) {
 		Int64("person", person).
 		Int64("place", place).
 		Bool("exist", exists).
-		Msg("POSTGRES: checked if person settings exist")
+		Msg("POSTGRES: checked if person info exists")
 
 	return exists, err
 }
 
 func (tx *Tx) personGenerate(person, place int64) error {
 	_, err := tx.Tx.Exec(`
-		INSERT INTO settings_person (person, place)
+		INSERT INTO info_person (person, place)
 		VALUES ($1, $2)
 	`, person, place)
 
@@ -451,13 +450,12 @@ func (tx *Tx) personGenerate(person, place int64) error {
 		Err(err).
 		Int64("person", person).
 		Int64("place", place).
-		Msg("POSTGRES: generated person settings")
+		Msg("POSTGRES: generated person info")
 
 	return err
 }
 
-// PersonEnsure will check if settings for the specified person in the
-// specified place exist, and if not will generate them.
+// PersonEnsure checks if the person info for place exists, if not, generates it.
 func (tx *Tx) PersonEnsure(person, place int64) error {
 	slog := log.With().
 		Int64("person", person).
@@ -469,15 +467,15 @@ func (tx *Tx) PersonEnsure(person, place int64) error {
 	}
 
 	if _, ok := tx.person[coords{person: person, place: place}]; ok {
-		slog.Debug().Msg("LOCAL: person settings already generated, skipping")
+		slog.Debug().Msg("LOCAL: person info already generated, skipping")
 		return nil
 	}
 
-	rdbKey := fmt.Sprintf("settings_person_%d_%d", person, place)
+	rdbKey := fmt.Sprintf("info_person_%d_%d", person, place)
 
 	if _, err := RDB.Get(ctx, rdbKey).Result(); err == nil {
-		slog.Debug().Msg("REDIS: person settings already generated, skipping")
-		slog.Debug().Msg("LOCAL: caching person settings")
+		slog.Debug().Msg("REDIS: person info already generated, skipping")
+		slog.Debug().Msg("LOCAL: caching person info")
 		tx.person[coords{person: person, place: place}] = struct{}{}
 		return nil
 	}
@@ -490,8 +488,8 @@ func (tx *Tx) PersonEnsure(person, place int64) error {
 		err := RDB.Set(ctx, rdbKey, nil, 0).Err()
 		slog.Debug().
 			Err(err).
-			Msg("REDIS: caching person settings")
-		slog.Debug().Msg("LOCAL: caching person settings")
+			Msg("REDIS: caching person info")
+		slog.Debug().Msg("LOCAL: caching person info")
 		tx.person[coords{person: person, place: place}] = struct{}{}
 		return err
 	}
@@ -500,25 +498,25 @@ func (tx *Tx) PersonEnsure(person, place int64) error {
 	if err != nil {
 		return err
 	}
-	slog.Debug().Msg("LOCAL: caching newly generated person settings")
+	slog.Debug().Msg("LOCAL: caching newly generated person info")
 	tx.person[coords{person: person, place: place}] = struct{}{}
 
 	err = RDB.Set(ctx, rdbKey, nil, 0).Err()
 	slog.Debug().
 		Err(err).
-		Msg("REDIS: caching newly generated person settings")
+		Msg("REDIS: caching newly generated person info")
 	return err
 }
 
 // PersonGet returns the value of col in the table for the specified person
 // in the specified place.
 func (tx *Tx) PersonGet(col string, person, place int64) Val {
-	// Make sure that the person settings are present
+	// Make sure that the person info is present
 	if err := tx.PersonEnsure(person, place); err != nil {
 		return Val{}
 	}
 
-	query := fmt.Sprintf(`SELECT %s FROM settings_person WHERE person = $1 and place = $2`, col)
+	query := fmt.Sprintf(`SELECT %s FROM info_person WHERE person = $1 and place = $2`, col)
 	row := tx.Tx.QueryRow(query, person, place)
 
 	var val any
@@ -535,13 +533,13 @@ func (tx *Tx) PersonGet(col string, person, place int64) Val {
 // PersonSet sets the value of col in the table for the specified person in
 // the specified place.
 func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
-	// Make sure that the person settings are present
+	// Make sure that the person info is present
 	if err := tx.PersonEnsure(person, place); err != nil {
 		return err
 	}
 
 	query := fmt.Sprintf(`
-		UPDATE settings_person
+		UPDATE info_person
 		SET %s = $1
 		WHERE person = $2 and place = $3
 	`, col)
@@ -552,7 +550,7 @@ func (tx *Tx) PersonSet(col string, person, place int64, val any) error {
 		Int64("person", person).
 		Int64("place", place).
 		Interface(col, val).
-		Msg("POSTGRES: changed setting")
+		Msg("POSTGRES: updated info")
 
 	return err
 }
