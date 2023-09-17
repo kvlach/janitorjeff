@@ -129,7 +129,7 @@ You may find more information in `core/commands.go`.
 ### Events
 You may find more information in `core/events.go`.
 
-### Settings
+### Person/Place Info
 You may find more information in `core/db.go`
 
 ### Errors

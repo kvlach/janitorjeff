@@ -19,7 +19,7 @@ func dbNickExists(nick string, place int64) (bool, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT EXISTS (
-			SELECT 1 FROM settings_person
+			SELECT 1 FROM info_person
 			WHERE cmd_nick_nick = $1 and place = $2
 			LIMIT 1
 		)`, nick, place)
@@ -45,7 +45,7 @@ func dbGetPerson(nick string, place int64) (int64, error) {
 
 	row := db.DB.QueryRow(`
 		SELECT person
-		FROM settings_person
+		FROM info_person
 		WHERE cmd_nick_nick = $1 and place = $2`, nick, place)
 
 	err := row.Scan(&person)

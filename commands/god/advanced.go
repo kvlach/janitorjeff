@@ -90,10 +90,10 @@ func (advanced) Init() error {
 		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback()
 
-		// TODO: If the place settings have just been generated and added to
+		// TODO: If the place info have just been generated and added to
 		// the cache then we need a way to remove them from the cache in case
 		// the transaction gets rolled back. Otherwise, we end up in a situation
-		// where the cache thinks that the settings have already been generated
+		// where the cache thinks that the info have already been generated
 		// but they in fact haven't, since the transaction got rolled back.
 
 		err = tx.PlaceEnsure(here)
@@ -116,7 +116,7 @@ func (advanced) Init() error {
 					ELSE FALSE
 					END AS should_reply
 			FROM
-				settings_place
+				info_place
 			WHERE
 				place = $1
 		`, here).Scan(&on, &now, &last, &interval, &shouldReply)
@@ -124,7 +124,7 @@ func (advanced) Init() error {
 			log.Error().
 				Err(err).
 				Msg("failed to check if auto-reply should be sent")
-			// Must commit in case the place settings haven't been generated before
+			// Must commit in case the place info haven't been generated before
 			tx.Commit()
 			return
 		}
@@ -139,7 +139,7 @@ func (advanced) Init() error {
 			Msg("POSTGRES: checked if auto-reply should be sent")
 
 		if !shouldReply {
-			// Must commit in case the place settings haven't been generated before
+			// Must commit in case the place info haven't been generated before
 			tx.Commit()
 			return
 		}

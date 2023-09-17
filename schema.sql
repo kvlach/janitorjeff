@@ -154,13 +154,13 @@ CREATE TABLE cmd_time_reminders (
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE
 );
 
---------------
---          --
--- Settings --
---          --
---------------
+----------
+--      --
+-- Info --
+--      --
+----------
 
-CREATE TABLE settings_place (
+CREATE TABLE info_place (
 	place BIGINT PRIMARY KEY,
 	FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE,
 
@@ -185,7 +185,7 @@ CREATE TABLE settings_place (
 	FOREIGN KEY (cmd_god_personality) REFERENCES cmd_god_personalities(id) ON DELETE NO ACTION
 );
 
-CREATE TABLE settings_person (
+CREATE TABLE info_person (
 	person BIGINT NOT NULL,
 	place BIGINT NOT NULL,
 	UNIQUE(person, place),
@@ -256,6 +256,6 @@ CREATE TABLE settings_person (
 	])[floor(random() * 41 + 1)]
 );
 
-CREATE INDEX settings_person_index_person_place ON settings_person (person, place);
-CREATE INDEX settings_person_index_nick ON settings_person (cmd_nick_nick);
+CREATE INDEX info_person_index_person_place ON info_person (person, place);
+CREATE INDEX info_person_index_nick ON info_person (cmd_nick_nick);
 
