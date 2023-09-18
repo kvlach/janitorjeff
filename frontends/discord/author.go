@@ -56,7 +56,7 @@ func (a *AuthorMessage) name() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	user, err := Session.User(id)
+	user, err := Client.Session.User(id)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +87,7 @@ func (a *AuthorMessage) DisplayName() (string, error) {
 		if a.GuildID == "" {
 			return "", errors.New("need guild id")
 		}
-		mem, err = Session.GuildMember(a.GuildID, aid)
+		mem, err = Client.Member(a.GuildID, aid)
 		a.Member = mem
 		if err != nil {
 			return "", err
