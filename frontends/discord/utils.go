@@ -20,10 +20,10 @@ func getChannelGuildIDs(id string, hereChannelID, hereGuildID string) (string, s
 	if id == hereChannelID || id == hereGuildID {
 		channelID = hereChannelID
 		guildID = hereGuildID
-	} else if channel, err := Session.Channel(id); err == nil {
+	} else if channel, err := Client.Channel(id); err == nil {
 		channelID = channel.ID
 		guildID = channel.GuildID
-	} else if guild, err := Session.Guild(id); err == nil {
+	} else if guild, err := Client.Guild(id); err == nil {
 		channelID = ""
 		guildID = guild.ID
 	} else {
@@ -176,7 +176,7 @@ func getPersonID(s, guildID, authorID string) (string, error) {
 		return s, nil
 	}
 
-	if _, err := Session.GuildMember(guildID, s); err != nil {
+	if _, err := Client.Member(guildID, s); err != nil {
 		return "", err
 	}
 
@@ -199,11 +199,11 @@ func getPlaceID(s string) (string, error) {
 	}
 
 	// will usually be a guild, so first try checking that
-	if _, err := Session.Guild(s); err == nil {
+	if _, err := Client.Guild(s); err == nil {
 		return s, nil
 	}
 
-	if _, err := Session.Channel(s); err == nil {
+	if _, err := Client.Channel(s); err == nil {
 		return s, nil
 	}
 
@@ -249,55 +249,20 @@ func parse(m *dg.Message) *core.Message {
 	return msg
 }
 
-func memberHasPerms(guildID, userID string, perms int64) (bool, error) {
-	// if message is a DM
-	if guildID == "" {
-		return true, nil
-	}
-
-	member, err := Session.State.Member(guildID, userID)
-	if err != nil {
-		if member, err = Session.GuildMember(guildID, userID); err != nil {
-			return false, err
-		}
-	}
-
-	for _, roleID := range member.Roles {
-		role, err := Session.State.Role(guildID, roleID)
-		if err != nil {
-			return false, err
-		}
-		if role.Permissions&perms != 0 {
-			return true, nil
-		}
-		if role.Permissions&dg.PermissionAdministrator != 0 {
-			return true, nil
-		}
-	}
-
-	guild, err := Session.State.Guild(guildID)
-	if err != nil {
-		if guild, err = Session.Guild(guildID); err != nil {
-			return false, err
-		}
-	}
-	return guild.OwnerID == userID, nil
-}
-
 func isAdmin(guildID string, userID string) bool {
-	has, err := memberHasPerms(guildID, userID, dg.PermissionAdministrator)
+	can, err := Client.MemberAllowed(guildID, userID, dg.PermissionAdministrator)
 	if err != nil {
 		return false
 	}
-	return has
+	return can
 }
 
 func isMod(guildID string, userID string) bool {
-	has, err := memberHasPerms(guildID, userID, dg.PermissionBanMembers)
+	can, err := Client.MemberAllowed(guildID, userID, dg.PermissionBanMembers)
 	if err != nil {
 		return false
 	}
-	return has
+	return can
 }
 
 func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
@@ -335,7 +300,7 @@ func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg
 		Reference:       ref,
 	}
 
-	resp, err := Session.ChannelMessageSendComplex(m.ChannelID, reply)
+	resp, err := Client.Session.ChannelMessageSendComplex(m.ChannelID, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +372,7 @@ func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Messag
 		},
 	}
 
-	resp, err := Session.ChannelMessageEditComplex(reply)
+	resp, err := Client.Session.ChannelMessageEditComplex(reply)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ module git.sr.ht/~slowtyper/janitorjeff
 go 1.20
 
 require (
+	git.sr.ht/~slowtyper/dgc v0.0.0-20230918122311-7deb4755095f
 	git.sr.ht/~slowtyper/gosafe v0.0.0-20230429173855-569f44c7f026
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
@@ -40,7 +41,7 @@ require (
 	github.com/google/s2a-go v0.1.4 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.5 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -59,11 +60,11 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.12.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
 	google.golang.org/grpc v1.57.0 // indirect

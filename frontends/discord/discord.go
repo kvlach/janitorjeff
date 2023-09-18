@@ -7,6 +7,7 @@ import (
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
+	"git.sr.ht/~slowtyper/dgc"
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
@@ -16,8 +17,8 @@ var ctx = context.Background()
 const Type = 1 << 0
 
 var (
-	Session *dg.Session
-	Admins  []string
+	Client *dgc.Client
+	Admins []string
 
 	EmbedColor    = 0xAD88E0
 	EmbedErrColor = 0xB14D4D
@@ -58,7 +59,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 		log.Fatal().Err(err).Msg("failed to connect to discord")
 	} else {
 		log.Debug().Msg("connected to discord")
-		Session = d
+		Client = dgc.NewClient(d)
 	}
 
 	wgInit.Done()
@@ -95,7 +96,7 @@ func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.Mes
 	}
 
 	// check if message id still exists (could have been deleted for example)
-	if _, err := Session.ChannelMessage(channelID, msgID); err != nil {
+	if _, err := Client.Session.ChannelMessage(channelID, msgID); err != nil {
 		msgID = ""
 	}
 

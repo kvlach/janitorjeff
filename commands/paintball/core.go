@@ -58,7 +58,7 @@ var (
 // message and since this command is discord only it's fine to use this
 func write(channel string, embed *dg.MessageEmbed) {
 	embed.Color = embedColor
-	discord.Session.ChannelMessageSendEmbed(channel, embed)
+	discord.Client.Session.ChannelMessageSendEmbed(channel, embed)
 }
 
 type score struct {

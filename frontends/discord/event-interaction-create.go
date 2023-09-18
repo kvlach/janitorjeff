@@ -21,7 +21,7 @@ type InteractionCreate struct {
 func RegisterAppCommand(cmd *dg.ApplicationCommand) {
 	guildID := "759669782386966528"
 
-	cmd, err := Session.ApplicationCommandCreate(Session.State.User.ID, guildID, cmd)
+	cmd, err := Client.Session.ApplicationCommandCreate(Client.Session.State.User.ID, guildID, cmd)
 	if err != nil {
 		panic(err)
 	}
@@ -163,7 +163,7 @@ func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 				Content: msg.(string),
 			},
 		}
-		return nil, Session.InteractionRespond(i.Interaction.Interaction, resp)
+		return nil, Client.Session.InteractionRespond(i.Interaction.Interaction, resp)
 
 	case *dg.MessageEmbed:
 		embed := msg.(*dg.MessageEmbed)
@@ -177,7 +177,7 @@ func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 				},
 			},
 		}
-		return nil, Session.InteractionRespond(i.Interaction.Interaction, resp)
+		return nil, Client.Session.InteractionRespond(i.Interaction.Interaction, resp)
 	default:
 		return nil, fmt.Errorf("Can't send discord message of type %v", t)
 	}
@@ -229,7 +229,7 @@ func (i *InteractionCreate) Join() error {
 		userID = i.Interaction.User.ID
 	}
 
-	v, err := joinUserVoiceChannel(i.Interaction.GuildID, userID)
+	v, err := Client.VoiceJoin(i.Interaction.GuildID, userID)
 	if err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (i *InteractionCreate) AuthorDeafened() (bool, error) {
 		authorID = i.Interaction.User.ID
 	}
 
-	vs, err := Session.State.VoiceState(i.Interaction.GuildID, authorID)
+	vs, err := Client.VoiceState(i.Interaction.GuildID, authorID)
 	if err != nil {
 		return false, err
 	}

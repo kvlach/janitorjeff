@@ -35,7 +35,7 @@ func (sp *Speaker) Join() error {
 	if err != nil {
 		return err
 	}
-	v, err := joinUserVoiceChannel(sp.Here.IDLogical(), aid)
+	v, err := Client.VoiceJoin(sp.Here.IDLogical(), aid)
 	if err != nil {
 		return err
 	}
@@ -65,9 +65,7 @@ func (sp *Speaker) AuthorDeafened() (bool, error) {
 	}
 	gid := sp.Here.IDLogical()
 
-	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
-	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
-	vs, err := Session.State.VoiceState(gid, aid)
+	vs, err := Client.VoiceState(gid, aid)
 	if err != nil {
 		log.Debug().
 			Err(err).
@@ -84,9 +82,7 @@ func (sp *Speaker) AuthorConnected() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	// THERE IS CURRENTLY NO WAY TO FETCH SOMEONE'S VOICE STATE THROUGH THE
-	// REST API, SO IF IT'S NOT IN THE CACHE WE CAN GO FUCK OURSELVES I GUESS
-	vs, err := Session.State.VoiceState(sp.Here.IDLogical(), aid)
+	vs, err := Client.VoiceState(sp.Here.IDLogical(), aid)
 	// if error then no voice state exists, which means that the author is not
 	// connected
 	if err != nil {
@@ -111,32 +107,6 @@ const (
 )
 
 var opusEncoder *gopus.Encoder
-
-func findUserVoiceState(guildID, userID string) (*dg.VoiceState, error) {
-	guild, err := Session.State.Guild(guildID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, vs := range guild.VoiceStates {
-		if vs.UserID == userID {
-			return vs, nil
-		}
-	}
-	return nil, errors.New("could not find user's voice state")
-}
-
-// joinUserVoiceChannel joins a session to the same channel as another user.
-func joinUserVoiceChannel(guildID, userID string) (*dg.VoiceConnection, error) {
-	// Find a user's current voice channel
-	vs, err := findUserVoiceState(guildID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Join the user's channel and start unmuted and deafened.
-	return Session.ChannelVoiceJoin(vs.GuildID, vs.ChannelID, false, true)
-}
 
 // sendPCM will receive on the provided channel, encode
 // received PCM data into Opus then send that to DiscordGo

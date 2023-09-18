@@ -175,7 +175,7 @@ func (c adminGuildLeave) Run(m *core.Message) (any, core.Urr, error) {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
-	err := discord.Session.GuildLeave(m.Command.Args[0])
+	err := discord.Client.Session.GuildLeave(m.Command.Args[0])
 	embed := &dg.MessageEmbed{
 		Description: c.fmt(err),
 	}
