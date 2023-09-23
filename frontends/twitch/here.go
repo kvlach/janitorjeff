@@ -7,6 +7,7 @@ import (
 type Here struct {
 	RoomID   string
 	RoomName string
+	Author   core.Personifier
 
 	scope int64
 }
@@ -39,9 +40,23 @@ func (h Here) Scope() (int64, error) {
 }
 
 func (h Here) ScopeExact() (int64, error) {
+	author, err := h.Author.Scope()
+	if err != nil {
+		return 0, err
+	}
+	if place, ok := core.Teleports.Get(author); ok {
+		return place.Exact, nil
+	}
 	return h.Scope()
 }
 
 func (h Here) ScopeLogical() (int64, error) {
+	author, err := h.Author.Scope()
+	if err != nil {
+		return 0, err
+	}
+	if place, ok := core.Teleports.Get(author); ok {
+		return place.Logical, nil
+	}
 	return h.Scope()
 }

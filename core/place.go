@@ -1,5 +1,9 @@
 package core
 
+import (
+	"git.sr.ht/~slowtyper/gosafe"
+)
+
 // Placer is the interface used to abstract the place where an event came from,
 // e.g. channel, server, etc.
 //
@@ -25,11 +29,23 @@ type Placer interface {
 	// Name return's the channel's name.
 	Name() string
 
-	// ScopeExact returns the here's exact scope. See the interface's doc
-	// comment for more information on exact scopes.
+	// ScopeExact returns the here's exact scope.
+	// Returns the exact scope in Teleports if the author is present there.
+	// See the interface's doc comment for more information on exact scopes.
 	ScopeExact() (place int64, err error)
 
-	// ScopeLogical returns the here's logical scope. See the interface's doc
-	// comment for more information on logical scopes.
+	// ScopeLogical returns the here's logical scope.
+	// Returns the logical scope in Teleports if the author is present there.
+	// See the interface's doc comment for more information on logical scopes.
 	ScopeLogical() (place int64, err error)
 }
+
+type Place struct {
+	Exact   int64
+	Logical int64
+}
+
+// Teleports holds the bot-admin teleports defined by the teleport command.
+// At most, only a handful of people are ever expected to be bot-admins,
+// so using a map should suffice.
+var Teleports = gosafe.Map[int64, Place]{}

@@ -2,12 +2,15 @@ package core
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 )
 
 var Frontends Frontenders
 
 type FrontendType int
+
+var UrrUnknownFrontend = UrrNew("Can't recognize the provided frontend.")
 
 type Frontender interface {
 	// Type returns the frontend type ID.
@@ -53,4 +56,16 @@ func (fs Frontenders) CreateMessage(person, place int64, msgID string) (*Message
 	}
 
 	return nil, fmt.Errorf("frontend type %d couldn't be matched", frontendType)
+}
+
+// Match returns the Frontender corresponding to lowercase fname.
+// Returns UrrUnknownFrontend if nothing is matched.
+func (fs Frontenders) Match(fname string) (Frontender, Urr) {
+	fname = strings.ToLower(fname)
+	for _, f := range fs {
+		if f.Name() == fname {
+			return f, nil
+		}
+	}
+	return nil, UrrUnknownFrontend
 }

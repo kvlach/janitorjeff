@@ -20,6 +20,7 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/commands/rps"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/search"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/streak"
+	"git.sr.ht/~slowtyper/janitorjeff/commands/teleport"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/time"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/title"
 	"git.sr.ht/~slowtyper/janitorjeff/commands/tts"
@@ -76,6 +77,8 @@ var Commands = core.CommandsStatic{
 	streak.Admin,
 	streak.Advanced,
 	streak.Normal,
+
+	teleport.Admin,
 
 	time.Advanced,
 	time.NormalTime,
