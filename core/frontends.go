@@ -27,6 +27,12 @@ type Frontender interface {
 
 	// Usage returns the passed usage formatted appropriately for the frontend.
 	Usage(usage string) any
+
+	// PlaceExact returns the exact scope of the specified ID.
+	PlaceExact(id string) (place int64, err error)
+
+	// PlaceLogical returns the logical scope of the specified ID.
+	PlaceLogical(id string) (place int64, err error)
 }
 
 type Frontenders []Frontender

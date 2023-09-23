@@ -146,14 +146,6 @@ func (i *InteractionCreate) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (i *InteractionCreate) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
-}
-
-func (i *InteractionCreate) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, i.Interaction.ChannelID, i.Interaction.GuildID)
-}
-
 func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:
