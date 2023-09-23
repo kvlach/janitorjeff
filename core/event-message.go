@@ -147,12 +147,6 @@ type Messenger interface {
 	// If it doesn't exist, it will create it and add it to the database.
 	Person(id string) (person int64, err error)
 
-	// PlaceExact returns the exact scope of the specified ID.
-	PlaceExact(id string) (place int64, err error)
-
-	// PlaceLogical returns the logical scope of the specified ID.
-	PlaceLogical(id string) (place int64, err error)
-
 	// Send sends a message to the appropriate scope, resp could be nil
 	// depending on the frontend.
 	Send(msg any, urr Urr) (resp *Message, err error)

@@ -67,14 +67,6 @@ func (d *MessageEdit) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (d *MessageEdit) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID)
-}
-
-func (d *MessageEdit) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
-}
-
 func (d *MessageEdit) send(msg any, urr error, ping bool) (*core.Message, error) {
 	rdbKey := rdbMessageReplyToKeyPrefix + d.Message.ID
 

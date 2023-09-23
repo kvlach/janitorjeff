@@ -14,23 +14,61 @@ import (
 
 var errInvalidID = errors.New("given string is not a valid ID")
 
-func getChannelGuildIDs(id string, hereChannelID, hereGuildID string) (string, string, error) {
+func getChannelGuildIDs(id string) (string, string, error) {
 	var channelID, guildID string
 
-	if id == hereChannelID || id == hereGuildID {
-		channelID = hereChannelID
-		guildID = hereGuildID
-	} else if channel, err := Client.Channel(id); err == nil {
-		channelID = channel.ID
-		guildID = channel.GuildID
-	} else if guild, err := Client.Guild(id); err == nil {
-		channelID = ""
-		guildID = guild.ID
+	if ch, err := Client.Channel(id); err == nil {
+		channelID = ch.ID
+		guildID = ch.GuildID
+	} else if g, err := Client.Guild(id); err == nil {
+		guildID = g.ID
+
+		// Try to find a text channel in the guild
+		if len(g.Channels) == 0 {
+			return "", "", errors.New("expected to find channels in guild")
+		}
+		for _, ch := range g.Channels {
+			if ch.Type == dg.ChannelTypeGuildText {
+				channelID = ch.ID
+				break
+			}
+		}
+		if channelID == "" {
+			return "", "", errors.New("couldn't find text channel")
+		}
 	} else {
 		return "", "", fmt.Errorf("id '%s' not guild or channel id", id)
 	}
 
 	return channelID, guildID, nil
+}
+
+func getChannelGuildScopes(id string) (int64, int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	db := core.DB
+	db.Lock.Lock()
+	defer db.Lock.Unlock()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return 0, 0, err
+	}
+	//goland:noinspection GoUnhandledErrorResult
+	defer tx.Rollback()
+
+	gs, err := getGuildScope(tx, guildID)
+	if err != nil {
+		return 0, 0, err
+	}
+	cs, err := getChannelScope(tx, channelID, gs)
+	if err != nil {
+		return 0, 0, err
+	}
+	return cs, gs, tx.Commit()
 }
 
 func getGuildScope(tx *sql.Tx, id string) (int64, error) {
@@ -47,8 +85,8 @@ func getChannelScope(tx *sql.Tx, id string, guild int64) (int64, error) {
 	return dbAddChannelScope(tx, id, guild)
 }
 
-func getPlaceExactScope(id string, hereChannelID, hereGuildID string) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID)
+func getPlaceExactScope(id string) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id)
 	if err != nil {
 		return -1, err
 	}
@@ -81,8 +119,8 @@ func getPlaceExactScope(id string, hereChannelID, hereGuildID string) (int64, er
 	return channel, tx.Commit()
 }
 
-func getPlaceLogicalScope(id string, hereChannelID, hereGuildID string) (int64, error) {
-	channelID, guildID, err := getChannelGuildIDs(id, hereChannelID, hereGuildID)
+func getPlaceLogicalScope(id string) (int64, error) {
+	channelID, guildID, err := getChannelGuildIDs(id)
 	if err != nil {
 		return -1, err
 	}

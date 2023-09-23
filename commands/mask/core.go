@@ -25,13 +25,13 @@ func Show(person int64) (Target, error, error) {
 	return t, nil, nil
 }
 
-func Set(m core.Messenger, person int64, userID string, locID string) (Target, error) {
+func Set(f core.Frontender, m core.Messenger, person int64, userID string, locID string) (Target, error) {
 	person, err := m.Person(userID)
 	if err != nil {
 		return Target{}, err
 	}
 
-	place, err := m.PlaceLogical(locID)
+	place, err := f.PlaceLogical(locID)
 	if err != nil {
 		return Target{}, err
 	}

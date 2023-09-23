@@ -62,14 +62,6 @@ func (d *MessageCreate) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (d *MessageCreate) PlaceExact(id string) (int64, error) {
-	return getPlaceExactScope(id, d.Message.ChannelID, d.Message.GuildID)
-}
-
-func (d *MessageCreate) PlaceLogical(id string) (int64, error) {
-	return getPlaceLogicalScope(id, d.Message.ChannelID, d.Message.GuildID)
-}
-
 func (d *MessageCreate) send(msg any, urr error, ping bool) (*core.Message, error) {
 	switch t := msg.(type) {
 	case string:

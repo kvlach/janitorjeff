@@ -121,3 +121,12 @@ func (f *frontend) Usage(usage string) any {
 	}
 	return embed
 }
+
+func (f *frontend) PlaceExact(id string) (int64, error) {
+	cs, _, err := getChannelGuildScopes(id)
+	return cs, err
+}
+
+func (f *frontend) PlaceLogical(id string) (int64, error) {
+	return getPlaceLogicalScope(id)
+}

@@ -247,7 +247,7 @@ func (adminSet) core(m *core.Message) (Target, error) {
 	}
 	userID := m.Command.Args[0]
 	locID := m.Command.Args[1]
-	return Set(m.Client, author, userID, locID)
+	return Set(m.Frontend, m.Client, author, userID, locID)
 }
 
 ////////////

@@ -46,7 +46,7 @@ func (h *Here) ScopeExact() (int64, error) {
 
 	rdbKey := "frontend_discord_scope_here_exact_" + h.IDExact()
 	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
-		return getPlaceExactScope(h.IDExact(), h.ChannelID, h.GuildID)
+		return getPlaceExactScope(h.IDExact())
 	})
 	if err != nil {
 		return 0, err
@@ -68,7 +68,7 @@ func (h *Here) ScopeLogical() (int64, error) {
 
 	rdbKey := "frontend_discord_scope_here_logical_" + h.IDExact()
 	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
-		return getPlaceLogicalScope(h.IDExact(), h.ChannelID, h.GuildID)
+		return getPlaceLogicalScope(h.IDExact())
 	})
 	if err != nil {
 		return 0, err

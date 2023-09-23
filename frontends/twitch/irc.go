@@ -119,6 +119,18 @@ func (f *frontend) Usage(usage string) any {
 	return fmt.Sprintf("Usage: %s", usage)
 }
 
+func (f *frontend) PlaceExact(id string) (int64, error) {
+	h, err := f.Helix()
+	if err != nil {
+		return -1, err
+	}
+	return dbAddChannel(id, "", "", h)
+}
+
+func (f *frontend) PlaceLogical(id string) (int64, error) {
+	return f.PlaceExact(id)
+}
+
 func (f *frontend) Helix() (*Helix, error) {
 	h, err := helix.NewClient(&helix.Options{
 		ClientID:       ClientID,
@@ -218,22 +230,6 @@ func (t *Twitch) PlaceID(s string) (string, error) {
 }
 
 func (t *Twitch) Person(id string) (int64, error) {
-	h, err := t.Helix()
-	if err != nil {
-		return -1, err
-	}
-	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
-}
-
-func (t *Twitch) PlaceExact(id string) (int64, error) {
-	h, err := t.Helix()
-	if err != nil {
-		return -1, err
-	}
-	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
-}
-
-func (t *Twitch) PlaceLogical(id string) (int64, error) {
 	h, err := t.Helix()
 	if err != nil {
 		return -1, err
