@@ -95,6 +95,7 @@ func EventLoop() {
 			place, err := m.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err)
+				continue
 			}
 			eventMessageCounter.
 				With(prometheus.Labels{
@@ -119,6 +120,7 @@ func EventLoop() {
 			place, err := rc.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err)
+				continue
 			}
 			eventRedeemClaimCounter.
 				With(prometheus.Labels{
@@ -137,6 +139,7 @@ func EventLoop() {
 			place, err := on.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err)
+				continue
 			}
 			eventStreamOnlineCounter.
 				With(prometheus.Labels{
@@ -162,6 +165,7 @@ func EventLoop() {
 			place, err := off.Here.ScopeLogical()
 			if err != nil {
 				log.Error().Err(err)
+				continue
 			}
 			eventStreamOfflineCounter.
 				With(prometheus.Labels{
