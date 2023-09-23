@@ -166,6 +166,7 @@ func (t *Twitch) Parse() (*core.Message, error) {
 	here := Here{
 		RoomID:   t.message.RoomID,
 		RoomName: t.message.Channel,
+		Author:   author,
 	}
 
 	msg := &core.Message{

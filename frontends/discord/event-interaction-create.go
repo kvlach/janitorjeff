@@ -108,6 +108,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 	h := &Here{
 		ChannelID: i.Interaction.ChannelID,
 		GuildID:   i.Interaction.GuildID,
+		Author:    author,
 	}
 
 	sp := &Speaker{

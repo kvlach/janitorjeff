@@ -12,6 +12,7 @@ import (
 type Here struct {
 	ChannelID string
 	GuildID   string
+	Author    core.Personifier
 
 	mu           sync.Mutex
 	scopeExact   int64
@@ -37,6 +38,14 @@ func (h *Here) ScopeExact() (int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
+	author, err := h.Author.Scope()
+	if err != nil {
+		return 0, err
+	}
+	if place, ok := core.Teleports.Get(author); ok {
+		return place.Exact, nil
+	}
+
 	if h.scopeExact != 0 {
 		log.Debug().
 			Int64("scope", h.scopeLogical).
@@ -58,6 +67,14 @@ func (h *Here) ScopeExact() (int64, error) {
 func (h *Here) ScopeLogical() (int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
+	author, err := h.Author.Scope()
+	if err != nil {
+		return 0, err
+	}
+	if place, ok := core.Teleports.Get(author); ok {
+		return place.Logical, nil
+	}
 
 	if h.scopeLogical != 0 {
 		log.Debug().

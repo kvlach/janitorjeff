@@ -267,6 +267,7 @@ func parse(m *dg.Message) *core.Message {
 	h := &Here{
 		ChannelID: m.ChannelID,
 		GuildID:   m.GuildID,
+		Author:    author,
 	}
 
 	sp := &Speaker{
