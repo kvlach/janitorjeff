@@ -7,6 +7,9 @@ packages:
 sources:
   - https://git.sr.ht/~slowtyper/janitorjeff
 tasks:
+  - main branch only: |
+      # https://lists.sr.ht/~sircmpwn/sr.ht-discuss/%3C3cd90a91b7ce113bb3c5f07898c77543%40hacktivista.com%3E
+      git diff --exit-code origin/main || complete-build
   - setup: |
       sudo service docker start
   - build: |
