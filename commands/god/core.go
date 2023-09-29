@@ -180,10 +180,10 @@ func personalityActive(tx *core.Tx, place int64) (Personality, int, error) {
 	var max int
 
 	err := tx.Tx.QueryRow(`
-		SELECT cgp.id, cgp.name, cgp.prompt, cgp.place, sp.cmd_god_max
-		FROM info_place sp
-		INNER JOIN cmd_god_personalities cgp ON sp.cmd_god_personality = cgp.id
-		WHERE sp.place = $1 AND (cgp.place = $1 OR cgp.place IS NULL);
+		SELECT cgp.id, cgp.name, cgp.prompt, cgp.place, ip.cmd_god_max
+		FROM info_place ip
+		INNER JOIN cmd_god_personalities cgp ON ip.cmd_god_personality = cgp.id
+		WHERE ip.place = $1 AND (cgp.place = $1 OR cgp.place IS NULL);
     `, place).Scan(&id, &name, &prompt, &placeDB, &max)
 	if err != nil {
 		return Personality{}, 0, err
