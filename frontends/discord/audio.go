@@ -35,7 +35,11 @@ func (sp *Speaker) Join() error {
 	if err != nil {
 		return err
 	}
-	v, err := Client.VoiceJoin(sp.Here.IDLogical(), aid)
+	hil, err := sp.Here.IDLogical()
+	if err != nil {
+		return err
+	}
+	v, err := Client.VoiceJoin(hil, aid)
 	if err != nil {
 		return err
 	}
@@ -63,7 +67,10 @@ func (sp *Speaker) AuthorDeafened() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	gid := sp.Here.IDLogical()
+	gid, err := sp.Here.IDLogical()
+	if err != nil {
+		return false, err
+	}
 
 	vs, err := Client.VoiceState(gid, aid)
 	if err != nil {
@@ -82,7 +89,11 @@ func (sp *Speaker) AuthorConnected() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	vs, err := Client.VoiceState(sp.Here.IDLogical(), aid)
+	hil, err := sp.Here.IDLogical()
+	if err != nil {
+		return false, err
+	}
+	vs, err := Client.VoiceState(hil, aid)
 	// if error then no voice state exists, which means that the author is not
 	// connected
 	if err != nil {

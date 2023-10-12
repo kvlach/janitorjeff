@@ -1,6 +1,8 @@
 package twitch
 
 import (
+	"errors"
+
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
@@ -12,25 +14,44 @@ type Here struct {
 	scope int64
 }
 
-func (h Here) IDExact() string {
-	return h.RoomID
+func (h Here) IDExact() (string, error) {
+	return h.RoomID, nil
 }
 
-func (h Here) IDLogical() string {
-	return h.RoomID
+func (h Here) IDLogical() (string, error) {
+	return h.RoomID, nil
 }
 
-func (h Here) Name() string {
-	return h.RoomName
+func (h Here) Name() (string, error) {
+	if h.RoomName != "" {
+		return h.RoomName, nil
+	}
+
+	if h.RoomID == "" {
+		return "", errors.New("the room id is required")
+	}
+	hx, err := Frontend.Helix()
+	if err != nil {
+		return "", err
+	}
+	u, err := hx.GetUser(h.RoomID)
+	if err != nil {
+		return "", err
+	}
+	return u.Login, nil
 }
 
 func (h Here) Scope() (int64, error) {
 	if h.scope != 0 {
 		return h.scope, nil
 	}
-	rdbKey := "frontend_twitch_scope_" + h.IDExact()
+	hix, err := h.IDExact()
+	if err != nil {
+		return 0, err
+	}
+	rdbKey := "frontend_twitch_scope_" + hix
 	scope, err := core.CacheScope(rdbKey, func() (int64, error) {
-		return dbAddChannelSimple(h.IDExact(), h.Name())
+		return dbAddChannel(hix)
 	})
 	if err != nil {
 		return 0, err

@@ -107,6 +107,9 @@ func (normal) core(m *core.Message) (string, error) {
 	if person, err := nick.ParsePersonHere(m, s); err == nil {
 		return core.DB.ScopeID(person)
 	}
-
-	return m.Client.PersonID(s, m.Here.IDExact())
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return "", err
+	}
+	return m.Client.PersonID(s, hix)
 }

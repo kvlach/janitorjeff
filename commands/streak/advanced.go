@@ -213,7 +213,12 @@ func (advancedOn) core(m *core.Message) (core.Urr, error) {
 		return nil, err
 	}
 
-	return On(h, here, m.Here.IDExact())
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return nil, err
+	}
+
+	return On(h, here, hix)
 }
 
 /////////

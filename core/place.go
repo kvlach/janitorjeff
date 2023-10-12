@@ -20,14 +20,14 @@ import (
 type Placer interface {
 	// IDExact returns the exact ID, this should be a unique, static,
 	// identifier in that frontend.
-	IDExact() string
+	IDExact() (id string, err error)
 
 	// IDLogical returns the logical ID, this should be a unique, static,
 	// identifier for the frontend.
-	IDLogical() string
+	IDLogical() (id string, err error)
 
 	// Name return's the channel's name.
-	Name() string
+	Name() (name string, err error)
 
 	// ScopeExact returns the here's exact scope.
 	// Returns the exact scope in Teleports if the author is present there.
