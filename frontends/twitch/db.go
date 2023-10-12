@@ -5,24 +5,9 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-func dbAddChannelSimple(uid, uname string) (int64, error) {
-	return dbAddChannel(uid, uid, uname, nil)
-}
-
-func dbAddChannel(id string, uid, uname string, h *Helix) (int64, error) {
-	var channelID, channelName string
-	if id == uid {
-		channelID = uid
-		channelName = uname
-	} else if u, err := h.GetUser(id); err == nil {
-		channelID = id
-		channelName = u.Login
-	} else {
-		return -1, err
-	}
-
+func dbAddChannel(id string) (int64, error) {
 	// if scope exists return it instead of re-adding it
-	scope, err := dbGetChannelScope(channelID)
+	scope, err := dbGetChannelScope(id)
 	if err == nil {
 		return scope, nil
 	}
@@ -38,15 +23,15 @@ func dbAddChannel(id string, uid, uname string, h *Helix) (int64, error) {
 	//goland:noinspection GoUnhandledErrorResult
 	defer tx.Rollback()
 
-	scope, err = db.ScopeAdd(tx, channelID, Type)
+	scope, err = db.ScopeAdd(tx, id, Type)
 	if err != nil {
 		return -1, err
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO frontend_twitch_channels(scope, channel_id, channel_name)
-		VALUES ($1, $2, $3)
-		ON CONFLICT DO NOTHING;`, scope, channelID, channelName)
+		INSERT INTO frontend_twitch_channels(scope, channel_id)
+		VALUES ($1, $2)
+		ON CONFLICT DO NOTHING;`, scope, id)
 
 	if err != nil {
 		return -1, err
@@ -68,19 +53,19 @@ func dbGetChannelScope(channelID string) (int64, error) {
 	return id, err
 }
 
-func dbGetChannel(scope int64) (string, string, error) {
+func dbGetChannel(scope int64) (string, error) {
 	db := core.DB
 	db.Lock.RLock()
 	defer db.Lock.RUnlock()
 
 	row := db.DB.QueryRow(`
-		SELECT channel_id, channel_name
+		SELECT channel_id
 		FROM frontend_twitch_channels
 		WHERE scope = $1`, scope)
 
-	var id, name string
-	err := row.Scan(&id, &name)
-	return id, name, err
+	var id string
+	err := row.Scan(&id)
+	return id, err
 }
 
 func dbSetUserAccessToken(scope int64, accessToken, refreshToken string) error {
