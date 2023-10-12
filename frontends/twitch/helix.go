@@ -3,6 +3,7 @@ package twitch
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 
@@ -12,25 +13,41 @@ import (
 )
 
 var (
-	ErrExpiredRefreshToken = errors.New("the user will need to reconnect the bot to twitch")
-	ErrRetry               = errors.New("refresh the access token and try again")
-	ErrNoResults           = errors.New("couldn't find what you were looking for")
-	ErrUserTokenRequired   = errors.New("this channel's broadcaster must connect their twitch account to the bot")
+	ErrRetry             = errors.New("refresh the access token and try again")
+	ErrNoResults         = errors.New("couldn't find what you were looking for")
+	ErrUserTokenRequired = errors.New("this channel's broadcaster must connect their twitch account to the bot")
 )
 
 var appAccessToken = gosafe.Value[string]{}
 
+type Helix struct {
+	c *helix.Client
+}
+
 func NewHelix(userID string) (*Helix, error) {
 	h, err := helix.NewClient(&helix.Options{
-		ClientID: ClientID,
+		ClientID:     ClientID,
+		ClientSecret: ClientSecret,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	userAccessToken, err := dbGetUserAccessToken(userID)
-	if err == nil {
-		h.SetUserAccessToken(userAccessToken)
+	if at, rt, err := dbGetUserTokens(userID); err == nil {
+		if at == "" || rt == "" {
+			h.SetAppAccessToken(appAccessToken.Get())
+		} else {
+			h.SetUserAccessToken(at)
+			h.SetRefreshToken(rt)
+			h.OnUserAccessTokenRefreshed(func(newAccessToken, newRefreshToken string) {
+				err := dbUpdateUserTokens(userID, newAccessToken, newRefreshToken)
+				if err != nil {
+					log.Error().
+						Err(err).
+						Msg("POSTGRES: failed to save new user tokens")
+				}
+			})
+		}
 	} else {
 		h.SetAppAccessToken(appAccessToken.Get())
 	}
@@ -56,60 +73,12 @@ func generateAppAccessToken() error {
 	return nil
 }
 
-func refreshUserAccessToken(accessToken string) (string, error) {
-	client, err := helix.NewClient(&helix.Options{
-		ClientID:     ClientID,
-		ClientSecret: ClientSecret,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	refreshToken, err := dbGetetUserRefreshToken(accessToken)
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := client.RefreshUserAccessToken(refreshToken)
-	log.Debug().
-		Err(err).
-		Str("old", accessToken).
-		Msg("refreshed user access token")
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode == 401 {
-		return "", ErrExpiredRefreshToken
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("%d, %s: %s", resp.StatusCode, resp.Error, resp.ErrorMessage)
-	}
-
-	err = dbUpdateUserTokens(accessToken, resp.Data.AccessToken, resp.Data.RefreshToken)
-	return resp.Data.AccessToken, err
-}
-
-type Helix struct {
-	c *helix.Client
-}
-
-// func HelixInit(token string) (*Helix, error) {
-// 	h, err := helix.NewClient(&helix.Options{
-// 		ClientID:        ClientID,
-// 		UserAccessToken: token,
-// 	})
-
-// 	return &Helix{h}, err
-// }
-
 func checkErrors(err error, resp helix.ResponseCommon, length int) error {
 	if err != nil {
 		return fmt.Errorf("helix error: %v", err)
 	}
 
-	if resp.StatusCode == 401 {
+	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrRetry
 	}
 
@@ -134,18 +103,10 @@ func (h *Helix) newAppAccessToken() error {
 	return nil
 }
 
-func (h *Helix) refreshUserAccessToken() error {
-	token, err := refreshUserAccessToken(h.c.GetUserAccessToken())
-	if err != nil {
-		return err
-	}
-	h.c.SetUserAccessToken(token)
-	return nil
-}
-
 func (h *Helix) refreshToken() error {
+	// the wrapper library handles refreshing user access tokens
 	if h.c.GetUserAccessToken() != "" {
-		return h.refreshUserAccessToken()
+		return nil
 	}
 	return h.newAppAccessToken()
 }

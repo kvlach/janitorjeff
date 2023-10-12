@@ -81,7 +81,7 @@ func dbSetUserAccessToken(scope int64, accessToken, refreshToken string) error {
 	return err
 }
 
-func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
+func dbUpdateUserTokens(userID, accessToken, refreshToken string) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -89,36 +89,21 @@ func dbUpdateUserTokens(oldAcessToken, accessToken, refreshToken string) error {
 	_, err := db.DB.Exec(`
 		UPDATE frontend_twitch_channels
 		SET access_token = $1, refresh_token = $2
-		WHERE access_token = $3`, accessToken, refreshToken, oldAcessToken)
+		WHERE channel_id = $3`, accessToken, refreshToken, userID)
 
 	return err
 }
 
-func dbGetUserAccessToken(channelID string) (string, error) {
+func dbGetUserTokens(channelID string) (string, string, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
 
-	row := db.DB.QueryRow("SELECT access_token FROM frontend_twitch_channels WHERE channel_id = $1", channelID)
+	row := db.DB.QueryRow("SELECT access_token, refresh_token FROM frontend_twitch_channels WHERE channel_id = $1", channelID)
 
-	var accessToken string
-	err := row.Scan(&accessToken)
-	return accessToken, err
-}
-
-func dbGetetUserRefreshToken(accessToken string) (string, error) {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	row := db.DB.QueryRow(`
-		SELECT refresh_token
-		FROM frontend_twitch_channels
-		WHERE access_token = $1`, accessToken)
-
-	var refreshToken string
-	err := row.Scan(&refreshToken)
-	return refreshToken, err
+	var accessToken, refreshToken string
+	err := row.Scan(&accessToken, &refreshToken)
+	return accessToken, refreshToken, err
 }
 
 func AddEventSubSubscriptionID(tx *sql.Tx, id string) error {
