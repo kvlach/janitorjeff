@@ -134,8 +134,11 @@ func (advancedShow) twitch(m *core.Message) (string, core.Urr, error) {
 	if err != nil {
 		return "", nil, err
 	}
-
-	t, err := h.GetTitle(m.Here.IDExact())
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return "", nil, err
+	}
+	t, err := h.GetTitle(hix)
 	return t, nil, err
 }
 
@@ -206,7 +209,12 @@ func (advancedEdit) twitch(m *core.Message) (string, core.Urr, error) {
 
 	title := m.RawArgs(0)
 
-	urr, err := h.SetTitle(m.Here.IDExact(), title)
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return "", nil, err
+	}
+
+	urr, err := h.SetTitle(hix, title)
 	if urr != nil {
 		return fmt.Sprint(urr), urr, nil
 	}

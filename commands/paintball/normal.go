@@ -117,7 +117,11 @@ func (c normal) play(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	}
 
 	game.Playing(here, true)
-	return c.playF(m.Here.IDExact(), here, rounds)
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return nil, nil, err
+	}
+	return c.playF(hix, here, rounds)
 }
 
 func (normal) playF(channel string, here int64, rounds int) (*dg.MessageEmbed, core.Urr, error) {

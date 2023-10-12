@@ -168,7 +168,12 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 	}
 
 	id := core.EventMessageHooks.Register(func(m *core.Message) {
-		if m.Frontend.Type() != twitch.Frontend.Type() || m.Here.Name() != twitchUsername {
+		hn, err := m.Here.Name()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get here name")
+			return
+		}
+		if m.Frontend.Type() != twitch.Frontend.Type() || hn != twitchUsername {
 			return
 		}
 
