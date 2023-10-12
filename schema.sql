@@ -54,7 +54,6 @@ CREATE TABLE frontend_discord_users (
 CREATE TABLE frontend_twitch_channels (
 	scope BIGINT PRIMARY KEY,
 	channel_id VARCHAR(255) NOT NULL UNIQUE,
-	channel_name VARCHAR(255) NOT NULL,
 	access_token VARCHAR(255),
 	refresh_token VARCHAR(255),
 	FOREIGN KEY (scope) REFERENCES scopes(id) ON DELETE CASCADE

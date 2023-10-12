@@ -89,7 +89,7 @@ func init() {
 
 		userID := res.Data.UserID
 
-		scope, err := dbAddChannelSimple(userID, res.Data.Login)
+		scope, err := dbAddChannel(userID)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Internal error")
 			return

@@ -89,12 +89,12 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 }
 
 func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, error) {
-	personID, personName, err := dbGetChannel(person)
+	personID, err := dbGetChannel(person)
 	if err != nil {
 		return nil, err
 	}
 
-	placeID, placeName, err := dbGetChannel(place)
+	placeID, err := dbGetChannel(place)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +102,9 @@ func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, 
 	t := &Twitch{
 		client: twitchIrcClient,
 		message: &tirc.PrivateMessage{
-			RoomID:  placeID,
-			Channel: placeName,
+			RoomID: placeID,
 			User: tirc.User{
-				ID:          personID,
-				Name:        personName,
-				DisplayName: personName,
+				ID: personID,
 			},
 		},
 	}
@@ -120,11 +117,7 @@ func (f *frontend) Usage(usage string) any {
 }
 
 func (f *frontend) PlaceExact(id string) (int64, error) {
-	h, err := f.Helix()
-	if err != nil {
-		return -1, err
-	}
-	return dbAddChannel(id, "", "", h)
+	return dbAddChannel(id)
 }
 
 func (f *frontend) PlaceLogical(id string) (int64, error) {
@@ -231,11 +224,7 @@ func (t *Twitch) PlaceID(s string) (string, error) {
 }
 
 func (t *Twitch) Person(id string) (int64, error) {
-	h, err := t.Helix()
-	if err != nil {
-		return -1, err
-	}
-	return dbAddChannel(id, t.message.User.ID, t.message.User.Name, h)
+	return dbAddChannel(id)
 }
 
 func (t *Twitch) send(msg any, mention string) (*core.Message, error) {

@@ -178,12 +178,8 @@ func (a Author) Scope() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	name, err := a.Name()
-	if err != nil {
-		return 0, err
-	}
 	scope, err := core.CacheScope("frontend_twitch_scope_"+id, func() (int64, error) {
-		return dbAddChannelSimple(id, name)
+		return dbAddChannel(id)
 	})
 	if err != nil {
 		return 0, err
