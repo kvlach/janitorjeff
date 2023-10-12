@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.9
-	github.com/nicklaw5/helix/v2 v2.24.0
+	github.com/nicklaw5/helix/v2 v2.25.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/rivo/uniseg v0.4.4
