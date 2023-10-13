@@ -361,6 +361,13 @@ func (c advancedTalkDialogue) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := discord.Client.Session.ChannelTyping(hix); err != nil {
+		return nil, nil, err
+	}
 	resp, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -478,6 +485,13 @@ func (c advancedTalkOnce) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+	hix, err := m.Here.IDExact()
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := discord.Client.Session.ChannelTyping(hix); err != nil {
+		return nil, nil, err
+	}
 	resp, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
