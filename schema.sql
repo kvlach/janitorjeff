@@ -180,7 +180,7 @@ CREATE TABLE info_place (
 	cmd_god_redeem UUID,
 	cmd_god_personality BIGINT NOT NULL DEFAULT 1,
 	cmd_god_everyone BOOL NOT NULL DEFAULT FALSE,
-    cmd_god_max INT NOT NULL DEFAULT 80,
+	cmd_god_max INT NOT NULL DEFAULT 80,
 	FOREIGN KEY (cmd_god_personality) REFERENCES cmd_god_personalities(id) ON DELETE NO ACTION
 );
 
