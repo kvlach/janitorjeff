@@ -95,9 +95,17 @@ func init() {
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
 			log.Debug().Msgf("got online webhook for channel: %s\n", onlineEvent.BroadcasterUserName)
 
+			a := Author{
+				id:          onlineEvent.BroadcasterUserID,
+				username:    onlineEvent.BroadcasterUserLogin,
+				displayName: onlineEvent.BroadcasterUserName,
+				roomID:      onlineEvent.BroadcasterUserID,
+			}
+
 			h := Here{
 				RoomID:   onlineEvent.BroadcasterUserID,
 				RoomName: onlineEvent.BroadcasterUserLogin,
+				Author:   a,
 			}
 
 			on := &core.StreamOnline{
@@ -113,9 +121,17 @@ func init() {
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&offlineEvent)
 			log.Debug().Msgf("got offline webhook for channel: %s\n", offlineEvent.BroadcasterUserName)
 
+			a := Author{
+				id:          offlineEvent.BroadcasterUserID,
+				username:    offlineEvent.BroadcasterUserLogin,
+				displayName: offlineEvent.BroadcasterUserName,
+				roomID:      offlineEvent.BroadcasterUserID,
+			}
+
 			h := Here{
 				RoomID:   offlineEvent.BroadcasterUserID,
 				RoomName: offlineEvent.BroadcasterUserLogin,
+				Author:   a,
 			}
 
 			off := &core.StreamOffline{
@@ -143,6 +159,7 @@ func init() {
 			h := Here{
 				RoomID:   redeem.BroadcasterUserID,
 				RoomName: redeem.BroadcasterUserName,
+				Author:   a,
 			}
 
 			r := &core.RedeemClaim{
