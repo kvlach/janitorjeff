@@ -99,12 +99,29 @@ func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, 
 		return nil, err
 	}
 
+	h, err := NewHelix("")
+	if err != nil {
+		return nil, err
+	}
+
+	usr, err := h.GetUser(personID)
+	if err != nil {
+		return nil, err
+	}
+	ch, err := h.GetUser(placeID)
+	if err != nil {
+		return nil, err
+	}
+
 	t := &Twitch{
 		client: twitchIrcClient,
 		message: &tirc.PrivateMessage{
-			RoomID: placeID,
+			RoomID:  placeID,
+			Channel: ch.Login,
 			User: tirc.User{
-				ID: personID,
+				ID:          personID,
+				Name:        usr.Login,
+				DisplayName: usr.DisplayName,
 			},
 		},
 	}
