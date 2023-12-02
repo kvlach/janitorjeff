@@ -31,18 +31,43 @@ type frontend struct {
 var Frontend = &frontend{}
 
 type Twitch struct {
-	client  *tirc.Client
-	message *tirc.PrivateMessage
+	Author core.Personifier
+	Here   core.Placer
+	Client *tirc.Client
 }
 
-func onPrivateMessage(m tirc.PrivateMessage) {
-	irc := &Twitch{client: twitchIrcClient, message: &m}
-	msg, err := irc.Parse()
-	if err != nil {
-		log.Debug().Err(err).Send()
-		return
+func NewTwitch(author core.Personifier, here core.Placer, client *tirc.Client) *Twitch {
+	return &Twitch{
+		Author: author,
+		Here:   here,
+		Client: client,
 	}
-	core.EventMessage <- msg
+}
+
+func NewMessage(m tirc.PrivateMessage) (*core.Message, error) {
+	a, err := NewAuthor(
+		m.User.ID,
+		m.User.Name,
+		m.User.DisplayName,
+		m.RoomID,
+		m.User.Badges,
+	)
+	if err != nil {
+		return nil, err
+	}
+	h, err := NewHere(m.RoomID, m.Channel, a)
+	if err != nil {
+		return nil, err
+	}
+	return &core.Message{
+		ID:       m.ID,
+		Raw:      m.Message,
+		Frontend: Frontend,
+		Author:   a,
+		Here:     h,
+		Client:   NewTwitch(a, h, twitchIrcClient),
+		Speaker:  Speaker{},
+	}, nil
 }
 
 func (f *frontend) Type() core.FrontendType {
@@ -56,7 +81,16 @@ func (f *frontend) Name() string {
 func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	twitchIrcClient = tirc.NewClient(f.Nick, f.OAuth)
 
-	twitchIrcClient.OnPrivateMessage(onPrivateMessage)
+	twitchIrcClient.OnPrivateMessage(func(pm tirc.PrivateMessage) {
+		m, err := NewMessage(pm)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Interface("msg", pm).
+				Msg("failed to parse private message")
+		}
+		core.EventMessage <- m
+	})
 
 	twitchIrcClient.Join(f.Channels...)
 
@@ -93,40 +127,18 @@ func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, 
 	if err != nil {
 		return nil, err
 	}
-
 	placeID, err := dbGetChannel(place)
 	if err != nil {
 		return nil, err
 	}
 
-	h, err := NewHelix("")
-	if err != nil {
-		return nil, err
-	}
-
-	usr, err := h.GetUser(personID)
-	if err != nil {
-		return nil, err
-	}
-	ch, err := h.GetUser(placeID)
-	if err != nil {
-		return nil, err
-	}
-
-	t := &Twitch{
-		client: twitchIrcClient,
-		message: &tirc.PrivateMessage{
-			RoomID:  placeID,
-			Channel: ch.Login,
-			User: tirc.User{
-				ID:          personID,
-				Name:        usr.Login,
-				DisplayName: usr.DisplayName,
-			},
+	pm := tirc.PrivateMessage{
+		RoomID: placeID,
+		User: tirc.User{
+			ID: personID,
 		},
 	}
-
-	return t.Parse()
+	return NewMessage(pm)
 }
 
 func (f *frontend) Usage(usage string) any {
@@ -155,7 +167,11 @@ func (f *frontend) Helix() (*Helix, error) {
 var twitchIrcClient *tirc.Client
 
 func (t *Twitch) Helix() (*Helix, error) {
-	return NewHelix(t.message.RoomID)
+	roomID, err := t.Here.IDExact()
+	if err != nil {
+		return nil, err
+	}
+	return NewHelix(roomID)
 }
 
 ///////////////
@@ -165,31 +181,7 @@ func (t *Twitch) Helix() (*Helix, error) {
 ///////////////
 
 func (t *Twitch) Parse() (*core.Message, error) {
-	author := Author{
-		id:          t.message.User.ID,
-		username:    t.message.User.Name,
-		displayName: t.message.User.DisplayName,
-		badges:      t.message.User.Badges,
-		roomID:      t.message.RoomID,
-	}
-
-	here := Here{
-		RoomID:   t.message.RoomID,
-		RoomName: t.message.Channel,
-		Author:   author,
-	}
-
-	msg := &core.Message{
-		ID:       t.message.ID,
-		Raw:      t.message.Message,
-		Frontend: Frontend,
-		Author:   author,
-		Here:     here,
-		Client:   t,
-		Speaker:  Speaker{},
-	}
-
-	return msg, nil
+	panic("TODO: THIS WILL BE DELETED")
 }
 
 func (t *Twitch) checkID(id string) error {
@@ -261,14 +253,19 @@ func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 	lenLim := 500 - len(mention)
 	lenCnt := utf8.RuneCountInString
 
+	ch, err := t.Here.Name()
+	if err != nil {
+		return nil, err
+	}
+
 	if lenLim > lenCnt(text) {
-		t.client.Say(t.message.Channel, fmt.Sprintf("%s%s", mention, text))
+		t.Client.Say(ch, mention+text)
 		return nil, nil
 	}
 
 	parts := core.Split(text, lenCnt, lenLim)
 	for _, p := range parts {
-		t.client.Say(t.message.Channel, fmt.Sprintf("%s%s", mention, p))
+		t.Client.Say(ch, mention+p)
 	}
 
 	return nil, nil
@@ -279,7 +276,11 @@ func (t *Twitch) Send(msg any, _ core.Urr) (*core.Message, error) {
 }
 
 func (t *Twitch) Ping(msg any, _ core.Urr) (*core.Message, error) {
-	mention := fmt.Sprintf("@%s -> ", t.message.User.DisplayName)
+	dn, err := t.Author.DisplayName()
+	if err != nil {
+		return nil, err
+	}
+	mention := fmt.Sprintf("@%s -> ", dn)
 	return t.send(msg, mention)
 }
 
@@ -289,9 +290,13 @@ func (t *Twitch) Write(msg any, urr core.Urr) (*core.Message, error) {
 
 func (t *Twitch) Natural(msg any, _ core.Urr) (*core.Message, error) {
 	var mention string
+	var err error
 	// need this to only happen 30% of the time
 	if num := core.Rand().Intn(10); num < 3 {
-		mention = "@" + t.message.User.DisplayName + " "
+		mention, err = t.Author.DisplayName()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return t.send(msg, mention)
 }
