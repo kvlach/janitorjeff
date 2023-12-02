@@ -6,44 +6,75 @@ import (
 	"git.sr.ht/~slowtyper/janitorjeff/core"
 )
 
-type Here struct {
-	RoomID   string
-	RoomName string
-	Author   core.Personifier
+// here implements the core.Placer interface.
+type here struct {
+	roomID   string
+	roomName string
+	author   core.Personifier
 
-	scope int64
+	scopeCache int64
 }
 
-func (h Here) IDExact() (string, error) {
-	return h.RoomID, nil
+// NewHere initializes a here object.
+// If roomID is unknown, pass an empty string.
+// If roomName is unknown, pass an empty string.
+// At least one of roomID or roomName must not be an empty string.
+// The author must not be nil.
+func NewHere(roomID, roomName string, author core.Personifier) (core.Placer, error) {
+	if roomID == "" && roomName == "" {
+		return nil, errors.New("at least one of roomID or roomName is required")
+	}
+	if author == nil {
+		return nil, errors.New("author must not be nil")
+	}
+	return here{
+		roomID:   roomID,
+		roomName: roomName,
+		author:   author,
+	}, nil
 }
 
-func (h Here) IDLogical() (string, error) {
-	return h.RoomID, nil
-}
-
-func (h Here) Name() (string, error) {
-	if h.RoomName != "" {
-		return h.RoomName, nil
+func (h here) IDExact() (string, error) {
+	if h.roomID != "" {
+		return h.roomID, nil
 	}
 
-	if h.RoomID == "" {
-		return "", errors.New("the room id is required")
-	}
 	hx, err := Frontend.Helix()
 	if err != nil {
 		return "", err
 	}
-	u, err := hx.GetUser(h.RoomID)
+	uid, err := hx.GetUserID(h.roomName)
 	if err != nil {
 		return "", err
 	}
+	h.roomID = uid
+	return uid, nil
+}
+
+func (h here) IDLogical() (string, error) {
+	return h.IDExact()
+}
+
+func (h here) Name() (string, error) {
+	if h.roomName != "" {
+		return h.roomName, nil
+	}
+
+	hx, err := Frontend.Helix()
+	if err != nil {
+		return "", err
+	}
+	u, err := hx.GetUser(h.roomID)
+	if err != nil {
+		return "", err
+	}
+	h.roomName = u.Login
 	return u.Login, nil
 }
 
-func (h Here) Scope() (int64, error) {
-	if h.scope != 0 {
-		return h.scope, nil
+func (h here) scope() (int64, error) {
+	if h.scopeCache != 0 {
+		return h.scopeCache, nil
 	}
 	hix, err := h.IDExact()
 	if err != nil {
@@ -56,28 +87,28 @@ func (h Here) Scope() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	h.scope = scope
+	h.scopeCache = scope
 	return scope, nil
 }
 
-func (h Here) ScopeExact() (int64, error) {
-	author, err := h.Author.Scope()
+func (h here) ScopeExact() (int64, error) {
+	author, err := h.author.Scope()
 	if err != nil {
 		return 0, err
 	}
 	if place, ok := core.Teleports.Get(author); ok {
 		return place.Exact, nil
 	}
-	return h.Scope()
+	return h.scope()
 }
 
-func (h Here) ScopeLogical() (int64, error) {
-	author, err := h.Author.Scope()
+func (h here) ScopeLogical() (int64, error) {
+	author, err := h.author.Scope()
 	if err != nil {
 		return 0, err
 	}
 	if place, ok := core.Teleports.Get(author); ok {
 		return place.Logical, nil
 	}
-	return h.Scope()
+	return h.scope()
 }

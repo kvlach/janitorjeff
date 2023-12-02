@@ -95,17 +95,32 @@ func init() {
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
 			log.Debug().Msgf("got online webhook for channel: %s\n", onlineEvent.BroadcasterUserName)
 
-			a := Author{
-				id:          onlineEvent.BroadcasterUserID,
-				username:    onlineEvent.BroadcasterUserLogin,
-				displayName: onlineEvent.BroadcasterUserName,
-				roomID:      onlineEvent.BroadcasterUserID,
+			a, err := NewAuthor(
+				onlineEvent.BroadcasterUserID,
+				onlineEvent.BroadcasterUserLogin,
+				onlineEvent.BroadcasterUserName,
+				onlineEvent.BroadcasterUserID,
+				nil,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("online", onlineEvent).
+					Msg("failed to parse online event's author")
+				return
 			}
 
-			h := Here{
-				RoomID:   onlineEvent.BroadcasterUserID,
-				RoomName: onlineEvent.BroadcasterUserLogin,
-				Author:   a,
+			h, err := NewHere(
+				onlineEvent.BroadcasterUserID,
+				onlineEvent.BroadcasterUserLogin,
+				a,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("online", onlineEvent).
+					Msg("failed to parse online event's here")
+				return
 			}
 
 			on := &core.StreamOnline{
@@ -121,17 +136,32 @@ func init() {
 			err = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&offlineEvent)
 			log.Debug().Msgf("got offline webhook for channel: %s\n", offlineEvent.BroadcasterUserName)
 
-			a := Author{
-				id:          offlineEvent.BroadcasterUserID,
-				username:    offlineEvent.BroadcasterUserLogin,
-				displayName: offlineEvent.BroadcasterUserName,
-				roomID:      offlineEvent.BroadcasterUserID,
+			a, err := NewAuthor(
+				offlineEvent.BroadcasterUserID,
+				offlineEvent.BroadcasterUserLogin,
+				offlineEvent.BroadcasterUserName,
+				offlineEvent.BroadcasterUserID,
+				nil,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("offline", offlineEvent).
+					Msg("failed to parse offline event's author")
+				return
 			}
 
-			h := Here{
-				RoomID:   offlineEvent.BroadcasterUserID,
-				RoomName: offlineEvent.BroadcasterUserLogin,
-				Author:   a,
+			h, err := NewHere(
+				offlineEvent.BroadcasterUserID,
+				offlineEvent.BroadcasterUserLogin,
+				a,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("offline", offlineEvent).
+					Msg("failed to parse offline event's here")
+				return
 			}
 
 			off := &core.StreamOffline{
@@ -149,17 +179,32 @@ func init() {
 				Str("redeemer", redeem.UserName).
 				Msg("got channel redeem event")
 
-			a := Author{
-				id:          redeem.UserID,
-				username:    redeem.UserLogin,
-				displayName: redeem.UserName,
-				roomID:      redeem.BroadcasterUserID,
+			a, err := NewAuthor(
+				redeem.UserID,
+				redeem.UserLogin,
+				redeem.UserName,
+				redeem.BroadcasterUserID,
+				nil,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("redeem", redeem).
+					Msg("failed to parse redeem's author")
+				return
 			}
 
-			h := Here{
-				RoomID:   redeem.BroadcasterUserID,
-				RoomName: redeem.BroadcasterUserName,
-				Author:   a,
+			h, err := NewHere(
+				redeem.BroadcasterUserID,
+				redeem.BroadcasterUserName,
+				a,
+			)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Interface("redeem", redeem).
+					Msg("failed to parse redeem's here")
+				return
 			}
 
 			r := &core.RedeemClaim{
