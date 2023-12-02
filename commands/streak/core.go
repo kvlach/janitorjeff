@@ -17,7 +17,7 @@ var (
 	UrrAlreadyOn = core.UrrNew("Streak tracking has already been turned on.")
 )
 
-func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
+func On(hx *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -39,7 +39,7 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 		return UrrAlreadyOn, nil
 	}
 
-	onlineSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOnline)
+	onlineSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOnline)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 		return nil, err
 	}
 
-	offlineSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOffline)
+	offlineSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOffline)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 		return nil, err
 	}
 
-	redeemsSubID, err := h.CreateSubscription(broadcasterID, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
+	redeemsSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func On(h *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
 	return nil, tx.Commit()
 }
 
-func Off(h *twitch.Helix, place int64) error {
+func Off(hx *twitch.Helix, place int64) error {
 	db := core.DB
 	db.Lock.Lock()
 	defer db.Lock.Unlock()
@@ -110,21 +110,21 @@ func Off(h *twitch.Helix, place int64) error {
 		return err
 	}
 
-	if err := h.DeleteSubscription(onlineSubID); err != nil {
+	if err := hx.DeleteSubscription(onlineSubID); err != nil {
 		return err
 	}
 	if err := twitch.DeleteEventSubSubscriptionID(tx, onlineSubID); err != nil {
 		return err
 	}
 
-	if err := h.DeleteSubscription(offlineSubID); err != nil {
+	if err := hx.DeleteSubscription(offlineSubID); err != nil {
 		return err
 	}
 	if err := twitch.DeleteEventSubSubscriptionID(tx, offlineSubID); err != nil {
 		return err
 	}
 
-	if err := h.DeleteSubscription(redeemsSubID); err != nil {
+	if err := hx.DeleteSubscription(redeemsSubID); err != nil {
 		return err
 	}
 	if err := twitch.DeleteEventSubSubscriptionID(tx, redeemsSubID); err != nil {

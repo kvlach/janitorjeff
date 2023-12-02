@@ -25,7 +25,7 @@ type Helix struct {
 }
 
 func NewHelix(userID string) (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
+	hx, err := helix.NewClient(&helix.Options{
 		ClientID:     ClientID,
 		ClientSecret: ClientSecret,
 	})
@@ -35,11 +35,11 @@ func NewHelix(userID string) (*Helix, error) {
 
 	if at, rt, err := dbGetUserTokens(userID); err == nil {
 		if at == "" || rt == "" {
-			h.SetAppAccessToken(appAccessToken.Get())
+			hx.SetAppAccessToken(appAccessToken.Get())
 		} else {
-			h.SetUserAccessToken(at)
-			h.SetRefreshToken(rt)
-			h.OnUserAccessTokenRefreshed(func(newAccessToken, newRefreshToken string) {
+			hx.SetUserAccessToken(at)
+			hx.SetRefreshToken(rt)
+			hx.OnUserAccessTokenRefreshed(func(newAccessToken, newRefreshToken string) {
 				err := dbUpdateUserTokens(userID, newAccessToken, newRefreshToken)
 				if err != nil {
 					log.Error().
@@ -49,10 +49,10 @@ func NewHelix(userID string) (*Helix, error) {
 			})
 		}
 	} else {
-		h.SetAppAccessToken(appAccessToken.Get())
+		hx.SetAppAccessToken(appAccessToken.Get())
 	}
 
-	return &Helix{h}, nil
+	return &Helix{hx}, nil
 }
 
 func generateAppAccessToken() error {
@@ -93,26 +93,26 @@ func checkErrors(err error, resp helix.ResponseCommon, length int) error {
 	return nil
 }
 
-func (h *Helix) newAppAccessToken() error {
+func (hx *Helix) newAppAccessToken() error {
 	// can't refresh an app access token, just get a new one
 	err := generateAppAccessToken()
 	if err != nil {
 		return err
 	}
-	h.c.SetAppAccessToken(appAccessToken.Get())
+	hx.c.SetAppAccessToken(appAccessToken.Get())
 	return nil
 }
 
-func (h *Helix) refreshToken() error {
+func (hx *Helix) refreshToken() error {
 	// the wrapper library handles refreshing user access tokens
-	if h.c.GetUserAccessToken() != "" {
+	if hx.c.GetUserAccessToken() != "" {
 		return nil
 	}
-	return h.newAppAccessToken()
+	return hx.newAppAccessToken()
 }
 
-func (h *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, error) {
-	resp, err := h.c.GetUsersFollows(&helix.UsersFollowsParams{
+func (hx *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, error) {
+	resp, err := hx.c.GetUsersFollows(&helix.UsersFollowsParams{
 		FromID: userID,
 		ToID:   broadcasterID,
 	})
@@ -124,18 +124,18 @@ func (h *Helix) GetFollower(broadcasterID, userID string) (helix.UserFollow, err
 		return resp.Data.Follows[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.UserFollow{}, err
 		}
-		return h.GetFollower(broadcasterID, userID)
+		return hx.GetFollower(broadcasterID, userID)
 
 	default:
 		return helix.UserFollow{}, err
 	}
 }
 
-func (h *Helix) GetStream(broadcasterID string) (helix.Stream, error) {
-	resp, err := h.c.GetStreams(&helix.StreamsParams{
+func (hx *Helix) GetStream(broadcasterID string) (helix.Stream, error) {
+	resp, err := hx.c.GetStreams(&helix.StreamsParams{
 		UserIDs: []string{broadcasterID},
 	})
 
@@ -146,18 +146,18 @@ func (h *Helix) GetStream(broadcasterID string) (helix.Stream, error) {
 		return resp.Data.Streams[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.Stream{}, err
 		}
-		return h.GetStream(broadcasterID)
+		return hx.GetStream(broadcasterID)
 
 	default:
 		return helix.Stream{}, err
 	}
 }
 
-func (h *Helix) GetUser(userID string) (helix.User, error) {
-	resp, err := h.c.GetUsers(&helix.UsersParams{
+func (hx *Helix) GetUser(userID string) (helix.User, error) {
+	resp, err := hx.c.GetUsers(&helix.UsersParams{
 		IDs: []string{userID},
 	})
 
@@ -168,18 +168,18 @@ func (h *Helix) GetUser(userID string) (helix.User, error) {
 		return resp.Data.Users[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.User{}, err
 		}
-		return h.GetUser(userID)
+		return hx.GetUser(userID)
 
 	default:
 		return helix.User{}, err
 	}
 }
 
-func (h *Helix) GetUserID(username string) (string, error) {
-	resp, err := h.c.GetUsers(&helix.UsersParams{
+func (hx *Helix) GetUserID(username string) (string, error) {
+	resp, err := hx.c.GetUsers(&helix.UsersParams{
 		Logins: []string{username},
 	})
 
@@ -190,18 +190,18 @@ func (h *Helix) GetUserID(username string) (string, error) {
 		return resp.Data.Users[0].ID, nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return "", err
 		}
-		return h.GetUserID(username)
+		return hx.GetUserID(username)
 
 	default:
 		return "", err
 	}
 }
 
-func (h *Helix) GetClip(clipID string) (helix.Clip, error) {
-	resp, err := h.c.GetClips(&helix.ClipsParams{
+func (hx *Helix) GetClip(clipID string) (helix.Clip, error) {
+	resp, err := hx.c.GetClips(&helix.ClipsParams{
 		IDs: []string{clipID},
 	})
 
@@ -212,18 +212,18 @@ func (h *Helix) GetClip(clipID string) (helix.Clip, error) {
 		return resp.Data.Clips[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.Clip{}, err
 		}
-		return h.GetClip(clipID)
+		return hx.GetClip(clipID)
 
 	default:
 		return helix.Clip{}, err
 	}
 }
 
-func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
-	resp, err := h.c.GetBannedUsers(&helix.BannedUsersParams{
+func (hx *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
+	resp, err := hx.c.GetBannedUsers(&helix.BannedUsersParams{
 		BroadcasterID: broadcasterID,
 		UserID:        userID,
 	})
@@ -235,10 +235,10 @@ func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
 		return resp.Data.Bans[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.Ban{}, err
 		}
-		return h.GetBannedUser(broadcasterID, userID)
+		return hx.GetBannedUser(broadcasterID, userID)
 
 	default:
 		return helix.Ban{}, err
@@ -261,8 +261,8 @@ func (h *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
 // 	return false, nil
 // }
 
-func (h *Helix) SearchGame(gameName string) (helix.Game, error) {
-	resp, err := h.c.GetGames(&helix.GamesParams{
+func (hx *Helix) SearchGame(gameName string) (helix.Game, error) {
+	resp, err := hx.c.GetGames(&helix.GamesParams{
 		Names: []string{gameName},
 	})
 
@@ -273,18 +273,18 @@ func (h *Helix) SearchGame(gameName string) (helix.Game, error) {
 		return resp.Data.Games[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.Game{}, err
 		}
-		return h.SearchGame(gameName)
+		return hx.SearchGame(gameName)
 
 	default:
 		return helix.Game{}, err
 	}
 }
 
-func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, error) {
-	resp, err := h.c.GetChannelInformation(&helix.GetChannelInformationParams{
+func (hx *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, error) {
+	resp, err := hx.c.GetChannelInformation(&helix.GetChannelInformationParams{
 		BroadcasterIDs: []string{broadcasterID},
 	})
 
@@ -295,33 +295,33 @@ func (h *Helix) GetChannelInfo(broadcasterID string) (helix.ChannelInformation, 
 		return resp.Data.Channels[0], nil
 
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return helix.ChannelInformation{}, err
 		}
-		return h.GetChannelInfo(broadcasterID)
+		return hx.GetChannelInfo(broadcasterID)
 
 	default:
 		return helix.ChannelInformation{}, err
 	}
 }
 
-func (h *Helix) GetGameName(channelId string) (string, error) {
-	ch, err := h.GetChannelInfo(channelId)
+func (hx *Helix) GetGameName(channelId string) (string, error) {
+	ch, err := hx.GetChannelInfo(channelId)
 	return ch.GameName, err
 }
 
-func (h *Helix) GetTitle(channelId string) (string, error) {
-	ch, err := h.GetChannelInfo(channelId)
+func (hx *Helix) GetTitle(channelId string) (string, error) {
+	ch, err := hx.GetChannelInfo(channelId)
 	return ch.Title, err
 }
 
-func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) (error, error) {
-	if h.c.GetUserAccessToken() == "" {
+func (hx *Helix) EditChannelInfo(broadcasterID, title, gameID string) (error, error) {
+	if hx.c.GetUserAccessToken() == "" {
 		return ErrUserTokenRequired, nil
 	}
 
 	// both the title and the game need to be set at the same time
-	resp, err := h.c.EditChannelInformation(&helix.EditChannelInformationParams{
+	resp, err := hx.c.EditChannelInformation(&helix.EditChannelInformationParams{
 		BroadcasterID: broadcasterID,
 		Title:         title,
 		GameID:        gameID,
@@ -331,46 +331,46 @@ func (h *Helix) EditChannelInfo(broadcasterID, title, gameID string) (error, err
 
 	switch err {
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return nil, err
 		}
-		return h.EditChannelInfo(broadcasterID, title, gameID)
+		return hx.EditChannelInfo(broadcasterID, title, gameID)
 
 	default:
 		return nil, err
 	}
 }
 
-func (h *Helix) SetTitle(channelID, title string) (error, error) {
-	ch, err := h.GetChannelInfo(channelID)
+func (hx *Helix) SetTitle(channelID, title string) (error, error) {
+	ch, err := hx.GetChannelInfo(channelID)
 	if err != nil {
 		return nil, err
 	}
-	return h.EditChannelInfo(channelID, title, ch.GameID)
+	return hx.EditChannelInfo(channelID, title, ch.GameID)
 }
 
-func (h *Helix) SetGame(channelID, gameName string) (string, error, error) {
-	title, err := h.GetTitle(channelID)
+func (hx *Helix) SetGame(channelID, gameName string) (string, error, error) {
+	title, err := hx.GetTitle(channelID)
 	if err != nil {
 		return "", nil, err
 	}
 
 	// Clears the game
 	if gameName == "-" {
-		urr, err := h.EditChannelInfo(channelID, title, "0")
+		urr, err := hx.EditChannelInfo(channelID, title, "0")
 		return "nothing", urr, err
 	}
 
-	g, err := h.SearchGame(gameName)
+	g, err := hx.SearchGame(gameName)
 	if err != nil {
 		return "", nil, err
 	}
-	urr, err := h.EditChannelInfo(channelID, title, g.ID)
+	urr, err := hx.EditChannelInfo(channelID, title, g.ID)
 	return g.Name, urr, err
 }
 
-func (h *Helix) RedeemsList(broadcasterID string) ([]helix.ChannelCustomReward, error) {
-	resp, err := h.c.GetCustomRewards(&helix.GetCustomRewardsParams{
+func (hx *Helix) RedeemsList(broadcasterID string) ([]helix.ChannelCustomReward, error) {
+	resp, err := hx.c.GetCustomRewards(&helix.GetCustomRewardsParams{
 		BroadcasterID: broadcasterID,
 	})
 
@@ -383,17 +383,17 @@ func (h *Helix) RedeemsList(broadcasterID string) ([]helix.ChannelCustomReward, 
 			Msg("got redeems")
 		return resp.Data.ChannelCustomRewards, nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return nil, err
 		}
-		return h.RedeemsList(broadcasterID)
+		return hx.RedeemsList(broadcasterID)
 	default:
 		return nil, err
 	}
 }
 
-func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {
-	resp, err := h.c.CreateEventSubSubscription(&helix.EventSubSubscription{
+func (hx *Helix) CreateSubscription(broadcasterID, t string) (string, error) {
+	resp, err := hx.c.CreateEventSubSubscription(&helix.EventSubSubscription{
 		Type:    t,
 		Version: "1",
 		Condition: helix.EventSubCondition{
@@ -414,17 +414,17 @@ func (h *Helix) CreateSubscription(broadcasterID, t string) (string, error) {
 		log.Debug().Str("type", t).Str("id", id).Msg("created subscription")
 		return id, nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return "", err
 		}
-		return h.CreateSubscription(broadcasterID, t)
+		return hx.CreateSubscription(broadcasterID, t)
 	default:
 		return "", err
 	}
 }
 
-func (h *Helix) DeleteSubscription(subID string) error {
-	resp, err := h.c.RemoveEventSubSubscription(subID)
+func (hx *Helix) DeleteSubscription(subID string) error {
+	resp, err := hx.c.RemoveEventSubSubscription(subID)
 	if err != nil {
 		return err
 	}
@@ -435,17 +435,17 @@ func (h *Helix) DeleteSubscription(subID string) error {
 	case nil:
 		return nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return err
 		}
-		return h.DeleteSubscription(subID)
+		return hx.DeleteSubscription(subID)
 	default:
 		return err
 	}
 }
 
-func (h *Helix) ListSubscriptions() ([]helix.EventSubSubscription, error) {
-	resp, err := h.c.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
+func (hx *Helix) ListSubscriptions() ([]helix.EventSubSubscription, error) {
+	resp, err := hx.c.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -456,17 +456,17 @@ func (h *Helix) ListSubscriptions() ([]helix.EventSubSubscription, error) {
 	case nil:
 		return resp.Data.EventSubSubscriptions, nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return nil, err
 		}
-		return h.ListSubscriptions()
+		return hx.ListSubscriptions()
 	default:
 		return nil, err
 	}
 }
 
-func (h *Helix) IsMod(broadcasterID, userID string) (bool, error) {
-	resp, err := h.c.GetModerators(&helix.GetModeratorsParams{
+func (hx *Helix) IsMod(broadcasterID, userID string) (bool, error) {
+	resp, err := hx.c.GetModerators(&helix.GetModeratorsParams{
 		BroadcasterID: broadcasterID,
 		UserIDs:       []string{userID},
 	})
@@ -475,17 +475,17 @@ func (h *Helix) IsMod(broadcasterID, userID string) (bool, error) {
 	case nil:
 		return len(resp.Data.Moderators) > 1, nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return false, err
 		}
-		return h.IsMod(broadcasterID, userID)
+		return hx.IsMod(broadcasterID, userID)
 	default:
 		return false, err
 	}
 }
 
-func (h *Helix) IsSub(broadcasterID, userID string) (bool, error) {
-	resp, err := h.c.CheckUserSubscription(&helix.UserSubscriptionsParams{
+func (hx *Helix) IsSub(broadcasterID, userID string) (bool, error) {
+	resp, err := hx.c.CheckUserSubscription(&helix.UserSubscriptionsParams{
 		BroadcasterID: broadcasterID,
 		UserID:        userID,
 	})
@@ -494,10 +494,10 @@ func (h *Helix) IsSub(broadcasterID, userID string) (bool, error) {
 	case nil:
 		return len(resp.Data.UserSubscriptions) > 1, nil
 	case ErrRetry:
-		if err := h.refreshToken(); err != nil {
+		if err := hx.refreshToken(); err != nil {
 			return false, err
 		}
-		return h.IsSub(broadcasterID, userID)
+		return hx.IsSub(broadcasterID, userID)
 	default:
 		return false, err
 	}

@@ -154,14 +154,14 @@ func (f *frontend) PlaceLogical(id string) (int64, error) {
 }
 
 func (f *frontend) Helix() (*Helix, error) {
-	h, err := helix.NewClient(&helix.Options{
+	hx, err := helix.NewClient(&helix.Options{
 		ClientID:       ClientID,
 		AppAccessToken: appAccessToken.Get(),
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &Helix{h}, nil
+	return &Helix{hx}, nil
 }
 
 var twitchIrcClient *tirc.Client
@@ -190,14 +190,14 @@ func (t *Twitch) checkID(id string) error {
 		return fmt.Errorf("id '%s' is not valid", id)
 	}
 
-	h, err := t.Helix()
+	hx, err := t.Helix()
 	if err != nil {
 		return err
 	}
 
 	// try to get the id's corresponding user, if it fails then that means that
 	// the id is not valid
-	_, err = h.GetUser(id)
+	_, err = hx.GetUser(id)
 
 	return err
 }
@@ -211,7 +211,7 @@ func (t *Twitch) getID(s string) (string, error) {
 	}
 	s = strings.TrimPrefix(s, "@")
 
-	h, err := t.Helix()
+	hx, err := t.Helix()
 	if err != nil {
 		return "", err
 	}
@@ -219,7 +219,7 @@ func (t *Twitch) getID(s string) (string, error) {
 	// try to get the corresponding id from the username, if it exists then
 	// it will fetch and return with no error, if not then it will fail
 	// and return an error
-	return h.GetUserID(s)
+	return hx.GetUserID(s)
 }
 
 // Place and Person refer to the same thing on twitch

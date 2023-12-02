@@ -45,11 +45,11 @@ func (a author) ID() (string, error) {
 		return a.id, nil
 	}
 
-	h, err := Frontend.Helix()
+	hx, err := Frontend.Helix()
 	if err != nil {
 		return "", err
 	}
-	id, err := h.GetUserID(a.username)
+	id, err := hx.GetUserID(a.username)
 	if err != nil {
 		return "", err
 	}
@@ -62,11 +62,11 @@ func (a author) Name() (string, error) {
 		return a.username, nil
 	}
 
-	h, err := Frontend.Helix()
+	hx, err := Frontend.Helix()
 	if err != nil {
 		return "", err
 	}
-	user, err := h.GetUser(a.id)
+	user, err := hx.GetUser(a.id)
 	if err != nil {
 		return "", err
 	}
@@ -81,11 +81,11 @@ func (a author) DisplayName() (string, error) {
 		return a.displayName, nil
 	}
 
-	h, err := Frontend.Helix()
+	hx, err := Frontend.Helix()
 	if err != nil {
 		return "", err
 	}
-	user, err := h.GetUser(a.id)
+	user, err := hx.GetUser(a.id)
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +142,7 @@ func (a author) Moderator() (bool, error) {
 		return ok, nil
 	}
 
-	h, err := Frontend.Helix()
+	hx, err := Frontend.Helix()
 	if err != nil {
 		return false, err
 	}
@@ -150,7 +150,7 @@ func (a author) Moderator() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return h.IsMod(a.roomID, aid)
+	return hx.IsMod(a.roomID, aid)
 }
 
 func (a author) Subscriber() (bool, error) {
@@ -162,7 +162,7 @@ func (a author) Subscriber() (bool, error) {
 		return ok, nil
 	}
 
-	h, err := Frontend.Helix()
+	hx, err := Frontend.Helix()
 	if err != nil {
 		return false, err
 	}
@@ -170,7 +170,7 @@ func (a author) Subscriber() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return h.IsSub(a.roomID, aid)
+	return hx.IsSub(a.roomID, aid)
 }
 
 func (a author) Scope() (int64, error) {
