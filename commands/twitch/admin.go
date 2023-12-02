@@ -173,12 +173,12 @@ func (adminEventSubList) Init() error {
 }
 
 func (adminEventSubList) Run(*core.Message) (any, core.Urr, error) {
-	h, err := twitch.Frontend.Helix()
+	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	subs, err := h.ListSubscriptions()
+	subs, err := hx.ListSubscriptions()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -247,13 +247,13 @@ func (adminEventSubDelete) Run(m *core.Message) (any, core.Urr, error) {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
-	h, err := twitch.Frontend.Helix()
+	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	for _, subid := range m.Command.Args {
-		if err := h.DeleteSubscription(subid); err != nil {
+		if err := hx.DeleteSubscription(subid); err != nil {
 			log.Debug().Err(err).Str("id", subid).Msg("failed to delete subscription")
 			return "Failed to delete subscription with ID: " + subid, errors.New("failed to delete subscription"), nil
 		}
@@ -378,12 +378,12 @@ func (adminRedeemList) Run(m *core.Message) (any, core.Urr, error) {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
 
-	h, err := twitch.NewHelix(m.Command.Args[0])
+	hx, err := twitch.NewHelix(m.Command.Args[0])
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rs, err := h.RedeemsList(m.Command.Args[0])
+	rs, err := hx.RedeemsList(m.Command.Args[0])
 	if err != nil {
 		return nil, nil, err
 	}

@@ -203,7 +203,7 @@ func (advancedOn) fmt(urr core.Urr) string {
 }
 
 func (advancedOn) core(m *core.Message) (core.Urr, error) {
-	h, err := twitch.Frontend.Helix()
+	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func (advancedOn) core(m *core.Message) (core.Urr, error) {
 		return nil, err
 	}
 
-	return On(h, here, hix)
+	return On(hx, here, hix)
 }
 
 /////////
@@ -279,7 +279,7 @@ func (c advancedOff) Run(m *core.Message) (resp any, urr core.Urr, err error) {
 }
 
 func (advancedOff) core(m *core.Message) error {
-	h, err := twitch.Frontend.Helix()
+	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func (advancedOff) core(m *core.Message) error {
 		return err
 	}
 
-	return Off(h, here)
+	return Off(hx, here)
 }
 
 //////////

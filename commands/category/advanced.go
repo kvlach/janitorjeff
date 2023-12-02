@@ -131,7 +131,7 @@ func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (advancedShow) twitch(m *core.Message) (string, core.Urr, error) {
-	h, err := m.Client.(*twitch.Twitch).Helix()
+	hx, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err
 	}
@@ -139,7 +139,7 @@ func (advancedShow) twitch(m *core.Message) (string, core.Urr, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	g, err := h.GetGameName(hix)
+	g, err := hx.GetGameName(hix)
 	return g, nil, err
 }
 
@@ -206,7 +206,7 @@ func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
 }
 
 func (advancedEdit) twitch(m *core.Message) (string, core.Urr, error) {
-	h, err := m.Client.(*twitch.Twitch).Helix()
+	hx, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err
 	}
@@ -216,7 +216,7 @@ func (advancedEdit) twitch(m *core.Message) (string, core.Urr, error) {
 		return "", nil, err
 	}
 
-	g, urr, err := h.SetGame(hix, m.RawArgs(0))
+	g, urr, err := hx.SetGame(hix, m.RawArgs(0))
 
 	if urr != nil {
 		return fmt.Sprint(urr), urr, nil
