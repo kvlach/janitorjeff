@@ -288,20 +288,12 @@ func parse(m *dg.Message) *core.Message {
 	return msg
 }
 
-func isAdmin(guildID string, userID string) bool {
-	can, err := Client.MemberAllowed(guildID, userID, dg.PermissionAdministrator)
-	if err != nil {
-		return false
-	}
-	return can
+func isAdmin(guildID string, userID string) (bool, error) {
+	return Client.MemberAllowed(guildID, userID, dg.PermissionAdministrator)
 }
 
-func isMod(guildID string, userID string) bool {
-	can, err := Client.MemberAllowed(guildID, userID, dg.PermissionBanMembers)
-	if err != nil {
-		return false
-	}
-	return can
+func isMod(guildID string, userID string) (bool, error) {
+	return Client.MemberAllowed(guildID, userID, dg.PermissionBanMembers)
 }
 
 func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg.Message, error) {
