@@ -2,7 +2,7 @@ package twitch
 
 import (
 	"database/sql"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 func dbAddChannel(id string) (int64, error) {

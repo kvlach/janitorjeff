@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/custom-command"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	_ "git.sr.ht/~slowtyper/janitorjeff/internal/testing_init"
-	"git.sr.ht/~slowtyper/janitorjeff/internal/testkit"
+	"github.com/kvlach/janitorjeff/commands/custom-command"
+	"github.com/kvlach/janitorjeff/core"
+	_ "github.com/kvlach/janitorjeff/internal/testing_init"
+	"github.com/kvlach/janitorjeff/internal/testkit"
 
 	"github.com/rs/zerolog"
 )

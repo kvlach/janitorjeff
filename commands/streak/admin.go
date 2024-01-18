@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/nick"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
+	"github.com/kvlach/janitorjeff/commands/nick"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends/twitch"
 )
 
 var Admin = admin{}

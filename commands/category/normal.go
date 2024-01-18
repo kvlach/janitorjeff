@@ -1,7 +1,7 @@
 package category
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 var Normal = normal{}

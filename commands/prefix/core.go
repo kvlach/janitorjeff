@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/custom-command"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+	"github.com/kvlach/janitorjeff/commands/custom-command"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"

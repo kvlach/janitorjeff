@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/nick"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
+	"github.com/kvlach/janitorjeff/commands/nick"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends/discord"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"

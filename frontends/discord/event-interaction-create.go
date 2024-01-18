@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"

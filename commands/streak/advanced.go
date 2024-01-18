@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends/twitch"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"

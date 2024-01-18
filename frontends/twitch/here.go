@@ -3,7 +3,7 @@ package twitch
 import (
 	"errors"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 // here implements the core.Placer interface.

@@ -1,9 +1,9 @@
 package frontends
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends/discord"
+	"github.com/kvlach/janitorjeff/frontends/twitch"
 )
 
 var Frontends = core.Frontenders{

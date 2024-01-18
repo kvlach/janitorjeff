@@ -1,7 +1,7 @@
 package tts
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 /////////

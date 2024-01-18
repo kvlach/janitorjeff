@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicklaw5/helix/v2"

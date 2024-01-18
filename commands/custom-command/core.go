@@ -3,7 +3,7 @@ package custom_command
 import (
 	"strings"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 var (
