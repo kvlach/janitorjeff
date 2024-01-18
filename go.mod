@@ -1,14 +1,14 @@
-module git.sr.ht/~slowtyper/janitorjeff
+module github.com/kvlach/janitorjeff
 
 go 1.20
 
 require (
-	git.sr.ht/~slowtyper/dgc v0.0.0-20230918122311-7deb4755095f
-	git.sr.ht/~slowtyper/gosafe v0.0.0-20230429173855-569f44c7f026
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.0
+	github.com/kvlach/dgc v0.0.0-20240118112851-c85329461991
+	github.com/kvlach/gosafe v0.0.0-20240118094725-11acfbdc09cd
 	github.com/lib/pq v1.10.9
 	github.com/nicklaw5/helix/v2 v2.25.1
 	github.com/prometheus/client_golang v1.16.0

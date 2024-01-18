@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"

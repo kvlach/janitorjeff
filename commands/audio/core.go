@@ -5,10 +5,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/youtube"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/commands/youtube"
+	"github.com/kvlach/janitorjeff/core"
 
-	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/kvlach/gosafe"
 	"github.com/rs/zerolog/log"
 )
 

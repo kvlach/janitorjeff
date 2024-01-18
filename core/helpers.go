@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/kvlach/gosafe"
 	"github.com/rivo/uniseg"
 )
 

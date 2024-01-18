@@ -1,7 +1,7 @@
 package core
 
 import (
-	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/kvlach/gosafe"
 )
 
 // Placer is the interface used to abstract the place where an event came from,

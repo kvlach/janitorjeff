@@ -3,11 +3,11 @@ package core_test
 import (
 	"testing"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands/custom-command"
-	"git.sr.ht/~slowtyper/janitorjeff/commands/help"
-	"git.sr.ht/~slowtyper/janitorjeff/commands/nick"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/internal/testkit"
+	"github.com/kvlach/janitorjeff/commands/custom-command"
+	"github.com/kvlach/janitorjeff/commands/help"
+	"github.com/kvlach/janitorjeff/commands/nick"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/internal/testkit"
 )
 
 // Using these commands as they don't require complicated permissions checks

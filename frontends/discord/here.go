@@ -3,7 +3,7 @@ package discord
 import (
 	"sync"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
 	"github.com/rs/zerolog/log"
 )

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
-	"git.sr.ht/~slowtyper/dgc"
+	"github.com/kvlach/dgc"
 	dg "github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )

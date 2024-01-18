@@ -1,7 +1,7 @@
 package help
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 var Advanced = advanced{}

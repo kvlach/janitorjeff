@@ -3,7 +3,7 @@ package core_test
 import (
 	"testing"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 func eqSlices(s1, s2 []string) bool {

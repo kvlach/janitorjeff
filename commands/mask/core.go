@@ -1,9 +1,9 @@
 package mask
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
-	"git.sr.ht/~slowtyper/gosafe"
+	"github.com/kvlach/gosafe"
 )
 
 var UrrMaskNotSet = core.UrrNew("No mask has been set.")

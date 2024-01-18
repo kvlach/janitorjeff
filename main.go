@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"git.sr.ht/~slowtyper/janitorjeff/commands"
-	"git.sr.ht/~slowtyper/janitorjeff/core"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/discord"
-	"git.sr.ht/~slowtyper/janitorjeff/frontends/twitch"
+	"github.com/kvlach/janitorjeff/commands"
+	"github.com/kvlach/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/frontends"
+	"github.com/kvlach/janitorjeff/frontends/discord"
+	"github.com/kvlach/janitorjeff/frontends/twitch"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"

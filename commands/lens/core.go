@@ -1,6 +1,6 @@
 package lens
 
-import "git.sr.ht/~slowtyper/janitorjeff/core"
+import "github.com/kvlach/janitorjeff/core"
 
 func DirectorAdd(name string) error {
 	db := core.DB

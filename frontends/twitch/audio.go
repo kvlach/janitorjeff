@@ -3,7 +3,7 @@ package twitch
 import (
 	"io"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 type Speaker struct{}

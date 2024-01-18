@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 )
 
 var UrrNoResult = core.UrrNew("no results found")

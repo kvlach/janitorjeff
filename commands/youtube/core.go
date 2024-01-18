@@ -1,9 +1,9 @@
 package youtube
 
 import (
-	"git.sr.ht/~slowtyper/janitorjeff/core"
+	"github.com/kvlach/janitorjeff/core"
 
-	"git.sr.ht/~slowtyper/janitorjeff/apis/youtube"
+	"github.com/kvlach/janitorjeff/apis/youtube"
 )
 
 var (
