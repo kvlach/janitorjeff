@@ -123,7 +123,7 @@ func (a *AuthorMessage) Admin() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return isAdmin(a.guildID, aid)
+	return isAdmin(a.GuildID, aid)
 }
 
 func (a *AuthorMessage) Moderator() (bool, error) {
@@ -131,7 +131,7 @@ func (a *AuthorMessage) Moderator() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return isMod(a.guildID, aid)
+	return isMod(a.GuildID, aid)
 }
 
 func (a *AuthorMessage) Subscriber() (bool, error) {
