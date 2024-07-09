@@ -7,38 +7,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Event is the interface used for handling all incoming events,
-// such as messages, redeems, or stream status changes.
-type Event[T any] interface {
-	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
-
-	// Hooks return's the event's hooks variable, e.g. [EventMessageHooks].
-	// Exists to enable [EventAwait]'s implementation.
-	Hooks() *Hooks[T]
-
-	// Handler is the method that [EventLoop] calls when it receives the event.
-	Handler()
-}
-
-// EventLoop starts an infinite loop which handles all incoming events.
-// To increase throughput and avoid lag, the caller can spawn multiple goroutines.
-func EventLoop() {
-	// If multiple goroutines have been spawned, Golang guarantees that
-	// only one of the receivers will ever receive the channel data.
-	for {
-		select {
-		case m := <-EventMessage:
-			m.Handler()
-		case rc := <-EventRedeemClaim:
-			rc.Handler()
-		case son := <-EventStreamOnline:
-			son.Handler()
-		case soff := <-EventStreamOffline:
-			soff.Handler()
-		}
-	}
-}
-
 type hook[T any] struct {
 	ID  int
 	Run func(T)
@@ -120,6 +88,38 @@ func (hs *Hooks[T]) Run(arg T) {
 
 	for _, h := range hs.hooks {
 		hs.ch <- hookData[T]{h, arg}
+	}
+}
+
+// Event is the interface used for handling all incoming events,
+// such as messages, redeems, or stream status changes.
+type Event[T any] interface {
+	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
+
+	// Handler is the method that [EventLoop] calls when it receives the event.
+	Handler()
+
+	// Hooks return's the event's hooks variable, e.g. [EventMessageHooks].
+	// Exists to enable [EventAwait]'s implementation.
+	Hooks() *Hooks[T]
+}
+
+// EventLoop starts an infinite loop which handles all incoming events.
+// To increase throughput and avoid lag, the caller can spawn multiple goroutines.
+func EventLoop() {
+	// If multiple goroutines have been spawned, Golang guarantees that
+	// only one of the receivers will ever receive the channel data.
+	for {
+		select {
+		case m := <-EventMessage:
+			m.Handler()
+		case rc := <-EventRedeemClaim:
+			rc.Handler()
+		case son := <-EventStreamOnline:
+			son.Handler()
+		case soff := <-EventStreamOffline:
+			soff.Handler()
+		}
 	}
 }
 
