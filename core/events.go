@@ -7,20 +7,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Event is the interface used for handling all incoming events,
+// such as messages, redeems, or stream status changes.
 type Event[T any] interface {
 	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
 
+	// Hooks return's the event's hooks variable, e.g. [EventMessageHooks].
+	// Exists to enable [EventAwait]'s implementation.
 	Hooks() *Hooks[T]
 
+	// Handler is the method that [EventLoop] calls when it receives the event.
 	Handler()
 }
 
-// EventLoop starts an infinite loop which handles all incoming events. It's
-// possible to have multiple instances running in separate goroutines (in order
-// for the bot not to lag when handling an event that takes longer than
-// virtually instantly); Golang guarantees that only one of the receivers will
-// receive the channel data.
+// EventLoop starts an infinite loop which handles all incoming events.
+// To increase throughput and avoid lag, the caller can spawn multiple goroutines.
 func EventLoop() {
+	// If multiple goroutines have been spawned, Golang guarantees that
+	// only one of the receivers will ever receive the channel data.
 	for {
 		select {
 		case m := <-EventMessage:
@@ -45,8 +49,8 @@ type hookData[T any] struct {
 	Arg  T
 }
 
-// Hooks are a list of functions that are applied one-by-one to incoming
-// events. All operations are thread safe.
+// Hooks are a list of functions that are applied one-by-one to incoming events.
+// All operations are thread safe.
 type Hooks[T any] struct {
 	lock  sync.RWMutex
 	hooks []hook[T]
@@ -58,8 +62,8 @@ type Hooks[T any] struct {
 	total int
 }
 
-// HooksNew generates a new Hooks object. Spawns n number of receiver functions
-// in their own goroutines.
+// HooksNew generates a new Hooks object.
+// Spawns n number of receiver functions in their own goroutines.
 func HooksNew[T any](n int) *Hooks[T] {
 	hs := &Hooks[T]{}
 	hs.ch = make(chan hookData[T])
@@ -80,8 +84,8 @@ func HooksNew[T any](n int) *Hooks[T] {
 	return hs
 }
 
-// Register returns the hook's id which can be used to delete the hook by
-// calling the Delete method.
+// Register appends f to the hook and returns the hook's ID,
+// which can be used to remove f from the hook by calling .Delete().
 func (hs *Hooks[T]) Register(f func(T)) int {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
@@ -96,8 +100,8 @@ func (hs *Hooks[T]) Register(f func(T)) int {
 	return hs.total
 }
 
-// Delete will delete the hook with the given id. If the hook doesn't exist,
-// then nothing happens.
+// Delete removes the hook with the given id.
+// If the hook doesn't exist, no action is taken.
 func (hs *Hooks[T]) Delete(id int) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()
@@ -119,9 +123,8 @@ func (hs *Hooks[T]) Run(arg T) {
 	}
 }
 
-// EventAwait monitors incoming events until check is true or until timeout. If
-// nothing is matched, then the returned object will be the default value of the
-// type.
+// EventAwait monitors incoming events until check is true or until timeout.
+// If nothing is matched, the returned object will be the type's zero value.
 func EventAwait[T Event[T]](timeout time.Duration, check func(T) bool) T {
 	found := make(chan struct{})
 
