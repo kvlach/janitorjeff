@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 )
 
@@ -349,4 +352,44 @@ func (m *Message) CommandRun() (*Message, error) {
 
 func (m *Message) Usage() any {
 	return m.Frontend.Usage(m.Command.Usage())
+}
+
+var (
+	EventMessage        = make(chan *Message)
+	EventMessageHooks   = HooksNew[*Message](20)
+	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "jeff_event_message_total",
+		Help: "Total number of received message events.",
+	}, []string{"frontend", "place"})
+)
+
+func (m *Message) Hooks() *Hooks[*Message] {
+	return EventMessageHooks
+}
+
+func (m *Message) Handler() {
+	place, err := m.Here.ScopeLogical()
+	if err != nil {
+		log.Error().Err(err)
+		return
+	}
+
+	eventMessageCounter.With(prometheus.Labels{
+		"frontend": m.Frontend.Name(),
+		"place":    strconv.FormatInt(place, 10),
+	}).Inc()
+
+	log.Debug().
+		Str("id", m.ID).
+		Str("raw", m.Raw).
+		Interface("frontend", m.Frontend.Type()).
+		Msg("received message event")
+
+	EventMessageHooks.Run(m)
+	if _, err := m.CommandRun(); err != nil {
+		log.Debug().
+			Err(err).
+			Interface("command", m.Command).
+			Msg("got error while running command")
+	}
 }

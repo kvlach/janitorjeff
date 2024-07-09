@@ -1,12 +1,9 @@
 package core
 
 import (
-	"strconv"
 	"sync"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,73 +11,8 @@ type Event[T any] interface {
 	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
 
 	Hooks() *Hooks[T]
-}
 
-var (
-	EventMessage        = make(chan *Message)
-	EventMessageHooks   = HooksNew[*Message](20)
-	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "jeff_event_message_total",
-		Help: "Total number of received message events.",
-	}, []string{"frontend", "place"})
-
-	EventRedeemClaim        = make(chan *RedeemClaim)
-	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
-	eventRedeemClaimCounter = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "jeff_event_redeem_claim_total",
-		Help: "Total number of received redeem claim events.",
-	}, []string{"frontend", "place"})
-
-	EventStreamOnline        = make(chan *StreamOnline)
-	EventStreamOnlineHooks   = HooksNew[*StreamOnline](5)
-	eventStreamOnlineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "jeff_event_stream_online_total",
-		Help: "Total number of received stream online events.",
-	}, []string{"frontend", "place"})
-
-	EventStreamOffline        = make(chan *StreamOffline)
-	EventStreamOfflineHooks   = HooksNew[*StreamOffline](5)
-	eventStreamOfflineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "jeff_event_stream_offline_total",
-		Help: "Total number of received stream offline events.",
-	}, []string{"frontend", "place"})
-)
-
-func (m *Message) Hooks() *Hooks[*Message] {
-	return EventMessageHooks
-}
-
-type RedeemClaim struct {
-	ID       string
-	Input    string
-	When     time.Time
-	Author   Personifier
-	Here     Placer
-	Frontend Frontender
-}
-
-func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
-	return EventRedeemClaimHooks
-}
-
-type StreamOnline struct {
-	When     time.Time
-	Here     Placer
-	Frontend Frontender
-}
-
-func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
-	return EventStreamOnlineHooks
-}
-
-type StreamOffline struct {
-	When     time.Time
-	Here     Placer
-	Frontend Frontender
-}
-
-func (son *StreamOffline) Hooks() *Hooks[*StreamOffline] {
-	return EventStreamOfflineHooks
+	Handler()
 }
 
 // EventLoop starts an infinite loop which handles all incoming events. It's
@@ -92,165 +24,15 @@ func EventLoop() {
 	for {
 		select {
 		case m := <-EventMessage:
-			place, err := m.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err)
-				continue
-			}
-			eventMessageCounter.
-				With(prometheus.Labels{
-					"frontend": m.Frontend.Name(),
-					"place":    strconv.FormatInt(place, 10),
-				}).
-				Inc()
-			log.Debug().
-				Str("id", m.ID).
-				Str("raw", m.Raw).
-				Interface("frontend", m.Frontend.Type()).
-				Msg("received message event")
-			EventMessageHooks.Run(m)
-			if _, err := m.CommandRun(); err != nil {
-				log.Debug().
-					Err(err).
-					Interface("command", m.Command).
-					Msg("got error while running command")
-			}
-
+			m.Handler()
 		case rc := <-EventRedeemClaim:
-			place, err := rc.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err)
-				continue
-			}
-			eventRedeemClaimCounter.
-				With(prometheus.Labels{
-					"frontend": rc.Frontend.Name(),
-					"place":    strconv.FormatInt(place, 10),
-				}).
-				Inc()
-			log.Debug().
-				Str("id", rc.ID).
-				Str("input", rc.Input).
-				Str("when", rc.When.String()).
-				Msg("received redeem claim event")
-			EventRedeemClaimHooks.Run(rc)
-
-		case on := <-EventStreamOnline:
-			place, err := on.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err)
-				continue
-			}
-			eventStreamOnlineCounter.
-				With(prometheus.Labels{
-					"frontend": on.Frontend.Name(),
-					"place":    strconv.FormatInt(place, 10),
-				}).
-				Inc()
-			log.Debug().
-				Str("when", on.When.String()).
-				Msg("received stream online event")
-			here, err := on.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to get logical here")
-				break
-			}
-			if err := streamOnline(here, on.When); err != nil {
-				log.Error().Err(err).Msg("failed to save stream online status")
-				break
-			}
-			EventStreamOnlineHooks.Run(on)
-
-		case off := <-EventStreamOffline:
-			place, err := off.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err)
-				continue
-			}
-			eventStreamOfflineCounter.
-				With(prometheus.Labels{
-					"frontend": off.Frontend.Name(),
-					"place":    strconv.FormatInt(place, 10),
-				}).
-				Inc()
-			log.Debug().
-				Str("when", off.When.String()).
-				Msg("received stream offline event")
-			here, err := off.Here.ScopeLogical()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to get logical here")
-				break
-			}
-			if err := DB.PlaceSet("stream_offline_actual", here, off.When.UTC().Unix()); err != nil {
-				log.Error().Err(err).Msg("failed save stream offline actual")
-				break
-			}
-			EventStreamOfflineHooks.Run(off)
+			rc.Handler()
+		case son := <-EventStreamOnline:
+			son.Handler()
+		case soff := <-EventStreamOffline:
+			soff.Handler()
 		}
 	}
-}
-
-// streamOnline will save the timestamp of when the stream went online. It tries
-// to filter shaky connections by giving a grace period of the stream going
-// offline and online again (event multiple times), in which case the streams
-// are viewed as one.
-func streamOnline(place int64, when time.Time) error {
-	// There are 2 kinds of values, actual and normalized. Actual keeps track of
-	// online/offline events as they come in, without any filtering, normalized
-	// makes sure that more than the specified grace period has passed between
-	// the stream going down and up again.
-
-	DB.Lock.Lock()
-	defer DB.Lock.Unlock()
-
-	tx, err := DB.Begin()
-	if err != nil {
-		return err
-	}
-	//goland:noinspection GoUnhandledErrorResult
-	defer tx.Rollback()
-
-	err = tx.PlaceSet("stream_online_actual", place, when.UTC().Unix())
-	if err != nil {
-		return err
-	}
-
-	offline, err := tx.PlaceGet("stream_offline_actual", place).Time()
-	if err != nil {
-		return err
-	}
-
-	grace, err := tx.PlaceGet("stream_grace", place).Duration()
-	if err != nil {
-		return err
-	}
-
-	diff := when.Sub(offline)
-	if diff <= grace {
-		log.Debug().
-			Str("diff", diff.String()).
-			Msg("stream online again within grace period")
-		// in order to save the stream_online_actual value
-		return tx.Commit()
-	}
-
-	offlinePrev, err := tx.PlaceGet("stream_offline_norm", place).Int64()
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("stream_offline_norm_prev", place, offlinePrev)
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("stream_offline_norm", place, offline.Unix())
-	if err != nil {
-		return err
-	}
-	err = tx.PlaceSet("stream_online_norm", place, when.UTC().Unix())
-	if err != nil {
-		return err
-	}
-	return tx.Commit()
 }
 
 type hook[T any] struct {
