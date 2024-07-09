@@ -44,7 +44,7 @@ func NewTwitch(author core.Personifier, here core.Placer, client *tirc.Client) *
 	}
 }
 
-func NewMessage(m tirc.PrivateMessage) (*core.Message, error) {
+func NewMessage(m tirc.PrivateMessage) (*core.EventMessage, error) {
 	a, err := NewAuthor(
 		m.User.ID,
 		m.User.Name,
@@ -59,7 +59,7 @@ func NewMessage(m tirc.PrivateMessage) (*core.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &core.Message{
+	return &core.EventMessage{
 		ID:       m.ID,
 		Raw:      m.Message,
 		Frontend: Frontend,
@@ -89,7 +89,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 				Interface("msg", pm).
 				Msg("failed to parse private message")
 		}
-		core.EventMessage <- m
+		core.EventMessageChan <- m
 	})
 
 	twitchIrcClient.Join(f.Channels...)
@@ -122,7 +122,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	wgStop.Done()
 }
 
-func (f *frontend) CreateMessage(person, place int64, _ string) (*core.Message, error) {
+func (f *frontend) CreateMessage(person, place int64, _ string) (*core.EventMessage, error) {
 	personID, err := dbGetChannel(person)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (t *Twitch) Helix() (*Helix, error) {
 //           //
 ///////////////
 
-func (t *Twitch) Parse() (*core.Message, error) {
+func (t *Twitch) Parse() (*core.EventMessage, error) {
 	panic("TODO: THIS WILL BE DELETED")
 }
 
@@ -236,7 +236,7 @@ func (t *Twitch) Person(id string) (int64, error) {
 	return dbAddChannel(id)
 }
 
-func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
+func (t *Twitch) send(msg any, mention string) (*core.EventMessage, error) {
 	var text string
 	switch t := msg.(type) {
 	case string:
@@ -271,11 +271,11 @@ func (t *Twitch) send(msg any, mention string) (*core.Message, error) {
 	return nil, nil
 }
 
-func (t *Twitch) Send(msg any, _ core.Urr) (*core.Message, error) {
+func (t *Twitch) Send(msg any, _ core.Urr) (*core.EventMessage, error) {
 	return t.send(msg, "")
 }
 
-func (t *Twitch) Ping(msg any, _ core.Urr) (*core.Message, error) {
+func (t *Twitch) Ping(msg any, _ core.Urr) (*core.EventMessage, error) {
 	dn, err := t.Author.DisplayName()
 	if err != nil {
 		return nil, err
@@ -284,11 +284,11 @@ func (t *Twitch) Ping(msg any, _ core.Urr) (*core.Message, error) {
 	return t.send(msg, mention)
 }
 
-func (t *Twitch) Write(msg any, urr core.Urr) (*core.Message, error) {
+func (t *Twitch) Write(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return t.Ping(msg, urr)
 }
 
-func (t *Twitch) Natural(msg any, _ core.Urr) (*core.Message, error) {
+func (t *Twitch) Natural(msg any, _ core.Urr) (*core.EventMessage, error) {
 	var mention string
 	var err error
 	// need this to only happen 30% of the time

@@ -19,7 +19,7 @@ type Message struct {
 //           //
 ///////////////
 
-func (d *Message) Parse() (*core.Message, error) {
+func (d *Message) Parse() (*core.EventMessage, error) {
 	msg := parse(d.Message)
 	msg.Client = d
 	return msg, nil
@@ -37,7 +37,7 @@ func (d *Message) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (d *Message) send(msg any, urr error, ping bool) (*core.Message, error) {
+func (d *Message) send(msg any, urr error, ping bool) (*core.EventMessage, error) {
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Message, msg.(string), ping)
@@ -49,19 +49,19 @@ func (d *Message) send(msg any, urr error, ping bool) (*core.Message, error) {
 	}
 }
 
-func (d *Message) Send(msg any, urr core.Urr) (*core.Message, error) {
+func (d *Message) Send(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, false)
 }
 
-func (d *Message) Ping(msg any, urr core.Urr) (*core.Message, error) {
+func (d *Message) Ping(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, true)
 }
 
-func (d *Message) Write(msg any, urr core.Urr) (*core.Message, error) {
+func (d *Message) Write(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 
-func (d *Message) Natural(msg any, urr core.Urr) (*core.Message, error) {
+func (d *Message) Natural(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 

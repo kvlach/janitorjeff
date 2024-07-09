@@ -20,7 +20,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (normal) Permitted(m *core.EventMessage) bool {
 	if m.Frontend.Type() != discord.Frontend.Type() {
 		return false
 	}
@@ -78,7 +78,7 @@ var normalHelp = &dg.MessageEmbed{
 	Color: embedColor,
 }
 
-func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -87,14 +87,14 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c normal) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return normalHelp, core.UrrMissingArgs, nil
 	}
 	return c.play(m)
 }
 
-func (c normal) play(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c normal) play(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	rounds, err := strconv.Atoi(m.Command.Args[0])
 	if err != nil {
 		return normalHelp, nil, nil

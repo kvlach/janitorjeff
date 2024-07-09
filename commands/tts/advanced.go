@@ -20,7 +20,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	return true
 }
 
@@ -63,7 +63,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -81,7 +81,7 @@ func (c advancedStart) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedStart) Permitted(m *core.Message) bool {
+func (c advancedStart) Permitted(m *core.EventMessage) bool {
 	return m.Speaker.Enabled()
 }
 
@@ -119,7 +119,7 @@ func (advancedStart) Init() error {
 	return nil
 }
 
-func (c advancedStart) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedStart) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -132,7 +132,7 @@ func (c advancedStart) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedStart) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedStart) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	c.core(m)
 	embed := &dg.MessageEmbed{
 		Description: "Monitoring channel.",
@@ -140,12 +140,12 @@ func (c advancedStart) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, err
 	return embed, nil, nil
 }
 
-func (c advancedStart) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedStart) text(m *core.EventMessage) (string, core.Urr, error) {
 	c.core(m)
 	return "Monitoring channel.", nil, nil
 }
 
-func (advancedStart) core(m *core.Message) {
+func (advancedStart) core(m *core.EventMessage) {
 	twitchUsername := strings.ToLower(m.Command.Args[0])
 	Start(m.Speaker, twitchUsername)
 }
@@ -164,7 +164,7 @@ func (c advancedStop) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedStop) Permitted(m *core.Message) bool {
+func (c advancedStop) Permitted(m *core.EventMessage) bool {
 	return AdvancedStart.Permitted(m)
 }
 
@@ -202,7 +202,7 @@ func (advancedStop) Init() error {
 	return nil
 }
 
-func (c advancedStop) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedStop) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -215,7 +215,7 @@ func (c advancedStop) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedStop) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -226,7 +226,7 @@ func (c advancedStop) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, urr, nil
 }
 
-func (c advancedStop) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedStop) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -243,7 +243,7 @@ func (c advancedStop) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedStop) core(m *core.Message) (core.Urr, error) {
+func (advancedStop) core(m *core.EventMessage) (core.Urr, error) {
 	twitchUsername := strings.ToLower(m.Command.Args[0])
 	return Stop(twitchUsername)
 }
@@ -262,7 +262,7 @@ func (c advancedVoice) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedVoice) Permitted(m *core.Message) bool {
+func (c advancedVoice) Permitted(m *core.EventMessage) bool {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
@@ -308,7 +308,7 @@ func (advancedVoice) Init() error {
 	return nil
 }
 
-func (c advancedVoice) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedVoice) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -326,7 +326,7 @@ func (c advancedVoiceShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedVoiceShow) Permitted(m *core.Message) bool {
+func (c advancedVoiceShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -362,7 +362,7 @@ func (advancedVoiceShow) Init() error {
 	return nil
 }
 
-func (c advancedVoiceShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedVoiceShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -375,7 +375,7 @@ func (c advancedVoiceShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedVoiceShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -386,7 +386,7 @@ func (c advancedVoiceShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr,
 	return embed, nil, nil
 }
 
-func (c advancedVoiceShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedVoiceShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	voice, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -398,7 +398,7 @@ func (c advancedVoiceShow) fmt(voice string) string {
 	return "The user's voice is: " + voice
 }
 
-func (advancedVoiceShow) core(m *core.Message) (string, error) {
+func (advancedVoiceShow) core(m *core.EventMessage) (string, error) {
 	user := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()
@@ -428,7 +428,7 @@ func (c advancedVoiceSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedVoiceSet) Permitted(m *core.Message) bool {
+func (c advancedVoiceSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -464,7 +464,7 @@ func (advancedVoiceSet) Init() error {
 	return nil
 }
 
-func (c advancedVoiceSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedVoiceSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -477,7 +477,7 @@ func (c advancedVoiceSet) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedVoiceSet) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -491,7 +491,7 @@ func (c advancedVoiceSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, 
 	return embed, nil, nil
 }
 
-func (c advancedVoiceSet) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedVoiceSet) text(m *core.EventMessage) (string, core.Urr, error) {
 	voice, err := c.core(m)
 
 	if err != nil {
@@ -501,7 +501,7 @@ func (c advancedVoiceSet) text(m *core.Message) (string, core.Urr, error) {
 	return "Added voice " + voice, nil, nil
 }
 
-func (advancedVoiceSet) core(m *core.Message) (string, error) {
+func (advancedVoiceSet) core(m *core.EventMessage) (string, error) {
 	user := m.Command.Args[0]
 	voice := m.Command.Args[1]
 
@@ -532,7 +532,7 @@ func (c advancedSubOnly) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSubOnly) Permitted(m *core.Message) bool {
+func (c advancedSubOnly) Permitted(m *core.EventMessage) bool {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
@@ -579,7 +579,7 @@ func (advancedSubOnly) Init() error {
 	return nil
 }
 
-func (c advancedSubOnly) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSubOnly) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -597,7 +597,7 @@ func (c advancedSubOnlyOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSubOnlyOn) Permitted(m *core.Message) bool {
+func (c advancedSubOnlyOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -633,7 +633,7 @@ func (advancedSubOnlyOn) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSubOnlyOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -642,7 +642,7 @@ func (c advancedSubOnlyOn) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedSubOnlyOn) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -653,7 +653,7 @@ func (c advancedSubOnlyOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr,
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyOn) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedSubOnlyOn) text(m *core.EventMessage) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -665,7 +665,7 @@ func (advancedSubOnlyOn) fmt() string {
 	return "Turned sub-only mode on."
 }
 
-func (advancedSubOnlyOn) core(m *core.Message) error {
+func (advancedSubOnlyOn) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -687,7 +687,7 @@ func (c advancedSubOnlyOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSubOnlyOff) Permitted(m *core.Message) bool {
+func (c advancedSubOnlyOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -723,7 +723,7 @@ func (advancedSubOnlyOff) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyOff) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSubOnlyOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -732,7 +732,7 @@ func (c advancedSubOnlyOff) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedSubOnlyOff) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -743,7 +743,7 @@ func (c advancedSubOnlyOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyOff) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedSubOnlyOff) text(m *core.EventMessage) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -755,7 +755,7 @@ func (advancedSubOnlyOff) fmt() string {
 	return "Turned sub-only mode off."
 }
 
-func (advancedSubOnlyOff) core(m *core.Message) error {
+func (advancedSubOnlyOff) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -777,7 +777,7 @@ func (c advancedSubOnlyShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSubOnlyShow) Permitted(m *core.Message) bool {
+func (c advancedSubOnlyShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -813,7 +813,7 @@ func (advancedSubOnlyShow) Init() error {
 	return nil
 }
 
-func (c advancedSubOnlyShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSubOnlyShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -822,7 +822,7 @@ func (c advancedSubOnlyShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedSubOnlyShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	subonly, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -833,7 +833,7 @@ func (c advancedSubOnlyShow) discord(m *core.Message) (*dg.MessageEmbed, core.Ur
 	return embed, nil, nil
 }
 
-func (c advancedSubOnlyShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedSubOnlyShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	subonly, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -849,7 +849,7 @@ func (c advancedSubOnlyShow) fmt(subonly bool) string {
 	return "Sub-only mode is currently " + subonlyStr + "."
 }
 
-func (advancedSubOnlyShow) core(m *core.Message) (bool, error) {
+func (advancedSubOnlyShow) core(m *core.EventMessage) (bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return false, err

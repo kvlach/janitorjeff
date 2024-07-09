@@ -18,7 +18,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (normal) Permitted(m *core.EventMessage) bool {
 	return true
 }
 
@@ -67,7 +67,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		return nil, nil, err
@@ -102,7 +102,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	return AdvancedTalkDialogue.Run(m)
 }
 
-func (c normal) renderOff(m *core.Message) (any, core.Urr, error) {
+func (c normal) renderOff(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return &dg.MessageEmbed{
@@ -121,7 +121,7 @@ func (c normal) renderOff(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (normal) fmtOff(m *core.Message) string {
+func (normal) fmtOff(m *core.EventMessage) string {
 	return fmt.Sprintf("Auto-replying is off. You can talk to God directly using %s. You can turn auto-replying on using %s", core.FormatQuote(Normal, m.Command.Prefix, m.Client), core.FormatQuote(NormalOn, m.Command.Prefix, m.Client))
 }
 
@@ -139,7 +139,7 @@ func (c normalShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalShow) Permitted(m *core.Message) bool {
+func (c normalShow) Permitted(m *core.EventMessage) bool {
 	return AdvancedAutoShow.Permitted(m)
 }
 
@@ -175,7 +175,7 @@ func (normalShow) Init() error {
 	return nil
 }
 
-func (normalShow) Run(m *core.Message) (any, core.Urr, error) {
+func (normalShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedAutoShow.Run(m)
 }
 
@@ -193,7 +193,7 @@ func (c normalOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalOn) Permitted(m *core.Message) bool {
+func (c normalOn) Permitted(m *core.EventMessage) bool {
 	return AdvancedAutoOn.Permitted(m)
 }
 
@@ -229,7 +229,7 @@ func (normalOn) Init() error {
 	return nil
 }
 
-func (normalOn) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedAutoOn.Run(m)
 }
 
@@ -247,7 +247,7 @@ func (c normalOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalOff) Permitted(m *core.Message) bool {
+func (c normalOff) Permitted(m *core.EventMessage) bool {
 	return AdvancedAutoOff.Permitted(m)
 }
 
@@ -283,7 +283,7 @@ func (normalOff) Init() error {
 	return nil
 }
 
-func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedAutoOff.Run(m)
 }
 
@@ -301,7 +301,7 @@ func (c normalPersonality) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (normalPersonality) Permitted(m *core.Message) bool {
+func (normalPersonality) Permitted(m *core.EventMessage) bool {
 	return AdvancedPersonalityShow.Permitted(m)
 }
 
@@ -337,7 +337,7 @@ func (normalPersonality) Init() error {
 	return nil
 }
 
-func (normalPersonality) Run(m *core.Message) (any, core.Urr, error) {
+func (normalPersonality) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch len(m.Command.Args) {
 	case 0:
 		return AdvancedPersonalityShow.Run(m)
@@ -370,7 +370,7 @@ func (c normalPersonalities) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (normalPersonalities) Permitted(m *core.Message) bool {
+func (normalPersonalities) Permitted(m *core.EventMessage) bool {
 	return AdvancedPersonalityList.Permitted(m)
 }
 
@@ -410,6 +410,6 @@ func (normalPersonalities) Init() error {
 	return nil
 }
 
-func (normalPersonalities) Run(m *core.Message) (any, core.Urr, error) {
+func (normalPersonalities) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedPersonalityList.Run(m)
 }

@@ -12,7 +12,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (normal) Permitted(m *core.EventMessage) bool {
 	return Advanced.Permitted(m)
 }
 
@@ -53,7 +53,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, core.Urr, error) {
+func (normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedShow.Run(m)
 }
 
@@ -71,7 +71,7 @@ func (c normalOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalOn) Permitted(m *core.Message) bool {
+func (c normalOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -107,7 +107,7 @@ func (normalOn) Init() error {
 	return nil
 }
 
-func (normalOn) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedOn.Run(m)
 }
 
@@ -125,7 +125,7 @@ func (c normalOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalOff) Permitted(m *core.Message) bool {
+func (c normalOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -161,7 +161,7 @@ func (normalOff) Init() error {
 	return nil
 }
 
-func (normalOff) Run(m *core.Message) (any, core.Urr, error) {
+func (normalOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedOff.Run(m)
 }
 
@@ -179,7 +179,7 @@ func (c normalRedeem) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalRedeem) Permitted(m *core.Message) bool {
+func (c normalRedeem) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -215,7 +215,7 @@ func (normalRedeem) Init() error {
 	return nil
 }
 
-func (normalRedeem) Run(m *core.Message) (any, core.Urr, error) {
+func (normalRedeem) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedRedeemShow.Run(m)
 	}
@@ -236,7 +236,7 @@ func (c normalGrace) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalGrace) Permitted(m *core.Message) bool {
+func (c normalGrace) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -272,7 +272,7 @@ func (normalGrace) Init() error {
 	return nil
 }
 
-func (normalGrace) Run(m *core.Message) (any, core.Urr, error) {
+func (normalGrace) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedGraceShow.Run(m)
 	}

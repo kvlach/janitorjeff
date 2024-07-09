@@ -17,7 +17,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	if m.Frontend.Type() != twitch.Frontend.Type() {
 		return false
 	}
@@ -67,7 +67,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -85,7 +85,7 @@ func (c advancedShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedShow) Permitted(m *core.Message) bool {
+func (c advancedShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -121,7 +121,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case twitch.Frontend.Type():
 		return c.twitch(m)
@@ -130,7 +130,7 @@ func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (advancedShow) twitch(m *core.Message) (string, core.Urr, error) {
+func (advancedShow) twitch(m *core.EventMessage) (string, core.Urr, error) {
 	hx, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err
@@ -157,7 +157,7 @@ func (c advancedEdit) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedEdit) Permitted(m *core.Message) bool {
+func (c advancedEdit) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -196,7 +196,7 @@ func (advancedEdit) Init() error {
 	return nil
 }
 
-func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedEdit) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case twitch.Frontend.Type():
 		return c.twitch(m)
@@ -205,7 +205,7 @@ func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (advancedEdit) twitch(m *core.Message) (string, core.Urr, error) {
+func (advancedEdit) twitch(m *core.EventMessage) (string, core.Urr, error) {
 	hx, err := m.Client.(*twitch.Twitch).Helix()
 	if err != nil {
 		return "", nil, err

@@ -10,25 +10,25 @@ import (
 )
 
 var (
-	EventStreamOnline        = make(chan *StreamOnline)
-	EventStreamOnlineHooks   = HooksNew[*StreamOnline](5)
+	EventStreamOnlineChan    = make(chan *EventStreamOnline)
+	EventStreamOnlineHooks   = NewHooks[*EventStreamOnline](5)
 	eventStreamOnlineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_stream_online_total",
 		Help: "Total number of received stream online events.",
 	}, []string{"frontend", "place"})
 )
 
-type StreamOnline struct {
+type EventStreamOnline struct {
 	When     time.Time
 	Here     Placer
 	Frontend Frontender
 }
 
-func (son *StreamOnline) Hooks() *Hooks[*StreamOnline] {
+func (son *EventStreamOnline) Hooks() *Hooks[*EventStreamOnline] {
 	return EventStreamOnlineHooks
 }
 
-func (son *StreamOnline) Handler() {
+func (son *EventStreamOnline) Handler() {
 	place, err := son.Here.ScopeLogical()
 	if err != nil {
 		log.Error().Err(err)
@@ -55,7 +55,7 @@ func (son *StreamOnline) Handler() {
 // Tries to filter shaky connections by giving a grace period of the stream going
 // offline and online again (even multiple times), in which case the streams
 // are viewed as one.
-func (son *StreamOnline) save() error {
+func (son *EventStreamOnline) save() error {
 	// There are 2 kinds of values, actual and normalized. Actual keeps track of
 	// online/offline events as they come in, without any filtering, normalized
 	// makes sure that more than the specified grace period has passed between

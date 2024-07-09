@@ -257,7 +257,7 @@ func isBotAdmin(id string) bool {
 	return false
 }
 
-func parse(m *dg.Message) *core.Message {
+func parse(m *dg.Message) *core.EventMessage {
 	author := &AuthorMessage{
 		GuildID: m.GuildID,
 		Author:  m.Author,
@@ -276,7 +276,7 @@ func parse(m *dg.Message) *core.Message {
 		VC:     nil,
 	}
 
-	msg := &core.Message{
+	msg := &core.EventMessage{
 		ID:       m.ID,
 		Raw:      m.Content,
 		Frontend: Frontend,
@@ -348,7 +348,7 @@ func msgSend(m *dg.Message, text string, embed *dg.MessageEmbed, ping bool) (*dg
 	return resp, nil
 }
 
-func sendText(m *dg.Message, text string, ping bool) (*core.Message, error) {
+func sendText(m *dg.Message, text string, ping bool) (*core.EventMessage, error) {
 	var resp *dg.Message
 	var err error
 
@@ -371,7 +371,7 @@ func sendText(m *dg.Message, text string, ping bool) (*core.Message, error) {
 	return (&Message{Message: resp}).Parse()
 }
 
-func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*core.Message, error) {
+func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*core.EventMessage, error) {
 	// TODO: implement message scrolling
 	embed = embedColor(embed, urr)
 	resp, err := msgSend(m, "", embed, ping)
@@ -418,7 +418,7 @@ func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Messag
 	return resp, nil
 }
 
-func editText(m *dg.Message, id, text string) (*core.Message, error) {
+func editText(m *dg.Message, id, text string) (*core.EventMessage, error) {
 	resp, err := msgEdit(m, id, text, nil)
 	if err != nil {
 		return nil, err
@@ -426,7 +426,7 @@ func editText(m *dg.Message, id, text string) (*core.Message, error) {
 	return (&Message{Message: resp}).Parse()
 }
 
-func editEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, id string) (*core.Message, error) {
+func editEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, id string) (*core.EventMessage, error) {
 	embed = embedColor(embed, urr)
 	resp, err := msgEdit(m, id, "", embed)
 	if err != nil {

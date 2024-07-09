@@ -28,7 +28,7 @@ const (
 
 var UrrCommandNotFound = core.UrrNew("Command could not be found.")
 
-func runCore(t core.CommandType, m *core.Message, args []string, prefix string) (*core.Command, []string, []string, core.Urr) {
+func runCore(t core.CommandType, m *core.EventMessage, args []string, prefix string) (*core.Command, []string, []string, core.Urr) {
 	cmdStatic, index, err := core.Commands.Match(t, m, args)
 	if err != nil {
 		return nil, nil, nil, UrrCommandNotFound
@@ -121,7 +121,7 @@ func renderDiscord(cmd *core.Command, aliases []string, examples []string) *dg.M
 	return embed
 }
 
-func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func runDiscord(t core.CommandType, m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	cmd, aliases, examples, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if urr != nil {
 		return &dg.MessageEmbed{Description: fmt.Sprint(urr)}, urr, nil
@@ -129,7 +129,7 @@ func runDiscord(t core.CommandType, m *core.Message) (*dg.MessageEmbed, core.Urr
 	return renderDiscord(cmd, aliases, examples), nil, nil
 }
 
-func runText(t core.CommandType, m *core.Message) (string, core.Urr, error) {
+func runText(t core.CommandType, m *core.EventMessage) (string, core.Urr, error) {
 	cmd, aliases, _, urr := runCore(t, m, m.Command.Args, m.Command.Prefix)
 	if urr != nil {
 		return fmt.Sprint(urr), urr, nil
@@ -137,7 +137,7 @@ func runText(t core.CommandType, m *core.Message) (string, core.Urr, error) {
 	return renderText(cmd, aliases), nil, nil
 }
 
-func run(t core.CommandType, m *core.Message) (any, core.Urr, error) {
+func run(t core.CommandType, m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}

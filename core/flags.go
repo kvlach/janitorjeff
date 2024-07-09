@@ -8,11 +8,11 @@ import (
 
 type Flags struct {
 	FlagSet *flag.FlagSet
-	Msg     *Message
+	Msg     *EventMessage
 	send    strings.Builder
 }
 
-func NewFlags(m *Message) *Flags {
+func NewFlags(m *EventMessage) *Flags {
 	name := fmt.Sprintf("'%s'", strings.Join(m.Command.Path, " "))
 	f := &Flags{
 		FlagSet: flag.NewFlagSet(name, flag.ContinueOnError),

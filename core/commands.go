@@ -51,7 +51,7 @@ type CommandStatic interface {
 	// Returns true if the command is allowed to be executed. Usually used to
 	// check a user's permissions or to restrict a command to specific
 	// frontends.
-	Permitted(m *Message) bool
+	Permitted(m *EventMessage) bool
 
 	// Names return a list of all the aliases a command has. The first item in
 	// the list is considered the main name and so should be the simplest and
@@ -90,7 +90,7 @@ type CommandStatic interface {
 	Init() error
 
 	// Run is the function that is called to run the command.
-	Run(m *Message) (resp any, urr Urr, err error)
+	Run(m *EventMessage) (resp any, urr Urr, err error)
 }
 
 // Format will return a string representation of the given command in a format
@@ -153,7 +153,7 @@ func (cmd *Command) Usage() string {
 
 type CommandsStatic []CommandStatic
 
-func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (CommandStatic, error) {
+func (cmds CommandsStatic) match(t CommandType, m *EventMessage, name string) (CommandStatic, error) {
 	name = strings.ToLower(name)
 
 	for _, c := range cmds {
@@ -180,7 +180,7 @@ func (cmds CommandsStatic) match(t CommandType, m *Message, name string) (Comman
 // In this case, the prefix's subcommand "add" will be matched and returned.
 // Alongside it, the index of the last valid command will be returned (in this
 // case, the index of "add," which is 1).
-func (cmds CommandsStatic) Match(t CommandType, m *Message, args []string) (CommandStatic, int, error) {
+func (cmds CommandsStatic) Match(t CommandType, m *EventMessage, args []string) (CommandStatic, int, error) {
 	log.Debug().Strs("args", args).Msg("trying to match command")
 
 	index := 0

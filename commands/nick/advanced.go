@@ -17,7 +17,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(*core.Message) bool {
+func (advanced) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -96,7 +96,7 @@ func (advanced) discordAppCommand() {
 	discord.RegisterAppCommand(cmd)
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -114,7 +114,7 @@ func (c advancedShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedShow) Permitted(m *core.Message) bool {
+func (c advancedShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -150,7 +150,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -187,7 +187,7 @@ func (advancedShow) fmt(urr core.Urr, nick string) string {
 	}
 }
 
-func (advancedShow) core(m *core.Message) (string, core.Urr, error) {
+func (advancedShow) core(m *core.EventMessage) (string, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
@@ -215,7 +215,7 @@ func (c advancedSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSet) Permitted(m *core.Message) bool {
+func (c advancedSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -251,7 +251,7 @@ func (advancedSet) Init() error {
 	return nil
 }
 
-func (c advancedSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -290,7 +290,7 @@ func (c advancedSet) fmt(urr core.Urr, nick string) string {
 	}
 }
 
-func (c advancedSet) core(m *core.Message) (string, core.Urr, error) {
+func (c advancedSet) core(m *core.EventMessage) (string, core.Urr, error) {
 	nick := m.Command.Args[0]
 
 	author, err := m.Author.Scope()
@@ -321,7 +321,7 @@ func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDelete) Permitted(m *core.Message) bool {
+func (c advancedDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -357,7 +357,7 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -386,7 +386,7 @@ func (advancedDelete) fmt() string {
 	return "Deleted your nickname."
 }
 
-func (advancedDelete) core(m *core.Message) core.Urr {
+func (advancedDelete) core(m *core.EventMessage) core.Urr {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return err

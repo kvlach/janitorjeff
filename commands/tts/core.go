@@ -167,7 +167,7 @@ func Start(sp core.AudioSpeaker, twitchUsername string) {
 		log.Debug().Msg("speaker joined")
 	}
 
-	id := core.EventMessageHooks.Register(func(m *core.Message) {
+	id := core.EventMessageHooks.Register(func(m *core.EventMessage) {
 		hn, err := m.Here.Name()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get here name")

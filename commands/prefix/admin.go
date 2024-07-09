@@ -7,7 +7,7 @@ import (
 	"github.com/kvlach/janitorjeff/frontends/discord"
 )
 
-func getAdminFlags(m *core.Message) (*flags, []string, error) {
+func getAdminFlags(m *core.EventMessage) (*flags, []string, error) {
 	f := newFlags(m).TypeFlag().ScopeFlag()
 	args, err := f.fs.Parse()
 	return f, args, err
@@ -26,7 +26,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(*core.Message) bool {
+func (admin) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -69,7 +69,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -87,7 +87,7 @@ func (c adminAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminAdd) Permitted(m *core.Message) bool {
+func (c adminAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -123,7 +123,7 @@ func (adminAdd) Init() error {
 	return nil
 }
 
-func (c adminAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	prefix, collision, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -141,7 +141,7 @@ func (c adminAdd) Run(m *core.Message) (any, core.Urr, error) {
 	return c.fmt(urr, m, prefix, collision), urr, nil
 }
 
-func (adminAdd) fmt(urr core.Urr, m *core.Message, prefix, collision string) any {
+func (adminAdd) fmt(urr core.Urr, m *core.EventMessage, prefix, collision string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Added prefix %s", prefix)
@@ -156,7 +156,7 @@ func (adminAdd) fmt(urr core.Urr, m *core.Message, prefix, collision string) any
 	}
 }
 
-func (adminAdd) core(m *core.Message) (string, string, core.Urr, error) {
+func (adminAdd) core(m *core.EventMessage) (string, string, core.Urr, error) {
 	fs, args, err := getAdminFlags(m)
 	if err != nil {
 		return "", "", nil, err
@@ -195,7 +195,7 @@ func (c adminDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminDelete) Permitted(m *core.Message) bool {
+func (c adminDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -231,7 +231,7 @@ func (adminDelete) Init() error {
 	return nil
 }
 
-func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	prefix, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -247,7 +247,7 @@ func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
 	return c.fmt(urr, m, prefix), urr, nil
 }
 
-func (adminDelete) fmt(urr error, m *core.Message, prefix string) any {
+func (adminDelete) fmt(urr error, m *core.EventMessage, prefix string) any {
 	switch urr {
 	case nil:
 		return fmt.Sprintf("Deleted prefix %s", prefix)
@@ -269,7 +269,7 @@ func (adminDelete) fmt(urr error, m *core.Message, prefix string) any {
 	}
 }
 
-func (adminDelete) core(m *core.Message) (string, core.Urr, error) {
+func (adminDelete) core(m *core.EventMessage) (string, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return "", core.UrrMissingArgs, nil
 	}
@@ -300,7 +300,7 @@ func (c adminList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminList) Permitted(m *core.Message) bool {
+func (c adminList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -336,12 +336,12 @@ func (adminList) Init() error {
 	return nil
 }
 
-func (c adminList) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminList) Run(m *core.EventMessage) (any, core.Urr, error) {
 	prefixes, err := c.core(m)
 	return fmt.Sprint(prefixes), nil, err
 }
 
-func (adminList) core(m *core.Message) ([]core.Prefix, error) {
+func (adminList) core(m *core.EventMessage) ([]core.Prefix, error) {
 	fs, _, err := getAdminFlags(m)
 	if err != nil {
 		return nil, err
@@ -363,7 +363,7 @@ func (c adminReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminReset) Permitted(m *core.Message) bool {
+func (c adminReset) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -401,11 +401,11 @@ func (adminReset) Init() error {
 	return nil
 }
 
-func (c adminReset) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminReset) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return "Reset prefixes.", nil, c.core(m)
 }
 
-func (adminReset) core(m *core.Message) error {
+func (adminReset) core(m *core.EventMessage) error {
 	fs, _, err := getAdminFlags(m)
 	if err != nil {
 		return err

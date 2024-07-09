@@ -103,7 +103,7 @@ func (tdb *TestDB) Delete() {
 }
 
 type TestMessage struct {
-	core.Message
+	core.EventMessage
 }
 
 var names = []string{
@@ -114,7 +114,7 @@ var names = []string{
 }
 
 func NewTestMessage() *TestMessage {
-	return &TestMessage{core.Message{}}
+	return &TestMessage{core.EventMessage{}}
 }
 
 func randomID() string {

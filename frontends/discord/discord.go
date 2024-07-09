@@ -74,7 +74,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 	wgStop.Done()
 }
 
-func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.Message, error) {
+func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.EventMessage, error) {
 	channelID, err := core.DB.ScopeID(channel)
 	if err != nil {
 		return nil, err

@@ -14,7 +14,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
@@ -63,7 +63,7 @@ func (c advanced) Init() error {
 	return nil
 }
 
-func (advanced) emergencyReset(m *core.Message) {
+func (advanced) emergencyReset(m *core.EventMessage) {
 	if m.Raw != "!!!PleaseResetThePrefixesBackToTheDefaultsThanks!!!" {
 		return
 	}
@@ -76,7 +76,7 @@ func (advanced) emergencyReset(m *core.Message) {
 	m.Write(resp, urr)
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -94,7 +94,7 @@ func (c advancedAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAdd) Permitted(m *core.Message) bool {
+func (c advancedAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -130,7 +130,7 @@ func (advancedAdd) Init() error {
 	return nil
 }
 
-func (c advancedAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdAdd(c.Type(), m)
 }
 
@@ -148,7 +148,7 @@ func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDelete) Permitted(m *core.Message) bool {
+func (c advancedDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -184,7 +184,7 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdDelete(c.Type(), m)
 }
 
@@ -202,7 +202,7 @@ func (c advancedList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedList) Permitted(m *core.Message) bool {
+func (c advancedList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -238,7 +238,7 @@ func (advancedList) Init() error {
 	return nil
 }
 
-func (c advancedList) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedList) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdList(c.Type(), m)
 }
 
@@ -256,7 +256,7 @@ func (c advancedReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedReset) Permitted(m *core.Message) bool {
+func (c advancedReset) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -294,6 +294,6 @@ func (advancedReset) Init() error {
 	return nil
 }
 
-func (advancedReset) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedReset) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdReset(m)
 }

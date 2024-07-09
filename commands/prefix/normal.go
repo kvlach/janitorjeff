@@ -12,7 +12,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (normal) Permitted(m *core.EventMessage) bool {
 	return Advanced.Permitted(m)
 }
 
@@ -52,7 +52,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdList(c.Type(), m)
 }
 
@@ -70,7 +70,7 @@ func (c normalAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalAdd) Permitted(m *core.Message) bool {
+func (c normalAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -106,7 +106,7 @@ func (normalAdd) Init() error {
 	return nil
 }
 
-func (c normalAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c normalAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdAdd(c.Type(), m)
 }
 
@@ -124,7 +124,7 @@ func (c normalDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalDelete) Permitted(m *core.Message) bool {
+func (c normalDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -160,7 +160,7 @@ func (normalDelete) Init() error {
 	return nil
 }
 
-func (c normalDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c normalDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdDelete(c.Type(), m)
 }
 
@@ -178,7 +178,7 @@ func (c normalReset) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalReset) Permitted(m *core.Message) bool {
+func (c normalReset) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -214,6 +214,6 @@ func (normalReset) Init() error {
 	return nil
 }
 
-func (normalReset) Run(m *core.Message) (any, core.Urr, error) {
+func (normalReset) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return cmdReset(m)
 }

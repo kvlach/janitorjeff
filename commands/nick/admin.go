@@ -16,7 +16,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(m *core.Message) bool {
+func (admin) Permitted(m *core.EventMessage) bool {
 	return Advanced.Permitted(m)
 }
 
@@ -56,7 +56,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -74,7 +74,7 @@ func (c adminShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminShow) Permitted(m *core.Message) bool {
+func (c adminShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -110,7 +110,7 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	nick, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -124,7 +124,7 @@ func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (adminShow) core(m *core.Message) (string, core.Urr, error) {
+func (adminShow) core(m *core.EventMessage) (string, core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return "", nil, err
@@ -152,7 +152,7 @@ func (c adminSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminSet) Permitted(m *core.Message) bool {
+func (c adminSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -188,7 +188,7 @@ func (adminSet) Init() error {
 	return nil
 }
 
-func (c adminSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -207,7 +207,7 @@ func (c adminSet) Run(m *core.Message) (any, core.Urr, error) {
 
 }
 
-func (adminSet) core(m *core.Message) (string, core.Urr, error) {
+func (adminSet) core(m *core.EventMessage) (string, core.Urr, error) {
 	nick := m.Command.Args[0]
 
 	author, err := m.Author.Scope()
@@ -238,7 +238,7 @@ func (c adminDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminDelete) Permitted(m *core.Message) bool {
+func (c adminDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -274,7 +274,7 @@ func (adminDelete) Init() error {
 	return nil
 }
 
-func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -291,7 +291,7 @@ func (c adminDelete) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (adminDelete) core(m *core.Message) (core.Urr, error) {
+func (adminDelete) core(m *core.EventMessage) (core.Urr, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return nil, err

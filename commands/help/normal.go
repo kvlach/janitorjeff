@@ -12,7 +12,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
+func (normal) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -48,6 +48,6 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, core.Urr, error) {
+func (normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return run(core.Normal, m)
 }

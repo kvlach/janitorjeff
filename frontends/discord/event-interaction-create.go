@@ -98,7 +98,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 //           //
 ///////////////
 
-func (i *InteractionCreate) Parse() (*core.Message, error) {
+func (i *InteractionCreate) Parse() (*core.EventMessage, error) {
 	author := &AuthorInteraction{
 		GuildID: i.Interaction.GuildID,
 		Member:  i.Interaction.Member,
@@ -117,7 +117,7 @@ func (i *InteractionCreate) Parse() (*core.Message, error) {
 		VC:     nil,
 	}
 
-	m := &core.Message{
+	m := &core.EventMessage{
 		ID:       i.Data.ID,
 		Raw:      "", // TODO
 		Frontend: Frontend,
@@ -147,7 +147,7 @@ func (i *InteractionCreate) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
+func (i *InteractionCreate) send(msg any, urr error) (*core.EventMessage, error) {
 	switch t := msg.(type) {
 	case string:
 		resp := &dg.InteractionResponse{
@@ -176,19 +176,19 @@ func (i *InteractionCreate) send(msg any, urr error) (*core.Message, error) {
 	}
 }
 
-func (i *InteractionCreate) Send(msg any, urr core.Urr) (*core.Message, error) {
+func (i *InteractionCreate) Send(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Ping(msg any, urr core.Urr) (*core.Message, error) {
+func (i *InteractionCreate) Ping(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Write(msg any, urr core.Urr) (*core.Message, error) {
+func (i *InteractionCreate) Write(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return i.send(msg, urr)
 }
 
-func (i *InteractionCreate) Natural(msg any, urr core.Urr) (*core.Message, error) {
+func (i *InteractionCreate) Natural(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return i.send(msg, urr)
 }
 

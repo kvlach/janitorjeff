@@ -18,7 +18,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	return m.Speaker.Enabled()
 }
 
@@ -63,7 +63,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -81,7 +81,7 @@ func (c advancedPlay) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPlay) Permitted(m *core.Message) bool {
+func (c advancedPlay) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -120,7 +120,7 @@ func (advancedPlay) Init() error {
 	return nil
 }
 
-func (c advancedPlay) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPlay) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -133,7 +133,7 @@ func (c advancedPlay) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPlay) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	item, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -144,7 +144,7 @@ func (c advancedPlay) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, urr, nil
 }
 
-func (c advancedPlay) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPlay) text(m *core.EventMessage) (string, core.Urr, error) {
 	item, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -162,7 +162,7 @@ func (advancedPlay) fmt(urr core.Urr, title string) string {
 	}
 }
 
-func (advancedPlay) core(m *core.Message) (Item, core.Urr, error) {
+func (advancedPlay) core(m *core.EventMessage) (Item, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Item{}, nil, err
@@ -184,7 +184,7 @@ func (c advancedPause) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPause) Permitted(m *core.Message) bool {
+func (c advancedPause) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -222,7 +222,7 @@ func (advancedPause) Init() error {
 	return nil
 }
 
-func (c advancedPause) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPause) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -231,7 +231,7 @@ func (c advancedPause) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPause) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -242,7 +242,7 @@ func (c advancedPause) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, err
 	return embed, urr, nil
 }
 
-func (c advancedPause) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPause) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -261,7 +261,7 @@ func (advancedPause) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedPause) core(m *core.Message) (core.Urr, error) {
+func (advancedPause) core(m *core.EventMessage) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ func (c advancedResume) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedResume) Permitted(m *core.Message) bool {
+func (c advancedResume) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -322,7 +322,7 @@ func (advancedResume) Init() error {
 	return nil
 }
 
-func (c advancedResume) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedResume) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -331,7 +331,7 @@ func (c advancedResume) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedResume) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -342,7 +342,7 @@ func (c advancedResume) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, er
 	return embed, urr, nil
 }
 
-func (c advancedResume) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedResume) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -363,7 +363,7 @@ func (advancedResume) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedResume) core(m *core.Message) (core.Urr, error) {
+func (advancedResume) core(m *core.EventMessage) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -385,7 +385,7 @@ func (c advancedSkip) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSkip) Permitted(m *core.Message) bool {
+func (c advancedSkip) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -423,7 +423,7 @@ func (advancedSkip) Init() error {
 	return nil
 }
 
-func (c advancedSkip) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSkip) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -432,7 +432,7 @@ func (c advancedSkip) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedSkip) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -443,7 +443,7 @@ func (c advancedSkip) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, urr, nil
 }
 
-func (c advancedSkip) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedSkip) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -462,7 +462,7 @@ func (advancedSkip) fmt(urr error) string {
 	}
 }
 
-func (advancedSkip) core(m *core.Message) (error, error) {
+func (advancedSkip) core(m *core.EventMessage) (error, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -484,7 +484,7 @@ func (c advancedLoop) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedLoop) Permitted(m *core.Message) bool {
+func (c advancedLoop) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -525,7 +525,7 @@ func (advancedLoop) Init() error {
 	return nil
 }
 
-func (advancedLoop) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedLoop) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -543,7 +543,7 @@ func (c advancedLoopOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedLoopOn) Permitted(m *core.Message) bool {
+func (c advancedLoopOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -581,7 +581,7 @@ func (advancedLoopOn) Init() error {
 	return nil
 }
 
-func (c advancedLoopOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedLoopOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -590,7 +590,7 @@ func (c advancedLoopOn) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedLoopOn) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -601,7 +601,7 @@ func (c advancedLoopOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, er
 	return embed, urr, nil
 }
 
-func (c advancedLoopOn) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedLoopOn) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -620,7 +620,7 @@ func (advancedLoopOn) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedLoopOn) core(m *core.Message) (core.Urr, error) {
+func (advancedLoopOn) core(m *core.EventMessage) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -642,7 +642,7 @@ func (c advancedLoopOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedLoopOff) Permitted(m *core.Message) bool {
+func (c advancedLoopOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -680,7 +680,7 @@ func (advancedLoopOff) Init() error {
 	return nil
 }
 
-func (c advancedLoopOff) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedLoopOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -689,7 +689,7 @@ func (c advancedLoopOff) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedLoopOff) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -700,7 +700,7 @@ func (c advancedLoopOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, e
 	return embed, urr, nil
 }
 
-func (c advancedLoopOff) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedLoopOff) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -721,7 +721,7 @@ func (advancedLoopOff) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedLoopOff) core(m *core.Message) (core.Urr, error) {
+func (advancedLoopOff) core(m *core.EventMessage) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -743,7 +743,7 @@ func (c advancedQueue) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedQueue) Permitted(m *core.Message) bool {
+func (c advancedQueue) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -779,7 +779,7 @@ func (advancedQueue) Init() error {
 	return nil
 }
 
-func (c advancedQueue) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedQueue) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -788,7 +788,7 @@ func (c advancedQueue) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedQueue) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	titles, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -809,7 +809,7 @@ func (c advancedQueue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, err
 	return embed, nil, nil
 }
 
-func (c advancedQueue) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedQueue) text(m *core.EventMessage) (string, core.Urr, error) {
 	titles, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -829,7 +829,7 @@ func (advancedQueue) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedQueue) core(m *core.Message) ([]string, core.Urr, error) {
+func (advancedQueue) core(m *core.EventMessage) ([]string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, nil, err

@@ -21,7 +21,7 @@ func (normalTime) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalTime) Permitted(*core.Message) bool {
+func (normalTime) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -58,7 +58,7 @@ func (c normalTime) Init() error {
 	return nil
 }
 
-func (normalTime) addReminder(m *core.Message) {
+func (normalTime) addReminder(m *core.EventMessage) {
 	re := regexp.MustCompile(`^remind\s+me\s+to\s+` + `(?P<cmd>.+(in|on)\s+.+)`)
 
 	if !re.MatchString(m.Raw) {
@@ -88,7 +88,7 @@ func (normalTime) addReminder(m *core.Message) {
 	m.Write(resp, urr)
 }
 
-func (normalTime) Run(m *core.Message) (any, core.Urr, error) {
+func (normalTime) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedNow.Run(m)
 }
 
@@ -106,7 +106,7 @@ func (c normalTimezone) Type() core.CommandType {
 	return core.Normal
 }
 
-func (c normalTimezone) Permitted(m *core.Message) bool {
+func (c normalTimezone) Permitted(m *core.EventMessage) bool {
 	return AdvancedTimezone.Permitted(m)
 }
 
@@ -145,7 +145,7 @@ func (normalTimezone) Init() error {
 	return nil
 }
 
-func (normalTimezone) Run(m *core.Message) (any, core.Urr, error) {
+func (normalTimezone) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) == 0 {
 		return AdvancedTimezoneShow.Run(m)
 	}

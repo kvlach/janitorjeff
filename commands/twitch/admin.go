@@ -17,7 +17,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(m *core.Message) bool {
+func (admin) Permitted(m *core.EventMessage) bool {
 	return true
 }
 
@@ -59,7 +59,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), nil, nil
 }
 
@@ -77,7 +77,7 @@ func (c adminEventSub) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminEventSub) Permitted(m *core.Message) bool {
+func (c adminEventSub) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -118,7 +118,7 @@ func (adminEventSub) Init() error {
 	return nil
 }
 
-func (adminEventSub) Run(m *core.Message) (any, core.Urr, error) {
+func (adminEventSub) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), nil, nil
 }
 
@@ -136,7 +136,7 @@ func (c adminEventSubList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminEventSubList) Permitted(m *core.Message) bool {
+func (c adminEventSubList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -172,7 +172,7 @@ func (adminEventSubList) Init() error {
 	return nil
 }
 
-func (adminEventSubList) Run(*core.Message) (any, core.Urr, error) {
+func (adminEventSubList) Run(*core.EventMessage) (any, core.Urr, error) {
 	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, nil, err
@@ -206,7 +206,7 @@ func (c adminEventSubDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminEventSubDelete) Permitted(m *core.Message) bool {
+func (c adminEventSubDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -242,7 +242,7 @@ func (adminEventSubDelete) Init() error {
 	return nil
 }
 
-func (adminEventSubDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (adminEventSubDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -279,7 +279,7 @@ func (c adminRedeem) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminRedeem) Permitted(m *core.Message) bool {
+func (c adminRedeem) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -319,7 +319,7 @@ func (adminRedeem) Init() error {
 	return nil
 }
 
-func (adminRedeem) Run(m *core.Message) (any, core.Urr, error) {
+func (adminRedeem) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -337,7 +337,7 @@ func (c adminRedeemList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminRedeemList) Permitted(m *core.Message) bool {
+func (c adminRedeemList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -373,7 +373,7 @@ func (adminRedeemList) Init() error {
 	return nil
 }
 
-func (adminRedeemList) Run(m *core.Message) (any, core.Urr, error) {
+func (adminRedeemList) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}

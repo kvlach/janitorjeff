@@ -17,7 +17,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(m *core.Message) bool {
+func (admin) Permitted(m *core.EventMessage) bool {
 	return m.Frontend.Type() == twitch.Type
 }
 
@@ -57,7 +57,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (resp any, urr core.Urr, err error) {
+func (admin) Run(m *core.EventMessage) (resp any, urr core.Urr, err error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -75,7 +75,7 @@ func (c adminShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminShow) Permitted(m *core.Message) bool {
+func (c adminShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -111,7 +111,7 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (adminShow) Run(m *core.Message) (any, core.Urr, error) {
+func (adminShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -144,7 +144,7 @@ func (c adminSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminSet) Permitted(m *core.Message) bool {
+func (c adminSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -180,7 +180,7 @@ func (adminSet) Init() error {
 	return nil
 }
 
-func (adminSet) Run(m *core.Message) (any, core.Urr, error) {
+func (adminSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}

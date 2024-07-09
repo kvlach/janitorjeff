@@ -10,15 +10,15 @@ import (
 )
 
 var (
-	EventRedeemClaim        = make(chan *RedeemClaim)
-	EventRedeemClaimHooks   = HooksNew[*RedeemClaim](5)
+	EventRedeemClaimChan    = make(chan *EventRedeemClaim)
+	EventRedeemClaimHooks   = NewHooks[*EventRedeemClaim](5)
 	eventRedeemClaimCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_redeem_claim_total",
 		Help: "Total number of received redeem claim events.",
 	}, []string{"frontend", "place"})
 )
 
-type RedeemClaim struct {
+type EventRedeemClaim struct {
 	ID       string
 	Input    string
 	When     time.Time
@@ -27,11 +27,11 @@ type RedeemClaim struct {
 	Frontend Frontender
 }
 
-func (rc *RedeemClaim) Hooks() *Hooks[*RedeemClaim] {
+func (rc *EventRedeemClaim) Hooks() *Hooks[*EventRedeemClaim] {
 	return EventRedeemClaimHooks
 }
 
-func (rc *RedeemClaim) Handler() {
+func (rc *EventRedeemClaim) Handler() {
 	place, err := rc.Here.ScopeLogical()
 	if err != nil {
 		log.Error().Err(err)

@@ -26,7 +26,7 @@ type Frontender interface {
 
 	// CreateMessage returns a Message object based on the given arguments.
 	// Used to send messages that are not direct replies, e.g. reminders.
-	CreateMessage(person, place int64, msgID string) (*Message, error)
+	CreateMessage(person, place int64, msgID string) (*EventMessage, error)
 
 	// Usage returns the passed usage formatted appropriately for the frontend.
 	Usage(usage string) any
@@ -43,7 +43,7 @@ type Frontenders []Frontender
 // CreateMessage returns a Message object based on the given arguments. It
 // detects what the frontend is based on the place. Used to send messages that
 // are not direct replies, e.g. reminders.
-func (fs Frontenders) CreateMessage(person, place int64, msgID string) (*Message, error) {
+func (fs Frontenders) CreateMessage(person, place int64, msgID string) (*EventMessage, error) {
 	frontendType, err := DB.ScopeFrontend(place)
 	if err != nil {
 		return nil, err

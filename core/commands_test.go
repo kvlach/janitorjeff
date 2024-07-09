@@ -43,7 +43,7 @@ func TestCommandUsage(t *testing.T) {
 }
 
 func TestMatch(t *testing.T) {
-	msg := &testkit.NewTestMessage().DiscordRandom().Message
+	msg := &testkit.NewTestMessage().DiscordRandom().EventMessage
 	match, index, err := cmds.Match(core.Advanced, msg, []string{"nick", "set", "test-cmd"})
 
 	if err != nil {

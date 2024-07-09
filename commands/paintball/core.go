@@ -201,8 +201,8 @@ func simplify(s string) string {
 	return strings.ToLower(re.ReplaceAllString(s, ""))
 }
 
-func awaitAnswer(here int64, answers []string) *core.Message {
-	msg := core.EventAwait(15*time.Second, func(m *core.Message) bool {
+func awaitAnswer(here int64, answers []string) *core.EventMessage {
+	msg := core.EventAwait(15*time.Second, func(m *core.EventMessage) bool {
 		place, err := m.Here.ScopeExact()
 		if err != nil {
 			return false

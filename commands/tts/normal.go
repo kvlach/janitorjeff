@@ -21,7 +21,7 @@ func (normalTTS) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalTTS) Permitted(m *core.Message) bool {
+func (normalTTS) Permitted(m *core.EventMessage) bool {
 	return AdvancedStart.Permitted(m)
 }
 
@@ -57,7 +57,7 @@ func (normalTTS) Init() error {
 	return nil
 }
 
-func (normalTTS) Run(m *core.Message) (any, core.Urr, error) {
+func (normalTTS) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedStart.Run(m)
 }
 
@@ -76,7 +76,7 @@ func (normalVoice) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalVoice) Permitted(m *core.Message) bool {
+func (normalVoice) Permitted(m *core.EventMessage) bool {
 	return AdvancedVoice.Permitted(m)
 }
 
@@ -112,7 +112,7 @@ func (normalVoice) Init() error {
 	return nil
 }
 
-func (normalVoice) Run(m *core.Message) (any, core.Urr, error) {
+func (normalVoice) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch len(m.Command.Args) {
 	case 0:
 		return m.Usage(), core.UrrMissingArgs, nil
@@ -137,7 +137,7 @@ func (normalSubOnly) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalSubOnly) Permitted(m *core.Message) bool {
+func (normalSubOnly) Permitted(m *core.EventMessage) bool {
 	return AdvancedSubOnly.Permitted(m)
 }
 
@@ -176,7 +176,7 @@ func (normalSubOnly) Init() error {
 	return nil
 }
 
-func (normalSubOnly) Run(m *core.Message) (any, core.Urr, error) {
+func (normalSubOnly) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedSubOnlyShow.Run(m)
 }
 
@@ -194,7 +194,7 @@ func (normalSubOnlyOn) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalSubOnlyOn) Permitted(m *core.Message) bool {
+func (normalSubOnlyOn) Permitted(m *core.EventMessage) bool {
 	return AdvancedSubOnlyOn.Permitted(m)
 }
 
@@ -230,7 +230,7 @@ func (normalSubOnlyOn) Init() error {
 	return nil
 }
 
-func (normalSubOnlyOn) Run(m *core.Message) (any, core.Urr, error) {
+func (normalSubOnlyOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedSubOnlyOn.Run(m)
 }
 
@@ -248,7 +248,7 @@ func (normalSubOnlyOff) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normalSubOnlyOff) Permitted(m *core.Message) bool {
+func (normalSubOnlyOff) Permitted(m *core.EventMessage) bool {
 	return AdvancedSubOnlyOff.Permitted(m)
 }
 
@@ -284,6 +284,6 @@ func (normalSubOnlyOff) Init() error {
 	return nil
 }
 
-func (normalSubOnlyOff) Run(m *core.Message) (any, core.Urr, error) {
+func (normalSubOnlyOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedSubOnlyOff.Run(m)
 }

@@ -134,7 +134,7 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 
 // Messenger is the abstraction layer for message events.
 type Messenger interface {
-	Parse() (*Message, error)
+	Parse() (*EventMessage, error)
 
 	// PlaceID returns the ID of the passed string. The returned ID must be
 	// valid. Generally used for verifying an ID's validity and extracting IDs
@@ -152,28 +152,28 @@ type Messenger interface {
 
 	// Send sends a message to the appropriate scope, resp could be nil
 	// depending on the frontend.
-	Send(msg any, urr Urr) (resp *Message, err error)
+	Send(msg any, urr Urr) (resp *EventMessage, err error)
 
 	// Ping works the same as Send except the user is also pinged.
-	Ping(msg any, urr Urr) (resp *Message, err error)
+	Ping(msg any, urr Urr) (resp *EventMessage, err error)
 
 	// Write either calls Send or Ping depending on the frontend. This is what
 	// should be used in most cases.
-	Write(msg any, urr Urr) (resp *Message, err error)
+	Write(msg any, urr Urr) (resp *EventMessage, err error)
 
 	// Natural will try to emulate a response as if an actual human had written
 	// it. Often the bot uses markers to distinguish its responses (for example,
 	// on Twitch it replies with the following format: @person -> <resp>), which
 	// are not natural looking. To add to the effect, randomness may be used to
 	// only sometimes mention the person.
-	Natural(msg any, urr Urr) (resp *Message, err error)
+	Natural(msg any, urr Urr) (resp *EventMessage, err error)
 
 	// QuoteCommand returns the passed cmd quoted appropriately.
 	// If frontend-specific formatting doesn't exist, then use single quotes.
 	QuoteCommand(cmd string) string
 }
 
-type Message struct {
+type EventMessage struct {
 	ID       string
 	Raw      string
 	Frontend Frontender
@@ -184,13 +184,13 @@ type Message struct {
 	Command  *Command
 }
 
-func (m *Message) Fields() []string {
+func (m *EventMessage) Fields() []string {
 	return strings.Fields(m.Raw)
 }
 
 // FieldsSpace splits text into fields that include all trailing whitespace. For
 // example, "example of    text" will be split into ["example ", "of    ", "text"]
-func (m *Message) FieldsSpace() []string {
+func (m *EventMessage) FieldsSpace() []string {
 	text := strings.TrimSpace(m.Raw)
 	re := regexp.MustCompile(`\S+\s*`)
 	fields := re.FindAllString(text, -1)
@@ -205,7 +205,7 @@ func (m *Message) FieldsSpace() []string {
 
 // RawArgs returns the arguments including the whitespace between them. Skips
 // over first n args. Pass 0 to not skip any.
-func (m *Message) RawArgs(n int) string {
+func (m *EventMessage) RawArgs(n int) string {
 	if 0 > n {
 		panic("unexpected n")
 	}
@@ -224,13 +224,13 @@ func (m *Message) RawArgs(n int) string {
 }
 
 // Sends a message.
-func (m *Message) Write(msg any, urr error) (*Message, error) {
+func (m *EventMessage) Write(msg any, urr error) (*EventMessage, error) {
 	return m.Client.Write(msg, urr)
 }
 
 // Prefixes returns the logical here's prefixes, and also whether they were
 // taken from the database (if not, then that means the default ones were used).
-func (m *Message) Prefixes() ([]Prefix, bool, error) {
+func (m *EventMessage) Prefixes() ([]Prefix, bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, false, err
@@ -263,7 +263,7 @@ func hasPrefix(prefixes []Prefix, s string) (Prefix, bool) {
 	return Prefix{}, false
 }
 
-func (m *Message) matchPrefix(rootCmdName string) (Prefix, error) {
+func (m *EventMessage) matchPrefix(rootCmdName string) (Prefix, error) {
 	prefixes, _, err := m.Prefixes()
 	if err != nil {
 		return Prefix{}, err
@@ -278,7 +278,7 @@ func (m *Message) matchPrefix(rootCmdName string) (Prefix, error) {
 	return Prefix{}, fmt.Errorf("failed to match prefix")
 }
 
-func (m *Message) CommandParse() (*Message, error) {
+func (m *EventMessage) CommandParse() (*EventMessage, error) {
 	log.Debug().Str("text", m.Raw).Msg("starting command parsing")
 
 	args := m.Fields()
@@ -320,7 +320,7 @@ func (m *Message) CommandParse() (*Message, error) {
 	return m, nil
 }
 
-func (m *Message) CommandRun() (*Message, error) {
+func (m *EventMessage) CommandRun() (*EventMessage, error) {
 	m, err := m.CommandParse()
 	if err != nil {
 		return nil, err
@@ -350,24 +350,24 @@ func (m *Message) CommandRun() (*Message, error) {
 	return m.Write(resp, urr)
 }
 
-func (m *Message) Usage() any {
+func (m *EventMessage) Usage() any {
 	return m.Frontend.Usage(m.Command.Usage())
 }
 
 var (
-	EventMessage        = make(chan *Message)
-	EventMessageHooks   = HooksNew[*Message](20)
+	EventMessageChan    = make(chan *EventMessage)
+	EventMessageHooks   = NewHooks[*EventMessage](20)
 	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_message_total",
 		Help: "Total number of received message events.",
 	}, []string{"frontend", "place"})
 )
 
-func (m *Message) Hooks() *Hooks[*Message] {
+func (m *EventMessage) Hooks() *Hooks[*EventMessage] {
 	return EventMessageHooks
 }
 
-func (m *Message) Handler() {
+func (m *EventMessage) Handler() {
 	place, err := m.Here.ScopeLogical()
 	if err != nil {
 		log.Error().Err(err)

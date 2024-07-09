@@ -35,7 +35,7 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 		log.Debug().Err(err).Send()
 		return
 	}
-	core.EventMessage <- msg
+	core.EventMessageChan <- msg
 }
 
 ///////////////
@@ -44,7 +44,7 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 //           //
 ///////////////
 
-func (d *MessageCreate) Parse() (*core.Message, error) {
+func (d *MessageCreate) Parse() (*core.EventMessage, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
 	return msg, nil
@@ -62,7 +62,7 @@ func (d *MessageCreate) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (d *MessageCreate) send(msg any, urr error, ping bool) (*core.Message, error) {
+func (d *MessageCreate) send(msg any, urr error, ping bool) (*core.EventMessage, error) {
 	switch t := msg.(type) {
 	case string:
 		return sendText(d.Message.Message, msg.(string), ping)
@@ -74,19 +74,19 @@ func (d *MessageCreate) send(msg any, urr error, ping bool) (*core.Message, erro
 	}
 }
 
-func (d *MessageCreate) Send(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageCreate) Send(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, false)
 }
 
-func (d *MessageCreate) Ping(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageCreate) Ping(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, true)
 }
 
-func (d *MessageCreate) Write(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageCreate) Write(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 
-func (d *MessageCreate) Natural(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageCreate) Natural(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 

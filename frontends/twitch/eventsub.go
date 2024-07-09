@@ -123,13 +123,13 @@ func init() {
 				return
 			}
 
-			on := &core.StreamOnline{
+			on := &core.EventStreamOnline{
 				When:     onlineEvent.StartedAt.Time,
 				Here:     h,
 				Frontend: Frontend,
 			}
 
-			core.EventStreamOnline <- on
+			core.EventStreamOnlineChan <- on
 
 		case "stream.offline":
 			var offlineEvent helix.EventSubStreamOfflineEvent
@@ -164,12 +164,12 @@ func init() {
 				return
 			}
 
-			off := &core.StreamOffline{
+			off := &core.EventStreamOffline{
 				When:     time.Now().UTC(),
 				Here:     h,
 				Frontend: Frontend,
 			}
-			core.EventStreamOffline <- off
+			core.EventStreamOfflineChan <- off
 
 		case "channel.channel_points_custom_reward_redemption.add":
 			var redeem helix.EventSubChannelPointsCustomRewardRedemptionEvent
@@ -207,7 +207,7 @@ func init() {
 				return
 			}
 
-			r := &core.RedeemClaim{
+			r := &core.EventRedeemClaim{
 				ID:       redeem.Reward.ID,
 				Input:    redeem.UserInput,
 				When:     redeem.RedeemedAt.Time,
@@ -216,7 +216,7 @@ func init() {
 				Frontend: Frontend,
 			}
 
-			core.EventRedeemClaim <- r
+			core.EventRedeemClaimChan <- r
 
 		default:
 			log.Debug().Msgf("unhandled event type '%s'", t)

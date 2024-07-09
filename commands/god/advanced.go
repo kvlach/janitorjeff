@@ -22,7 +22,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
@@ -69,7 +69,7 @@ func (advanced) Children() core.CommandsStatic {
 func (advanced) Init() error {
 	var mu sync.Mutex
 
-	core.EventMessageHooks.Register(func(m *core.Message) {
+	core.EventMessageHooks.Register(func(m *core.EventMessage) {
 		// Due to the fact that Talk can take a couple of seconds to return,
 		// multiple auto-replies can be queued during that period, since
 		// cmd_god_auto_last gets updated after the call.
@@ -167,7 +167,7 @@ func (advanced) Init() error {
 		}
 	})
 
-	core.EventRedeemClaimHooks.Register(func(rc *core.RedeemClaim) {
+	core.EventRedeemClaimHooks.Register(func(rc *core.EventRedeemClaim) {
 		author, err := rc.Author.Scope()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get author scope")
@@ -225,7 +225,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (c advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (c advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -243,7 +243,7 @@ func (c advancedTalk) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalk) Permitted(m *core.Message) bool {
+func (c advancedTalk) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -287,7 +287,7 @@ func (advancedTalk) Init() error {
 	return nil
 }
 
-func (advancedTalk) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedTalk) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -305,7 +305,7 @@ func (c advancedTalkDialogue) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (advancedTalkDialogue) Permitted(*core.Message) bool {
+func (advancedTalkDialogue) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -347,7 +347,7 @@ func (advancedTalkDialogue) Init() error {
 	return nil
 }
 
-func (c advancedTalkDialogue) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedTalkDialogue) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -360,7 +360,7 @@ func (c advancedTalkDialogue) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkDialogue) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	hix, err := m.Here.IDExact()
 	if err != nil {
 		return nil, nil, err
@@ -378,7 +378,7 @@ func (c advancedTalkDialogue) discord(m *core.Message) (*dg.MessageEmbed, core.U
 	return embed, urr, nil
 }
 
-func (c advancedTalkDialogue) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkDialogue) text(m *core.EventMessage) (string, core.Urr, error) {
 	resp, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -395,7 +395,7 @@ func (advancedTalkDialogue) fmt(resp string, urr core.Urr) string {
 	}
 }
 
-func (advancedTalkDialogue) core(m *core.Message) (string, core.Urr, error) {
+func (advancedTalkDialogue) core(m *core.EventMessage) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
@@ -433,7 +433,7 @@ func (c advancedTalkOnce) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (advancedTalkOnce) Permitted(*core.Message) bool {
+func (advancedTalkOnce) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -471,7 +471,7 @@ func (advancedTalkOnce) Init() error {
 	return nil
 }
 
-func (c advancedTalkOnce) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedTalkOnce) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -484,7 +484,7 @@ func (c advancedTalkOnce) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkOnce) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	hix, err := m.Here.IDExact()
 	if err != nil {
 		return nil, nil, err
@@ -502,7 +502,7 @@ func (c advancedTalkOnce) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, 
 	return embed, urr, nil
 }
 
-func (c advancedTalkOnce) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkOnce) text(m *core.EventMessage) (string, core.Urr, error) {
 	resp, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -519,7 +519,7 @@ func (advancedTalkOnce) fmt(resp string, urr core.Urr) string {
 	}
 }
 
-func (advancedTalkOnce) core(m *core.Message) (string, core.Urr, error) {
+func (advancedTalkOnce) core(m *core.EventMessage) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
@@ -553,7 +553,7 @@ func (c advancedTalkEveryone) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkEveryone) Permitted(m *core.Message) bool {
+func (c advancedTalkEveryone) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -595,7 +595,7 @@ func (advancedTalkEveryone) Init() error {
 	return nil
 }
 
-func (advancedTalkEveryone) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedTalkEveryone) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -613,7 +613,7 @@ func (c advancedTalkEveryoneShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkEveryoneShow) Permitted(m *core.Message) bool {
+func (c advancedTalkEveryoneShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -649,7 +649,7 @@ func (advancedTalkEveryoneShow) Init() error {
 	return nil
 }
 
-func (c advancedTalkEveryoneShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedTalkEveryoneShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -658,7 +658,7 @@ func (c advancedTalkEveryoneShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalkEveryoneShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkEveryoneShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	everyone, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -669,7 +669,7 @@ func (c advancedTalkEveryoneShow) discord(m *core.Message) (*dg.MessageEmbed, co
 	return embed, nil, nil
 }
 
-func (c advancedTalkEveryoneShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkEveryoneShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	everyone, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -684,7 +684,7 @@ func (advancedTalkEveryoneShow) fmt(everyone bool) string {
 	return "Only moderators can talk to God."
 }
 
-func (advancedTalkEveryoneShow) core(m *core.Message) (bool, error) {
+func (advancedTalkEveryoneShow) core(m *core.EventMessage) (bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return false, nil
@@ -706,7 +706,7 @@ func (c advancedTalkEveryoneOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkEveryoneOn) Permitted(m *core.Message) bool {
+func (c advancedTalkEveryoneOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -742,7 +742,7 @@ func (advancedTalkEveryoneOn) Init() error {
 	return nil
 }
 
-func (c advancedTalkEveryoneOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedTalkEveryoneOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -751,7 +751,7 @@ func (c advancedTalkEveryoneOn) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalkEveryoneOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkEveryoneOn) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	if err := c.core(m); err != nil {
 		return nil, nil, err
 	}
@@ -761,7 +761,7 @@ func (c advancedTalkEveryoneOn) discord(m *core.Message) (*dg.MessageEmbed, core
 	return embed, nil, nil
 }
 
-func (c advancedTalkEveryoneOn) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkEveryoneOn) text(m *core.EventMessage) (string, core.Urr, error) {
 	if err := c.core(m); err != nil {
 		return "", nil, err
 	}
@@ -772,7 +772,7 @@ func (advancedTalkEveryoneOn) fmt() string {
 	return "Everyone can now talk to God."
 }
 
-func (advancedTalkEveryoneOn) core(m *core.Message) error {
+func (advancedTalkEveryoneOn) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -794,7 +794,7 @@ func (c advancedTalkEveryoneOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedTalkEveryoneOff) Permitted(m *core.Message) bool {
+func (c advancedTalkEveryoneOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -830,7 +830,7 @@ func (advancedTalkEveryoneOff) Init() error {
 	return nil
 }
 
-func (c advancedTalkEveryoneOff) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedTalkEveryoneOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -839,7 +839,7 @@ func (c advancedTalkEveryoneOff) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedTalkEveryoneOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedTalkEveryoneOff) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	if err := c.core(m); err != nil {
 		return nil, nil, err
 	}
@@ -849,7 +849,7 @@ func (c advancedTalkEveryoneOff) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedTalkEveryoneOff) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedTalkEveryoneOff) text(m *core.EventMessage) (string, core.Urr, error) {
 	if err := c.core(m); err != nil {
 		return "", nil, err
 	}
@@ -860,7 +860,7 @@ func (advancedTalkEveryoneOff) fmt() string {
 	return "Only moderators can now talk to God."
 }
 
-func (advancedTalkEveryoneOff) core(m *core.Message) error {
+func (advancedTalkEveryoneOff) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -882,7 +882,7 @@ func (c advancedAuto) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAuto) Permitted(m *core.Message) bool {
+func (c advancedAuto) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -925,7 +925,7 @@ func (advancedAuto) Init() error {
 	return nil
 }
 
-func (advancedAuto) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedAuto) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -943,7 +943,7 @@ func (c advancedAutoShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoShow) Permitted(m *core.Message) bool {
+func (c advancedAutoShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -979,7 +979,7 @@ func (advancedAutoShow) Init() error {
 	return nil
 }
 
-func (c advancedAutoShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -988,7 +988,7 @@ func (c advancedAutoShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -999,7 +999,7 @@ func (c advancedAutoShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, 
 	return embed, nil, nil
 }
 
-func (c advancedAutoShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	on, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1014,7 +1014,7 @@ func (advancedAutoShow) fmt(on bool) string {
 	return "Auto-replying is off."
 }
 
-func (advancedAutoShow) core(m *core.Message) (bool, error) {
+func (advancedAutoShow) core(m *core.EventMessage) (bool, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return false, err
@@ -1036,7 +1036,7 @@ func (c advancedAutoOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoOn) Permitted(m *core.Message) bool {
+func (c advancedAutoOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1072,7 +1072,7 @@ func (advancedAutoOn) Init() error {
 	return nil
 }
 
-func (c advancedAutoOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1081,7 +1081,7 @@ func (c advancedAutoOn) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoOn) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1092,7 +1092,7 @@ func (c advancedAutoOn) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, er
 	return embed, nil, nil
 }
 
-func (c advancedAutoOn) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoOn) text(m *core.EventMessage) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1104,7 +1104,7 @@ func (advancedAutoOn) fmt() string {
 	return "Auto-replying has been turned on."
 }
 
-func (advancedAutoOn) core(m *core.Message) error {
+func (advancedAutoOn) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -1126,7 +1126,7 @@ func (c advancedAutoOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoOff) Permitted(m *core.Message) bool {
+func (c advancedAutoOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1162,7 +1162,7 @@ func (advancedAutoOff) Init() error {
 	return nil
 }
 
-func (c advancedAutoOff) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoOff) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1171,7 +1171,7 @@ func (c advancedAutoOff) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoOff) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1182,7 +1182,7 @@ func (c advancedAutoOff) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, e
 	return embed, nil, nil
 }
 
-func (c advancedAutoOff) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoOff) text(m *core.EventMessage) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1194,7 +1194,7 @@ func (advancedAutoOff) fmt() string {
 	return "Auto-replying has been turned off."
 }
 
-func (advancedAutoOff) core(m *core.Message) error {
+func (advancedAutoOff) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -1216,7 +1216,7 @@ func (c advancedAutoInterval) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoInterval) Permitted(m *core.Message) bool {
+func (c advancedAutoInterval) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1257,7 +1257,7 @@ func (advancedAutoInterval) Init() error {
 	return nil
 }
 
-func (advancedAutoInterval) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedAutoInterval) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -1275,7 +1275,7 @@ func (c advancedAutoIntervalShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoIntervalShow) Permitted(m *core.Message) bool {
+func (c advancedAutoIntervalShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1311,7 +1311,7 @@ func (advancedAutoIntervalShow) Init() error {
 	return nil
 }
 
-func (c advancedAutoIntervalShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoIntervalShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1320,7 +1320,7 @@ func (c advancedAutoIntervalShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoIntervalShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	interval, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1331,7 +1331,7 @@ func (c advancedAutoIntervalShow) discord(m *core.Message) (*dg.MessageEmbed, co
 	return embed, nil, nil
 }
 
-func (c advancedAutoIntervalShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoIntervalShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	interval, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1343,7 +1343,7 @@ func (advancedAutoIntervalShow) fmt(interval string) string {
 	return "God will automatically reply once every " + interval + "."
 }
 
-func (advancedAutoIntervalShow) core(m *core.Message) (time.Duration, error) {
+func (advancedAutoIntervalShow) core(m *core.EventMessage) (time.Duration, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return time.Second, err
@@ -1365,7 +1365,7 @@ func (c advancedAutoIntervalSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAutoIntervalSet) Permitted(m *core.Message) bool {
+func (c advancedAutoIntervalSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1401,7 +1401,7 @@ func (advancedAutoIntervalSet) Init() error {
 	return nil
 }
 
-func (c advancedAutoIntervalSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAutoIntervalSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -1414,7 +1414,7 @@ func (c advancedAutoIntervalSet) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAutoIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAutoIntervalSet) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	interval, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1425,7 +1425,7 @@ func (c advancedAutoIntervalSet) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, urr, nil
 }
 
-func (c advancedAutoIntervalSet) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAutoIntervalSet) text(m *core.EventMessage) (string, core.Urr, error) {
 	interval, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1444,7 +1444,7 @@ func (advancedAutoIntervalSet) fmt(interval string, urr core.Urr) string {
 	}
 }
 
-func (advancedAutoIntervalSet) core(m *core.Message) (time.Duration, core.Urr, error) {
+func (advancedAutoIntervalSet) core(m *core.EventMessage) (time.Duration, core.Urr, error) {
 	interval, err := time.ParseDuration(m.Command.Args[0])
 	if err != nil {
 		return 0, UrrInvalidInterval, nil
@@ -1471,7 +1471,7 @@ func (c advancedRedeem) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeem) Permitted(m *core.Message) bool {
+func (c advancedRedeem) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1512,7 +1512,7 @@ func (advancedRedeem) Init() error {
 	return nil
 }
 
-func (advancedRedeem) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedRedeem) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -1530,7 +1530,7 @@ func (c advancedRedeemShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeemShow) Permitted(m *core.Message) bool {
+func (c advancedRedeemShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1566,7 +1566,7 @@ func (advancedRedeemShow) Init() error {
 	return nil
 }
 
-func (c advancedRedeemShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedRedeemShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1585,7 +1585,7 @@ func (advancedRedeemShow) fmt(u uuid.UUID, urr core.Urr) string {
 	}
 }
 
-func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, core.Urr, error) {
+func (advancedRedeemShow) core(m *core.EventMessage) (uuid.UUID, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return uuid.UUID{}, nil, err
@@ -1607,7 +1607,7 @@ func (c advancedRedeemSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeemSet) Permitted(m *core.Message) bool {
+func (c advancedRedeemSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1643,7 +1643,7 @@ func (advancedRedeemSet) Init() error {
 	return nil
 }
 
-func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedRedeemSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -1655,7 +1655,7 @@ func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
 	return "Set the god redeem.", nil, nil
 }
 
-func (advancedRedeemSet) core(m *core.Message) error {
+func (advancedRedeemSet) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -1677,7 +1677,7 @@ func (c advancedPersonality) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonality) Permitted(m *core.Message) bool {
+func (c advancedPersonality) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1725,7 +1725,7 @@ func (advancedPersonality) Init() error {
 	return nil
 }
 
-func (advancedPersonality) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedPersonality) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -1743,7 +1743,7 @@ func (c advancedPersonalityShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityShow) Permitted(m *core.Message) bool {
+func (c advancedPersonalityShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1779,7 +1779,7 @@ func (advancedPersonalityShow) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -1788,7 +1788,7 @@ func (c advancedPersonalityShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	personality, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1799,7 +1799,7 @@ func (c advancedPersonalityShow) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedPersonalityShow) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	personality, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1811,7 +1811,7 @@ func (advancedPersonalityShow) fmt(pName string) string {
 	return "Active personality: " + pName
 }
 
-func (advancedPersonalityShow) core(m *core.Message) (Personality, error) {
+func (advancedPersonalityShow) core(m *core.EventMessage) (Personality, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Personality{}, err
@@ -1837,7 +1837,7 @@ func (c advancedPersonalitySet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalitySet) Permitted(m *core.Message) bool {
+func (c advancedPersonalitySet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1873,7 +1873,7 @@ func (advancedPersonalitySet) Init() error {
 	return nil
 }
 
-func (c advancedPersonalitySet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalitySet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -1886,7 +1886,7 @@ func (c advancedPersonalitySet) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalitySet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalitySet) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	name, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -1897,7 +1897,7 @@ func (c advancedPersonalitySet) discord(m *core.Message) (*dg.MessageEmbed, core
 	return embed, urr, nil
 }
 
-func (c advancedPersonalitySet) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalitySet) text(m *core.EventMessage) (string, core.Urr, error) {
 	name, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -1916,7 +1916,7 @@ func (advancedPersonalitySet) fmt(name string, urr core.Urr) string {
 	}
 }
 
-func (advancedPersonalitySet) core(m *core.Message) (string, core.Urr, error) {
+func (advancedPersonalitySet) core(m *core.EventMessage) (string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", nil, err
@@ -1938,7 +1938,7 @@ func (c advancedPersonalityAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityAdd) Permitted(m *core.Message) bool {
+func (c advancedPersonalityAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -1974,7 +1974,7 @@ func (advancedPersonalityAdd) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -1987,7 +1987,7 @@ func (c advancedPersonalityAdd) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityAdd) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	name, prompt, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -2015,7 +2015,7 @@ func (c advancedPersonalityAdd) discord(m *core.Message) (*dg.MessageEmbed, core
 	return embed, nil, nil
 }
 
-func (c advancedPersonalityAdd) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityAdd) text(m *core.EventMessage) (string, core.Urr, error) {
 	_, _, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -2032,7 +2032,7 @@ func (advancedPersonalityAdd) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedPersonalityAdd) core(m *core.Message) (string, string, core.Urr, error) {
+func (advancedPersonalityAdd) core(m *core.EventMessage) (string, string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", "", nil, err
@@ -2057,7 +2057,7 @@ func (c advancedPersonalityEdit) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityEdit) Permitted(m *core.Message) bool {
+func (c advancedPersonalityEdit) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -2093,7 +2093,7 @@ func (advancedPersonalityEdit) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityEdit) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityEdit) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -2106,7 +2106,7 @@ func (c advancedPersonalityEdit) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityEdit) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	name, prompt, old, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -2139,7 +2139,7 @@ func (c advancedPersonalityEdit) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedPersonalityEdit) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityEdit) text(m *core.EventMessage) (string, core.Urr, error) {
 	name, _, _, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -2158,7 +2158,7 @@ func (advancedPersonalityEdit) fmt(pName string, urr core.Urr) string {
 	}
 }
 
-func (advancedPersonalityEdit) core(m *core.Message) (string, string, string, core.Urr, error) {
+func (advancedPersonalityEdit) core(m *core.EventMessage) (string, string, string, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return "", "", "", nil, err
@@ -2183,7 +2183,7 @@ func (c advancedPersonalityDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityDelete) Permitted(m *core.Message) bool {
+func (c advancedPersonalityDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -2219,7 +2219,7 @@ func (advancedPersonalityDelete) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -2232,7 +2232,7 @@ func (c advancedPersonalityDelete) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityDelete) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -2243,7 +2243,7 @@ func (c advancedPersonalityDelete) discord(m *core.Message) (*dg.MessageEmbed, c
 	return embed, urr, nil
 }
 
-func (c advancedPersonalityDelete) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityDelete) text(m *core.EventMessage) (string, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -2260,7 +2260,7 @@ func (advancedPersonalityDelete) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedPersonalityDelete) core(m *core.Message) (core.Urr, error) {
+func (advancedPersonalityDelete) core(m *core.EventMessage) (core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -2282,7 +2282,7 @@ func (c advancedPersonalityInfo) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityInfo) Permitted(m *core.Message) bool {
+func (c advancedPersonalityInfo) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -2320,7 +2320,7 @@ func (advancedPersonalityInfo) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityInfo) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityInfo) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -2333,7 +2333,7 @@ func (c advancedPersonalityInfo) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityInfo) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityInfo) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	personality, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -2361,7 +2361,7 @@ func (c advancedPersonalityInfo) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedPersonalityInfo) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityInfo) text(m *core.EventMessage) (string, core.Urr, error) {
 	personality, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -2372,7 +2372,7 @@ func (c advancedPersonalityInfo) text(m *core.Message) (string, core.Urr, error)
 	return personality.Name + ": " + personality.Prompt, nil, nil
 }
 
-func (advancedPersonalityInfo) core(m *core.Message) (Personality, core.Urr, error) {
+func (advancedPersonalityInfo) core(m *core.EventMessage) (Personality, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Personality{}, nil, err
@@ -2394,7 +2394,7 @@ func (c advancedPersonalityList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedPersonalityList) Permitted(m *core.Message) bool {
+func (c advancedPersonalityList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -2430,7 +2430,7 @@ func (advancedPersonalityList) Init() error {
 	return nil
 }
 
-func (c advancedPersonalityList) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedPersonalityList) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -2439,7 +2439,7 @@ func (c advancedPersonalityList) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedPersonalityList) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedPersonalityList) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	active, personalities, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -2459,7 +2459,7 @@ func (c advancedPersonalityList) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedPersonalityList) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedPersonalityList) text(m *core.EventMessage) (string, core.Urr, error) {
 	_, personalities, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -2471,7 +2471,7 @@ func (c advancedPersonalityList) text(m *core.Message) (string, core.Urr, error)
 	return "Personalities: " + strings.Join(names, ", "), nil, nil
 }
 
-func (advancedPersonalityList) core(m *core.Message) (Personality, []Personality, error) {
+func (advancedPersonalityList) core(m *core.EventMessage) (Personality, []Personality, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return Personality{}, nil, err

@@ -17,7 +17,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
+func (normal) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -56,7 +56,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -69,7 +69,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (any, core.Urr, error) {
+func (c normal) discord(m *core.EventMessage) (any, core.Urr, error) {
 	res, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -86,7 +86,7 @@ func (c normal) discord(m *core.Message) (any, core.Urr, error) {
 	return embed, urr, nil
 }
 
-func (c normal) text(m *core.Message) (string, core.Urr, error) {
+func (c normal) text(m *core.EventMessage) (string, core.Urr, error) {
 	res, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -105,6 +105,6 @@ func (normal) fmt(urr core.Urr, res page) string {
 	}
 }
 
-func (normal) core(m *core.Message) (page, core.Urr, error) {
+func (normal) core(m *core.EventMessage) (page, core.Urr, error) {
 	return Search(m.RawArgs(0))
 }

@@ -40,7 +40,7 @@ func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 	if err != nil {
 		return
 	}
-	core.EventMessage <- msg
+	core.EventMessageChan <- msg
 }
 
 ///////////////
@@ -49,7 +49,7 @@ func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 //           //
 ///////////////
 
-func (d *MessageEdit) Parse() (*core.Message, error) {
+func (d *MessageEdit) Parse() (*core.EventMessage, error) {
 	msg := parse(d.Message.Message)
 	msg.Client = d
 	return msg, nil
@@ -67,7 +67,7 @@ func (d *MessageEdit) Person(id string) (int64, error) {
 	return dbGetPersonScope(id)
 }
 
-func (d *MessageEdit) send(msg any, urr error, ping bool) (*core.Message, error) {
+func (d *MessageEdit) send(msg any, urr error, ping bool) (*core.EventMessage, error) {
 	rdbKey := rdbMessageReplyToKeyPrefix + d.Message.ID
 
 	switch t := msg.(type) {
@@ -92,19 +92,19 @@ func (d *MessageEdit) send(msg any, urr error, ping bool) (*core.Message, error)
 	}
 }
 
-func (d *MessageEdit) Send(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageEdit) Send(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, false)
 }
 
-func (d *MessageEdit) Ping(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageEdit) Ping(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.send(msg, urr, true)
 }
 
-func (d *MessageEdit) Write(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageEdit) Write(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 
-func (d *MessageEdit) Natural(msg any, urr core.Urr) (*core.Message, error) {
+func (d *MessageEdit) Natural(msg any, urr core.Urr) (*core.EventMessage, error) {
 	return d.Send(msg, urr)
 }
 

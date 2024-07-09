@@ -18,7 +18,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(*core.Message) bool {
+func (admin) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -56,7 +56,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -74,7 +74,7 @@ func (c adminMax) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminMax) Permitted(m *core.Message) bool {
+func (c adminMax) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -115,7 +115,7 @@ func (adminMax) Init() error {
 	return nil
 }
 
-func (adminMax) Run(m *core.Message) (any, core.Urr, error) {
+func (adminMax) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -133,7 +133,7 @@ func (c adminMaxShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminMaxShow) Permitted(m *core.Message) bool {
+func (c adminMaxShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -169,7 +169,7 @@ func (adminMaxShow) Init() error {
 	return nil
 }
 
-func (c adminMaxShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminMaxShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -178,7 +178,7 @@ func (c adminMaxShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c adminMaxShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c adminMaxShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	max, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -189,7 +189,7 @@ func (c adminMaxShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, nil, nil
 }
 
-func (c adminMaxShow) text(m *core.Message) (string, core.Urr, error) {
+func (c adminMaxShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	max, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -201,7 +201,7 @@ func (adminMaxShow) fmt(max string) string {
 	return fmt.Sprintf("The response will contain a maximum of %s tokens.", max)
 }
 
-func (adminMaxShow) core(m *core.Message) (int, error) {
+func (adminMaxShow) core(m *core.EventMessage) (int, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return 0, err
@@ -223,7 +223,7 @@ func (c adminMaxSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminMaxSet) Permitted(m *core.Message) bool {
+func (c adminMaxSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -259,7 +259,7 @@ func (adminMaxSet) Init() error {
 	return nil
 }
 
-func (c adminMaxSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminMaxSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 0 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -272,7 +272,7 @@ func (c adminMaxSet) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c adminMaxSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c adminMaxSet) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	max, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -287,7 +287,7 @@ func (c adminMaxSet) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error
 	return embed, nil, nil
 }
 
-func (c adminMaxSet) text(m *core.Message) (string, core.Urr, error) {
+func (c adminMaxSet) text(m *core.EventMessage) (string, core.Urr, error) {
 	max, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -306,7 +306,7 @@ func (adminMaxSet) fmt(max, arg string, urr core.Urr) string {
 	}
 }
 
-func (adminMaxSet) core(m *core.Message) (int, core.Urr, error) {
+func (adminMaxSet) core(m *core.EventMessage) (int, core.Urr, error) {
 	max, err := strconv.Atoi(m.Command.Args[0])
 	if err != nil {
 		return 0, UrrNotInt, nil

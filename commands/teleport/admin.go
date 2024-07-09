@@ -17,7 +17,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(m *core.Message) bool {
+func (admin) Permitted(m *core.EventMessage) bool {
 	return true
 }
 
@@ -60,7 +60,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -78,7 +78,7 @@ func (c adminShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminShow) Permitted(m *core.Message) bool {
+func (c adminShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -114,7 +114,7 @@ func (adminShow) Init() error {
 	return nil
 }
 
-func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Type:
 		return c.discord(m)
@@ -123,7 +123,7 @@ func (c adminShow) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c adminShow) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	place, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -134,7 +134,7 @@ func (c adminShow) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) 
 	return embed, nil, nil
 }
 
-func (c adminShow) text(m *core.Message) (string, core.Urr, error) {
+func (c adminShow) text(m *core.EventMessage) (string, core.Urr, error) {
 	place, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -150,7 +150,7 @@ func (adminShow) fmt(place core.Place) string {
 	return fmt.Sprintf("Currently teleported to: exact=%d logical=%d.", place.Exact, place.Logical)
 }
 
-func (adminShow) core(m *core.Message) (core.Place, error) {
+func (adminShow) core(m *core.EventMessage) (core.Place, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return core.Place{}, err
@@ -176,7 +176,7 @@ func (c adminTo) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminTo) Permitted(m *core.Message) bool {
+func (c adminTo) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -215,7 +215,7 @@ func (adminTo) Init() error {
 	return nil
 }
 
-func (c adminTo) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminTo) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -228,7 +228,7 @@ func (c adminTo) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c adminTo) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c adminTo) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	to, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -239,7 +239,7 @@ func (c adminTo) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	return embed, urr, nil
 }
 
-func (c adminTo) text(m *core.Message) (string, core.Urr, error) {
+func (c adminTo) text(m *core.EventMessage) (string, core.Urr, error) {
 	to, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -256,7 +256,7 @@ func (adminTo) fmt(to string, urr core.Urr) string {
 	}
 }
 
-func (adminTo) core(m *core.Message) (string, core.Urr, error) {
+func (adminTo) core(m *core.EventMessage) (string, core.Urr, error) {
 	id := m.Command.Args[1]
 
 	f, urr := core.Frontends.Match(m.Command.Args[0])
@@ -298,7 +298,7 @@ func (c adminHome) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminHome) Permitted(m *core.Message) bool {
+func (c adminHome) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -338,7 +338,7 @@ func (adminHome) Init() error {
 	return nil
 }
 
-func (c adminHome) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminHome) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Type:
 		return c.discord(m)
@@ -347,7 +347,7 @@ func (c adminHome) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c adminHome) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c adminHome) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -358,7 +358,7 @@ func (c adminHome) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) 
 	return embed, nil, nil
 }
 
-func (c adminHome) text(m *core.Message) (string, core.Urr, error) {
+func (c adminHome) text(m *core.EventMessage) (string, core.Urr, error) {
 	err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -370,7 +370,7 @@ func (adminHome) fmt() string {
 	return "Teleported back home."
 }
 
-func (adminHome) core(m *core.Message) error {
+func (adminHome) core(m *core.EventMessage) error {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return err

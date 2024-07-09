@@ -88,7 +88,7 @@ func Delete(person, place int64) error {
 // If "me" is passed, the author is returned, otherwise tries to match a nickname,
 // and if it fails, it tries various frontend-specific extraction methods
 // (e.g., checking if the string is a mention of some sort, etc.)
-func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
+func ParsePerson(m *core.EventMessage, place int64, s string) (int64, error) {
 	if s == "me" {
 		return m.Author.Scope()
 	}
@@ -111,7 +111,7 @@ func ParsePerson(m *core.Message, place int64, s string) (int64, error) {
 }
 
 // ParsePersonHere is the same as ParsePerson but place = here.
-func ParsePersonHere(m *core.Message, s string) (int64, error) {
+func ParsePersonHere(m *core.EventMessage, s string) (int64, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return -1, err

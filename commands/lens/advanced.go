@@ -16,7 +16,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(*core.Message) bool {
+func (advanced) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -56,7 +56,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -74,7 +74,7 @@ func (c advancedDirectors) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDirectors) Permitted(m *core.Message) bool {
+func (c advancedDirectors) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -116,7 +116,7 @@ func (advancedDirectors) Init() error {
 	return nil
 }
 
-func (advancedDirectors) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedDirectors) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -134,7 +134,7 @@ func (c advancedDirectorsAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDirectorsAdd) Permitted(m *core.Message) bool {
+func (c advancedDirectorsAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -170,7 +170,7 @@ func (advancedDirectorsAdd) Init() error {
 	return nil
 }
 
-func (c advancedDirectorsAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedDirectorsAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -183,7 +183,7 @@ func (c advancedDirectorsAdd) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedDirectorsAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedDirectorsAdd) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -194,7 +194,7 @@ func (c advancedDirectorsAdd) discord(m *core.Message) (*dg.MessageEmbed, core.U
 	return embed, nil, nil
 }
 
-func (c advancedDirectorsAdd) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedDirectorsAdd) text(m *core.EventMessage) (string, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -206,7 +206,7 @@ func (advancedDirectorsAdd) fmt(name string) string {
 	return "Now also monitoring the director " + name
 }
 
-func (advancedDirectorsAdd) core(m *core.Message) (string, error) {
+func (advancedDirectorsAdd) core(m *core.EventMessage) (string, error) {
 	// Use strings.Join instead of m.RawArgs to ensure that only one space
 	// exists between each word.
 	name := strings.Join(m.Command.Args, " ")
@@ -227,7 +227,7 @@ func (c advancedDirectorsDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDirectorsDelete) Permitted(m *core.Message) bool {
+func (c advancedDirectorsDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -263,7 +263,7 @@ func (advancedDirectorsDelete) Init() error {
 	return nil
 }
 
-func (c advancedDirectorsDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedDirectorsDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -276,7 +276,7 @@ func (c advancedDirectorsDelete) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedDirectorsDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedDirectorsDelete) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -287,7 +287,7 @@ func (c advancedDirectorsDelete) discord(m *core.Message) (*dg.MessageEmbed, cor
 	return embed, nil, nil
 }
 
-func (c advancedDirectorsDelete) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedDirectorsDelete) text(m *core.EventMessage) (string, core.Urr, error) {
 	name, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -299,7 +299,7 @@ func (advancedDirectorsDelete) fmt(name string) string {
 	return "No longer monitoring the director " + name
 }
 
-func (advancedDirectorsDelete) core(m *core.Message) (string, error) {
+func (advancedDirectorsDelete) core(m *core.EventMessage) (string, error) {
 	// Use strings.Join instead of m.RawArgs to ensure that only one space
 	// exists between each word.
 	name := strings.Join(m.Command.Args, " ")

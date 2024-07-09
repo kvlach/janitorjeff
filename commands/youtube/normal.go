@@ -12,7 +12,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(m *core.Message) bool {
+func (normal) Permitted(m *core.EventMessage) bool {
 	return AdvancedSearchVideo.Permitted(m)
 }
 
@@ -48,6 +48,6 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, core.Urr, error) {
+func (normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return AdvancedSearchVideo.Run(m)
 }

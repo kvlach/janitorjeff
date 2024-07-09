@@ -19,7 +19,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	mod, err := m.Author.Moderator()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to check if author is mod")
@@ -70,7 +70,7 @@ func (c advanced) Init() error {
 	return nil
 }
 
-func (advanced) writeCustomCommand(m *core.Message) {
+func (advanced) writeCustomCommand(m *core.EventMessage) {
 	fields := m.Fields()
 
 	if len(fields) > 1 {
@@ -90,7 +90,7 @@ func (advanced) writeCustomCommand(m *core.Message) {
 	m.Write(resp, nil)
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -108,7 +108,7 @@ func (c advancedAdd) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedAdd) Permitted(m *core.Message) bool {
+func (c advancedAdd) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -144,7 +144,7 @@ func (advancedAdd) Init() error {
 	return nil
 }
 
-func (c advancedAdd) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedAdd) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -157,7 +157,7 @@ func (c advancedAdd) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedAdd) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -172,7 +172,7 @@ func (c advancedAdd) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error
 	return embed, urr, nil
 }
 
-func (c advancedAdd) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedAdd) text(m *core.EventMessage) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -196,7 +196,7 @@ func (advancedAdd) fmt(urr core.Urr, trigger string) string {
 	}
 }
 
-func (c advancedAdd) core(m *core.Message) (string, core.Urr, error) {
+func (c advancedAdd) core(m *core.EventMessage) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
@@ -228,7 +228,7 @@ func (c advancedEdit) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedEdit) Permitted(m *core.Message) bool {
+func (c advancedEdit) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -264,7 +264,7 @@ func (advancedEdit) Init() error {
 	return nil
 }
 
-func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedEdit) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 2 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -277,7 +277,7 @@ func (c advancedEdit) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedEdit) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -292,7 +292,7 @@ func (c advancedEdit) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, urr, nil
 }
 
-func (c advancedEdit) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedEdit) text(m *core.EventMessage) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -314,7 +314,7 @@ func (advancedEdit) fmt(urr core.Urr, trigger string) string {
 	}
 }
 
-func (advancedEdit) core(m *core.Message) (string, core.Urr, error) {
+func (advancedEdit) core(m *core.EventMessage) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 	response := m.RawArgs(1)
 
@@ -346,7 +346,7 @@ func (c advancedDelete) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedDelete) Permitted(m *core.Message) bool {
+func (c advancedDelete) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -382,7 +382,7 @@ func (advancedDelete) Init() error {
 	return nil
 }
 
-func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedDelete) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -395,7 +395,7 @@ func (c advancedDelete) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedDelete) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return nil, urr, err
@@ -410,7 +410,7 @@ func (c advancedDelete) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, er
 	return embed, urr, nil
 }
 
-func (c advancedDelete) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedDelete) text(m *core.EventMessage) (string, core.Urr, error) {
 	trigger, urr, err := c.core(m)
 	if err != nil {
 		return "", urr, err
@@ -432,7 +432,7 @@ func (advancedDelete) fmt(urr core.Urr, trigger string) string {
 	}
 }
 
-func (advancedDelete) core(m *core.Message) (string, core.Urr, error) {
+func (advancedDelete) core(m *core.EventMessage) (string, core.Urr, error) {
 	trigger := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()
@@ -463,7 +463,7 @@ func (c advancedList) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedList) Permitted(m *core.Message) bool {
+func (c advancedList) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -499,7 +499,7 @@ func (advancedList) Init() error {
 	return nil
 }
 
-func (c advancedList) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedList) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -508,7 +508,7 @@ func (c advancedList) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedList) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	triggers, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -532,7 +532,7 @@ func (c advancedList) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, erro
 	return embed, nil, nil
 }
 
-func (c advancedList) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedList) text(m *core.EventMessage) (string, core.Urr, error) {
 	triggers, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -544,7 +544,7 @@ func (c advancedList) text(m *core.Message) (string, core.Urr, error) {
 	return strings.Join(triggers, ", "), nil, nil
 }
 
-func (c advancedList) core(m *core.Message) ([]string, error) {
+func (c advancedList) core(m *core.EventMessage) ([]string, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
@@ -566,7 +566,7 @@ func (c advancedHistory) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedHistory) Permitted(m *core.Message) bool {
+func (c advancedHistory) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -604,7 +604,7 @@ func (advancedHistory) Init() error {
 	return nil
 }
 
-func (c advancedHistory) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedHistory) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -636,7 +636,7 @@ func formatDelete(timestamp int64) string {
 	return fmt.Sprintf("deleted %s by @", when)
 }
 
-func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedHistory) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	trigger, history, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -644,7 +644,6 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, e
 
 	if len(history) == 0 {
 	}
-
 	const zeroWidthSpace = "\u200b"
 
 	var action []string
@@ -706,7 +705,7 @@ func (c advancedHistory) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, e
 	return embed, nil, nil
 }
 
-func (advancedHistory) core(m *core.Message) (string, []customCommand, error) {
+func (advancedHistory) core(m *core.EventMessage) (string, []customCommand, error) {
 	trigger := m.Command.Args[0]
 
 	here, err := m.Here.ScopeLogical()

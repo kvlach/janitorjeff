@@ -11,7 +11,7 @@ type flags struct {
 	scopeFlag int64
 }
 
-func newFlags(m *core.Message) *flags {
+func newFlags(m *core.EventMessage) *flags {
 	f := &flags{
 		fs: core.NewFlags(m),
 	}

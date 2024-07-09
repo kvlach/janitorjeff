@@ -21,7 +21,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(m *core.Message) bool {
+func (advanced) Permitted(m *core.EventMessage) bool {
 	if m.Frontend.Type() != twitch.Type {
 		return false
 	}
@@ -70,7 +70,7 @@ func (advanced) Children() core.CommandsStatic {
 }
 
 func (advanced) Init() error {
-	core.EventRedeemClaimHooks.Register(func(r *core.RedeemClaim) {
+	core.EventRedeemClaimHooks.Register(func(r *core.EventRedeemClaim) {
 		person, err := r.Author.Scope()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get author scope")
@@ -129,7 +129,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (resp any, urr core.Urr, err error) {
+func (advanced) Run(m *core.EventMessage) (resp any, urr core.Urr, err error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -147,7 +147,7 @@ func (c advancedOn) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedOn) Permitted(m *core.Message) bool {
+func (c advancedOn) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -183,7 +183,7 @@ func (advancedOn) Init() error {
 	return nil
 }
 
-func (c advancedOn) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedOn) Run(m *core.EventMessage) (any, core.Urr, error) {
 	urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -202,7 +202,7 @@ func (advancedOn) fmt(urr core.Urr) string {
 	}
 }
 
-func (advancedOn) core(m *core.Message) (core.Urr, error) {
+func (advancedOn) core(m *core.EventMessage) (core.Urr, error) {
 	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func (c advancedOff) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedOff) Permitted(m *core.Message) bool {
+func (c advancedOff) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -271,14 +271,14 @@ func (advancedOff) Init() error {
 	return nil
 }
 
-func (c advancedOff) Run(m *core.Message) (resp any, urr core.Urr, err error) {
+func (c advancedOff) Run(m *core.EventMessage) (resp any, urr core.Urr, err error) {
 	if err := c.core(m); err != nil {
 		return nil, nil, err
 	}
 	return "Streak tracking has been turned off.", nil, nil
 }
 
-func (advancedOff) core(m *core.Message) error {
+func (advancedOff) core(m *core.EventMessage) error {
 	hx, err := twitch.Frontend.Helix()
 	if err != nil {
 		return err
@@ -306,7 +306,7 @@ func (c advancedShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedShow) Permitted(m *core.Message) bool {
+func (c advancedShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -342,7 +342,7 @@ func (advancedShow) Init() error {
 	return nil
 }
 
-func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	streak, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -350,7 +350,7 @@ func (c advancedShow) Run(m *core.Message) (any, core.Urr, error) {
 	return fmt.Sprintf("Current streak is: %d", streak), nil, nil
 }
 
-func (advancedShow) core(m *core.Message) (int64, error) {
+func (advancedShow) core(m *core.EventMessage) (int64, error) {
 	author, err := m.Author.Scope()
 	if err != nil {
 		return 0, err
@@ -376,7 +376,7 @@ func (c advancedRedeem) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeem) Permitted(m *core.Message) bool {
+func (c advancedRedeem) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -417,7 +417,7 @@ func (advancedRedeem) Init() error {
 	return nil
 }
 
-func (advancedRedeem) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedRedeem) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -435,7 +435,7 @@ func (c advancedRedeemShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeemShow) Permitted(m *core.Message) bool {
+func (c advancedRedeemShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -471,7 +471,7 @@ func (advancedRedeemShow) Init() error {
 	return nil
 }
 
-func (c advancedRedeemShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedRedeemShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	u, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -490,7 +490,7 @@ func (advancedRedeemShow) fmt(u uuid.UUID, urr core.Urr) string {
 	}
 }
 
-func (advancedRedeemShow) core(m *core.Message) (uuid.UUID, core.Urr, error) {
+func (advancedRedeemShow) core(m *core.EventMessage) (uuid.UUID, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return uuid.UUID{}, nil, err
@@ -512,7 +512,7 @@ func (c advancedRedeemSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRedeemSet) Permitted(m *core.Message) bool {
+func (c advancedRedeemSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -548,7 +548,7 @@ func (advancedRedeemSet) Init() error {
 	return nil
 }
 
-func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedRedeemSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -560,7 +560,7 @@ func (c advancedRedeemSet) Run(m *core.Message) (any, core.Urr, error) {
 	return "Set the streak redeem.", nil, nil
 }
 
-func (advancedRedeemSet) core(m *core.Message) error {
+func (advancedRedeemSet) core(m *core.EventMessage) error {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
@@ -582,7 +582,7 @@ func (c advancedGrace) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedGrace) Permitted(m *core.Message) bool {
+func (c advancedGrace) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -623,7 +623,7 @@ func (advancedGrace) Init() error {
 	return nil
 }
 
-func (advancedGrace) Run(m *core.Message) (any, core.Urr, error) {
+func (advancedGrace) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -641,7 +641,7 @@ func (c advancedGraceShow) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedGraceShow) Permitted(m *core.Message) bool {
+func (c advancedGraceShow) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -677,7 +677,7 @@ func (advancedGraceShow) Init() error {
 	return nil
 }
 
-func (c advancedGraceShow) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedGraceShow) Run(m *core.EventMessage) (any, core.Urr, error) {
 	grace, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -685,7 +685,7 @@ func (c advancedGraceShow) Run(m *core.Message) (any, core.Urr, error) {
 	return "The grace period is set to: " + grace.String(), nil, nil
 }
 
-func (advancedGraceShow) core(m *core.Message) (time.Duration, error) {
+func (advancedGraceShow) core(m *core.EventMessage) (time.Duration, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return 0, err
@@ -707,7 +707,7 @@ func (c advancedGraceSet) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedGraceSet) Permitted(m *core.Message) bool {
+func (c advancedGraceSet) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -743,7 +743,7 @@ func (advancedGraceSet) Init() error {
 	return nil
 }
 
-func (c advancedGraceSet) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedGraceSet) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -765,7 +765,7 @@ func (advancedGraceSet) fmt(grace time.Duration, urr core.Urr) string {
 	}
 }
 
-func (advancedGraceSet) core(m *core.Message) (time.Duration, core.Urr, error) {
+func (advancedGraceSet) core(m *core.EventMessage) (time.Duration, core.Urr, error) {
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return 0, nil, err

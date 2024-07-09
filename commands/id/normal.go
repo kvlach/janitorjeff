@@ -20,7 +20,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
+func (normal) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -58,7 +58,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (c normal) Run(m *core.Message) (any, core.Urr, error) {
+func (c normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -71,7 +71,7 @@ func (c normal) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c normal) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	id, err := c.core(m)
 	resp, urr := c.fmt(err, id)
 	embed := &dg.MessageEmbed{
@@ -80,7 +80,7 @@ func (c normal) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	return embed, urr, nil
 }
 
-func (c normal) text(m *core.Message) (string, core.Urr, error) {
+func (c normal) text(m *core.EventMessage) (string, core.Urr, error) {
 	id, err := c.core(m)
 	resp, urr := c.fmt(err, id)
 	return resp, urr, nil
@@ -100,7 +100,7 @@ func (normal) fmt(err error, id string) (string, error) {
 	}
 }
 
-func (normal) core(m *core.Message) (string, error) {
+func (normal) core(m *core.EventMessage) (string, error) {
 	s := m.Command.Args[0]
 
 	// in case a nick is used

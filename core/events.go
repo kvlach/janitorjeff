@@ -30,9 +30,9 @@ type Hooks[T any] struct {
 	total int
 }
 
-// HooksNew generates a new Hooks object.
+// NewHooks generates a new Hooks object.
 // Spawns n number of receiver functions in their own goroutines.
-func HooksNew[T any](n int) *Hooks[T] {
+func NewHooks[T any](n int) *Hooks[T] {
 	hs := &Hooks[T]{}
 	hs.ch = make(chan hookData[T])
 
@@ -94,7 +94,7 @@ func (hs *Hooks[T]) Run(arg T) {
 // Event is the interface used for handling all incoming events,
 // such as messages, redeems, or stream status changes.
 type Event[T any] interface {
-	*Message | *RedeemClaim | *StreamOnline | *StreamOffline
+	*EventMessage | *EventRedeemClaim | *EventStreamOnline | *EventStreamOffline
 
 	// Handler is the method that [EventLoop] calls when it receives the event.
 	Handler()
@@ -111,13 +111,13 @@ func EventLoop() {
 	// only one of the receivers will ever receive the channel data.
 	for {
 		select {
-		case m := <-EventMessage:
+		case m := <-EventMessageChan:
 			m.Handler()
-		case rc := <-EventRedeemClaim:
+		case rc := <-EventRedeemClaimChan:
 			rc.Handler()
-		case son := <-EventStreamOnline:
+		case son := <-EventStreamOnlineChan:
 			son.Handler()
-		case soff := <-EventStreamOffline:
+		case soff := <-EventStreamOfflineChan:
 			soff.Handler()
 		}
 	}

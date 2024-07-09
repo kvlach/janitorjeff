@@ -10,25 +10,25 @@ import (
 )
 
 var (
-	EventStreamOffline        = make(chan *StreamOffline)
-	EventStreamOfflineHooks   = HooksNew[*StreamOffline](5)
+	EventStreamOfflineChan    = make(chan *EventStreamOffline)
+	EventStreamOfflineHooks   = NewHooks[*EventStreamOffline](5)
 	eventStreamOfflineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_stream_offline_total",
 		Help: "Total number of received stream offline events.",
 	}, []string{"frontend", "place"})
 )
 
-type StreamOffline struct {
+type EventStreamOffline struct {
 	When     time.Time
 	Here     Placer
 	Frontend Frontender
 }
 
-func (soff *StreamOffline) Hooks() *Hooks[*StreamOffline] {
+func (soff *EventStreamOffline) Hooks() *Hooks[*EventStreamOffline] {
 	return EventStreamOfflineHooks
 }
 
-func (soff *StreamOffline) Handler() {
+func (soff *EventStreamOffline) Handler() {
 	place, err := soff.Here.ScopeLogical()
 	if err != nil {
 		log.Error().Err(err)

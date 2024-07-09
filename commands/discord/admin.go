@@ -15,7 +15,7 @@ func (admin) Type() core.CommandType {
 	return core.Admin
 }
 
-func (admin) Permitted(m *core.Message) bool {
+func (admin) Permitted(m *core.EventMessage) bool {
 	return m.Frontend.Type() == discord.Frontend.Type()
 }
 
@@ -55,7 +55,7 @@ func (admin) Init() error {
 	return nil
 }
 
-func (admin) Run(m *core.Message) (any, core.Urr, error) {
+func (admin) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -73,7 +73,7 @@ func (c adminGuild) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminGuild) Permitted(m *core.Message) bool {
+func (c adminGuild) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -113,7 +113,7 @@ func (adminGuild) Init() error {
 	return nil
 }
 
-func (adminGuild) Run(m *core.Message) (any, core.Urr, error) {
+func (adminGuild) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -131,7 +131,7 @@ func (c adminGuildLeave) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c adminGuildLeave) Permitted(m *core.Message) bool {
+func (c adminGuildLeave) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -170,7 +170,7 @@ func (adminGuildLeave) Init() error {
 	return nil
 }
 
-func (c adminGuildLeave) Run(m *core.Message) (any, core.Urr, error) {
+func (c adminGuildLeave) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}

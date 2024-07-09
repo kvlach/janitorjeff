@@ -18,7 +18,7 @@ func (normal) Type() core.CommandType {
 	return core.Normal
 }
 
-func (normal) Permitted(*core.Message) bool {
+func (normal) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -58,7 +58,7 @@ func (normal) Init() error {
 	return nil
 }
 
-func (normal) Run(m *core.Message) (any, core.Urr, error) {
+func (normal) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -76,7 +76,7 @@ func (c normalTwitch) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c normalTwitch) Permitted(m *core.Message) bool {
+func (c normalTwitch) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -114,7 +114,7 @@ func (normalTwitch) Init() error {
 	return nil
 }
 
-func (c normalTwitch) Run(m *core.Message) (any, core.Urr, error) {
+func (c normalTwitch) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord(m)
@@ -123,17 +123,17 @@ func (c normalTwitch) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c normalTwitch) discord(m *core.Message) (string, core.Urr, error) {
+func (c normalTwitch) discord(m *core.EventMessage) (string, core.Urr, error) {
 	url, err := c.core(m)
 	return fmt.Sprintf("<%s>", url), nil, err
 }
 
-func (c normalTwitch) text(m *core.Message) (string, core.Urr, error) {
+func (c normalTwitch) text(m *core.EventMessage) (string, core.Urr, error) {
 	url, err := c.core(m)
 	return url, nil, err
 }
 
-func (normalTwitch) core(m *core.Message) (string, error) {
+func (normalTwitch) core(m *core.EventMessage) (string, error) {
 	clientID := twitch.ClientID
 
 	callback := "/twitch/callback"

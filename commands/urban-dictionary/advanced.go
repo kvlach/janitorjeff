@@ -15,7 +15,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(*core.Message) bool {
+func (advanced) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -56,7 +56,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	return m.Usage(), core.UrrMissingArgs, nil
 }
 
@@ -74,7 +74,7 @@ func (c advancedSearch) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedSearch) Permitted(m *core.Message) bool {
+func (c advancedSearch) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -110,7 +110,7 @@ func (advancedSearch) Init() error {
 	return nil
 }
 
-func (c advancedSearch) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedSearch) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -123,7 +123,7 @@ func (c advancedSearch) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advancedSearch) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advancedSearch) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	def, urr, err := c.core(m)
 	if err != nil {
 		return nil, nil, err
@@ -131,7 +131,7 @@ func (c advancedSearch) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, er
 	return renderDiscord(def, urr), urr, nil
 }
 
-func (c advancedSearch) text(m *core.Message) (string, core.Urr, error) {
+func (c advancedSearch) text(m *core.EventMessage) (string, core.Urr, error) {
 	def, urr, err := c.core(m)
 	if err != nil {
 		return "", nil, err
@@ -139,7 +139,7 @@ func (c advancedSearch) text(m *core.Message) (string, core.Urr, error) {
 	return renderText(def, urr), urr, nil
 }
 
-func (advancedSearch) core(m *core.Message) (definition, core.Urr, error) {
+func (advancedSearch) core(m *core.EventMessage) (definition, core.Urr, error) {
 	term := m.RawArgs(0)
 	return Search(term)
 }
@@ -158,7 +158,7 @@ func (c advancedRandom) Type() core.CommandType {
 	return c.Parent().Type()
 }
 
-func (c advancedRandom) Permitted(m *core.Message) bool {
+func (c advancedRandom) Permitted(m *core.EventMessage) bool {
 	return c.Parent().Permitted(m)
 }
 
@@ -197,7 +197,7 @@ func (advancedRandom) Init() error {
 	return nil
 }
 
-func (c advancedRandom) Run(m *core.Message) (any, core.Urr, error) {
+func (c advancedRandom) Run(m *core.EventMessage) (any, core.Urr, error) {
 	switch m.Frontend.Type() {
 	case discord.Frontend.Type():
 		return c.discord()

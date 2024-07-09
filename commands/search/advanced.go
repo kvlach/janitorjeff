@@ -17,7 +17,7 @@ func (advanced) Type() core.CommandType {
 	return core.Advanced
 }
 
-func (advanced) Permitted(*core.Message) bool {
+func (advanced) Permitted(*core.EventMessage) bool {
 	return true
 }
 
@@ -55,7 +55,7 @@ func (advanced) Init() error {
 	return nil
 }
 
-func (c advanced) Run(m *core.Message) (any, core.Urr, error) {
+func (c advanced) Run(m *core.EventMessage) (any, core.Urr, error) {
 	if len(m.Command.Args) < 1 {
 		return m.Usage(), core.UrrMissingArgs, nil
 	}
@@ -68,7 +68,7 @@ func (c advanced) Run(m *core.Message) (any, core.Urr, error) {
 	}
 }
 
-func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
+func (c advanced) discord(m *core.EventMessage) (*dg.MessageEmbed, core.Urr, error) {
 	matches := c.core(m)
 
 	var desc strings.Builder
@@ -92,7 +92,7 @@ func (c advanced) discord(m *core.Message) (*dg.MessageEmbed, core.Urr, error) {
 	return embed, nil, nil
 }
 
-func (c advanced) text(m *core.Message) (string, core.Urr, error) {
+func (c advanced) text(m *core.EventMessage) (string, core.Urr, error) {
 	matches := c.core(m)
 
 	var b strings.Builder
@@ -107,6 +107,6 @@ func (c advanced) text(m *core.Message) (string, core.Urr, error) {
 	return b.String(), nil, nil
 }
 
-func (c advanced) core(m *core.Message) []Match {
+func (c advanced) core(m *core.EventMessage) []Match {
 	return Search(m.RawArgs(0), c.Type())
 }
