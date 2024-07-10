@@ -258,20 +258,20 @@ func isBotAdmin(id string) bool {
 }
 
 func parse(m *dg.Message) *core.EventMessage {
-	author := &AuthorMessage{
-		GuildID: m.GuildID,
-		Author:  m.Author,
-		Member:  m.Member,
+	a, err := NewAuthor(m.Author, m.Member, m.GuildID)
+	if err != nil {
+		// TODO
+		panic(err)
 	}
 
 	h := &Here{
 		ChannelID: m.ChannelID,
 		GuildID:   m.GuildID,
-		Author:    author,
+		Author:    a,
 	}
 
 	sp := &Speaker{
-		Author: author,
+		Author: a,
 		Here:   h,
 		VC:     nil,
 	}
@@ -280,7 +280,7 @@ func parse(m *dg.Message) *core.EventMessage {
 		ID:       m.ID,
 		Raw:      m.Content,
 		Frontend: Frontend,
-		Author:   author,
+		Author:   a,
 		Here:     h,
 		Speaker:  sp,
 	}
