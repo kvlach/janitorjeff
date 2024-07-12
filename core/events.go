@@ -123,8 +123,8 @@ func EventLoop() {
 	}
 }
 
-// EventAwait monitors incoming events until check is true or until timeout.
-// If nothing is matched, the returned object will be the type's zero value.
+// EventAwait monitors incoming events until check returns true or until timeout.
+// If there's a timeout, the returned object will be the type's zero value.
 func EventAwait[T Event[T]](timeout time.Duration, check func(T) bool) T {
 	found := make(chan struct{})
 
