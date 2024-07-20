@@ -23,7 +23,6 @@ import (
 	"github.com/kvlach/janitorjeff/commands/teleport"
 	"github.com/kvlach/janitorjeff/commands/time"
 	"github.com/kvlach/janitorjeff/commands/title"
-	"github.com/kvlach/janitorjeff/commands/tts"
 	"github.com/kvlach/janitorjeff/commands/twitch"
 	"github.com/kvlach/janitorjeff/commands/urban-dictionary"
 	"github.com/kvlach/janitorjeff/commands/wikipedia"
@@ -86,11 +85,6 @@ var Commands = core.CommandsStatic{
 
 	title.Normal,
 	title.Advanced,
-
-	tts.Advanced,
-	tts.NormalTTS,
-	tts.NormalVoice,
-	tts.NormalSubOnly,
 
 	twitch.Admin,
 

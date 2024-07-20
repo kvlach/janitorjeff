@@ -172,8 +172,6 @@ CREATE TABLE info_place (
 
 	cmd_streak_redeem UUID, -- the streak tracking redeem id
 
-	cmd_tts_subonly BOOLEAN NOT NULL DEFAULT FALSE,
-
 	cmd_god_auto_on BOOL NOT NULL DEFAULT FALSE,
 	cmd_god_auto_interval INTEGER NOT NULL DEFAULT 1800, -- in seconds
 	cmd_god_auto_last BIGINT NOT NULL DEFAULT 0, -- unix timestamp
@@ -197,62 +195,7 @@ CREATE TABLE info_person (
 	cmd_streak_num INT NOT NULL DEFAULT 0,
 	cmd_streak_last BIGINT NOT NULL DEFAULT 0,
 
-	cmd_time_tz VARCHAR(255) NOT NULL DEFAULT 'UTC',
-
-	cmd_tts_voice VARCHAR(255) NOT NULL DEFAULT (ARRAY[
-		-- DISNEY VOICES
-		'en_us_ghostface',       -- Ghost Face
-		'en_us_chewbacca',       -- Chewbacca
-		'en_us_c3po',            -- C3PO
-		'en_us_stitch',          -- Stitch
-		'en_us_stormtrooper',    -- Stormtrooper
-		'en_us_rocket',          -- Rocket
-		'en_female_madam_leota', -- Madame Leota
-		'en_male_ghosthost',     -- Ghost Host
-		'en_male_pirate',        -- Pirate
-
-		-- ENGLISH VOICES
-		'en_au_001', -- English AU - Female
-		'en_au_002', -- English AU - Male
-		'en_uk_001', -- English UK - Male 1
-		'en_uk_003', -- English UK - Male 2
-		'en_us_001', -- English US - Female 1
-		'en_us_002', -- English US - Female 2
-		'en_us_006', -- English US - Male 1
-		'en_us_007', -- English US - Male 2
-		'en_us_009', -- English US - Male 3
-		'en_us_010', -- English US - Male 4
-
-		-- EUROPE VOICES
-		'fr_001', -- French - Male 1
-		'fr_002', -- French - Male 2
-		'de_001', -- German - Female
-		'de_002', -- German - Male
-		'es_002', -- Spanish - Male
-
-		-- AMERICA VOICES
-		'es_mx_002', -- Spanish MX - Male
-		'br_001',    -- Portuguese BR - Female 1
-		'br_003',    -- Portuguese BR - Female 2
-		'br_004',    -- Portuguese BR - Female 3
-		'br_005',    -- Portuguese BR - Male
-
-		-- ASIA VOICES
-		'id_001', -- Indonesian - Female
-		'jp_001', -- Japanese - Female 1
-		'jp_003', -- Japanese - Female 2
-		'jp_005', -- Japanese - Female 3
-		'jp_006', -- Japanese - Male
-		'kr_002', -- Korean - Male 1
-		'kr_003', -- Korean - Female
-		'kr_004', -- Korean - Male 2
-
-		-- OTHER
-		'en_male_narration',   -- Narrator
-		'en_male_funny',       -- Wacky
-		'en_female_emotional', -- Peaceful
-		'en_male_cody'         -- Serious
-	])[floor(random() * 41 + 1)]
+	cmd_time_tz VARCHAR(255) NOT NULL DEFAULT 'UTC'
 );
 
 CREATE INDEX info_person_index_person_place ON info_person (person, place);
