@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	EventRedeemClaimChan    = make(chan *EventRedeemClaim)
 	EventRedeemClaimHooks   = NewHooks[*EventRedeemClaim](5)
+	eventRedeemClaimChan    = make(chan *EventRedeemClaim)
 	eventRedeemClaimCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_redeem_claim_total",
 		Help: "Total number of received redeem claim events.",
@@ -25,6 +25,19 @@ type EventRedeemClaim struct {
 	Author   Personifier
 	Here     Placer
 	Frontend Frontender
+}
+
+func NewEventRedeemClaim(id, input string, when time.Time,
+	author Personifier, here Placer, f Frontender) *EventRedeemClaim {
+
+	return &EventRedeemClaim{
+		ID:       id,
+		Input:    input,
+		When:     when,
+		Author:   author,
+		Here:     here,
+		Frontend: f,
+	}
 }
 
 func (rc *EventRedeemClaim) Hooks() *Hooks[*EventRedeemClaim] {
@@ -50,4 +63,8 @@ func (rc *EventRedeemClaim) Handler() {
 		Msg("received redeem claim event")
 
 	EventRedeemClaimHooks.Run(rc)
+}
+
+func (rc *EventRedeemClaim) Send() {
+	eventRedeemClaimChan <- rc
 }

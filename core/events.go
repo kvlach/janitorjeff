@@ -102,6 +102,9 @@ type Event[T any] interface {
 	// Hooks return's the event's hooks variable, e.g. [EventMessageHooks].
 	// Exists to enable [EventAwait]'s implementation.
 	Hooks() *Hooks[T]
+
+	// Send the event to the [EventLoop].
+	Send()
 }
 
 // EventLoop starts an infinite loop which handles all incoming events.
@@ -111,13 +114,13 @@ func EventLoop() {
 	// only one of the receivers will ever receive the channel data.
 	for {
 		select {
-		case m := <-EventMessageChan:
+		case m := <-eventMessageChan:
 			m.Handler()
-		case rc := <-EventRedeemClaimChan:
+		case rc := <-eventRedeemClaimChan:
 			rc.Handler()
-		case son := <-EventStreamOnlineChan:
+		case son := <-eventStreamOnlineChan:
 			son.Handler()
-		case soff := <-EventStreamOfflineChan:
+		case soff := <-eventStreamOfflineChan:
 			soff.Handler()
 		}
 	}

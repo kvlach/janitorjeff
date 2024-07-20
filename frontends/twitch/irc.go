@@ -59,15 +59,8 @@ func NewMessage(m tirc.PrivateMessage) (*core.EventMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &core.EventMessage{
-		ID:       m.ID,
-		Raw:      m.Message,
-		Frontend: Frontend,
-		Author:   a,
-		Here:     h,
-		Client:   NewTwitch(a, h, twitchIrcClient),
-		Speaker:  Speaker{},
-	}, nil
+	cl := NewTwitch(a, h, twitchIrcClient)
+	return core.NewEventMessage(m.ID, m.Message, Frontend, a, h, cl, Speaker{}), nil
 }
 
 func (f *frontend) Type() core.FrontendType {
@@ -89,7 +82,7 @@ func (f *frontend) Init(wgInit, wgStop *sync.WaitGroup, stop chan struct{}) {
 				Interface("msg", pm).
 				Msg("failed to parse private message")
 		}
-		core.EventMessageChan <- m
+		m.Send()
 	})
 
 	twitchIrcClient.Join(f.Channels...)

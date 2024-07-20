@@ -40,7 +40,7 @@ func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 	if err != nil {
 		return
 	}
-	core.EventMessageChan <- msg
+	msg.Send()
 }
 
 ///////////////

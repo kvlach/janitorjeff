@@ -184,6 +184,20 @@ type EventMessage struct {
 	Command  *Command
 }
 
+func NewEventMessage(id, raw string, f Frontender, author Personifier,
+	here Placer, m Messenger, sp AudioSpeaker) *EventMessage {
+
+	return &EventMessage{
+		ID:       id,
+		Raw:      raw,
+		Frontend: f,
+		Author:   author,
+		Here:     here,
+		Client:   m,
+		Speaker:  sp,
+	}
+}
+
 func (m *EventMessage) Fields() []string {
 	return strings.Fields(m.Raw)
 }
@@ -355,8 +369,8 @@ func (m *EventMessage) Usage() any {
 }
 
 var (
-	EventMessageChan    = make(chan *EventMessage)
 	EventMessageHooks   = NewHooks[*EventMessage](20)
+	eventMessageChan    = make(chan *EventMessage)
 	eventMessageCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_message_total",
 		Help: "Total number of received message events.",
@@ -392,4 +406,8 @@ func (m *EventMessage) Handler() {
 			Interface("command", m.Command).
 			Msg("got error while running command")
 	}
+}
+
+func (m *EventMessage) Send() {
+	eventMessageChan <- m
 }

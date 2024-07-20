@@ -35,7 +35,7 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 		log.Debug().Err(err).Send()
 		return
 	}
-	core.EventMessageChan <- msg
+	msg.Send()
 }
 
 ///////////////

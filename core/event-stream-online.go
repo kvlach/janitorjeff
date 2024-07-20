@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	EventStreamOnlineChan    = make(chan *EventStreamOnline)
 	EventStreamOnlineHooks   = NewHooks[*EventStreamOnline](5)
+	eventStreamOnlineChan    = make(chan *EventStreamOnline)
 	eventStreamOnlineCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "jeff_event_stream_online_total",
 		Help: "Total number of received stream online events.",
@@ -22,6 +22,14 @@ type EventStreamOnline struct {
 	When     time.Time
 	Here     Placer
 	Frontend Frontender
+}
+
+func NewEventStreamOnline(when time.Time, here Placer, f Frontender) *EventStreamOnline {
+	return &EventStreamOnline{
+		When:     when,
+		Here:     here,
+		Frontend: f,
+	}
 }
 
 func (son *EventStreamOnline) Hooks() *Hooks[*EventStreamOnline] {
@@ -117,4 +125,8 @@ func (son *EventStreamOnline) save() error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func (son *EventStreamOnline) Send() {
+	eventStreamOnlineChan <- son
 }
