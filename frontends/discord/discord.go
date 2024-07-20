@@ -7,8 +7,8 @@ import (
 
 	"github.com/kvlach/janitorjeff/core"
 
-	"github.com/kvlach/dgc"
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/kvlach/dgc"
 	"github.com/rs/zerolog/log"
 )
 
