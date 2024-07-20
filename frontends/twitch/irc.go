@@ -173,10 +173,6 @@ func (t *Twitch) Helix() (*Helix, error) {
 //           //
 ///////////////
 
-func (t *Twitch) Parse() (*core.EventMessage, error) {
-	panic("TODO: THIS WILL BE DELETED")
-}
-
 func (t *Twitch) checkID(id string) error {
 	if _, err := strconv.ParseInt(id, 10, 64); err != nil {
 		// not even a number so no point in asking twitch if it's valid

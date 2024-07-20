@@ -112,7 +112,7 @@ func (f *frontend) CreateMessage(author, channel int64, msgID string) (*core.Eve
 		},
 	}
 
-	return d.Parse()
+	return NewMessage(d.Message, d)
 }
 
 func (f *frontend) Usage(usage string) any {

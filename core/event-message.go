@@ -134,8 +134,6 @@ func PlacePrefixes(place int64) ([]Prefix, bool, error) {
 
 // Messenger is the abstraction layer for message events.
 type Messenger interface {
-	Parse() (*EventMessage, error)
-
 	// PlaceID returns the ID of the passed string. The returned ID must be
 	// valid. Generally used for verifying an ID's validity and extracting IDs
 	// from mentions.

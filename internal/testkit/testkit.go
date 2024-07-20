@@ -139,9 +139,8 @@ func (tm *TestMessage) DiscordRandom() *TestMessage {
 		},
 	}
 
-	msgTmp := discord.MessageCreate{Message: dgMsg}
-
-	msg, err := msgTmp.Parse()
+	msgTmp := &discord.MessageCreate{Message: dgMsg}
+	msg, err := discord.NewMessage(dgMsg.Message, msgTmp)
 	if err != nil {
 		log.Fatalln(err)
 	}

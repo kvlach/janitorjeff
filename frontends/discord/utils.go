@@ -257,11 +257,10 @@ func isBotAdmin(id string) bool {
 	return false
 }
 
-func parse(m *dg.Message) *core.EventMessage {
+func NewMessage(m *dg.Message, msger core.Messenger) (*core.EventMessage, error) {
 	a, err := NewAuthor(m.Author, m.Member, m.GuildID)
 	if err != nil {
-		// TODO
-		panic(err)
+		return nil, err
 	}
 
 	h := &Here{
@@ -276,16 +275,7 @@ func parse(m *dg.Message) *core.EventMessage {
 		VC:     nil,
 	}
 
-	msg := &core.EventMessage{
-		ID:       m.ID,
-		Raw:      m.Content,
-		Frontend: Frontend,
-		Author:   a,
-		Here:     h,
-		Speaker:  sp,
-	}
-
-	return msg
+	return core.NewEventMessage(m.ID, m.Content, Frontend, a, h, msger, sp), nil
 }
 
 func isAdmin(guildID string, userID string) (bool, error) {
@@ -368,7 +358,7 @@ func sendText(m *dg.Message, text string, ping bool) (*core.EventMessage, error)
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Message: resp}).Parse()
+	return NewMessage(resp, &Message{Message: resp})
 }
 
 func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*core.EventMessage, error) {
@@ -378,7 +368,7 @@ func sendEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, ping bool) (*co
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Message: resp}).Parse()
+	return NewMessage(resp, &Message{Message: resp})
 }
 
 func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Message, error) {
@@ -423,7 +413,7 @@ func editText(m *dg.Message, id, text string) (*core.EventMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Message: resp}).Parse()
+	return NewMessage(resp, &Message{Message: resp})
 }
 
 func editEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, id string) (*core.EventMessage, error) {
@@ -432,7 +422,7 @@ func editEmbed(m *dg.Message, embed *dg.MessageEmbed, urr error, id string) (*co
 	if err != nil {
 		return nil, err
 	}
-	return (&Message{Message: resp}).Parse()
+	return NewMessage(resp, &Message{Message: resp})
 }
 
 func embedColor(embed *dg.MessageEmbed, urr error) *dg.MessageEmbed {

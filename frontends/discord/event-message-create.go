@@ -30,7 +30,7 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 	d := &MessageCreate{
 		Message: m,
 	}
-	msg, err := d.Parse()
+	msg, err := NewMessage(m.Message, d)
 	if err != nil {
 		log.Debug().Err(err).Send()
 		return
@@ -43,12 +43,6 @@ func messageCreate(s *dg.Session, m *dg.MessageCreate) {
 // Messenger //
 //           //
 ///////////////
-
-func (d *MessageCreate) Parse() (*core.EventMessage, error) {
-	msg := parse(d.Message.Message)
-	msg.Client = d
-	return msg, nil
-}
 
 func (d *MessageCreate) PersonID(s, placeID string) (string, error) {
 	return getPersonID(s, placeID, d.Message.Author.ID)

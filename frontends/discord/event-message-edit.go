@@ -36,7 +36,7 @@ func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 	d := &MessageEdit{
 		Message: m,
 	}
-	msg, err := d.Parse()
+	msg, err := NewMessage(m.Message, d)
 	if err != nil {
 		return
 	}
@@ -48,12 +48,6 @@ func messageEdit(_ *dg.Session, m *dg.MessageUpdate) {
 // Messenger //
 //           //
 ///////////////
-
-func (d *MessageEdit) Parse() (*core.EventMessage, error) {
-	msg := parse(d.Message.Message)
-	msg.Client = d
-	return msg, nil
-}
 
 func (d *MessageEdit) PersonID(s, placeID string) (string, error) {
 	return getPersonID(s, placeID, d.Message.Author.ID)

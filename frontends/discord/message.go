@@ -19,12 +19,6 @@ type Message struct {
 //           //
 ///////////////
 
-func (d *Message) Parse() (*core.EventMessage, error) {
-	msg := parse(d.Message)
-	msg.Client = d
-	return msg, nil
-}
-
 func (d *Message) PersonID(s, placeID string) (string, error) {
 	return getPersonID(s, placeID, d.Message.Author.ID)
 }

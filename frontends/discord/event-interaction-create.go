@@ -18,6 +18,32 @@ type InteractionCreate struct {
 	VC          *dg.VoiceConnection
 }
 
+func NewInteractionCreate(i *dg.InteractionCreate, d *dg.ApplicationCommandInteractionData) (*core.EventMessage, error) {
+	author := &AuthorInteraction{
+		GuildID: i.Interaction.GuildID,
+		Member:  i.Interaction.Member,
+		User:    i.Interaction.User,
+	}
+
+	h := &Here{
+		ChannelID: i.Interaction.ChannelID,
+		GuildID:   i.Interaction.GuildID,
+		Author:    author,
+	}
+
+	sp := &Speaker{
+		Author: author,
+		Here:   h,
+		VC:     nil,
+	}
+
+	ic := &InteractionCreate{
+		Interaction: i,
+		Data:        d,
+	}
+	return core.NewEventMessage(d.ID, "", Frontend, author, h, ic, sp), nil
+}
+
 func RegisterAppCommand(cmd *dg.ApplicationCommand) {
 	guildID := "759669782386966528"
 
@@ -48,12 +74,7 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 		}
 	}
 
-	inter := &InteractionCreate{
-		Interaction: i,
-		Data:        &data,
-	}
-
-	m, err := inter.Parse()
+	m, err := NewInteractionCreate(i, &data)
 	if err != nil {
 		log.Debug().Err(err).Send()
 		return
@@ -97,37 +118,6 @@ func interactionCreate(s *dg.Session, i *dg.InteractionCreate) {
 // Messenger //
 //           //
 ///////////////
-
-func (i *InteractionCreate) Parse() (*core.EventMessage, error) {
-	author := &AuthorInteraction{
-		GuildID: i.Interaction.GuildID,
-		Member:  i.Interaction.Member,
-		User:    i.Interaction.User,
-	}
-
-	h := &Here{
-		ChannelID: i.Interaction.ChannelID,
-		GuildID:   i.Interaction.GuildID,
-		Author:    author,
-	}
-
-	sp := &Speaker{
-		Author: author,
-		Here:   h,
-		VC:     nil,
-	}
-
-	m := &core.EventMessage{
-		ID:       i.Data.ID,
-		Raw:      "", // TODO
-		Frontend: Frontend,
-		Author:   author,
-		Here:     h,
-		Client:   i,
-		Speaker:  sp,
-	}
-	return m, nil
-}
 
 func (i *InteractionCreate) PersonID(s, placeID string) (string, error) {
 	var id string
