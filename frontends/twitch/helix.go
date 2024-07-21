@@ -165,9 +165,15 @@ func (hx *Helix) GetUser(userID string) (helix.User, error) {
 
 	switch err {
 	case nil:
-		return resp.Data.Users[0], nil
+		u := resp.Data.Users[0]
+		log.Debug().
+			Str("id", userID).
+			Interface("user", u).
+			Msg("fetched user using id")
+		return u, nil
 
 	case ErrRetry:
+		log.Debug().Msg("refreshing token and retrying")
 		if err := hx.refreshToken(); err != nil {
 			return helix.User{}, err
 		}
