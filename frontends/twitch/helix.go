@@ -225,7 +225,7 @@ func (hx *Helix) GetClip(clipID string) (helix.Clip, error) {
 func (hx *Helix) GetBannedUser(broadcasterID, userID string) (helix.Ban, error) {
 	resp, err := hx.c.GetBannedUsers(&helix.BannedUsersParams{
 		BroadcasterID: broadcasterID,
-		UserID:        userID,
+		UserID:        []string{userID},
 	})
 
 	err = checkErrors(err, resp.ResponseCommon, len(resp.Data.Bans))

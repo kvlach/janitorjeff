@@ -387,7 +387,7 @@ func msgEdit(m *dg.Message, id, text string, embed *dg.MessageEmbed) (*dg.Messag
 		Channel: m.ChannelID,
 
 		Content: &text,
-		Embeds:  embeds,
+		Embeds:  &embeds,
 		AllowedMentions: &dg.MessageAllowedMentions{
 			Parse: []dg.AllowedMentionType{}, // don't ping user
 		},
