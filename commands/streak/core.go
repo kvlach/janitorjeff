@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -17,121 +16,22 @@ var (
 	UrrAlreadyOn = core.UrrNew("Streak tracking has already been turned on.")
 )
 
-func On(hx *twitch.Helix, place int64, broadcasterID string) (core.Urr, error) {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return nil, err
-	}
-	//goland:noinspection GoUnhandledErrorResult
-	defer tx.Rollback()
-
-	var exists bool
-	err = tx.QueryRow(`
-		SELECT EXISTS (
-		    SELECT 1 FROM cmd_streak_twitch_events
-		    WHERE place = $1
-		)`, place).Scan(&exists)
-	if exists {
-		return UrrAlreadyOn, nil
-	}
-
-	onlineSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOnline)
-	if err != nil {
-		return nil, err
-	}
-	if err := twitch.AddEventSubSubscriptionID(tx, onlineSubID); err != nil {
-		return nil, err
-	}
-
-	offlineSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeStreamOffline)
-	if err != nil {
-		return nil, err
-	}
-	if err := twitch.AddEventSubSubscriptionID(tx, offlineSubID); err != nil {
-		return nil, err
-	}
-
-	redeemsSubID, err := hx.CreateSubscription(broadcasterID, helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd)
-	if err != nil {
-		return nil, err
-	}
-	if err := twitch.AddEventSubSubscriptionID(tx, redeemsSubID); err != nil {
-		return nil, err
-	}
-
-	_, err = tx.Exec(`
-		INSERT INTO cmd_streak_twitch_events(place, event_online, event_offline, event_redeem)
-		VALUES ($1, $2, $3, $4)`, place, onlineSubID, offlineSubID, redeemsSubID)
-
-	log.Debug().
-		Err(err).
-		Str("online", onlineSubID).
-		Str("offline", offlineSubID).
-		Str("redeem", redeemsSubID).
-		Msg("saved subscription ids")
-
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, tx.Commit()
+func On(place int64) error {
+	return twitch.EventsubEnsureCreated(
+		place,
+		helix.EventSubTypeStreamOnline,
+		helix.EventSubTypeStreamOffline,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+	)
 }
 
-func Off(hx *twitch.Helix, place int64) error {
-	db := core.DB
-	db.Lock.Lock()
-	defer db.Lock.Unlock()
-
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return err
-	}
-	//goland:noinspection GoUnhandledErrorResult
-	defer tx.Rollback()
-
-	var onlineSubID, offlineSubID, redeemsSubID string
-	err = tx.QueryRow(`
-		SELECT event_online, event_offline, event_redeem
-		FROM cmd_streak_twitch_events
-		WHERE place = $1`, place).Scan(&onlineSubID, &offlineSubID, &redeemsSubID)
-
-	log.Debug().
-		Err(err).
-		Str("online", onlineSubID).
-		Str("offline", offlineSubID).
-		Str("redeem", redeemsSubID).
-		Msg("got subscription ids")
-
-	if err != nil {
-		return err
-	}
-
-	if err := hx.DeleteSubscription(onlineSubID); err != nil {
-		return err
-	}
-	if err := twitch.DeleteEventSubSubscriptionID(tx, onlineSubID); err != nil {
-		return err
-	}
-
-	if err := hx.DeleteSubscription(offlineSubID); err != nil {
-		return err
-	}
-	if err := twitch.DeleteEventSubSubscriptionID(tx, offlineSubID); err != nil {
-		return err
-	}
-
-	if err := hx.DeleteSubscription(redeemsSubID); err != nil {
-		return err
-	}
-	if err := twitch.DeleteEventSubSubscriptionID(tx, redeemsSubID); err != nil {
-		return err
-	}
-
-	return tx.Commit()
+func Off(place int64) error {
+	return twitch.EventsubEnsureDeleted(
+		place,
+		helix.EventSubTypeStreamOnline,
+		helix.EventSubTypeStreamOffline,
+		helix.EventSubTypeChannelPointsCustomRewardRedemptionAdd,
+	)
 }
 
 // Appearance returns the person's current streak with when being their latest appearance.

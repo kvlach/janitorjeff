@@ -3,7 +3,9 @@ package twitch
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -204,4 +206,128 @@ func init() {
 
 		c.String(http.StatusOK, "ok")
 	})
+}
+
+// EventsubEnsureCreated creates all subscriptions not already registered for place.
+// If an error occurs it will try to delete all *new* subscriptions,
+// not modifying the ones that existed before the function call.
+// If that fails, it will log an error.
+func EventsubEnsureCreated(place int64, subTypes ...string) error {
+	hx, err := Frontend.Helix()
+	if err != nil {
+		return err
+	}
+
+	broadcasterID, err := dbGetChannel(place)
+	if err != nil {
+		return err
+	}
+
+	tx, err := core.DB.DB.Begin()
+	if err != nil {
+		return err
+	}
+	//goland:noinspection GoUnhandledErrorResult
+	defer tx.Rollback()
+
+	newSubscriptions := make([]string, 0)
+	defer func() {
+		if err == nil {
+			return
+		}
+
+		log.Warn().
+			Err(err).
+			Any("new-subscription-types", newSubscriptions).
+			Msg("an error was encountered while subscribing, rolling back new subscriptions")
+
+		if err := EventsubEnsureDeleted(place, newSubscriptions...); err != nil {
+			log.Error().Err(err).Msg("failed to roll back subscriptions")
+		}
+	}()
+
+	var id int64
+	ids := make([]int64, 0, len(subTypes))
+
+	for _, subType := range subTypes {
+		err = tx.QueryRow(`
+			SELECT id
+			FROM frontend_twitch_eventsub
+			WHERE sub_type = $1 and channel = $2
+		`, subType, place).Scan(&id)
+
+		if err == nil {
+			ids = append(ids, id)
+			continue
+		}
+		if !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+
+		subId, err := hx.CreateSubscription(broadcasterID, subType)
+		if err != nil {
+			return err
+		}
+		newSubscriptions = append(newSubscriptions, subType)
+
+		res, err := tx.Exec(`
+			INSERT INTO frontend_twitch_eventsub(sub_id, sub_type, channel)
+			VALUES ($1, $2, $3)
+		`, subId, subType, place)
+		if err != nil {
+			return err
+		}
+		id, err = res.LastInsertId()
+		if err != nil {
+			return err
+		}
+		ids = append(ids, id)
+	}
+
+	return tx.Commit()
+}
+
+// EventsubEnsureDeleted deletes all provided subscriptions.
+// Skips over any not found in the database.
+func EventsubEnsureDeleted(place int64, subTypes ...string) error {
+	hx, err := Frontend.Helix()
+	if err != nil {
+		return err
+	}
+
+	tx, err := core.DB.DB.Begin()
+	if err != nil {
+		return err
+	}
+	//goland:noinspection GoUnhandledErrorResult
+	defer tx.Rollback()
+
+	var subID string
+	for _, subType := range subTypes {
+		err = tx.QueryRow(`
+			SELECT sub_id
+			FROM frontend_twitch_eventsub
+			WHERE sub_type = $1 and channel = $2
+		`, subType, place).Scan(&subID)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+
+		if err := hx.DeleteSubscription(subID); err != nil {
+			return err
+		}
+
+		_, err = tx.Exec(`
+			DELETE FROM frontend_twitch_eventsub
+			WHERE sub_id = $1
+		`, subID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }

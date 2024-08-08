@@ -203,22 +203,11 @@ func (advancedOn) fmt(urr core.Urr) string {
 }
 
 func (advancedOn) core(m *core.EventMessage) (core.Urr, error) {
-	hx, err := twitch.Frontend.Helix()
-	if err != nil {
-		return nil, err
-	}
-
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return nil, err
 	}
-
-	hix, err := m.Here.IDExact()
-	if err != nil {
-		return nil, err
-	}
-
-	return On(hx, here, hix)
+	return nil, On(here)
 }
 
 /////////
@@ -279,17 +268,11 @@ func (c advancedOff) Run(m *core.EventMessage) (resp any, urr core.Urr, err erro
 }
 
 func (advancedOff) core(m *core.EventMessage) error {
-	hx, err := twitch.Frontend.Helix()
-	if err != nil {
-		return err
-	}
-
 	here, err := m.Here.ScopeLogical()
 	if err != nil {
 		return err
 	}
-
-	return Off(hx, here)
+	return Off(here)
 }
 
 //////////

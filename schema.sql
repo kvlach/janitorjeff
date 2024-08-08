@@ -60,7 +60,12 @@ CREATE TABLE frontend_twitch_channels (
 );
 
 CREATE TABLE frontend_twitch_eventsub (
-    id UUID PRIMARY KEY -- subscription ID
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sub_id UUID NOT NULL UNIQUE,  -- provided by twitch
+    sub_type VARCHAR(255) NOT NULL,
+    channel BIGINT NOT NULL,
+    UNIQUE(sub_type, channel),
+    FOREIGN KEY (channel) REFERENCES frontend_twitch_channels(scope) ON DELETE CASCADE
 );
 
 ------------------------------
@@ -117,23 +122,6 @@ INSERT INTO cmd_god_personalities(place, name, prompt) VALUES
 CREATE TABLE cmd_lens_directors (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
-);
-
----------------------
---                 --
--- Command: Streak --
---                 --
----------------------
-
-CREATE TABLE cmd_streak_twitch_events (
-    place BIGINT PRIMARY KEY,
-    event_online UUID NOT NULL,
-    event_offline UUID NOT NULL,
-    event_redeem UUID NOT NULL,
-    FOREIGN KEY (place) REFERENCES scopes(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_online) REFERENCES frontend_twitch_eventsub(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_offline) REFERENCES frontend_twitch_eventsub(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_redeem) REFERENCES frontend_twitch_eventsub(id) ON DELETE CASCADE
 );
 
 -------------------

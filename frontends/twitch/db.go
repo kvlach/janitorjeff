@@ -1,7 +1,6 @@
 package twitch
 
 import (
-	"database/sql"
 	"github.com/kvlach/janitorjeff/core"
 )
 
@@ -104,18 +103,4 @@ func dbGetUserTokens(channelID string) (string, string, error) {
 	var accessToken, refreshToken string
 	err := row.Scan(&accessToken, &refreshToken)
 	return accessToken, refreshToken, err
-}
-
-func AddEventSubSubscriptionID(tx *sql.Tx, id string) error {
-	_, err := tx.Exec(`
-		INSERT INTO frontend_twitch_eventsub(id)
-		VALUES ($1)`, id)
-	return err
-}
-
-func DeleteEventSubSubscriptionID(tx *sql.Tx, id string) error {
-	_, err := tx.Exec(`
-		DELETE FROM frontend_twitch_eventsub
-		WHERE id = $1`, id)
-	return err
 }
