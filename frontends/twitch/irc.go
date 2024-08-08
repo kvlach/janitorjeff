@@ -282,7 +282,7 @@ func (t *Twitch) Natural(msg any, _ core.Urr) (*core.EventMessage, error) {
 	var err error
 	// need this to only happen 30% of the time
 	if num := core.Rand().Intn(10); num < 3 {
-		mention, err = t.Author.DisplayName()
+		mention, err = t.Author.Name()
 		if err != nil {
 			return nil, err
 		}
