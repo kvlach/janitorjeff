@@ -286,6 +286,7 @@ func (t *Twitch) Natural(msg any, _ core.Urr) (*core.EventMessage, error) {
 		if err != nil {
 			return nil, err
 		}
+		mention += " "
 	}
 	return t.send(msg, mention)
 }
